@@ -1,15 +1,12 @@
 import React from 'react';
 import { Draggable } from 'react-beautiful-dnd';
 import PropTypes from 'prop-types';
-import DatafileCountBadge from '../../badges/components/DatafileCountBadge';
 import DatasetSizeBadge from '../../badges/components/DatasetSizeBadge';
+import HSMDataFileCountBadge from '../../badges/components/HSMDataFileCountBadge';
 
 const DatasetTile = ({
   data, listName, index, onDownloadSelect, showDownloadCheckbox,
 }) => {
-  const experimentData = {
-    datafile_count: data.file_count,
-  };
   const datasetData = {
     dataset_size: data.size,
   };
@@ -54,7 +51,7 @@ const DatasetTile = ({
               <div className="float-left" style={{ marginRight: '10px' }} />
               <div className="float-right" style={{ textAlign: 'right' }}>
                 <p>
-                  <DatafileCountBadge experimentData={experimentData} />
+                  <HSMDataFileCountBadge datasetId={data.id} />
                 </p>
                 <p>
                   <DatasetSizeBadge datasetData={datasetData} />

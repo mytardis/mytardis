@@ -237,7 +237,7 @@ def retrieve_group_userlist_readonly(request, group_id):
 @never_cache
 def retrieve_group_list_by_user(request):
 
-    groups = Group.objects.filter(groupadmin__user=request.user)
+    groups = Group.objects.filter(groupadmin__user=request.user).order_by('name')
     c = {'groups': groups}
     return render_response_index(
         request, 'tardis_portal/ajax/group_list.html', c)

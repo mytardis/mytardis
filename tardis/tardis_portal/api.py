@@ -15,6 +15,7 @@ from django.conf.urls import url
 from django.contrib.auth.models import AnonymousUser
 from django.contrib.auth.models import User
 from django.contrib.auth.models import Group
+from django.core.paginator import EmptyPage, InvalidPage, Paginator
 from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseForbidden, \
     StreamingHttpResponse, HttpResponseNotFound, JsonResponse
@@ -732,22 +733,24 @@ class DatasetResource(MyTardisModelResource):
         ]
 
     def get_datafiles(self, request, **kwargs):
-        file_path = kwargs.get('file_path', None)
-        dataset_id = kwargs['pk']
+        self.method_check(request, allowed=["get"])
+        self.is_authenticated(request)
 
-        datafiles = DataFile.objects.filter(dataset__id=dataset_id)
-        auth_bundle = self.build_bundle(request=request)
-        auth_bundle.obj = DataFile()
-        self.authorized_read_list(
-            datafiles, auth_bundle
-            )
-        del kwargs['pk']
-        del kwargs['file_path']
-        kwargs['dataset__id'] = dataset_id
+        dataset_id = kwargs["pk"]
+        del kwargs["pk"]
+
+        file_path = kwargs.get("file_path", None)
+        del kwargs["file_path"]
+
+        if not has_dataset_access(request=request, dataset_id=dataset_id):
+            return HttpResponseForbidden()
+
+        kwargs["dataset__id"] = dataset_id
+
         if file_path is not None:
-            kwargs['directory__startswith'] = file_path
-        df_res = DataFileResource()
-        return df_res.dispatch('list', request, **kwargs)
+            kwargs["directory__startswith"] = file_path
+
+        return DataFileResource().dispatch("list", request, **kwargs)
 
     def hydrate_m2m(self, bundle):
         '''
@@ -781,9 +784,25 @@ class DatasetResource(MyTardisModelResource):
         # get files at root level
         dfs = (DataFile.objects.filter(dataset=dataset, directory='') |
                DataFile.objects.filter(dataset=dataset, directory__isnull=True)).distinct()
+
+        pgresults = 1000
+
+        paginator = Paginator(dfs, pgresults)
+
+        try:
+            page_num = int(request.GET.get('page', '0'))
+        except ValueError:
+            page_num = 0
+
+        # If page request (9999) is out of range, deliver last page of results.
+
+        try:
+            dfs = paginator.page(page_num + 1)
+        except (EmptyPage, InvalidPage):
+            dfs = paginator.page(paginator.num_pages)
         child_list = []
         # append directories list
-        if dir_tuples:
+        if dir_tuples and page_num == 0:
             for dir_tuple in dir_tuples:
                 child_dict = {
                     'name': dir_tuple[0],
@@ -798,7 +817,22 @@ class DatasetResource(MyTardisModelResource):
                 children['name'] = df.filename
                 children['verified'] = df.verified
                 children['id'] = df.id
+                children['is_online'] = df.is_online
+                children['recall_url'] = df.recall_url
                 child_list.append(children)
+        if paginator.num_pages - 1 > page_num:
+            # append a marker element
+            children = {}
+            children['next_page'] = True
+            children['next_page_num'] = page_num + 1
+            children['display_text'] = "Displaying {current} of {total} "\
+                .format(current=(dfs.number * pgresults), total=paginator.count)
+            child_list.append(children)
+        if paginator.num_pages - 1 == page_num:
+            # append a marker element
+            children = {}
+            children['next_page'] = False
+            child_list.append(children)
 
         return JsonResponse(child_list, status=200, safe=False)
 
@@ -835,7 +869,8 @@ class DatasetResource(MyTardisModelResource):
         # if there are files append this
         if dfs:
             for df in dfs:
-                child = {'name': df.filename, 'id': df.id, 'verified': df.verified}
+                child = {'name': df.filename, 'id': df.id, 'verified': df.verified, 'is_online': df.is_online,
+                         'recall_url': df.recall_url}
                 child_list.append(child)
 
         return JsonResponse(child_list, status=200, safe=False)
@@ -946,6 +981,29 @@ class DataFileResource(MyTardisModelResource):
             template = URITemplate(download_uri_templates[storage_class_name])
             return redirect(template.expand(dfo_id=preferred_dfo.id))
 
+        if settings.PROXY_DOWNLOADS:
+            full_path = preferred_dfo.get_full_path()
+            for dir_prefix, url_prefix in settings.PROXY_DOWNLOAD_PREFIXES:
+                if full_path.startswith(dir_prefix):
+                    response = HttpResponse()
+                    response["Content-Disposition"] = \
+                        "attachment; filename={0}".format(file_record.filename)
+                    path = full_path.split(dir_prefix)[1]
+                    response['X-Accel-Redirect'] = "%s/%s" % (url_prefix, path)
+                    return response
+
+        # Log file download event
+        if getattr(settings, "ENABLE_EVENTLOG", False):
+            from tardis.apps.eventlog.utils import log
+            log(
+                action="DOWNLOAD_DATAFILE",
+                extra={
+                    "id": kwargs["pk"],
+                    "type": "api"
+                },
+                request=request
+            )
+
         file_object = file_record.get_file()
         wrapper = FileWrapper(file_object)
         tracker_data = dict(
@@ -1013,6 +1071,7 @@ class DataFileResource(MyTardisModelResource):
                 bundle.data['replicas'] = [{'file_object': newfile}]
 
             del(bundle.data['attached_file'])
+
         return bundle
 
     def obj_create(self, bundle, **kwargs):
@@ -1027,6 +1086,7 @@ class DataFileResource(MyTardisModelResource):
             if "duplicate key" in str(err):
                 raise ImmediateHttpResponse(HttpResponse(status=409))
             raise
+
         if 'replicas' not in bundle.data or not bundle.data['replicas']:
             # no replica specified: return upload path and create dfo for
             # new path
@@ -1039,6 +1099,19 @@ class DataFileResource(MyTardisModelResource):
             dfo.create_set_uri()
             dfo.save()
             self.temp_url = dfo.get_full_path()
+        else:
+            # Log file upload event
+            if getattr(settings, "ENABLE_EVENTLOG", False):
+                from tardis.apps.eventlog.utils import log
+                log(
+                    action="UPLOAD_DATAFILE",
+                    extra={
+                        "id": bundle.obj.id,
+                        "type": "post"
+                    },
+                    request=bundle.request
+                )
+
         return retval
 
     def post_list(self, request, **kwargs):

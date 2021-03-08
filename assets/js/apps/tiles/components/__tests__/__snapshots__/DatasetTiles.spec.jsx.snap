@@ -62,24 +62,163 @@ exports[`render dataset tiles on page load should match snapshot 1`] = `
     </form>
     <p>
       <div
-        class="form-horizontal"
+        class="row"
       >
         <div
-          class="form-group"
-          style="margin: 0px; padding: 10px 0px 5px 10px; border: 1px solid #dddddd;"
+          class="form-horizontal col-md-8"
         >
           <div
-            class="col-md-12"
-            style="margin-left: 0px; margin-bottom: 10px;"
+            class="form-group has-search"
           >
             <input
-              autocomplete="off"
-              class="input-xlarge"
-              id="dataset-filter-text-{{cid}}"
-              placeholder="Just start typing to filter datasets based on descriptions"
-              style="width: 95%;"
+              class="form-control"
+              placeholder="Just start typing to filter datasets based on description"
               type="text"
             />
+          </div>
+        </div>
+        <div
+          class="form-horizontal col-md-4"
+        >
+          <div
+            class="btn-group"
+          >
+            <button
+              class="btn btn-outline-secondary float-right"
+              type="button"
+            >
+              Sort by
+            </button>
+            <button
+              aria-expanded="false"
+              aria-haspopup="true"
+              class="btn btn-outline-secondary dropdown-toggle dropdown-toggle-split"
+              data-toggle="dropdown"
+              type="button"
+            >
+              <span
+                class="sr-only"
+              >
+                Toggle Dropdown
+              </span>
+            </button>
+            <div
+              class="dropdown-menu"
+              style="min-width: max-content; transform: translate3d(0px 38px 0px);"
+            >
+              <div
+                class="row"
+              >
+                <div
+                  class="col col-md-8"
+                >
+                  <span
+                    class="dropdown-item"
+                    href="#"
+                  >
+                    Description
+                  </span>
+                </div>
+                <div
+                  class="col col-md-4"
+                >
+                  <button
+                    class="fa fa-sort-alpha-asc mr-2 mt-2"
+                    style="background-color: transparent; cursor: pointer; text-decoration: underline; display: inline; margin: 0px; padding: 0px; color: blue;"
+                    type="button"
+                  />
+                  <button
+                    class="fa fa-sort-alpha-desc mt-2"
+                    style="background-color: transparent; cursor: pointer; text-decoration: underline; display: inline; margin: 0px; padding: 0px; color: blue;"
+                    type="button"
+                  />
+                </div>
+              </div>
+              <div
+                class="row"
+              >
+                <div
+                  class="col col-md-8"
+                >
+                  <span
+                    class="dropdown-item"
+                    href="#"
+                  >
+                    DataFile count
+                  </span>
+                </div>
+                <div
+                  class="col col-md-4"
+                >
+                  <button
+                    class="fa fa-sort-numeric-asc mr-2 mt-2"
+                    style="background-color: transparent; cursor: pointer; text-decoration: underline; display: inline; margin: 0px; padding: 0px; color: blue;"
+                    type="button"
+                  />
+                  <button
+                    class="fa fa-sort-numeric-desc mt-2"
+                    style="background-color: transparent; cursor: pointer; text-decoration: underline; display: inline; margin: 0px; padding: 0px; color: blue;"
+                    type="button"
+                  />
+                </div>
+              </div>
+              <div
+                class="row"
+              >
+                <div
+                  class="col col-md-8"
+                >
+                  <span
+                    class="dropdown-item"
+                    href="#"
+                  >
+                    Dataset size
+                  </span>
+                </div>
+                <div
+                  class="col col-md-4"
+                >
+                  <button
+                    class="fa fa-sort-numeric-asc mr-2 mt-2"
+                    style="background-color: transparent; cursor: pointer; text-decoration: underline; display: inline; margin: 0px; padding: 0px; color: blue;"
+                    type="button"
+                  />
+                  <button
+                    class="fa fa-sort-numeric-desc mt-2"
+                    style="background-color: transparent; cursor: pointer; text-decoration: underline; display: inline; margin: 0px; padding: 0px; color: blue;"
+                    type="button"
+                  />
+                </div>
+              </div>
+              <div
+                class="row"
+              >
+                <div
+                  class="col col-md-8"
+                >
+                  <span
+                    class="dropdown-item"
+                    href="#"
+                  >
+                    Dataset modified time
+                  </span>
+                </div>
+                <div
+                  class="col col-md-4"
+                >
+                  <button
+                    class="fa fa-sort-numeric-asc mr-2 mt-2"
+                    style="background-color: transparent; cursor: pointer; text-decoration: underline; display: inline; margin: 0px; padding: 0px; color: blue;"
+                    type="button"
+                  />
+                  <button
+                    class="fa fa-sort-numeric-desc mt-2"
+                    style="background-color: transparent; cursor: pointer; text-decoration: underline; display: inline; margin: 0px; padding: 0px; color: blue;"
+                    type="button"
+                  />
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -148,13 +287,13 @@ exports[`render dataset tiles on page load should match snapshot 1`] = `
                 <p>
                   <span
                     class="badge badge-info"
-                    title="1 file"
+                    title="4 of 4 Files online"
                   >
                     <i
                       class="fa fa-file"
                     />
                      
-                    1
+                    4
                   </span>
                 </p>
                 <p>
@@ -252,13 +391,13 @@ exports[`render dataset tiles on page load should match snapshot 1`] = `
                 <p>
                   <span
                     class="badge badge-info"
-                    title="1 file"
+                    title="4 of 4 Files online"
                   >
                     <i
                       class="fa fa-file"
                     />
                      
-                    1
+                    4
                   </span>
                 </p>
                 <p>
@@ -398,13 +537,13 @@ exports[`render dataset tiles on page load should match snapshot 1`] = `
                 <p>
                   <span
                     class="badge badge-info"
-                    title="1 file"
+                    title="4 of 4 Files online"
                   >
                     <i
                       class="fa fa-file"
                     />
                      
-                    1
+                    4
                   </span>
                 </p>
                 <p>
@@ -486,13 +625,13 @@ exports[`render dataset tiles on page load should match snapshot 1`] = `
                 <p>
                   <span
                     class="badge badge-info"
-                    title="1 file"
+                    title="4 of 4 Files online"
                   >
                     <i
                       class="fa fa-file"
                     />
                      
-                    1
+                    4
                   </span>
                 </p>
                 <p>

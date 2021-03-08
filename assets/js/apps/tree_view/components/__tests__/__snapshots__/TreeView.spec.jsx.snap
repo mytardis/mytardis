@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`renders initial tree view on page load should render folder tree correctly 1`] = `
+exports[`should match snapshot should render folder tree correctly 1`] = `
 <div>
   <div>
     <div
@@ -46,6 +46,7 @@ exports[`renders initial tree view on page load should render folder tree correc
       >
         Select All
       </button>
+      
     </div>
   </div>
   <div>
@@ -150,14 +151,16 @@ exports[`renders initial tree view on page load should render folder tree correc
               Parent.txt
               <a
                 class="btn-sm"
-                href="/api/v1/dataset_file/11985776/download/"
+                role="button"
                 style="color: black;"
                 title="Download"
               >
                 <i
                   class="fa fa-download fa-sm"
                 />
+                
               </a>
+              
             </div>
           </div>
         </div>
@@ -190,16 +193,8 @@ exports[`renders initial tree view on page load should render folder tree correc
                 STORM-6.jpg
                 (unverified)
               </span>
-              <a
-                class="btn-sm"
-                href="/api/v1/dataset_file/11985840/download/"
-                style="pointer-events: none; cursor: default; text-decoration: none; color: grey;"
-                title="Download"
-              >
-                <i
-                  class="fa fa-download fa-sm"
-                />
-              </a>
+              
+              
             </div>
           </div>
         </div>

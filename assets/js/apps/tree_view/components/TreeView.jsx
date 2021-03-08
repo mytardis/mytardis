@@ -6,18 +6,60 @@ import PropTypes from 'prop-types';
 import styles from './custom-theme';
 import Header from './Header';
 import Container from './Container';
+import Loading from './Loading';
 import * as filters from './Filter';
 import 'regenerator-runtime/runtime';
-import { TreeDownloadButton, TreeSelectButton } from './Download';
-import { DownloadArchive, FetchFilesInDir } from './Utils';
+import { TreeDownloadButton, TreeRecallButton, TreeSelectButton } from './Download';
+import { DownloadArchive, FetchFilesInDir, FetchChildDirs } from './Utils';
+import Spinner from '../../badges/components/utils/Spinner';
+import { fetchHSMDatasetData } from '../../badges/components/utils/FetchData';
 
 
-const TreeView = ({ datasetId, modified }) => {
+const TreeView = ({ datasetId, modified, hsmEnabled }) => {
   const [cursor, setCursor] = useState(false);
   const [data, setData] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [selectedCount, setSelectedCount] = useState(0);
   const [isAllSelected, setIsAllSelected] = useState(false);
+  const [recallButtonText, setRecallButtonText] = useState('Request Dataset Recall');
+  const [recallToolTip, setRecallToolTip] = useState('An email will be sent to admin, and you will be '
+      + 'notified when dataset is available to download');
+  const [recallButtonStatus, setRecallButtonStatus] = useState('all');
+  const [showRecallDatasetButton, setShowRecallDatasetButton] = useState(false);
+  const fetchBaseDirs = (pageNum, resetData) => {
+    fetch(`/api/v1/dataset/${datasetId}/root-dir-nodes/?page=${pageNum}`, {
+      method: 'get',
+      headers: {
+        'Accept': 'application/json', // eslint-disable-line quote-props
+        'Content-Type': 'application/json',
+      },
+    }).then(responseJson => (responseJson.json()))
+      .then((response) => {
+        setIsLoading(false);
+        if (resetData) {
+          const lastElem = [...response].pop();
+          if (!lastElem.next_page) {
+            setData(response.pop());
+          }
+          setData(response);
+        } else {
+          // remove load more button
+          data.pop();
+          const lastElem = [...response].pop();
+          // if no more pages to load
+          if (!lastElem.next_page) {
+            response.pop();
+            setData([...data, ...response]);
+          } else {
+            setData([...data, ...response]);
+          }
+        }
+      });
+  };
   const onSelect = (node) => {
+    if (node.next_page) {
+      fetchBaseDirs(node.next_page_num);
+    }
     node.toggled = !node.toggled;
     if (node.selected) {
       // deselect all child nodes
@@ -32,7 +74,7 @@ const TreeView = ({ datasetId, modified }) => {
         setSelectedCount(selectedCount - 1);
       }
     } else {
-      node.selected = true;
+      // node.selected = true;
       // if this is a folder with no child
       if (node.children && !node.children.length) {
         // add this node to selecteNode list
@@ -40,11 +82,18 @@ const TreeView = ({ datasetId, modified }) => {
       }
       // if this is a folder with child
       if (node.children && node.children.length) {
-        node.children.forEach((childNode) => {
-          childNode.selected = true;
-        });
-      } else {
         node.selected = true;
+        node.children.forEach((childNode) => {
+          if (childNode.is_online) {
+            childNode.selected = true;
+          }
+        });
+      }
+      // if this is a leaf node
+      if (!node.children && node.is_online) {
+        node.selected = true;
+      } else {
+        // node.selected = true;
       }
     }
     // set selected count
@@ -56,50 +105,40 @@ const TreeView = ({ datasetId, modified }) => {
     });
     setSelectedCount(count);
   };
-  const fetchBaseDirs = () => {
-    fetch(`/api/v1/dataset/${datasetId}/root-dir-nodes/`, {
-      method: 'get',
-      headers: {
-        'Accept': 'application/json', // eslint-disable-line quote-props
-        'Content-Type': 'application/json',
-      },
-    }).then(responseJson => (responseJson.json()))
-      .then((response) => { setData(response); });
-  };
-  const fetchChildDirs = (node, dirPath) => {
-    const encodedDir = encodeURIComponent(dirPath);
-    fetch(`/api/v1/dataset/${datasetId}/child-dir-nodes/?dir_path=${encodedDir}`, {
-      method: 'get',
-      headers: {
-        'Accept': 'application/json', // eslint-disable-line quote-props
-        'Content-Type': 'application/json',
-      },
-    }).then(response => (response.json()))
-      .then((childNodes) => {
+  useEffect(() => {
+    fetchBaseDirs(0);
+    if (hsmEnabled) {
+      fetchHSMDatasetData(datasetId).then((value) => {
+        if (value.online_files < value.total_files) {
+          setShowRecallDatasetButton(true);
+        }
+      });
+    }
+  }, [datasetId, modified]);
+  const onToggle = (node, toggled) => {
+    // toggled = !toggled;
+    // fetch children:
+    // console.log(`on toggle ${node.name}`);
+    if (toggled && node.children && node.children.length === 0) {
+      // show loading
+      node.loading = true;
+      FetchChildDirs(datasetId, node.path).then((childNodes) => {
         node.children = childNodes;
         node.toggled = true;
         if (node.selected) {
           let childCount = 0;
           node.children.forEach((childNode) => {
-            childNode.toggled = true;
-            onSelect(childNode);
-            childCount += 1;
+            // do not select offline nodes
+            if (node.is_online || node.children.length > 0) {
+              childNode.toggled = true;
+              onSelect(childNode);
+              childCount += 1;
+            }
           });
           setSelectedCount(selectedCount + childCount);
         }
         setData(Object.assign([], data));
-      });
-    //
-  };
-  useEffect(() => {
-    fetchBaseDirs('');
-  }, [datasetId, modified]);
-  const onToggle = (node, toggled) => {
-    // fetch children:
-    // console.log(`on toggle ${node.name}`);
-    if (toggled && node.children && node.children.length === 0) {
-      fetchChildDirs(node, node.path);
-      return;
+      }).then(() => { node.loading = false; setData(Object.assign([], data)); });
     }
     if (cursor) {
       cursor.active = false;
@@ -115,18 +154,25 @@ const TreeView = ({ datasetId, modified }) => {
     const filter = value.trim();
     if (!filter) {
       // set initial tree state:
-      fetchBaseDirs('');
+      fetchBaseDirs(0, true);
       // set count to 0
       setSelectedCount(0);
+    } else {
+      const filteredData = [];
+      // if last elem id load more button remove this
+      const lastElem = [...data].pop();
+      if (lastElem.next_page) {
+        data.pop();
+      }
+      data.forEach((item) => {
+        let filtered = filters.filterTree(item, filter);
+        filtered = filters.expandFilteredNodes(filtered, filter);
+        if (!(Object.keys(filtered).length === 0 && filtered.constructor === Object)) {
+          filteredData.push(filtered);
+        }
+      });
+      setData(filteredData);
     }
-    const filteredData = [];
-    data.forEach((item) => {
-      let filtered = filters.filterTree(item, filter);
-      filtered = filters.expandFilteredNodes(filtered, filter);
-      filteredData.push(filtered);
-    });
-
-    setData(filteredData);
   };
 
   const downloadSelected = (event) => {
@@ -194,6 +240,25 @@ const TreeView = ({ datasetId, modified }) => {
     });
     setSelectedCount(count);
   };
+  const recallDataset = (event) => {
+    event.preventDefault();
+    fetch(`/api/v1/hsm_dataset/${datasetId}/recall/`, {
+      method: 'get',
+      headers: {
+        'Accept': 'application/json', // eslint-disable-line quote-props
+        'Content-Type': 'application/json',
+      },
+    }).then((response) => {
+      if (response.ok) {
+        setRecallButtonText('Recall Requested');
+        setRecallToolTip('Recall request sent. You will receive an email'
+            + ' once this dataset is ready for download');
+        setRecallButtonStatus('none');
+      } else {
+        throw new Error('Something went wrong');
+      }
+    });
+  };
   return (
     <Fragment>
       <div>
@@ -209,6 +274,16 @@ const TreeView = ({ datasetId, modified }) => {
             onClick={toggleSelection}
             buttonText={isAllSelected ? 'Select None' : 'Select All'}
           />
+          {hsmEnabled && showRecallDatasetButton
+            ? (
+              <TreeRecallButton
+                buttonText={recallButtonText}
+                onClick={recallDataset}
+                disabled={recallButtonStatus}
+                recallTooltip={recallToolTip}
+              />
+            ) : ''
+          }
         </div>
       </div>
       <div style={styles}>
@@ -226,14 +301,27 @@ const TreeView = ({ datasetId, modified }) => {
         </div>
       </div>
       <div className="p-1" style={styles}>
-        <Treebeard
-          data={data}
-          style={styles}
-          onToggle={onToggle}
-          onSelect={onSelect}
-          decorators={{ ...decorators, Header, Container }}
-          animation={false}
-        />
+        { isLoading ? (
+          <Fragment>
+            <span style={{ opacity: 0.5 }}>
+              Rendering Tree View..
+              <Spinner />
+            </span>
+          </Fragment>
+        )
+          : (
+            <Treebeard
+              data={data}
+              style={styles}
+              onToggle={onToggle}
+              onSelect={onSelect}
+              decorators={{
+                ...decorators, Header, Container, Loading, hsmEnabled,
+              }}
+            />
+          )
+        }
+
       </div>
     </Fragment>
   );
@@ -242,10 +330,12 @@ const TreeView = ({ datasetId, modified }) => {
 TreeView.propTypes = {
   datasetId: PropTypes.string.isRequired,
   modified: PropTypes.string,
+  hsmEnabled: PropTypes.bool,
 };
 
 TreeView.defaultProps = {
   modified: '',
+  hsmEnabled: false,
 };
 
 export default TreeView;

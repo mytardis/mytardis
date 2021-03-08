@@ -167,9 +167,7 @@ class DataFileDocument(Document):
         queryset_pagination = 5000 # same as chunk_size
 
     def get_queryset(self):
-        return super(DataFileDocument, self).get_queryset().select_related(
-            'dataset'
-        )
+        return super().get_queryset().select_related('dataset')
 
     def get_instances_from_related(self, related_instance):
         if isinstance(related_instance, Dataset):

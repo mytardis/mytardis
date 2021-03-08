@@ -1,8 +1,8 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
 import { act } from '@testing-library/react';
 import { configure, mount } from 'enzyme';
 import Adapter from 'enzyme-adapter-react-16';
+import fetchMock from 'jest-fetch-mock';
 import TreeView from '../TreeView';
 
 
@@ -24,12 +24,20 @@ const fakeTreeData = [{
   name: 'Parent.txt',
   id: 11985776,
   verified: true,
+  is_online: true,
+  recall_url: null,
 },
 {
   name: 'STORM-6.jpg',
   id: 11985840,
   verified: false,
-}];
+  is_online: false,
+  recall_url: '/api/v1/hsm_replica/1234/recall/',
+},
+{
+  next_page: false,
+},
+];
 const fakeChildData = [
   {
     name: 'child_1',
@@ -45,45 +53,68 @@ const fakeChildData = [
     name: 'Child_1.txt',
     id: 11985763,
     verified: true,
+    is_online: true,
+    recall_url: null,
   },
   {
     name: 'Child_2.txt',
     id: 11985764,
     verified: true,
+    is_online: true,
+    recall_url: null,
   }];
 
-let container = null;
-let component = null;
-beforeEach(async () => {
-  jest.spyOn(global, 'fetch').mockImplementation(() => Promise.resolve({
-    json: () => Promise.resolve(fakeTreeData),
-  }));
-  container = document.createElement('div');
-  document.body.appendChild(container);
-  await act(async () => {
-    component = mount(<TreeView datasetId="1234" modified="" />, { attachTo: container });
-  });
-  component.update();
-});
-afterEach(() => {
-  // cleanup on exiting
-  container.remove();
-  container = null;
-  component.unmount();
-  component.detach();
-});
 
-describe('renders initial tree view on page load', () => {
-  it('should render folder tree correctly', async () => {
+describe('should match snapshot', () => {
+  let container = null;
+  let component = null;
+  beforeEach(async () => {
+    jest.restoreAllMocks();
+    fetch.resetMocks();
+    fetchMock.mockResponseOnce(() => Promise.resolve(JSON.stringify(fakeTreeData)));
+    container = document.createElement('div');
+    document.body.appendChild(container);
     await act(async () => {
-      ReactDOM.render(<TreeView datasetId="1234" modified="" />, container);
+      component = mount(<TreeView datasetId="1234" modified="" />, { attachTo: container });
     });
+    component.update();
+  });
+  afterEach(() => {
+  // cleanup on exiting
+    container.remove();
+    container = null;
+    component.unmount();
+    component.detach();
+    jest.restoreAllMocks();
+    fetch.resetMocks();
+  });
+  it('should render folder tree correctly', async () => {
     expect(container).toMatchSnapshot();
   });
-  it('should render tree view with four child nodes', async () => {
+});
+describe(' should render tree correctly', () => {
+  let container = null;
+  let component = null;
+  beforeEach(async () => {
+    jest.restoreAllMocks();
+    fetchMock.mockClear();
+    fetchMock.mockResponseOnce(() => Promise.resolve(JSON.stringify(fakeTreeData)));
+    container = document.createElement('div');
+    document.body.appendChild(container);
     await act(async () => {
-      ReactDOM.render(<TreeView datasetId="1234" modified="" />, container);
+      component = mount(<TreeView datasetId="1234" modified="" />, { attachTo: container });
     });
+    component.update();
+  });
+  afterEach(() => {
+  // cleanup on exiting
+    container.remove();
+    container = null;
+    component.unmount();
+    component.detach();
+    jest.restoreAllMocks();
+  });
+  it('should render tree view with four child nodes', async () => {
     expect(container.querySelector('ul').children.length).toEqual(4);
     expect(container.querySelector('ul').children[0].textContent).toEqual('parent_1');
     expect(container.querySelector('ul').children[1].textContent).toEqual('parent_2');
@@ -91,17 +122,22 @@ describe('renders initial tree view on page load', () => {
     expect(container.querySelector('ul').children[3].textContent).toEqual('STORM-6.jpg(unverified)');
   });
 });
-
 describe('test filter, select and toggle node', () => {
-  afterAll(() => {
-    component.unmount();
-    component.detach();
+  let container = null;
+  let component = null;
+  beforeEach(async () => {
+    jest.restoreAllMocks();
+    fetchMock.mockClear();
+    fetchMock.mockResponseOnce(() => Promise.resolve(JSON.stringify(fakeTreeData)));
+    container = document.createElement('div');
+    document.body.appendChild(container);
+    await act(async () => {
+      component = mount(<TreeView datasetId="1234" modified="" />, { attachTo: container });
+    });
     component.update();
   });
   it('should render child nodes when clicked on parent', async () => {
-    jest.spyOn(global, 'fetch').mockImplementation(() => Promise.resolve({
-      json: () => Promise.resolve(fakeChildData),
-    }));
+    fetchMock.mockResponseOnce(() => Promise.resolve(JSON.stringify(fakeChildData)));
     // select folder before toggle
     await act(async () => {
       const checkBox = component.find({ type: 'checkbox' }).first();
@@ -130,20 +166,22 @@ describe('test filter, select and toggle node', () => {
     expect(component.find('Header').get(0).props.iconClass).toEqual('folder');
   });
   it('should filter tree node on search text change', async () => {
+    fetchMock.mockResponseOnce(() => Promise.resolve(JSON.stringify(fakeChildData)));
+    await act(async () => {
+      component.find('NodeHeader').first().simulate('click');
+    });
     await act(async () => {
       const searchField = component.find('input.form-control');
       searchField.simulate('keyUp', { target: { name: 'search-input', value: '2' } });
       // searchField.simulate('keyUp', { keyCode: 50 });
       setImmediate(() => {
         component.update();
-        expect(component.find('NodeHeader')).toHaveLength(6);
+        expect(component.find('NodeHeader')).toHaveLength(4);
       });
     });
   });
   it('should reload the tree if search text is empty', async () => {
-    jest.spyOn(global, 'fetch').mockImplementation(() => Promise.resolve({
-      json: () => Promise.resolve(fakeTreeData),
-    }));
+    fetchMock.mockResponseOnce(() => Promise.resolve(JSON.stringify(fakeTreeData)));
     await act(async () => {
       const searchField = component.find('input.form-control');
       searchField.simulate('keyUp', { target: { name: 'search-input', value: '' } });
@@ -155,9 +193,10 @@ describe('test filter, select and toggle node', () => {
       });
     });
   });
-  it('should deselect a node', async () => {
+  it('should deselect a selected node', async () => {
+    const checkBox = component.find({ type: 'checkbox' }).first();
+    checkBox.simulate('click');
     await act(async () => {
-      const checkBox = component.find({ type: 'checkbox' }).first();
       checkBox.simulate('click');
     });
     component.update();
@@ -172,9 +211,7 @@ describe('test filter, select and toggle node', () => {
     });
     component.update();
     expect(component.find('Header').get(0).props.node.selected).toBeTruthy();
-    jest.spyOn(global, 'fetch').mockImplementation(() => Promise.resolve({
-      json: () => Promise.resolve(fakeChildData),
-    }));
+    fetchMock.mockResponseOnce(() => Promise.resolve(JSON.stringify(fakeChildData)));
     await act(async () => {
       component.find('Container').first().simulate('click');
     });
@@ -186,27 +223,17 @@ describe('test filter, select and toggle node', () => {
     component.update();
     expect(component.find('TreeDownloadButton').get(0).props.count).toEqual(5);
   });
-  it('should deselect folder nodes', async () => {
-    expect(component.find('Header').get(1).props.node.selected).toBeTruthy();
-    await act(async () => {
-      const checkBox = component.find({ type: 'checkbox' }).at(1);
-      checkBox.simulate('click');
-    });
-    component.update();
-    expect(component.find('NodeHeader')).toHaveLength(8);
-    expect(component.find('Header').get(1).props.node.selected).toBeFalsy();
-  });
-  it('should select  a folder nodes', async () => {
-    expect(component.find('Header').get(1).props.node.selected).toBeFalsy();
-    await act(async () => {
-      const checkBox = component.find({ type: 'checkbox' }).at(1);
-      checkBox.simulate('click');
-    });
-    component.update();
-    expect(component.find('NodeHeader')).toHaveLength(8);
-    expect(component.find('Header').get(1).props.node.selected).toBeTruthy();
-  });
   it('should deselect all child nodes, if parent node is deselected', async () => {
+    fetchMock.mockResponseOnce(() => Promise.resolve(JSON.stringify(fakeChildData)));
+    await act(async () => {
+      component.find('Container').first().simulate('click');
+    });
+    component.update();
+    await act(async () => {
+      const checkBox = component.find({ type: 'checkbox' }).first();
+      checkBox.simulate('click');
+    });
+    component.update();
     await act(async () => {
       const checkBox = component.find({ type: 'checkbox' }).first();
       checkBox.simulate('click');
@@ -217,6 +244,11 @@ describe('test filter, select and toggle node', () => {
     expect(component.find('Header').get(2).props.node.selected).toBeFalsy();
   });
   it('should select child node with no children', async () => {
+    fetchMock.mockResponseOnce(() => Promise.resolve(JSON.stringify(fakeChildData)));
+    await act(async () => {
+      component.find('Container').first().simulate('click');
+    });
+    component.update();
     await act(async () => {
       const checkBox = component.find({ type: 'checkbox' }).at(6);
       checkBox.simulate('click');
@@ -224,16 +256,6 @@ describe('test filter, select and toggle node', () => {
     component.update();
     expect(component.find('NodeHeader')).toHaveLength(8);
     expect(component.find('Header').get(6).props.node.selected).toBeTruthy();
-  });
-  it('should deselect child node with no children', async () => {
-    expect(component.find('Header').get(6).props.node.selected).toBeTruthy();
-    await act(async () => {
-      const checkBox = component.find({ type: 'checkbox' }).at(6);
-      checkBox.simulate('click');
-    });
-    component.update();
-    expect(component.find('NodeHeader')).toHaveLength(8);
-    expect(component.find('Header').get(6).props.node.selected).toBeFalsy();
   });
   it('should select all nodes when select All button is clicked', async () => {
     // find select all button
@@ -259,15 +281,23 @@ describe('test filter, select and toggle node', () => {
 });
 
 describe('test download selected files', () => {
+  let container = null;
+  let component = null;
+  beforeEach(async () => {
+    jest.restoreAllMocks();
+    fetchMock.mockClear();
+    fetchMock.mockResponseOnce(() => Promise.resolve(JSON.stringify(fakeTreeData)));
+    container = document.createElement('div');
+    document.body.appendChild(container);
+    await act(async () => {
+      component = mount(<TreeView datasetId="1234" modified="" />, { attachTo: container });
+    });
+    component.update();
+  });
   it('should download selected files', async () => {
     // select 2 files at root of the tree
     await act(async () => {
-      const checkBox = component.find({ type: 'checkbox' }).at(3);
-      checkBox.simulate('click');
-    });
-    component.update();
-    await act(async () => {
-      const checkBox = component.find({ type: 'checkbox' }).at(6);
+      const checkBox = component.find({ type: 'checkbox' }).at(2);
       checkBox.simulate('click');
     });
     component.update();
@@ -288,21 +318,31 @@ describe('test download selected files', () => {
       downloadButton.simulate('click');
     });
     component.update();
-    expect(fetch.mock.calls.length).toEqual(20);
-    expect(fetch.mock.calls[19][1].body.get('comptype')).toEqual('tar');
-    expect(fetch.mock.calls[19][1].body.get('organization')).toEqual('deep-storage');
-    expect(fetch.mock.calls[19][1].body.getAll('datafile')).toEqual(['11985763', '11985776']);
+    expect(fetch.mock.calls.length).toEqual(2);
+    expect(fetch.mock.calls[1][1].body.get('comptype')).toEqual('tar');
+    expect(fetch.mock.calls[1][1].body.get('organization')).toEqual('deep-storage');
+    expect(fetch.mock.calls[1][1].body.getAll('datafile')).toEqual(['11985776']);
   });
   it('should download all files within a selected folder', async () => {
     // select Parent_1/child_1 folder
+    fetchMock.mockResponseOnce(() => Promise.resolve(JSON.stringify(fakeChildData)));
     await act(async () => {
-      const checkBox = component.find({ type: 'checkbox' }).at(1);
+      const checkBox = component.find({ type: 'checkbox' }).first();
       checkBox.simulate('click');
+      setImmediate(() => {
+        component.update();
+        expect(component.find('Header').get(0).props.node.selected).toBeTruthy();
+      });
+    });
+    // toggle folder to load child component
+    // toggle folder open
+    await act(async () => {
+      component.find('NodeHeader').first().simulate('click');
     });
     component.update();
     // eslint-disable-next-line global-require
     const utils = require('../Utils');
-    utils.FetchFilesInDir = jest.fn(() => [11985777]);
+    utils.FetchFilesInDir = jest.fn(() => []);
     fetch.mockResponseOnce('[\'a\', \'b\', \'c\', \'d\']', {
       status: 200,
       headers: {
@@ -319,13 +359,13 @@ describe('test download selected files', () => {
       downloadButton.simulate('click');
     });
     component.update();
-    expect(fetch.mock.calls.length).toEqual(22);
+    expect(fetch.mock.calls.length).toEqual(3);
     // expect download datafile endpoint is called
-    expect(fetch.mock.calls["21"][0]).toEqual('/download/datafiles/');
+    expect(fetch.mock.calls['2'][0]).toEqual('/download/datafiles/');
     // expect methos to be POST
-    expect(fetch.mock.calls["21"][1].method).toEqual('POST');
+    expect(fetch.mock.calls['2'][1].method).toEqual('POST');
     // expect form data to include 3 datafile
-    expect(fetch.mock.calls['21']['1'].body.getAll('datafile')).toEqual(['11985763', '11985776', '11985777']);
+    expect(fetch.mock.calls['2']['1'].body.getAll('datafile')).toEqual(['11985763', '11985764']);
   });
   it('should call api to get files in subdir', () => {
     jest.clearAllMocks().resetModules();

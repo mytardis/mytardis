@@ -8,7 +8,7 @@ jobs:
     runs-on: [ubuntu-18.04]
     strategy:
       matrix:
-        python-version: [ '3.5', '3.6', '3.7', '3.8' ]
+        python-version: [ '3.6', '3.7', '3.8' ]
     name: Python ${{ matrix.python-version }}
     steps:
     - uses: actions/checkout@v2
@@ -33,4 +33,4 @@ jobs:
         python test.py
     - name: run pylint
       run: |
-        pylint --rcfile .pylintrc tardis
+        pylint --rcfile .pylintrc --django-settings-module=tardis.test_settings tardis
