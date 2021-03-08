@@ -139,6 +139,7 @@ module.exports = {
         alias: {
             "jquery": __dirname + "/node_modules/jquery",
             "main": __dirname + "/assets/js/tardis_portal/main",
+            "jquery-ui/widget": "blueimp-file-upload/js/vendor/jquery.ui.widget.js"
         },
     }
 };

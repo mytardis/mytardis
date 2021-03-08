@@ -4,9 +4,9 @@ import React from "react";
 import ReactDOM from "react-dom";
 import TreeView from "../../apps/tree_view/components/TreeView";
 
-require("imports-loader?define=>false&exports=>false!blueimp-file-upload/js/vendor/jquery.ui.widget");
-require("imports-loader?define=>false&exports=>false!blueimp-file-upload/js/jquery.fileupload");
-require("imports-loader?define=>false&exports=>false!blueimp-file-upload/js/jquery.iframe-transport");
+import "blueimp-file-upload/js/vendor/jquery.ui.widget.js";
+import "blueimp-file-upload/js/jquery.iframe-transport.js";
+import "blueimp-file-upload/js/jquery.fileupload.js";
 
 $(function() {
     $("#dropzone").hide();
