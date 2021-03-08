@@ -14,6 +14,7 @@ const Container = ({
         style={style.header}
         iconClass={iconClass}
         onSelect={onSelect}
+        hsmEnabled={decorators.hsmEnabled}
       />
     </div>
   );

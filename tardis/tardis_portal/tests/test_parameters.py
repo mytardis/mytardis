@@ -4,6 +4,9 @@ test_parameters.py
 
 .. moduleauthor::  James Wettenhall <james.wettenhall@monash.edu>
 """
+import pytz
+
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.test import TestCase
 from django.utils import timezone
@@ -139,7 +142,9 @@ class ParametersTestCase(TestCase):
         exp_datetime_param = ExperimentParameter.objects.create(
             parameterset=exp_parameterset,
             name=self.pnames[ParameterName.DATETIME], datetime_value=now)
-        self.assertEqual(exp_datetime_param.get(), str(now))
+        local_tz = pytz.timezone(settings.TIME_ZONE)
+        now_str = now.astimezone(tz=local_tz).strftime("%c")
+        self.assertEqual(exp_datetime_param.get(), now_str)
 
         # LONGSTRING
         exp_longstring_param = ExperimentParameter.objects.create(

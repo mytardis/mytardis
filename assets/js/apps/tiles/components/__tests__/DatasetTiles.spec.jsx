@@ -55,6 +55,10 @@ const fakeExpPermissions = {
   write_permissions: true,
   is_publication: false,
 };
+const fakeHSMData = {
+  online_files: 4,
+  total_files: 4,
+};
 
 global.fetch = require('jest-fetch-mock');
 
@@ -75,6 +79,9 @@ beforeEach(async () => {
     }
     if (request.url.endsWith('/get_experiment_permissions')) {
       return Promise.resolve(JSON.stringify(fakeExpPermissions));
+    }
+    if (request.url.includes('hsm_dataset')) {
+      return Promise.resolve(JSON.stringify(fakeHSMData));
     }
     return {
       status: 404,
