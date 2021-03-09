@@ -12,7 +12,7 @@
     "@babel/preset-env": "^7.11.0",
     "@babel/preset-react": "^7.10.4",
     "@emotion/core": "^10.0.27",
-    "@testing-library/react": "11.0.4",
+    "@testing-library/react": "11.2.5",
     "angular": "1.8.0",
     "angular-resource": "1.8.0",
     "babel-loader": "^8.0.6",
