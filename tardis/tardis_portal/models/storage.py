@@ -7,7 +7,6 @@ import random
 from django.conf import settings
 from django.db import models
 from django.db.utils import DatabaseError
-from django.utils.encoding import python_2_unicode_compatible
 import django.core.files.storage as django_storage
 
 #from celery.contrib.methods import task
@@ -16,7 +15,6 @@ import django.core.files.storage as django_storage
 logger = logging.getLogger(__name__)
 
 
-@python_2_unicode_compatible
 class StorageBox(models.Model):
     '''
     table that holds storage boxes of any type.
@@ -214,7 +212,6 @@ class StorageBox(models.Model):
         return s_box
 
 
-@python_2_unicode_compatible
 class StorageBoxOption(models.Model):
     '''
     holds the options passed to the storage class defined in StorageBox.
@@ -260,7 +257,6 @@ class StorageBoxOption(models.Model):
             self.value = base64.b64encode(pickle.dumps(input_value)).decode()
 
 
-@python_2_unicode_compatible
 class StorageBoxAttribute(models.Model):
     '''
     Can hold attributes/metadata about different storage locations.

@@ -5,7 +5,6 @@ from django.conf import settings
 from django.urls import reverse
 from django.db import models
 from django.utils import timezone
-from django.utils.encoding import python_2_unicode_compatible
 
 from ..managers import OracleSafeManager
 from .storage import StorageBox
@@ -16,7 +15,6 @@ from .instrument import Instrument
 logger = logging.getLogger(__name__)
 
 
-@python_2_unicode_compatible
 class Dataset(models.Model):
     """A dataset represents a collection files usually associated
     with a folder on an instrument PC.  Each file within the dataset is
