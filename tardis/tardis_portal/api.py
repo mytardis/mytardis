@@ -740,7 +740,6 @@ class DatasetResource(MyTardisModelResource):
         del kwargs["pk"]
 
         file_path = kwargs.get("file_path", None)
-        del kwargs["file_path"]
 
         if not has_dataset_access(request=request, dataset_id=dataset_id):
             return HttpResponseForbidden()
@@ -748,6 +747,7 @@ class DatasetResource(MyTardisModelResource):
         kwargs["dataset__id"] = dataset_id
 
         if file_path is not None:
+            del kwargs["file_path"]
             kwargs["directory__startswith"] = file_path
 
         return DataFileResource().dispatch("list", request, **kwargs)

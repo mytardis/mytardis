@@ -20,7 +20,6 @@ from django.db.models.signals import pre_delete
 from django.dispatch import receiver
 from django.forms.models import model_to_dict
 from django.utils import timezone
-from django.utils.encoding import python_2_unicode_compatible
 from django.utils.functional import cached_property
 
 import magic
@@ -36,7 +35,6 @@ IMAGE_FILTER = (Q(mimetype__startswith='image/') &
     (Q(datafileparameterset__datafileparameter__name__units__startswith="image"))  # noqa
 
 
-@python_2_unicode_compatible
 class DataFile(models.Model):
     """A ``DataFile`` is a record of a file which includes its filename,
     its size in bytes, its relative directory, and various other meta-data.
@@ -475,7 +473,6 @@ class DataFile(models.Model):
         return all(dfos)
 
 
-@python_2_unicode_compatible
 class DataFileObject(models.Model):
     """The physical copy (or copies) of a
     :class:`~tardis.tardis_portal.models.datafile.DataFile`
