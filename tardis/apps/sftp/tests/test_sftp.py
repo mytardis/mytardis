@@ -14,7 +14,6 @@ from django.test import RequestFactory
 from django.test import TestCase
 
 from paramiko.common import AUTH_SUCCESSFUL, AUTH_FAILED
-from paramiko.ssh_exception import SSHException
 from paramiko.rsakey import RSAKey
 from paramiko.py3compat import StringIO
 
@@ -230,12 +229,16 @@ QKHf8Ha+rOx3B7Dbljc+Xdpcn9VyRmDlSqzX9aCkr18mNg==
 class SFTPDManagementTestCase(TestCase):
 
     def testSFTPDWithoutHostKey(self):
-        '''
+        """
         Attempting to start the SFTPD service without a host key
         should raise an SSHException
-        '''
+        """
         saved_setting = settings.SFTP_HOST_KEY
-        settings.SFTP_HOST_KEY = ''
-        with self.assertRaises(SSHException):
-            call_command('sftpd')
+        settings.SFTP_HOST_KEY = ""
+        with self.assertLogs("tardis.apps.sftp", level="ERROR") as logs:
+            call_command("sftpd")
+            self.assertEqual(logs.output, [
+                "ERROR:tardis.apps.sftp.management.commands.sftpd:" +
+                "Can't start SFTP server: failed loading SFTP host key"
+            ])
         settings.SFTP_HOST_KEY = saved_setting
