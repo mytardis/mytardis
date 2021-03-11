@@ -154,6 +154,15 @@ MyTardis can now be executed in its simplest form using::
 This will start the Django web server at http://localhost:8000/.
 
 
+Running in a Docker Container
+-----------------------------
+
+Installation steps from above can be summarised as a following Dockerfile:
+
+.. literalinclude:: ../../Dockerfile
+   :language: text
+
+
 Extended configuration
 ----------------------
 
