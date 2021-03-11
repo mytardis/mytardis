@@ -157,11 +157,26 @@ This will start the Django web server at http://localhost:8000/.
 Running in a Docker Container
 -----------------------------
 
-Installation steps from above can be summarised as a following Dockerfile:
+Installation steps from above can be summarised as a following `Dockerfile`:
 
 .. literalinclude:: ../../Dockerfile
    :language: text
 
+**This is a minimum configuration for MyTardis, which is not suitable for running
+in production.**
+
+To build and run Docker container locally you will need to run following commands::
+
+  docker build . --tag mytardis
+  docker run --name mytardis -p 8000:8000 mytardis
+
+Alternatively you can use pre-built Docker image from DockerHub::
+
+  docker run --name mytardis -p 8000:8000 mytardis/mytardis:develop
+
+If you are keep in MyTardis development, we recommended you to
+visit https://github.com/mytardis/mytardis-dev for a full stack
+development environment, which runs using Docker.
 
 Extended configuration
 ----------------------
