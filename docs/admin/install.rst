@@ -62,20 +62,22 @@ Then create the ``mytardis`` virtual environment::
 
   mkvirtualenv mytardis
 
+Note: the next time you want to work with this virtualenv, run the appropriate
+``source`` command and then use the command: ``workon mytardis``
+
 Make sure you are running Python 3.x::
 
   $ python -V
   Python 3.6.9
 
-  $ pip -V
-  pip 21.0.1 from /home/ubuntu/mytardis/mytardis/lib/python3.6/site-packages/pip (python 3.6)
-
 Now upgrade pip and setup tools::
 
   pip install -U pip setuptools
 
-Note: the next time you want to work with this virtualenv, run the appropriate
-``source`` command and then use the command: ``workon mytardis``
+Check pip version::
+
+  $ pip -V
+  pip 21.0.1 from /home/ubuntu/mytardis/mytardis/lib/python3.6/site-packages/pip (python 3.6)
 
 MyTardis dependencies are then installed with pip::
 
@@ -88,6 +90,10 @@ To install minimal Javascript dependencies for production::
 To install Javascript dependencies for production and for testing::
 
   npm install && npm test
+
+To compile Webpack assets::
+
+  npm run-script build
 
 Configuring MyTardis is done through a standard Django *settings.py*
 file. MyTardis comes with a set of default settings in its
