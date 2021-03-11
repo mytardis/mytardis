@@ -3,7 +3,7 @@ Installation
 ============
 
 The sections through to Extended Configuration below provide a Quick Start
-guide for getting a basic MyTardis installation up and running.  The following
+guide for getting a basic MyTardis installation up and running. The following
 section provides additional information on advanced configuration and add-on
 capabilities of MyTardis.
 
@@ -13,6 +13,8 @@ Prerequisites
 
 Ubuntu (18.04 LTS is recommended)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Login as ``ubuntu`` user, not root.
 
 Run this script for Python 3::
 
@@ -56,10 +58,21 @@ For Ubuntu 18.04 with Python 3 (using pip3 installed virtualenvwrapper)::
 
   source /usr/local/bin/virtualenvwrapper.sh
 
-Then create the ``mytardis`` virtual environment ::
+Then create the ``mytardis`` virtual environment::
 
   mkvirtualenv mytardis
-  pip install -U pip
+
+Make sure you are running Python 3.x::
+
+  $ python -V
+  Python 3.6.9
+
+  $ pip -V
+  pip 21.0.1 from /home/ubuntu/mytardis/mytardis/lib/python3.6/site-packages/pip (python 3.6)
+
+Now upgrade pip and setup tools::
+
+  pip install -U pip setuptools
 
 Note: the next time you want to work with this virtualenv, run the appropriate
 ``source`` command and then use the command: ``workon mytardis``
@@ -551,7 +564,7 @@ combined with NGINX).  Gunicorn is typically run from a Systemd service
     [Unit]
     Description=gunicorn daemon
     After=network.target
-    
+
     [Service]
     User=mytardis
     Group=mytardis
@@ -561,7 +574,7 @@ combined with NGINX).  Gunicorn is typically run from a Systemd service
       -b 127.0.0.1:8000 \
       --log-syslog \
       wsgi:application
-    
+
     [Install]
     WantedBy=multi-user.target
 
@@ -630,7 +643,7 @@ For tasks scheduled by Celerybeat, the Systemd service configuration
     [Unit]
     Description=celerybeat daemon
     After=network.target
-    
+
     [Service]
     User=mytardis
     Group=mytardis
@@ -638,7 +651,7 @@ For tasks scheduled by Celerybeat, the Systemd service configuration
     Environment=DJANGO_SETTINGS_MODULE=tardis.settings
     ExecStart=/home/mytardis/.virtualenvs/mytardis/bin/celery beat \
       -A tardis.celery.tardis_app --loglevel INFO
-    
+
     [Install]
     WantedBy=multi-user.target
 
