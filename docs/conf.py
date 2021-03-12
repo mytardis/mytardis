@@ -36,7 +36,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'MyTardis'
-copyright = '2019, MyTardis Development Team'
+copyright = '2021, MyTardis Development Team'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
