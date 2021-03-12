@@ -217,12 +217,11 @@ $(document).ready(function() {
     }
     function getlistHTML(pageNumber) {
         $.getJSON(
-            "/ajax/datafile_list/" + $("#dataset-id").val() +  "?page=" +  pageNumber + "&format=json",
+            "/ajax/datafile_list/" + $("#dataset-id").val() + "?page=" + pageNumber + "&format=json",
             function(data) {
                 $.each(data.datafiles, function(datafileIndex, datafile) {
 
                     var checkboxHtml = getCheckboxHtml(datafile, data.has_download_permissions);
-                    console.log($("#datafile-checkbox-" + datafile.id).html());
                     $("#datafile-checkbox-" + datafile.id).html(checkboxHtml);
 
                     var annotatedFilenameHtml = getAnnotatedFilenameHtml(datafile, data.has_download_permissions);
@@ -269,7 +268,7 @@ $(document).ready(function() {
     }
     getlistHTML(0);
     $(document).on("click", "ul.pagination li a", function(event) {
-        event.preventDefault()
-        getlistHTML(this.href.split('=')[1])
+        event.preventDefault();
+        getlistHTML(this.href.split("=")[1]);
     });
 });
