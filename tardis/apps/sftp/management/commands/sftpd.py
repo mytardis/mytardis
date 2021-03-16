@@ -29,6 +29,10 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
-        host = options.get('host', None)
-        port = options.get('port', 2200)
-        sftp.start_server(host=host, port=port)
+        try:
+            sftp.start_server(
+                host=options.get("host", None),
+                port=options.get("port", 2200)
+            )
+        except Exception as err:
+            logger.error("Can't start SFTP server: %s" % err)
