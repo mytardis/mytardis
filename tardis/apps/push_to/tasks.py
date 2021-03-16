@@ -1,85 +1,199 @@
+import os
+from datetime import datetime, timedelta
+import pytz
+
 from django.conf import settings
 from django.contrib.auth.models import User
+from django.utils import timezone
 
 from tardis.tardis_portal.models import Experiment, Dataset, DataFile
 from tardis.celery import tardis_app
-from tardis.tardis_portal.util import split_path
 from tardis.tardis_portal.util import get_filesystem_safe_experiment_name
 from tardis.tardis_portal.util import get_filesystem_safe_dataset_name
 
-from .models import Credential, RemoteHost
+from .models import Credential, RemoteHost, Request, Progress
 
 
 @tardis_app.task
-def push_experiment_to_host(
-        user_id, credential_id, remote_host_id, experiment_id, base_dir=None
-):
-    try:
-        files_to_copy = []
-        experiment = Experiment.objects.get(pk=experiment_id)
-        experiment_name = get_filesystem_safe_experiment_name(experiment)
-        datasets = Dataset.objects.filter(experiments=experiment)
-        for ds in datasets:
-            datafiles = DataFile.objects.filter(dataset=ds)
-            dataset_description = get_filesystem_safe_dataset_name(ds)
-            path = [experiment_name, dataset_description]
-            for df in datafiles:
-                files_to_copy.append((path, df))
-
-        do_file_copy(credential_id, remote_host_id, files_to_copy, base_dir)
-        notify_user(user_id, remote_host_id, success=True)
-    except:
-        notify_user(user_id, remote_host_id, success=False)
-        raise
-
-
-@tardis_app.task
-def push_dataset_to_host(user_id, credential_id, remote_host_id, dataset_id,
-                         base_dir=None):
-    try:
-        files_to_copy = []
-        datasets = Dataset.objects.filter(pk=dataset_id)
-        for ds in datasets:
-            datafiles = DataFile.objects.filter(dataset=ds)
-            dataset_description = get_filesystem_safe_dataset_name(ds)
-            path = [dataset_description]
-            for df in datafiles:
-                files_to_copy.append((path, df))
-
-        do_file_copy(credential_id, remote_host_id, files_to_copy, base_dir)
-        notify_user(user_id, remote_host_id, success=True)
-    except:
-        notify_user(user_id, remote_host_id, success=False)
-        raise
+def requests_maintenance(**kwargs):
+    """
+    Maintenance actions to cleanup data
+    """
+    requests = Request.objects.all()
+    for req in requests:
+        total_files = Progress.objects.filter(request=req).count()
+        completed_files = Progress.objects.filter(request=req, status=1).count()
+        if completed_files == total_files:
+            # Successfully completed request
+            req.delete()
+        else:
+            tz = pytz.timezone(settings.TIME_ZONE)
+            wait_until = datetime.now(tz) - timedelta(hours=24*7)
+            if req.timestamp < wait_until:
+                # Delete any requests after one week
+                # This time should be sufficient to do any debugging
+                req.delete()
+            elif req.message is None:
+                files = Progress.objects.filter(request=req, status=0, retry__lt=10).count()
+                if files != 0:
+                    # Try process again if there are files with re-try attempts left
+                    process_request.apply_async(args=[req.id], countdown=60)
 
 
 @tardis_app.task
-def push_datafile_to_host(user_id, credential_id, remote_host_id, datafile_id,
-                          base_dir=None):
+def push_experiment_to_host(user_id, credential_id, remote_host_id,
+                            experiment_id, base_dir=None):
+    req = Request.objects.create(
+        user=User.objects.get(pk=user_id),
+        object_type="experiment",
+        object_id=experiment_id,
+        credential=Credential.objects.get(pk=credential_id),
+        host=RemoteHost.objects.get(pk=remote_host_id),
+        base_dir=base_dir)
+
+    datasets = Dataset.objects.filter(experiments=Experiment.objects.get(pk=experiment_id))
+    for ds in datasets:
+        datafiles = DataFile.objects.filter(dataset=ds)
+        for df in datafiles:
+            Progress.objects.create(request=req, datafile=df)
+
+    process_request.apply_async(args=[req.id])
+
+@tardis_app.task
+def push_dataset_to_host(user_id, credential_id, remote_host_id,
+                         dataset_id, base_dir=None):
+    req = Request.objects.create(
+        user=User.objects.get(pk=user_id),
+        object_type="dataset",
+        object_id=dataset_id,
+        credential=Credential.objects.get(pk=credential_id),
+        host=RemoteHost.objects.get(pk=remote_host_id),
+        base_dir=base_dir)
+
+    datafiles = DataFile.objects.filter(dataset=Dataset.objects.get(pk=dataset_id))
+    for df in datafiles:
+        Progress.objects.create(request=req, datafile=df)
+
+    process_request.apply_async(args=[req.id])
+
+
+@tardis_app.task
+def push_datafile_to_host(user_id, credential_id, remote_host_id,
+                          datafile_id, base_dir=None):
+    req = Request.objects.create(
+        user=User.objects.get(pk=user_id),
+        object_type="datafile",
+        object_id=datafile_id,
+        credential=Credential.objects.get(pk=credential_id),
+        host=RemoteHost.objects.get(pk=remote_host_id),
+        base_dir=base_dir)
+
+    Progress.objects.create(request=req, datafile=DataFile.objects.get(pk=datafile_id))
+
+    process_request.apply_async(args=[req.id])
+
+
+@tardis_app.task(ignore_result=True)
+def process_request(request_id, idle=0):
+    req = Request.objects.get(pk=request_id)
+    files = Progress.objects.filter(request=req, status=0, retry__lt=10)
+    no_errors = True
+
     try:
-        file_to_copy = [([], DataFile.objects.get(pk=datafile_id))]
-        do_file_copy(credential_id, remote_host_id, file_to_copy, base_dir)
-        notify_user(user_id, remote_host_id, success=True)
-    except:
-        notify_user(user_id, remote_host_id, success=False)
-        raise
+        ssh = req.credential.get_client_for_host(req.host)
+        # https://github.com/paramiko/paramiko/issues/175#issuecomment-24125451
+        transport = ssh.get_transport()
+        transport.default_window_size = 2147483647
+        transport.packetizer.REKEY_BYTES = pow(2, 40)
+        transport.packetizer.REKEY_PACKETS = pow(2, 40)
+        sftp = ssh.open_sftp()
+    except Exception as err:
+        # Authentication failed (expired?)
+        req.message = "Can't connect: %s" % str(err)
+        req.save()
+        return
 
+    remote_base_dir = []
+    if req.base_dir is not None:
+        remote_base_dir.append(req.base_dir)
 
-def notify_user(user_id, remote_host_id, success=True):
-    remote_host = RemoteHost.objects.get(pk=remote_host_id)
-    user = User.objects.get(pk=user_id)
-    if success:
-        subject = '[TARDIS] Data pushed successfully'
-        message = ('Your recent push-to request was completed successfully!\n'
-                   'Log in to %s to access the requested data.')
+    remote_base_dir.append("mytardis-{}".format(req.id))
+
+    if req.object_type == "experiment":
+        experiment = Experiment.objects.get(pk=req.object_id)
+        remote_base_dir.append(get_filesystem_safe_experiment_name(experiment))
+
+    make_dirs(sftp, remote_base_dir)
+
+    for file in files:
+        file.timestamp = timezone.now()
+        src_file = file.datafile.get_absolute_filepath()
+        if src_file is not None and os.path.exists(src_file):
+            try:
+                path = [get_filesystem_safe_dataset_name(file.datafile.dataset)]
+                if file.datafile.directory is not None:
+                    path += file.datafile.directory.split('/')
+                path = remote_base_dir + path
+                make_dirs(sftp, path)
+                path_str = "/".join(path + [file.datafile.filename])
+                sftp.putfo(file.datafile.get_file(), path_str, file.datafile.size)
+                file.status = 1
+            except Exception as e:
+                no_errors = False
+                file.retry += 1
+                file.message = str(e)
+        else:
+            no_errors = False
+            file.retry += 1
+            file.message = "Can't find source file."
+        file.save()
+        if not no_errors and file.message is not None and (
+                "Socket is closed" in file.message or
+                "Server connection dropped" in file.message):
+            break
+
+    sftp.close()
+    ssh.close()
+
+    if no_errors:
+        complete_request(req.id)
     else:
-        subject = '[TARDIS] Data push failed'
-        message = ('Your recent push-to request to %s encountered an error and'
-                   ' could not be completed.\n'
-                   'Contact your system administrator for more information.')
-    message %= remote_host.nickname
-    user.email_user(subject, message,
-                    from_email=getattr(settings, 'PUSH_TO_FROM_EMAIL', None), fail_silently=True)
+        process_request.apply_async(args=[req.id, idle+1], countdown=(idle+1)*60)
+
+
+def complete_request(request_id):
+    req = Request.objects.get(pk=request_id)
+    total_files = Progress.objects.filter(request=req).count()
+    completed_files = Progress.objects.filter(request=req, status=1).count()
+
+    send_email = False
+
+    if completed_files == total_files:
+        send_email = True
+        subject = "Data pushed successfully"
+        message = "Your recent push-to request was completed successfully!\n" \
+                  "Log in to %s to access the requested data in %s folder." % (
+                    req.host.nickname,
+                    "mytardis-{}".format(req.id))
+    else:
+        files = Progress.objects.filter(request=req, status=0, retry__lt=10).count()
+        if files != 0:
+            process_request.apply_async(args=[req.id], countdown=600)
+        else:
+            send_email = True
+            subject = "Data push failed"
+            message = "Your recent push-to request %s to %s encountered an error and " \
+                      "could not be completed.\n" \
+                      "We have completed transfer for %s out of %s files.\n" \
+                      "Contact support for more information." % (
+                        req.id,
+                        req.host.nickname,
+                        completed_files, total_files)
+
+    if send_email:
+        req.user.email_user(subject, message,
+                            from_email=getattr(settings, "PUSH_TO_FROM_EMAIL", None),
+                            fail_silently=True)
 
 
 def make_dirs(sftp_client, dir_list):
@@ -96,42 +210,3 @@ def make_dirs(sftp_client, dir_list):
             sftp_client.stat(full_path)
         except IOError:  # Raised when the directory doesn't exist
             sftp_client.mkdir(full_path)
-
-
-def do_file_copy(credential_id, remote_host_id, datafile_map, base_dir=None):
-    if base_dir is None:
-        base_dir = ['mytardis-data']
-    elif isinstance(base_dir, str):
-        base_dir = split_path(base_dir) + ['mytardis-data']
-
-    credential = Credential.objects.get(pk=credential_id)
-    ssh = credential.get_client_for_host(
-        RemoteHost.objects.get(
-            pk=remote_host_id))
-    sftp_client = ssh.open_sftp()
-
-    def unique_base_path(base, increment=0):
-        base_copy = list(base)
-        try:
-            if increment > 0:
-                suffix = "_%i" % increment
-            else:
-                suffix = ""
-            base_copy[-1] += suffix
-            sftp_client.stat('/'.join(base_copy))
-            return unique_base_path(base, increment+1)
-        except IOError:
-            return base_copy
-
-    base_dir = unique_base_path(base_dir)
-
-    make_dirs(sftp_client, base_dir)
-
-    for (_path, datafile) in datafile_map:
-        path = list(_path)
-        if datafile.directory is not None:
-            path += datafile.directory.split('/')
-        path = base_dir + path
-        path_str = '/'.join(path + [datafile.filename])
-        make_dirs(sftp_client, path)
-        sftp_client.putfo(datafile.file_object, path_str, datafile.size)

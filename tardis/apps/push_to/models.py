@@ -8,10 +8,13 @@ from django.contrib import admin
 from django.contrib.auth.models import User, Group
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.utils import timezone
 
 from paramiko import RSAKey, SSHClient, MissingHostKeyPolicy, \
     AutoAddPolicy, PKey, DSSKey, ECDSAKey, PublicBlob
 from paramiko.config import SSH_PORT
+
+from tardis.tardis_portal.models import DataFile
 
 from .apps import PushToConfig
 from .exceptions import NoSuitableCredential
@@ -310,6 +313,32 @@ class Credential(KeyPair):
         return True
 
 
+class Request(models.Model):
+    """
+    PushTo request
+    """
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    timestamp = models.DateTimeField(null=False, default=timezone.now)
+    object_type = models.CharField(max_length=10, null=False)
+    object_id = models.PositiveIntegerField(null=False)
+    credential = models.ForeignKey(Credential, on_delete=models.CASCADE)
+    host = models.ForeignKey(RemoteHost, on_delete=models.CASCADE)
+    base_dir = models.CharField(max_length=100, null=True)
+    message = models.CharField(max_length=100, null=True)
+
+
+class Progress(models.Model):
+    """
+    Files copy progress
+    """
+    request = models.ForeignKey(Request, on_delete=models.CASCADE)
+    datafile = models.ForeignKey(DataFile, on_delete=models.CASCADE)
+    status = models.PositiveIntegerField(null=False, default=0)
+    message = models.CharField(max_length=100, null=True)
+    retry = models.PositiveIntegerField(null=False, default=0)
+    timestamp = models.DateTimeField(null=True)
+
+
 class RemoteHostAdmin(admin.ModelAdmin):
     """
     Hides the private key field, which is not necessary for host keys
@@ -322,7 +351,7 @@ class CredentialForm(forms.ModelForm):
     class Meta:
         fields = '__all__'
         model = Credential
-        widgets = {'password': forms.PasswordInput(),}
+        widgets = {'password': forms.PasswordInput()}
 
 
 class CredentialAdmin(admin.ModelAdmin):
