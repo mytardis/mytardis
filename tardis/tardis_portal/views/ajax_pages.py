@@ -301,6 +301,7 @@ def retrieve_datafile_list(
             'has_write_permissions': has_write_permissions
         })
 
+    query_string = '/ajax/datafile_list/' + dataset_id + '?page={page}'
     c = {
         'datafiles': dataset,
         'paginator': paginator,
@@ -312,6 +313,7 @@ def retrieve_datafile_list(
         'has_download_permissions': has_download_permissions,
         'has_write_permissions': has_write_permissions,
         'params': urlencode(params),
+        'query_string': query_string
     }
     _add_protocols_and_organizations(request, None, c)
     return render_response_index(request, template_name, c)
