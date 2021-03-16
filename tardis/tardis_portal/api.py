@@ -740,7 +740,6 @@ class DatasetResource(MyTardisModelResource):
         del kwargs["pk"]
 
         file_path = kwargs.get("file_path", None)
-        del kwargs["file_path"]
 
         if not has_dataset_access(request=request, dataset_id=dataset_id):
             return HttpResponseForbidden()
@@ -748,6 +747,7 @@ class DatasetResource(MyTardisModelResource):
         kwargs["dataset__id"] = dataset_id
 
         if file_path is not None:
+            del kwargs["file_path"]
             kwargs["directory__startswith"] = file_path
 
         return DataFileResource().dispatch("list", request, **kwargs)
@@ -817,6 +817,8 @@ class DatasetResource(MyTardisModelResource):
                 children['name'] = df.filename
                 children['verified'] = df.verified
                 children['id'] = df.id
+                children['is_online'] = df.is_online
+                children['recall_url'] = df.recall_url
                 child_list.append(children)
         if paginator.num_pages - 1 > page_num:
             # append a marker element
@@ -867,7 +869,8 @@ class DatasetResource(MyTardisModelResource):
         # if there are files append this
         if dfs:
             for df in dfs:
-                child = {'name': df.filename, 'id': df.id, 'verified': df.verified}
+                child = {'name': df.filename, 'id': df.id, 'verified': df.verified, 'is_online': df.is_online,
+                         'recall_url': df.recall_url}
                 child_list.append(child)
 
         return JsonResponse(child_list, status=200, safe=False)
@@ -977,6 +980,17 @@ class DataFileResource(MyTardisModelResource):
         if storage_class_name in download_uri_templates:
             template = URITemplate(download_uri_templates[storage_class_name])
             return redirect(template.expand(dfo_id=preferred_dfo.id))
+
+        if settings.PROXY_DOWNLOADS:
+            full_path = preferred_dfo.get_full_path()
+            for dir_prefix, url_prefix in settings.PROXY_DOWNLOAD_PREFIXES:
+                if full_path.startswith(dir_prefix):
+                    response = HttpResponse()
+                    response["Content-Disposition"] = \
+                        "attachment; filename={0}".format(file_record.filename)
+                    path = full_path.split(dir_prefix)[1]
+                    response['X-Accel-Redirect'] = "%s/%s" % (url_prefix, path)
+                    return response
 
         # Log file download event
         if getattr(settings, "ENABLE_EVENTLOG", False):
