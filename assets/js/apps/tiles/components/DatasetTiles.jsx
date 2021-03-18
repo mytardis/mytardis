@@ -2,7 +2,9 @@ import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import DatasetTile from './DatasetTile';
 
-const DatasetTiles = ({ data, listName, onDownloadSelect, hsmEnabled }) => {
+const DatasetTiles = ({
+  data, listName, onDownloadSelect, hsmEnabled,
+}) => {
   const onCheckboxSelected = (id, event) => {
     onDownloadSelect(id, event);
   };

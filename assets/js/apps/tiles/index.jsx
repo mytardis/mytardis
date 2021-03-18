@@ -8,5 +8,9 @@ const shareContainer = document.getElementById('experiment-tab-transfer-datasets
 const hsmEnabled = document.getElementById('hsm-enabled').value === 'True';
 
 ReactDOM.render(
-  <DatasetTilesLists shareContainer={shareContainer} experimentId={experimentId} hsmEnabled={hsmEnabled}/>, content,
+  <DatasetTilesLists
+    shareContainer={shareContainer}
+    experimentId={experimentId}
+    hsmEnabled={hsmEnabled}
+  />, content,
 );
