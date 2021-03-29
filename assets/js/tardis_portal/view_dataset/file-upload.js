@@ -8,11 +8,28 @@ require("imports-loader?define=>false&exports=>false!blueimp-file-upload/js/vend
 require("imports-loader?define=>false&exports=>false!blueimp-file-upload/js/jquery.fileupload");
 require("imports-loader?define=>false&exports=>false!blueimp-file-upload/js/jquery.iframe-transport");
 
+// https://docs.djangoproject.com/en/3.1/ref/csrf/
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
 $(function() {
     $("#dropzone").hide();
     $("#fileupload").fileupload({
         dataType: "json",
-        headers: {"X-CSRFToken": $("#csrf-token").val()},
+        headers: {"X-CSRFToken": getCookie('csrftoken')},
         done: function(e, data) {
             var reloadEvent = new Event("reload");
             $("#datafiles-pane")[0].dispatchEvent(reloadEvent);
