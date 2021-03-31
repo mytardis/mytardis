@@ -106,7 +106,7 @@ afterEach(() => {
 describe('render dataset tiles on page load', () => {
   it('should match snapshot', async () => {
     await act(async () => {
-      component = mount(<DatasetTilesLists experimentId="1234" shareContainer={shareContainer} />, { attachTo: mainContainer });
+      component = mount(<DatasetTilesLists experimentId="1234" shareContainer={shareContainer} hsmEnabled />, { attachTo: mainContainer });
     });
     component.update();
     expect(rootContainer).toMatchSnapshot();
