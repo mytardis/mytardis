@@ -5,4 +5,4 @@ from django.apps import AppConfig
 
 
 class S3UtilsConfig(AppConfig):
-    name = 's3utils'
+    name = 'tardis.apps.s3utils'
