@@ -15,7 +15,7 @@
     "@testing-library/react": "11.2.5",
     "angular": "1.8.0",
     "angular-resource": "1.8.2",
-    "babel-loader": "^8.0.6",
+    "babel-loader": "^8.2.2",
     "blueimp-file-upload": "^9.31.0",
     "bootstrap": "^4.5.2",
     "bootstrap-3-typeahead": "^4.0.2",
