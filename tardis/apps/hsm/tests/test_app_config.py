@@ -5,4 +5,4 @@ from ..apps import HsmConfig
 
 class HsmAppConfigTestCase(TestCase):
     def test_app_config(self):
-        self.assertEqual(HsmConfig.name, 'hsm')
+        self.assertEqual(HsmConfig.name, 'tardis.apps.hsm')
