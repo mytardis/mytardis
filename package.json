@@ -61,7 +61,7 @@
     "url-loader": "^4.1.0",
     "webpack": "^4.46.0",
     "webpack-bundle-tracker": "^0.4.3",
-    "webpack-cli": "^3.3.12"
+    "webpack-cli": "^4.6.0"
   },
   "devDependencies": {
     "babel-eslint": "^10.0.3",
