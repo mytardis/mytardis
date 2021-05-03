@@ -5,4 +5,4 @@ from django.apps import AppConfig
 
 
 class HsmConfig(AppConfig):
-    name = 'hsm'
+    name = 'tardis.apps.hsm'
