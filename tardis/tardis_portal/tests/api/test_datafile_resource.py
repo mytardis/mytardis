@@ -75,11 +75,11 @@ class DataFileResourceTest(MyTardisResourceTestCase):
             post_file.write(file_content)
             post_file.flush()
             post_file.seek(0)
-        datafile_count = DataFile.objects.count()
-        dfo_count = DataFileObject.objects.count()
-        self.assertHttpCreated(self.django_client.post(
-            '/api/v1/dataset_file/',
-            data={"json_data": post_data, "attached_file": post_file}))
+            datafile_count = DataFile.objects.count()
+            dfo_count = DataFileObject.objects.count()
+            self.assertHttpCreated(self.django_client.post(
+                '/api/v1/dataset_file/',
+                data={"json_data": post_data, "attached_file": post_file}))
         self.assertEqual(datafile_count + 1, DataFile.objects.count())
         self.assertEqual(dfo_count + 1, DataFileObject.objects.count())
         new_file = DataFile.objects.order_by('-pk')[0]
