@@ -114,12 +114,12 @@ included. It will move to newer versions automatically. Follow this branch
 if you want to stay up to date in a production environment.
 
 Each version has its own branch named by version number. At the time of
-writing, the latest release is ``4.2.0``, tagged from the ``series-4.2``
+writing, the latest release is ``4.5.0``, tagged from the ``series-4.5``
 branch. Follow this branch for your production installation and
 perform version upgrades manually.
 
 Each bug fix or set of fixes bumps the minor version and each new release is
-tagged, eg. ``4.2.1``. Use tagged releases if you are paranoid about changes to
+tagged, eg. ``4.5.1``. Use tagged releases if you are paranoid about changes to
 the code you have not tested yourself.
 
 To follow development, please see the contributing section below.
