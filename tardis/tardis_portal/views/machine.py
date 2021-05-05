@@ -62,12 +62,11 @@ def site_settings(request):
             if user is not None:
                 if user.is_staff:
 
-                    x509 = open(settings.GRID_PROXY_FILE, 'r')
-
-                    c = {
-                        'baseurl': request.build_absolute_uri('/'),
-                        'proxy': x509.read(), 'filestorepath':
-                        settings.FILE_STORE_PATH}
+                    with open(settings.GRID_PROXY_FILE, 'r') as x509:
+                        c = {
+                            'baseurl': request.build_absolute_uri('/'),
+                            'proxy': x509.read(), 'filestorepath':
+                            settings.FILE_STORE_PATH}
                     return render_response_index(
                         request,
                         'tardis_portal/site_settings.xml',
