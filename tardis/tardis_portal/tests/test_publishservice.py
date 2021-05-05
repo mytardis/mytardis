@@ -93,8 +93,8 @@ class PublishServiceTestCase(TestCase):
         rifcs_output_dir = os.path.join(settings.OAI_DOCS_PATH)
         rifcs_file = os.path.join(rifcs_output_dir, "MyTARDIS-1.xml")
         self.assertTrue(os.path.exists(rifcs_file))
-        output = open(rifcs_file)
-        lines = output.readlines()
+        with open(rifcs_file) as output:
+            lines = output.readlines()
         self.assertIn("experiment title: Experiment 1\n", lines)
         self.assertIn("experiment id: 1\n", lines)
         self.assertIn("experiment description: This is my description.\n", lines)

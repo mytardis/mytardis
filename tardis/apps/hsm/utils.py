@@ -49,10 +49,10 @@ def _stat_subprocess(path):
 
     format_option = '-f' if sys.platform == 'darwin' else '-c'
     format_string = '%z,%b' if sys.platform == 'darwin' else '%s,%b'
-    proc = subprocess.Popen(  # nosec - Bandit B603: subprocess_without_shell_equals_true
+    with subprocess.Popen(  # nosec - Bandit B603: subprocess_without_shell_equals_true
         ['/usr/bin/stat', format_option, format_string, path],
-        stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    stdout, _ = proc.communicate()
+        stdout=subprocess.PIPE, stderr=subprocess.STDOUT) as proc:
+        stdout, _ = proc.communicate()
 
     return tuple(int(stat) for stat in stdout.split(b','))
 
