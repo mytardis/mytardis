@@ -26,7 +26,7 @@
     "expose-loader": "^0.7.5",
     "file-loader": "^4.2.0",
     "file-saver": "^2.0.2",
-    "filesize": "^6.0.1",
+    "filesize": "^6.3.0",
     "font-awesome": "^4.7.0",
     "glob": "^7.1.4",
     "html-webpack-plugin": "^4.4.1",
