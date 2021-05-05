@@ -69,11 +69,11 @@ class UploadTestCase(TestCase):
 
         self.filename = 'testfile.txt'
 
-        self.file1 = open(path.join(self.test_dir, self.filename), 'w')
-        self.file1.write('Test file 1')
-        self.file1.close()
+        with open(path.join(self.test_dir, self.filename), 'w') as self.file1:
+            self.file1.write('Test file 1')
+            self.file1.close()
 
-        self.file1 = open(path.join(self.test_dir, self.filename), 'r')
+        self.file1 = open(path.join(self.test_dir, self.filename), 'r')  # pylint: disable=consider-using-with
 
     def tearDown(self):
         from shutil import rmtree
