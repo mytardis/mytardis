@@ -72,22 +72,22 @@ class TarDownloadTestCase(TestCase):
             tarfile.flush()
             self.assertEqual(int(response['Content-Length']),
                              os.stat(tarfile.name).st_size)
-            tf = TarFile(tarfile.name)
-            if settings.EXP_SPACES_TO_UNDERSCORES:
-                exp_title = self.exp.title.replace(' ', '_')
-            else:
-                exp_title = self.exp.title
-            exp_title = quote(exp_title,
+            with TarFile(tarfile.name) as tf:
+                if settings.EXP_SPACES_TO_UNDERSCORES:
+                    exp_title = self.exp.title.replace(' ', '_')
+                else:
+                    exp_title = self.exp.title
+                exp_title = quote(exp_title,
                               safe=settings.SAFE_FILESYSTEM_CHARACTERS)
-            for df in self.dfs:
-                full_path = os.path.join(
-                    exp_title,
-                    quote(self.ds.description,
-                          safe=settings.SAFE_FILESYSTEM_CHARACTERS),
-                    df.directory, df.filename)
-                # docker has a file path limit of ~240 characters
-                if os.environ.get('DOCKER_BUILD', 'false') != 'true':
-                    tf.extract(full_path, '/tmp')
-                    self.assertEqual(
-                        os.stat(os.path.join('/tmp', full_path)).st_size,
-                        int(df.size))
+                for df in self.dfs:
+                    full_path = os.path.join(
+                        exp_title,
+                        quote(self.ds.description,
+                              safe=settings.SAFE_FILESYSTEM_CHARACTERS),
+                        df.directory, df.filename)
+                    # docker has a file path limit of ~240 characters
+                    if os.environ.get('DOCKER_BUILD', 'false') != 'true':
+                        tf.extract(full_path, '/tmp')
+                        self.assertEqual(
+                            os.stat(os.path.join('/tmp', full_path)).st_size,
+                            int(df.size))

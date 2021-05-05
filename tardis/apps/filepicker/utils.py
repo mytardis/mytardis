@@ -36,8 +36,8 @@ class FilepickerFile(object):
         if filename:
             name = filename
 
-        self.tempfile = open(self.filename, 'r')
-        return File(self.tempfile, name=name)
+        with open(self.filename, 'r') as self.tempfile:
+            return File(self.tempfile, name=name)
 
     def cleanup(self):
         '''
