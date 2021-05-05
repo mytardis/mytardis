@@ -127,15 +127,16 @@ class DataFileResourceTest(MyTardisResourceTestCase):
                  {'content': b'test246\n'}]
         from django.conf import settings
         for file_dict in files:
-            with tempfile.NamedTemporaryFile(
+            # pylint: disable=consider-using-with
+            post_file = tempfile.NamedTemporaryFile(
                 dir=settings.DEFAULT_STORAGE_BASE_DIR
-            ) as post_file:
-                file_dict['filename'] = os.path.basename(post_file.name)
-                file_dict['full_path'] = post_file.name
-                post_file.write(file_dict['content'])
-                post_file.flush()
-                post_file.seek(0)
-                file_dict['object'] = post_file
+            )
+            file_dict['filename'] = os.path.basename(post_file.name)
+            file_dict['full_path'] = post_file.name
+            post_file.write(file_dict['content'])
+            post_file.flush()
+            post_file.seek(0)
+            file_dict['object'] = post_file
 
         def clumsily_build_uri(res_type, dataset):
             return '/api/v1/%s/%d/' % (res_type, dataset.id)
