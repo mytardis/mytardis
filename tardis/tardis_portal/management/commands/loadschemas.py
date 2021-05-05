@@ -57,18 +57,18 @@ class Command(BaseCommand):
 
             try:
                 full_path = name
-                data = open(full_path)
-                try:
-                    objects = serializers.deserialize(format, data)
-                    for obj in objects:
-                        if not options.get('replace', False):
-                            obj.object.pk = None
-                        obj.save(using=using)
-                except Exception as err:
-                    if isinstance(err, (SystemExit, KeyboardInterrupt)):
-                        raise
+                with open(full_path) as data:
+                    try:
+                        objects = serializers.deserialize(format, data)
+                        for obj in objects:
+                            if not options.get('replace', False):
+                                obj.object.pk = None
+                            obj.save(using=using)
+                    except Exception as err:
+                        if isinstance(err, (SystemExit, KeyboardInterrupt)):
+                            raise
+                        data.close()
                     data.close()
-                data.close()
 
             except Exception:
                 self.stdout.write(

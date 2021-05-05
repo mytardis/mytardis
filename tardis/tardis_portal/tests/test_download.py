@@ -46,9 +46,9 @@ def _generate_test_image(testfile):
     else:
         # Apparently ImageMagick isn't installed...
         # Write a "fake" TIFF file
-        f = open(testfile, 'w')
-        f.write("II\x2a\x00")
-        f.close()
+        with open(testfile, 'w') as f:
+            f.write("II\x2a\x00")
+            f.close()
 
 
 class DownloadTestCase(TestCase):
@@ -101,9 +101,9 @@ class DownloadTestCase(TestCase):
             makedirs(self.dest2)
 
         testfile1 = abspath(join(self.dest1, filename1))
-        f = open(testfile1, 'w')
-        f.write("Hello World!\n")
-        f.close()
+        with open(testfile1, 'w') as f:
+            f.write("Hello World!\n")
+            f.close()
 
         testfile2 = abspath(join(self.dest2, filename2))
         _generate_test_image(testfile2)
@@ -192,12 +192,12 @@ class DownloadTestCase(TestCase):
             tempfile.flush()
             if getsize(tempfile.name) > 0:
                 self.assertTrue(is_tarfile(tempfile.name))
-                try:
-                    tf = TarFile(tempfile.name, 'r')
-                    self._check_names(datafiles, tf.getnames(),
-                                      rootdir, simpleNames, noTxt)
-                finally:
-                    tf.close()
+                with TarFile(tempfile.name, 'r') as tf:
+                    try:
+                        self._check_names(datafiles, tf.getnames(),
+                                          rootdir, simpleNames, noTxt)
+                    finally:
+                        tf.close()
             else:
                 self._check_names(datafiles, [],
                                   rootdir, simpleNames, noTxt)
@@ -210,12 +210,12 @@ class DownloadTestCase(TestCase):
             tempfile.flush()
             # It should be a zip file
             self.assertTrue(is_zipfile(tempfile.name))
-            try:
-                zf = ZipFile(tempfile.name, 'r')
-                self._check_names(datafiles, zf.namelist(),
-                                  rootdir, simpleNames, noTxt)
-            finally:
-                zf.close()
+            with ZipFile(tempfile.name, 'r') as zf:
+                try:
+                    self._check_names(datafiles, zf.namelist(),
+                                      rootdir, simpleNames, noTxt)
+                finally:
+                    zf.close()
 
     def _check_names(self, datafiles, names, rootdir, simpleNames, noTxt):
         # SimpleNames says if we expect basenames or pathnames
