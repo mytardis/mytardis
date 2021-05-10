@@ -84,7 +84,7 @@ class HsmAppApiTestCase(MyTardisResourceTestCase):
         data = json.loads(response.content)
         self.assertIn("error_message", data)
         self.assertEqual(data["error_message"],
-            "Status failed for DFO %s: %s" %
+            "Recall failed for DFO %s: %s" %
             (self.dfo.id, "DataFileObjectNotVerified"))
 
     def test_online_check_unsupported_storage_class(self):
@@ -101,7 +101,7 @@ class HsmAppApiTestCase(MyTardisResourceTestCase):
         data = json.loads(response.content)
         self.assertIn("error_message", data)
         self.assertEqual(data["error_message"],
-            "Status failed for DFO %s: %s" %
+            "Recall failed for DFO %s: %s" %
             (self.dfo.id, "StorageClassNotSupportedError"))
 
     def test_online_check_valid_storage_class(self):
