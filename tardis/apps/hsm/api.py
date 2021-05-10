@@ -70,7 +70,8 @@ class ReplicaAppResource(tardis.tardis_portal.api.ReplicaResource):
         except HsmException as err:
             logger.error("Status failed for DFO %s: %s" % (dfo.id, str(err)))
             return JsonResponse({
-                "error_message": "Status failed for DFO %s" % dfo.id
+                "error_message":
+                    "Recall failed for DFO %s: %s" % (dfo.id, type(err))
             }, status=HttpResponseServerError.status_code)
 
         return HttpResponseServerError()
@@ -103,7 +104,8 @@ class ReplicaAppResource(tardis.tardis_portal.api.ReplicaResource):
             # True, making the task run synchronously
             logger.error("Recall failed for DFO %s: %s" % (dfo.id, str(err)))
             return JsonResponse({
-                "error_message": "Recall failed for DFO %s" % dfo.id
+                "error_message":
+                    "Recall failed for DFO %s: %s" % (dfo.id, type(err))
             }, status=HttpResponseServerError.status_code)
         # Log recall event
         if getattr(settings, "ENABLE_EVENTLOG", False):
@@ -167,7 +169,8 @@ class DatasetAppResource(tardis.tardis_portal.api.DatasetResource):
         except HsmException as err:
             logger.error("Status failed for DS %s: %s" % (dataset.id, str(err)))
             return JsonResponse({
-                "error_message": "Status failed for DS %s" % dataset.id
+                "error_message":
+                    "Status failed for DS %s: %s" % (dataset.id, type(err))
             }, status=HttpResponseServerError.status_code)
 
         return HttpResponseServerError()
@@ -199,7 +202,8 @@ class DatasetAppResource(tardis.tardis_portal.api.DatasetResource):
         except HsmException as err:
             logger.error("Recall failed for DS %s: %s" % (ds.id, str(err)))
             return JsonResponse({
-                "error_message": "Recall failed for DS %s" % ds.id
+                "error_message":
+                    "Recall failed for DS %s: %s" % (ds.id, type(err))
             }, status=HttpResponseServerError.status_code)
 
         # Log recall event
