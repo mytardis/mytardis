@@ -104,6 +104,18 @@ class ReplicaAppResource(tardis.tardis_portal.api.ReplicaResource):
                 {'error_message': "%s: %s" % (type(err), str(err))},
                 status=HttpResponseServerError.status_code)
 
+        # Log recall event
+        if getattr(settings, "ENABLE_EVENTLOG", False):
+            from tardis.apps.eventlog.utils import log
+            log(
+                action="RECALL",
+                extra={
+                    "type": "datafile",
+                    "id": dfo.datafile.id
+                },
+                request=request
+            )
+
         return JsonResponse({
             "message": "Recall requested for DFO %s" % dfo.id
         })
@@ -186,6 +198,18 @@ class DatasetAppResource(tardis.tardis_portal.api.DatasetResource):
             return JsonResponse(
                 {'error_message': "%s: %s" % (type(err), str(err))},
                 status=HttpResponseServerError.status_code)
+
+        # Log recall event
+        if getattr(settings, "ENABLE_EVENTLOG", False):
+            from tardis.apps.eventlog.utils import log
+            log(
+                action="RECALL",
+                extra={
+                    "type": "dataset",
+                    "id": ds.id
+                },
+                request=request
+            )
 
         return JsonResponse({
             "message": "Recall requested for Dataset %s" % ds.id
