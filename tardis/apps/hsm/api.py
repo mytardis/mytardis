@@ -71,7 +71,7 @@ class ReplicaAppResource(tardis.tardis_portal.api.ReplicaResource):
             logger.error("Status failed for DFO %s: %s" % (dfo.id, str(err)))
             return JsonResponse({
                 "error_message":
-                    "Recall failed for DFO %s: %s" % (dfo.id, str(type(err)))
+                    "Recall failed for DFO %s: %s" % (dfo.id, type(err).__name__)
             }, status=HttpResponseServerError.status_code)
 
         return HttpResponseServerError()
@@ -105,7 +105,7 @@ class ReplicaAppResource(tardis.tardis_portal.api.ReplicaResource):
             logger.error("Recall failed for DFO %s: %s" % (dfo.id, str(err)))
             return JsonResponse({
                 "error_message":
-                    "Recall failed for DFO %s: %s" % (dfo.id, str(type(err)))
+                    "Recall failed for DFO %s: %s" % (dfo.id, type(err).__name__)
             }, status=HttpResponseServerError.status_code)
         # Log recall event
         if getattr(settings, "ENABLE_EVENTLOG", False):
@@ -170,7 +170,7 @@ class DatasetAppResource(tardis.tardis_portal.api.DatasetResource):
             logger.error("Status failed for DS %s: %s" % (dataset.id, str(err)))
             return JsonResponse({
                 "error_message":
-                    "Status failed for DS %s: %s" % (dataset.id, str(type(err)))
+                    "Status failed for DS %s: %s" % (dataset.id, type(err).__name__)
             }, status=HttpResponseServerError.status_code)
 
         return HttpResponseServerError()
@@ -203,7 +203,7 @@ class DatasetAppResource(tardis.tardis_portal.api.DatasetResource):
             logger.error("Recall failed for DS %s: %s" % (ds.id, str(err)))
             return JsonResponse({
                 "error_message":
-                    "Recall failed for DS %s: %s" % (ds.id, str(type(err)))
+                    "Recall failed for DS %s: %s" % (ds.id, type(err).__name__)
             }, status=HttpResponseServerError.status_code)
 
         # Log recall event
