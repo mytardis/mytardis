@@ -81,9 +81,11 @@ class HsmAppApiTestCase(MyTardisResourceTestCase):
             '/api/v1/hsm_replica/%s/online/' % self.dfo.id,
             authentication=self.get_credentials())
         self.assertHttpApplicationError(response)
-        self.assertIn(
-            b"Status failed for DFO %s: %s" %
-            (self.dfo.id, "DataFileObjectNotVerified"), response.content)
+        data = json.loads(response.content)
+        self.assertIn("error_message", data)
+        self.assertEqual(data["error_message"],
+            "Status failed for DFO %s: %s" %
+            (self.dfo.id, "DataFileObjectNotVerified"))
 
     def test_online_check_unsupported_storage_class(self):
         '''
