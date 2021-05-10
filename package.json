@@ -56,7 +56,7 @@
     "sprintf-js": "^1.1.2",
     "style-loader": "^1.2.1",
     "terser-webpack-plugin": "^4.2.3",
-    "underscore": "^1.11.0",
+    "underscore": "^1.12.1",
     "underscore.string": "^3.3.5",
     "url-loader": "^4.1.0",
     "webpack": "^4.46.0",
