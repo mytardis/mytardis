@@ -81,8 +81,8 @@ class HsmAppApiTestCase(MyTardisResourceTestCase):
             '/api/v1/hsm_replica/%s/online/' % self.dfo.id,
             authentication=self.get_credentials())
         self.assertHttpApplicationError(response)
-        self.assertEqual(
-            "Status failed for DFO %s: %s" %
+        self.assertIn(
+            b"Status failed for DFO %s: %s" %
             (self.dfo.id, "DataFileObjectNotVerified"), response.content)
 
     def test_online_check_unsupported_storage_class(self):
@@ -96,8 +96,8 @@ class HsmAppApiTestCase(MyTardisResourceTestCase):
             '/api/v1/hsm_replica/%s/online/' % self.dfo.id,
             authentication=self.get_credentials())
         self.assertHttpApplicationError(response)
-        self.assertEqual(
-            "Status failed for DFO %s: %s" %
+        self.assertIn(
+            b"Status failed for DFO %s: %s" %
             (self.dfo.id, "StorageClassNotSupportedError"), response.content)
 
     def test_online_check_valid_storage_class(self):
@@ -159,8 +159,9 @@ class HsmAppApiTestCase(MyTardisResourceTestCase):
             '/api/v1/hsm_replica/%s/recall/' % self.dfo.id,
             authentication=self.get_credentials())
         self.assertHttpApplicationError(response)
-        self.assertEqual(
-            "Recall failed for DFO %s" % self.dfo.id, response.content)
+        self.assertIn(
+            b"Recall failed for DFO %s: %s" %
+            (self.dfo.id, "DataFileObjectNotVerified"), response.content)
 
         # Test with unsupported storage class which should raise an exception:
         self.dfo.storage_box = self.default_storage_box
@@ -171,8 +172,8 @@ class HsmAppApiTestCase(MyTardisResourceTestCase):
             '/api/v1/hsm_replica/%s/recall/' % self.dfo.id,
             authentication=self.get_credentials())
         self.assertHttpApplicationError(response)
-        self.assertEqual(
-            "Status failed for DFO %s: %s" %
+        self.assertIn(
+            b"Status failed for DFO %s: %s" %
             (self.dfo.id, "StorageClassNotSupportedError"), response.content)
 
         # Test with valid HSM storage class:
