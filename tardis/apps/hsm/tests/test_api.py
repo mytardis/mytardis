@@ -98,9 +98,11 @@ class HsmAppApiTestCase(MyTardisResourceTestCase):
             '/api/v1/hsm_replica/%s/online/' % self.dfo.id,
             authentication=self.get_credentials())
         self.assertHttpApplicationError(response)
-        self.assertIn(
-            b"Status failed for DFO %s: %s" %
-            (self.dfo.id, "StorageClassNotSupportedError"), response.content)
+        data = json.loads(response.content)
+        self.assertIn("error_message", data)
+        self.assertEqual(data["error_message"],
+            "Status failed for DFO %s: %s" %
+            (self.dfo.id, "StorageClassNotSupportedError"))
 
     def test_online_check_valid_storage_class(self):
         '''
@@ -161,9 +163,11 @@ class HsmAppApiTestCase(MyTardisResourceTestCase):
             '/api/v1/hsm_replica/%s/recall/' % self.dfo.id,
             authentication=self.get_credentials())
         self.assertHttpApplicationError(response)
-        self.assertIn(
-            b"Recall failed for DFO %s: %s" %
-            (self.dfo.id, "DataFileObjectNotVerified"), response.content)
+        data = json.loads(response.content)
+        self.assertIn("error_message", data)
+        self.assertEqual(data["error_message"],
+            "Recall failed for DFO %s: %s" %
+            (self.dfo.id, "DataFileObjectNotVerified"))
 
         # Test with unsupported storage class which should raise an exception:
         self.dfo.storage_box = self.default_storage_box
@@ -174,9 +178,11 @@ class HsmAppApiTestCase(MyTardisResourceTestCase):
             '/api/v1/hsm_replica/%s/recall/' % self.dfo.id,
             authentication=self.get_credentials())
         self.assertHttpApplicationError(response)
-        self.assertIn(
-            b"Status failed for DFO %s: %s" %
-            (self.dfo.id, "StorageClassNotSupportedError"), response.content)
+        data = json.loads(response.content)
+        self.assertIn("error_message", data)
+        self.assertEqual(data["error_message"],
+            "Recall failed for DFO %s: %s" %
+            (self.dfo.id, "StorageClassNotSupportedError"))
 
         # Test with valid HSM storage class:
         self.dfo.storage_box = self.hsm_storage_box
