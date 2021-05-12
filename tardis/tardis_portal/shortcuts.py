@@ -40,11 +40,11 @@ def return_response_error(request):
 
 
 def redirect_back_with_error(request, message):
-    redirect = request.META.get(
-        'HTTP_REFERER',
-        '{0}://{1}/'.format(request.scheme, request.get_host()))
-    redirect = redirect + '#error:' + message
-    return HttpResponseRedirect(redirect)
+    root_url = "{0}://{1}/".format(request.scheme, request.get_host())
+    redirect_url = request.META.get("HTTP_REFERER", root_url)
+    if root_url not in redirect_url:
+        redirect_url = root_url
+    return HttpResponseRedirect(redirect_url + "#error:" + message)
 
 
 def get_experiment_referer(request, dataset_id):
