@@ -376,6 +376,14 @@ def oauth_callback_url(request):
     return request.build_absolute_uri(reverse(oauth_callback))
 
 
+def verify_redirect(request, redirect_url):
+    if redirect_url[:1] != "/":
+        root_url = "{0}://{1}/".format(request.scheme, request.get_host())
+        if redirect_url.find(root_url) != 0:
+            return root_url
+    return redirect_url
+
+
 @login_required
 def authorize_remote_access(request, remote_host_id, service_id=None):
     """
@@ -440,7 +448,9 @@ def authorize_remote_access(request, remote_host_id, service_id=None):
                      )
     if signing_result:
         return redirect(
-            next_redirect + '?credential_id=%i' % credential.pk)
+            verify_redirect(
+                request,
+                next_redirect + '?credential_id=%i' % credential.pk))
     # If key signing failed, delete the credential
     credential.delete()
     return render_error_message(
@@ -492,4 +502,7 @@ def oauth_callback(request):
     token = json.loads(r.text)
     set_token(request, oauth_service, token)
 
-    return redirect(next_redirect)
+    return redirect(
+        verify_redirect(
+            request,
+            next_redirect))
