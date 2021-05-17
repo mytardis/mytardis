@@ -5,7 +5,7 @@
 {% load basiccomparisonfilters %}
 
 {% block script %}
-
+    {% render_bundle 'tardis_portal_push_to' %}
 <style type="text/css">
 .dropzone.in {
     background: blue;
@@ -26,6 +26,7 @@
 
 {% block content %}
 {% render_bundle 'tardis_portal_view_dataset' %}
+
 <div id="upload_button_code" style="display: none"></div>
 
 <input type="hidden" id="dataset-id" value="{{ dataset.id }}">
@@ -100,9 +101,8 @@
   <h5 class="mb-1">Dataset</h5>
     <div class="float-right">
   {% if push_to_enabled and is_authenticated %}
-    <a class="btn btn-sm btn-outline-secondary" title="Push to..."
-       onclick="window.open('{{ push_to_url }}', 'push-to', 'width=800, height=600'); return false;"
-       href="{{ push_to_url }}" target="_blank">
+    <a class="btn btn-sm btn-outline-secondary push-to" title="Push to..."
+       href="{{ push_to_url }}" target="_blank" rel="noreferrer noopener">
       <i class="fa fa-upload"></i>
       Push to...
     </a>
