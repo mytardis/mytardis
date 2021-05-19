@@ -141,6 +141,9 @@ class LDAPBackend(AuthProvider, UserProvider, GroupProvider):
                 # a comma.
                 userDN = userRDN + ',' + self._user_base
                 l.simple_bind_s(userDN, password)
+            except ldap.INVALID_CREDENTIALS:
+                logger.error("Invalid credentials for user %s" % username)
+                return None
             except ldap.LDAPError:
                 # We failed to bind using the simple method of constructing
                 # the userDN, so let's query the directory for the userDN.
@@ -168,11 +171,11 @@ class LDAPBackend(AuthProvider, UserProvider, GroupProvider):
                         for ldap_key, tardis_key in self._user_attr_map.items()}
             return None
 
-        except ldap.LDAPError:
-            logger.exception("ldap error")
+        except ldap.LDAPError as err:
+            logger.error("LDAP error %s" % err)
             return None
         except IndexError:
-            logger.exception("index error")
+            logger.error("LDAP has no results")
             return None
         finally:
             if l:

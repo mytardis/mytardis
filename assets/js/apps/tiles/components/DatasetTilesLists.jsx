@@ -15,7 +15,7 @@ import ExperimentListDropDown from './SelectExperiment';
 import DatasetPaneTopPanel from './DatasetPaneTopPanel';
 import Spinner from '../../badges/components/utils/Spinner';
 
-const DatasetTilesLists = ({ shareContainer, experimentId }) => {
+const DatasetTilesLists = ({ shareContainer, experimentId, hsmEnabled }) => {
   const [mainListData, setMainListData] = useState([]);
   const [shareListData, setShareListData] = useState([]);
   const [expListData, setExpListData] = useState();
@@ -169,7 +169,7 @@ const DatasetTilesLists = ({ shareContainer, experimentId }) => {
               <Droppable droppableId="main-list">
                 {provided => (
                   <div ref={provided.innerRef} {...provided.droppableProps}>
-                    <DatasetTiles data={mainListData} listName="main-list" onDownloadSelect={onDownloadSelect} />
+                    <DatasetTiles data={mainListData} hsmEnabled={hsmEnabled} listName="main-list" onDownloadSelect={onDownloadSelect} />
                     {provided.placeholder}
                   </div>
                 )}
@@ -186,7 +186,7 @@ const DatasetTilesLists = ({ shareContainer, experimentId }) => {
                           />
                         ) : <span />
               }
-                      <DatasetTiles data={shareListData} listName="share-list" />
+                      <DatasetTiles data={shareListData} hsmEnabled={hsmEnabled} listName="share-list" />
                       {provided.placeholder}
                     </div>
                   )}
@@ -202,5 +202,6 @@ const DatasetTilesLists = ({ shareContainer, experimentId }) => {
 DatasetTilesLists.propTypes = {
   shareContainer: PropTypes.object.isRequired,
   experimentId: PropTypes.string.isRequired,
+  hsmEnabled: PropTypes.bool.isRequired,
 };
 export default DatasetTilesLists;

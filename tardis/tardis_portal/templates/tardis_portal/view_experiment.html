@@ -2,16 +2,17 @@
 {% load render_bundle from webpack_loader %}
 {% load basiccomparisonfilters %}
 {% load capture %}
-{% load static from staticfiles %}
+{% load static %}
 {% load dynurl %}
 {% load jstemplate %}
 {% load bleach_tag %}
 
 {% block script %}
-
+    {% render_bundle 'tardis_portal_push_to' %}
 
 <input type="hidden" id="experiment-id" value="{{ experiment.id }}">
 <input type="hidden" id="csrf-token" value="{{ csrf_token }}">
+<input type="hidden" id="hsm-enabled" value="{{hsm_enabled}}"/>
 {% render_bundle 'tardis_portal_view_experiment_init' %}
 {% render_bundle 'tardis_portal_view_experiment_share' %}
 
@@ -43,9 +44,8 @@
   {% if not experiment.public %}
   <div class="float-right">
     {% if push_to_enabled and is_authenticated %}
-    <a class="btn btn-sm btn-outline-secondary" title="Push to..."
-       onclick="window.open('{{ push_to_url }}', 'push-to', 'width=800, height=600'); return false;"
-       href="{{ push_to_url }}" target="_blank">
+    <a class="btn btn-sm btn-outline-secondary push-to" title="Push to..."
+       href="{{ push_to_url }}" target="_blank" rel="noreferrer noopener">
       <i class="fa fa-upload"></i>
       Push to...
     </a>

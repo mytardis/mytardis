@@ -10,10 +10,8 @@ from django.db import models
 from django.db.models import Q
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from django.utils.encoding import python_2_unicode_compatible
 
 
-@python_2_unicode_compatible
 class UserProfile(models.Model):
     """
     UserProfile class is an extension to the Django standard user model.
@@ -72,7 +70,6 @@ def create_user_profile(sender, instance, created, **kwargs):
         UserProfile(user=instance).save()
 
 
-@python_2_unicode_compatible
 class GroupAdmin(models.Model):
     """GroupAdmin links the Django User and Group tables for group
     administrators
@@ -94,7 +91,6 @@ class GroupAdmin(models.Model):
 
 
 # TODO: Generalise auth methods
-@python_2_unicode_compatible
 class UserAuthentication(models.Model):
     CHOICES = ()
     userProfile = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
@@ -181,7 +177,6 @@ class UserAuthentication(models.Model):
 #     content_object = GenericForeignKey('content_type', 'object_id')
 
 
-@python_2_unicode_compatible
 class ObjectACL(models.Model):
     """The ObjectACL (formerly ExperimentACL) table is the core of the `Tardis
     Authorisation framework

@@ -10,7 +10,7 @@ from django.core.files import File
 
 class FilepickerFile(object):
     filepicker_url_regex = re.compile(
-            r'https?:\/\/www.filepicker.io\/api\/file\/.*')
+            r'https?:\/\/www\.filepicker\.io\/api\/file\/.*')
 
     def __init__(self, url):
         if not self.filepicker_url_regex.match(url):
@@ -36,8 +36,8 @@ class FilepickerFile(object):
         if filename:
             name = filename
 
-        self.tempfile = open(self.filename, 'r')
-        return File(self.tempfile, name=name)
+        with open(self.filename, 'r') as self.tempfile:
+            return File(self.tempfile, name=name)
 
     def cleanup(self):
         '''

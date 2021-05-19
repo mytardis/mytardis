@@ -9,17 +9,23 @@ import Container from './Container';
 import Loading from './Loading';
 import * as filters from './Filter';
 import 'regenerator-runtime/runtime';
-import { TreeDownloadButton, TreeSelectButton } from './Download';
+import { TreeDownloadButton, TreeRecallButton, TreeSelectButton } from './Download';
 import { DownloadArchive, FetchFilesInDir, FetchChildDirs } from './Utils';
 import Spinner from '../../badges/components/utils/Spinner';
+import { fetchHSMDatasetData } from '../../badges/components/utils/FetchData';
 
 
-const TreeView = ({ datasetId, modified }) => {
+const TreeView = ({ datasetId, modified, hsmEnabled }) => {
   const [cursor, setCursor] = useState(false);
   const [data, setData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedCount, setSelectedCount] = useState(0);
   const [isAllSelected, setIsAllSelected] = useState(false);
+  const [recallButtonText, setRecallButtonText] = useState('Request Dataset Recall');
+  const [recallToolTip, setRecallToolTip] = useState('An email will be sent to admin, and you will be '
+      + 'notified when dataset is available to download');
+  const [recallButtonStatus, setRecallButtonStatus] = useState('all');
+  const [showRecallDatasetButton, setShowRecallDatasetButton] = useState(false);
   const fetchBaseDirs = (pageNum, resetData) => {
     fetch(`/api/v1/dataset/${datasetId}/root-dir-nodes/?page=${pageNum}`, {
       method: 'get',
@@ -68,7 +74,7 @@ const TreeView = ({ datasetId, modified }) => {
         setSelectedCount(selectedCount - 1);
       }
     } else {
-      node.selected = true;
+      // node.selected = true;
       // if this is a folder with no child
       if (node.children && !node.children.length) {
         // add this node to selecteNode list
@@ -76,11 +82,18 @@ const TreeView = ({ datasetId, modified }) => {
       }
       // if this is a folder with child
       if (node.children && node.children.length) {
-        node.children.forEach((childNode) => {
-          childNode.selected = true;
-        });
-      } else {
         node.selected = true;
+        node.children.forEach((childNode) => {
+          if (childNode.is_online) {
+            childNode.selected = true;
+          }
+        });
+      }
+      // if this is a leaf node
+      if (!node.children && node.is_online) {
+        node.selected = true;
+      } else {
+        // node.selected = true;
       }
     }
     // set selected count
@@ -94,6 +107,13 @@ const TreeView = ({ datasetId, modified }) => {
   };
   useEffect(() => {
     fetchBaseDirs(0);
+    if (hsmEnabled) {
+      fetchHSMDatasetData(datasetId).then((value) => {
+        if (value.online_files < value.total_files) {
+          setShowRecallDatasetButton(true);
+        }
+      });
+    }
   }, [datasetId, modified]);
   const onToggle = (node, toggled) => {
     // toggled = !toggled;
@@ -108,9 +128,12 @@ const TreeView = ({ datasetId, modified }) => {
         if (node.selected) {
           let childCount = 0;
           node.children.forEach((childNode) => {
-            childNode.toggled = true;
-            onSelect(childNode);
-            childCount += 1;
+            // do not select offline nodes
+            if (node.is_online || node.children.length > 0) {
+              childNode.toggled = true;
+              onSelect(childNode);
+              childCount += 1;
+            }
           });
           setSelectedCount(selectedCount + childCount);
         }
@@ -217,6 +240,25 @@ const TreeView = ({ datasetId, modified }) => {
     });
     setSelectedCount(count);
   };
+  const recallDataset = (event) => {
+    event.preventDefault();
+    fetch(`/api/v1/hsm_dataset/${datasetId}/recall/`, {
+      method: 'get',
+      headers: {
+        'Accept': 'application/json', // eslint-disable-line quote-props
+        'Content-Type': 'application/json',
+      },
+    }).then((response) => {
+      if (response.ok) {
+        setRecallButtonText('Recall Requested');
+        setRecallToolTip('Recall request sent. You will receive an email'
+            + ' once this dataset is ready for download');
+        setRecallButtonStatus('none');
+      } else {
+        throw new Error('Something went wrong');
+      }
+    });
+  };
   return (
     <Fragment>
       <div>
@@ -232,6 +274,16 @@ const TreeView = ({ datasetId, modified }) => {
             onClick={toggleSelection}
             buttonText={isAllSelected ? 'Select None' : 'Select All'}
           />
+          {hsmEnabled && showRecallDatasetButton
+            ? (
+              <TreeRecallButton
+                buttonText={recallButtonText}
+                onClick={recallDataset}
+                disabled={recallButtonStatus}
+                recallTooltip={recallToolTip}
+              />
+            ) : ''
+          }
         </div>
       </div>
       <div style={styles}>
@@ -264,7 +316,7 @@ const TreeView = ({ datasetId, modified }) => {
               onToggle={onToggle}
               onSelect={onSelect}
               decorators={{
-                ...decorators, Header, Container, Loading,
+                ...decorators, Header, Container, Loading, hsmEnabled,
               }}
             />
           )
@@ -278,10 +330,12 @@ const TreeView = ({ datasetId, modified }) => {
 TreeView.propTypes = {
   datasetId: PropTypes.string.isRequired,
   modified: PropTypes.string,
+  hsmEnabled: PropTypes.bool,
 };
 
 TreeView.defaultProps = {
   modified: '',
+  hsmEnabled: false,
 };
 
 export default TreeView;

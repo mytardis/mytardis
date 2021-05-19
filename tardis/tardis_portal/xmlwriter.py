@@ -127,8 +127,7 @@ class XMLWriter:
             os.path.sep + str(objectprefix) + "-" + \
             uniqueid + ".xml"
 
-        f = open(filename, "w")
-
-        f.write(xmlstring.encode('UTF-8'))
-        f.close()
+        with open(filename, "w") as f:
+            f.write(xmlstring.encode('UTF-8'))
+            f.close()
         return filename

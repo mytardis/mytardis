@@ -180,3 +180,9 @@ CALCULATE_CHECKSUMS_METHODS = {
 from tardis.default_settings.apps_default_settings import *  # noqa # pylint: disable=C0411,C0413
 
 CHUNK_STORAGE = path.join(DEFAULT_STORAGE_BASE_DIR, "chunks")
+
+# For testing hsm app:
+RECALL_URI_TEMPLATES = {
+  'tardis.apps.hsm.storage.HsmFileSystemStorage':
+  '/api/v1/hsm_replica/{dfo_id}/recall/'
+}
