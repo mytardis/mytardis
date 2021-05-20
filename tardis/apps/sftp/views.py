@@ -19,7 +19,7 @@ from paramiko import RSAKey
 from paramiko.ssh_exception import SSHException
 from PIL import Image, ImageFont, ImageDraw
 
-from tardis.tardis_portal.auth.decorators import has_experiment_download_access
+from tardis.tardis_portal.auth.decorators import has_download_access
 from .forms import KeyGenerateForm
 from .models import SFTPPublicKey
 
@@ -54,7 +54,7 @@ def sftp_access(request):
             exps = dataset.experiments.all()
         allowed_exps = []
         for exp in exps:
-            if has_experiment_download_access(request, exp.id):
+            if has_download_access(request, exp.id, "experiment"):
                 allowed_exps.append(exp)
         if allowed_exps:
             path_mapper = make_mapper(settings.DEFAULT_PATH_MAPPER,

@@ -7,7 +7,7 @@ from django.test import TestCase, TransactionTestCase
 from django.test.client import Client
 from django.urls import reverse
 
-from tardis.tardis_portal.models import Experiment, ObjectACL, User
+from tardis.tardis_portal.models import Experiment, ExperimentACL, User
 from tardis.tardis_portal.ParameterSetManager import ParameterSetManager
 
 
@@ -31,14 +31,13 @@ class TabTestCase(TestCase):
                                 description='Parrot + 40kV',
                                 created_by=user)
         experiment.save()
-        acl = ObjectACL(content_object=experiment,
-                        pluginId='django_user',
-                        entityId=str(user.id),
-                        isOwner=False,
-                        canRead=True,
-                        canWrite=False,
-                        canDelete=False,
-                        aclOwnershipType=ObjectACL.OWNER_OWNED)
+        acl = ExperimentACL(experiment=experiment,
+                            user=user,
+                            isOwner=False,
+                            canRead=True,
+                            canWrite=False,
+                            canDelete=False,
+                            aclOwnershipType=ExperimentACL.OWNER_OWNED)
         acl.save()
         self.client = client
         self.experiment = experiment
@@ -70,14 +69,13 @@ class ListTestCase(TransactionTestCase):
                                 description='Parrot + 40kV',
                                 created_by=user)
         experiment.save()
-        acl = ObjectACL(content_object=experiment,
-                        pluginId='django_user',
-                        entityId=str(user.id),
-                        isOwner=False,
-                        canRead=True,
-                        canWrite=False,
-                        canDelete=False,
-                        aclOwnershipType=ObjectACL.OWNER_OWNED)
+        acl = ExperimentACL(experiment=experiment,
+                            user=user,
+                            isOwner=False,
+                            canRead=True,
+                            canWrite=False,
+                            canDelete=False,
+                            aclOwnershipType=ExperimentACL.OWNER_OWNED)
         acl.save()
         self.client = client
         self.experiment = experiment
@@ -156,14 +154,13 @@ class GetTestCase(TransactionTestCase):
                                 description='Parrot + 40kV',
                                 created_by=user)
         experiment.save()
-        acl = ObjectACL(content_object=experiment,
-                        pluginId='django_user',
-                        entityId=str(user.id),
-                        isOwner=False,
-                        canRead=True,
-                        canWrite=False,
-                        canDelete=False,
-                        aclOwnershipType=ObjectACL.OWNER_OWNED)
+        acl = ExperimentACL(experiment=experiment,
+                            user=user,
+                            isOwner=False,
+                            canRead=True,
+                            canWrite=False,
+                            canDelete=False,
+                            aclOwnershipType=ExperimentACL.OWNER_OWNED)
         acl.save()
         self.client = client
         self.experiment = experiment
@@ -208,14 +205,13 @@ class CreateTestCase(TransactionTestCase):
                                 description='Parrot + 40kV',
                                 created_by=user)
         experiment.save()
-        acl = ObjectACL(content_object=experiment,
-                        pluginId='django_user',
-                        entityId=str(user.id),
-                        isOwner=False,
-                        canRead=True,
-                        canWrite=True,
-                        canDelete=False,
-                        aclOwnershipType=ObjectACL.OWNER_OWNED)
+        acl = ExperimentACL(experiment=experiment,
+                            user=user,
+                            isOwner=False,
+                            canRead=True,
+                            canWrite=True,
+                            canDelete=False,
+                            aclOwnershipType=ExperimentACL.OWNER_OWNED)
         acl.save()
         self.acl = acl
         self.client = client
@@ -294,14 +290,13 @@ class UpdateTestCase(TransactionTestCase):
                                 description='Parrot + 40kV',
                                 created_by=user)
         experiment.save()
-        acl = ObjectACL(content_object=experiment,
-                        pluginId='django_user',
-                        entityId=str(user.id),
-                        isOwner=False,
-                        canRead=True,
-                        canWrite=True,
-                        canDelete=False,
-                        aclOwnershipType=ObjectACL.OWNER_OWNED)
+        acl = ExperimentACL(experiment=experiment,
+                            user=user,
+                            isOwner=False,
+                            canRead=True,
+                            canWrite=True,
+                            canDelete=False,
+                            aclOwnershipType=ExperimentACL.OWNER_OWNED)
         acl.save()
         self.acl = acl
         self.client = client
@@ -369,14 +364,13 @@ class DeleteTestCase(TransactionTestCase):
                                 description='Parrot + 40kV',
                                 created_by=user)
         experiment.save()
-        acl = ObjectACL(content_object=experiment,
-                        pluginId='django_user',
-                        entityId=str(user.id),
-                        isOwner=False,
-                        canRead=True,
-                        canWrite=True,
-                        canDelete=False,
-                        aclOwnershipType=ObjectACL.OWNER_OWNED)
+        acl = ExperimentACL(experiment=experiment,
+                            user=user,
+                            isOwner=False,
+                            canRead=True,
+                            canWrite=True,
+                            canDelete=False,
+                            aclOwnershipType=ExperimentACL.OWNER_OWNED)
         acl.save()
         self.acl = acl
         self.client = client

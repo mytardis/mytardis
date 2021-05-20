@@ -7,7 +7,7 @@ from django_elasticsearch_dsl import Document, fields
 from django_elasticsearch_dsl.registries import registry
 
 from tardis.tardis_portal.models import Dataset, Experiment, \
-    DataFile, Instrument, ObjectACL
+    DataFile, Instrument, ExperimentACL, DatasetACL, DatafileACL
 
 
 logger = logging.getLogger(__name__)
@@ -56,21 +56,22 @@ class ExperimentDocument(Document):
     created_by = fields.ObjectField(properties={
         'username': fields.KeywordField()
     })
-    objectacls = fields.ObjectField(properties={
-        'pluginId': fields.KeywordField(),
-        'entityId': fields.KeywordField()
-    }
-    )
+    acls = fields.NestedField(attr='getACLsforIndexing', properties={
+                              'pluginId': fields.KeywordField(),
+                              'entityId': fields.KeywordField()})
+
+    def prepare_acls(self, instance):
+        return list(instance.getACLsforIndexing())
 
     class Django:
         model = Experiment
-        related_models = [User, ObjectACL, DataFile]
+        related_models = [User, ExperimentACL, DataFile]
 
     def get_instances_from_related(self, related_instance):
         if isinstance(related_instance, User):
             return related_instance.experiment_set.all()
-        if isinstance(related_instance, ObjectACL):
-            return related_instance.content_object
+        if isinstance(related_instance, ExperimentACL):
+            return related_instance.experiment
         if isinstance(related_instance, DataFile):
             related_instance.dataset.experiments.all()
         return None
@@ -97,11 +98,6 @@ class DatasetDocument(Document):
             fields={'raw': fields.KeywordField()
                     }
         ),
-        'objectacls': fields.ObjectField(properties={
-            'pluginId': fields.KeywordField(),
-            'entityId': fields.KeywordField()
-        }
-        ),
         'public_access': fields.IntegerField()
     }
     )
@@ -115,15 +111,30 @@ class DatasetDocument(Document):
     created_time = fields.DateField()
     modified_time = fields.DateField()
 
+    # GetACLsforindexing with return Dataset ACLs, or parent Experiment ACLs
+    # depending on if ONLY_EXPERIMENT_ACLS = False or True respectively
+    acls = fields.NestedField(attr='getACLsforIndexing', properties={
+                              'pluginId': fields.KeywordField(),
+                              'entityId': fields.KeywordField()})
+
+    def prepare_acls(self, instance):
+        return list(instance.getACLsforIndexing())
+
     class Django:
         model = Dataset
         related_models = [Experiment, Instrument]
+        if not settings.ONLY_EXPERIMENT_ACLS:
+            related_models += [DatasetACL]
+
 
     def get_instances_from_related(self, related_instance):
         if isinstance(related_instance, Experiment):
             return related_instance.datasets.all()
         if isinstance(related_instance, Instrument):
             return related_instance.dataset_set.all()
+        if not settings.ONLY_EXPERIMENT_ACLS:
+            if isinstance(related_instance, DatasetACL):
+                return related_instance.dataset
         return None
 
 
@@ -149,6 +160,15 @@ class DataFileDocument(Document):
 
     experiments = fields.ObjectField()
 
+    # GetACLsforindexing with return Datafile ACLs, or parent Experiment ACLs
+    # depending on if ONLY_EXPERIMENT_ACLS = False or True respectively
+    acls = fields.NestedField(attr='getACLsforIndexing', properties={
+                              'pluginId': fields.KeywordField(),
+                              'entityId': fields.KeywordField()})
+
+    def prepare_acls(self, instance):
+        return list(instance.getACLsforIndexing())
+
     def prepare_experiments(self, instance):
         experiments = []
         exps = instance.dataset.experiments.all()
@@ -156,8 +176,6 @@ class DataFileDocument(Document):
             exp_dict = {}
             exp_dict['id'] = exp.id
             exp_dict['public_access'] = exp.public_access
-            oacls = exp.objectacls.all().values('entityId', 'pluginId')
-            exp_dict['objectacls'] = list(oacls)
             experiments.append(exp_dict)
         return experiments
 
@@ -165,6 +183,9 @@ class DataFileDocument(Document):
         model = DataFile
         related_models = [Dataset, Experiment]
         queryset_pagination = 5000 # same as chunk_size
+        if not settings.ONLY_EXPERIMENT_ACLS:
+            related_models += [DatafileACL]
+
 
     def get_queryset(self):
         return super().get_queryset().select_related('dataset')
@@ -174,4 +195,7 @@ class DataFileDocument(Document):
             return related_instance.datafile_set.all()
         if isinstance(related_instance, Experiment):
             return DataFile.objects.filter(dataset__experiments=related_instance)
+        if not settings.ONLY_EXPERIMENT_ACLS:
+            if isinstance(related_instance, DatafileACL):
+                return related_instance.datafile
         return None

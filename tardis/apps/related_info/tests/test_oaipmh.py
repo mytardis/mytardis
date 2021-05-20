@@ -7,7 +7,7 @@ from django.urls import reverse
 
 from lxml import etree
 
-from tardis.tardis_portal.models import Experiment, License, ObjectACL, User
+from tardis.tardis_portal.models import Experiment, License, ExperimentACL, User
 
 
 def _create_user_and_login(username='testuser', password='testpass'):
@@ -41,14 +41,13 @@ class RifCSTestCase(TransactionTestCase):
         experiment.public_access = Experiment.PUBLIC_ACCESS_FULL
         experiment.license = license_
         experiment.save()
-        acl = ObjectACL(content_object=experiment,
-                        pluginId='django_user',
-                        entityId=str(user.id),
-                        isOwner=False,
-                        canRead=True,
-                        canWrite=True,
-                        canDelete=False,
-                        aclOwnershipType=ObjectACL.OWNER_OWNED)
+        acl = ExperimentACL(experiment=experiment,
+                            user=user,
+                            isOwner=False,
+                            canRead=True,
+                            canWrite=True,
+                            canDelete=False,
+                            aclOwnershipType=ExperimentACL.OWNER_OWNED)
         acl.save()
 
         params = {'type': 'website',

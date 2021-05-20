@@ -23,7 +23,7 @@ from tardis.tardis_portal.models import Dataset
 from tardis.tardis_portal.models import DataFile
 from tardis.tardis_portal.models import DataFileObject
 from tardis.tardis_portal.models import Experiment
-from tardis.tardis_portal.models import ObjectACL
+from tardis.tardis_portal.models import ExperimentACL
 
 from tardis.apps.sftp.models import SFTPPublicKey
 from tardis.apps.sftp.sftp import MyTSFTPServerInterface
@@ -44,15 +44,14 @@ class SFTPTest(TestCase):
             title='test exp1', institution_name='monash', created_by=self.user)
         self.exp.save()
 
-        self.acl = ObjectACL(
-            content_object=self.exp,
-            pluginId='django_user',
-            entityId=str(self.user.id),
+        self.acl = ExperimentACL(
+            experiment=self.exp,
+            user=self.user,
             isOwner=True,
             canRead=True,
             canWrite=True,
             canDelete=True,
-            aclOwnershipType=ObjectACL.OWNER_OWNED)
+            aclOwnershipType=ExperimentACL.OWNER_OWNED)
         self.acl.save()
 
         self.dataset = Dataset(description='test dataset1')
