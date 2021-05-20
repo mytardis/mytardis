@@ -10,7 +10,7 @@ from django.test.client import Client
 from django.http import HttpRequest, QueryDict
 from django.contrib.auth.models import User, Group
 
-from tardis.tardis_portal.models import Experiment, ObjectACL
+from tardis.tardis_portal.models import Experiment, ExperimentACL
 from tardis.tardis_portal.models import UserAuthentication, UserProfile
 
 from ..migration import do_migration
@@ -43,13 +43,12 @@ class OpenIDMigrationTestCase(TestCase):
                                 institution_name='Test Uni',
                                 created_by=self.user_old)
         experiment.save()
-        acl = ObjectACL(
-            pluginId='django_user',
-            entityId=str(self.user_old.id),
-            content_object=experiment,
+        acl = ExperimentACL(
+            user=self.user_old,
+            experiment=experiment,
             canRead=True,
             isOwner=True,
-            aclOwnershipType=ObjectACL.OWNER_OWNED,
+            aclOwnershipType=ExperimentACL.OWNER_OWNED,
         )
         acl.save()
 

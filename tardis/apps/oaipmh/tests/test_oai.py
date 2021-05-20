@@ -4,7 +4,7 @@ from django.test.client import Client
 
 from lxml import etree
 
-from tardis.tardis_portal.models import Experiment, License, ObjectACL
+from tardis.tardis_portal.models import Experiment, License, ExperimentACL
 
 
 def _create_test_data():
@@ -30,9 +30,8 @@ def _create_test_data():
     experiment.experimentauthor_set.create(order=1,
                                            author="Michael Palin",
                                            url="http://nla.gov.au/nla.party-2")
-    acl = ObjectACL(content_object=experiment,
-                    pluginId='django_user',
-                    entityId=str(user.id),
+    acl = ExperimentACL(experiment=experiment,
+                    user=user,
                     isOwner=True,
                     canRead=True,
                     canWrite=True,

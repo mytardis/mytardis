@@ -45,7 +45,9 @@ API accessible models
 - Facility
 - Instrument
 +
-- ObjectACL
+- ExperimentACL
+- DatasetACL
+- DatafileACL
 
 
 Authentication

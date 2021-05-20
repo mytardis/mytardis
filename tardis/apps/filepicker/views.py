@@ -5,11 +5,13 @@ Filepicker.io button view and upload handler
 import json
 import logging
 
+from django.conf import settings
 from django.http import HttpResponse
 
 from tardis.tardis_portal.auth import decorators as authz
 from tardis.tardis_portal.models import Dataset
 from tardis.tardis_portal.models import DataFile
+from tardis.tardis_portal.models import DatafileACL
 from tardis.tardis_portal.shortcuts import render_response_index
 
 import tardis.apps.filepicker.filepicker_settings as filepicker_settings
@@ -65,6 +67,15 @@ def fpupload(request, dataset_id):
                                         filename=picked_file.name,
                                         size=picked_file.size)
                     datafile.save()
+                    if not settings.ONLY_EXPERIMENT_ACLS:
+                        # add default ACL for DataFile
+                        acl = DatafileACL(user=request.user,
+                                          canRead=True,
+                                          canWrite=True,
+                                          canDelete=True,
+                                          isOwner=True,
+                                          aclOwnershipType=DatafileACL.OWNER_OWNED)
+                        acl.save()
                     datafile.file_object = picked_file
 
     return HttpResponse(json.dumps({"result": True}))

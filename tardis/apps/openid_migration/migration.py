@@ -7,7 +7,7 @@ from django.conf import settings
 from tastypie.models import ApiKey
 
 from tardis.tardis_portal.models import User, UserAuthentication, \
-    ObjectACL, Group
+    ExperimentACL, Group
 from tardis.tardis_portal.auth.authentication import _getJsonFailedResponse,\
     _getJsonSuccessResponse, _getJsonConfirmResponse
 
@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 def do_migration(request):
     """Migrating account from the account that the
     logged in  user has provided in the Authentication Form. Migration involve relinking
-    the UserAuthentication table entries, transferring ObjectACL entries
+    the UserAuthentication table entries, transferring ExperimentACL entries
     to the migrated account, changing the Group memberships and making
     the old account inactive.
 
@@ -146,9 +146,7 @@ def do_migration(request):
 
 
 def acl_migration(userIdToBeReplaced, replacementUserId, user_migration_record):
-    experimentACLs = ObjectACL.objects.filter(
-        pluginId='django_user',
-        entityId=userIdToBeReplaced)
+    experimentACLs = ExperimentACL.objects.filter(user__id=userIdToBeReplaced)
 
     logger.info("Found %s number of ACLs to migrate", experimentACLs.count())
 
@@ -157,11 +155,9 @@ def acl_migration(userIdToBeReplaced, replacementUserId, user_migration_record):
         # now let's check if there's already an existing entry in the ACL
         # for the given experiment and replacementUserId
         try:
-            acl = ObjectACL.objects.get(
-                pluginId='django_user',
-                entityId=replacementUserId,
-                content_type=experimentACL.content_type,
-                object_id=experimentACL.object_id
+            acl = ExperimentACL.objects.get(
+                user__id=replacementUserId,
+                experiment=experimentACL.experiment,
             )
             logger.info("found existing entry in the ACL "
                         "for the given experiment and replacementUserId")
@@ -170,11 +166,12 @@ def acl_migration(userIdToBeReplaced, replacementUserId, user_migration_record):
             acl.canDelete = acl.canDelete or acl.canDelete
             acl.save()
             experimentACL.delete()
-        except ObjectACL.DoesNotExist:
-            experimentACL.entityId = replacementUserId
+        except ExperimentACL.DoesNotExist:
+            replacementUser = User.objects.get(pk=replacementUserId)
+            experimentACL.user = replacementUser
             experimentACL.save()
             # record acl migration event
-            logger.info("acl migrated %s", experimentACL.object_id)
+            logger.info("acl migrated %s", experimentACL.experiment.id)
             acl_migration_record = OpenidACLMigration(user_migration=user_migration_record,
                                                       acl_id=experimentACL)
             acl_migration_record.save()

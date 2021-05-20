@@ -28,7 +28,10 @@ def given_a_logged_in_user(context):
     user.user_permissions.add(Permission.objects.get(codename='add_experiment'))
     user.user_permissions.add(Permission.objects.get(codename='change_experiment'))
     user.user_permissions.add(Permission.objects.get(codename='add_dataset'))
-    user.user_permissions.add(Permission.objects.get(codename='change_objectacl'))
+    user.user_permissions.add(Permission.objects.get(codename='change_experimentacl'))
+    user.user_permissions.add(Permission.objects.get(codename='change_datasetacl'))
+    user.user_permissions.add(Permission.objects.get(codename='change_datafileacl'))
+
     context.browser.get(context.base_url + "/login/")
     username_field = context.browser.find_element_by_id('id_username')
     username_field.send_keys(user.username)

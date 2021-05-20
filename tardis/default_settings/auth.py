@@ -7,6 +7,8 @@ GROUP_PROVIDERS = (
     'tardis.tardis_portal.auth.token_auth.TokenGroupProvider',
 )
 
+ONLY_EXPERIMENT_ACLS = True
+
 # AUTH_PROVIDERS entry format:
 # ('name', 'display name', 'backend implementation')
 #   name - used as the key for the entry

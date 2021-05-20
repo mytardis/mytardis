@@ -2,7 +2,7 @@ from behave import given, when, then
 
 from django.contrib.auth.models import User
 
-from tardis.tardis_portal.models.access_control import ObjectACL
+from tardis.tardis_portal.models.access_control import ExperimentACL
 from tardis.tardis_portal.models.datafile import DataFile
 from tardis.tardis_portal.models.dataset import Dataset
 from tardis.tardis_portal.models.experiment import Experiment
@@ -23,11 +23,10 @@ def given_a_logged_in_user_with_dataset_access(context):
             last_name="User")
     experiment = Experiment.objects.create(
         title="Test Experiment1", created_by=user)
-    acl = ObjectACL.objects.create(
-        content_type=experiment.get_ct(),
-        object_id=experiment.id,
-        pluginId="django_user", entityId=user.id,
-        canRead=True)
+    acl = ExperimentACL.objects.create(
+            experiment=experiment,
+            user=user,
+            canRead=True)
     dataset = Dataset.objects.create(description="Test Dataset")
     dataset.experiments.add(experiment)
     datafile1 = DataFile.objects.create(
