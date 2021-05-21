@@ -62,14 +62,22 @@ class InstrumentParameterSetAdmin(admin.ModelAdmin):
     inlines = [InstrumentParameterInline]
 
 
-class ObjectACLInline(GenericTabularInline):
-    model = models.ObjectACL
+class ExperimentACLInline(admin.TabularInline):
+    model = models.ExperimentACL
+    extra = 0
+
+class DatasetACLInline(admin.TabularInline):
+    model = models.DatasetACL
+    extra = 0
+
+class DatafileACLInline(admin.TabularInline):
+    model = models.DatafileACL
     extra = 0
 
 
 class ExperimentAdmin(admin.ModelAdmin):
     search_fields = ['title', 'id']
-    inlines = [ObjectACLInline]
+    inlines = [ExperimentACLInline]
 
 
 class DatasetAdmin(admin.ModelAdmin):
@@ -175,8 +183,19 @@ class ParameterNameAdmin(admin.ModelAdmin):
     search_fields = ['name', 'schema__id']
 
 
-class ObjectACLAdmin(admin.ModelAdmin):
-    search_fields = ['content_type', 'object_id']
+class ExperimentACLAdmin(admin.ModelAdmin):
+    list_display = [
+        '__str__', 'pluginId', 'entityId', 'canRead',
+        'canWrite', 'canDelete', 'isOwner'
+    ]
+
+class DatasetACLAdmin(admin.ModelAdmin):
+    list_display = [
+        '__str__', 'pluginId', 'entityId', 'canRead',
+        'canWrite', 'canDelete', 'isOwner'
+    ]
+
+class DatafileACLAdmin(admin.ModelAdmin):
     list_display = [
         '__str__', 'pluginId', 'entityId', 'canRead',
         'canWrite', 'canDelete', 'isOwner'
@@ -224,7 +243,9 @@ admin.site.register(models.Token)
 admin.site.register(models.ExperimentParameterSet, ExperimentParameterSetAdmin)
 admin.site.register(models.GroupAdmin)
 admin.site.register(models.UserAuthentication, UserAuthenticationAdmin)
-admin.site.register(models.ObjectACL, ObjectACLAdmin)
+admin.site.register(models.ExperimentACL, ExperimentACLAdmin)
+admin.site.register(models.DatasetACL, DatasetACLAdmin)
+admin.site.register(models.DatafileACL, DatafileACLAdmin)
 admin.site.register(models.FreeTextSearchField, FreeTextSearchFieldAdmin)
 # admin.site.register(MigrationHistory)
 admin.site.register(models.StorageBox, StorageBoxAdmin)

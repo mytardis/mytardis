@@ -45,7 +45,7 @@ from django.contrib.auth.models import User, Group
 import tardis.tardis_portal.models.hooks
 
 from .access_control import UserAuthentication, UserProfile, GroupAdmin
-from .access_control import ObjectACL
+from .access_control import ExperimentACL, DatasetACL, DatafileACL
 from .facility import Facility
 from .instrument import Instrument
 from .experiment import Experiment, ExperimentAuthor
