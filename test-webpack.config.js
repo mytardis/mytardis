@@ -4,7 +4,7 @@
 const path = require("path");
 const webpack = require("webpack");
 const BundleTracker = require("webpack-bundle-tracker");
-const CleanWebpackPlugin = require("clean-webpack-plugin");
+const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const TerserPlugin = require("terser-webpack-plugin");
 const glob = require("glob");
@@ -16,6 +16,7 @@ module.exports = {
         tardis_portal: glob.sync("./assets/js/tardis_portal/*.js"),
         tardis_portal_add_or_edit_dataset: glob.sync("./assets/js/tardis_portal/add_or_edit_dataset/*.js"),
         tardis_portal_create_experiment: glob.sync("./assets/js/tardis_portal/create_experiment/*.js"),
+        tardis_portal_push_to: glob.sync("./assets/js/tardis_portal/push-to.js"),
         tardis_portal_view_experiment_init: glob.sync("./assets/js/tardis_portal/view_experiment/init/init.js"),
         tardis_portal_view_experiment_share: glob.sync("./assets/js/tardis_portal/view_experiment/share/share.js"),
         tardis_portal_view_experiment: glob.sync("./assets/js/tardis_portal/view_experiment/*.js"),
@@ -74,9 +75,9 @@ module.exports = {
             path: __dirname,
             filename: "webpack-stats.json",
         }),
-        new CleanWebpackPlugin(
-            ["assets/bundles/*"]
-        ),
+        new CleanWebpackPlugin({
+            cleanOnceBeforeBuildPatterns: ["assets/bundles/*"]
+        }),
         new MiniCssExtractPlugin({
             filename: "[name].styles.css",
         })
@@ -90,7 +91,6 @@ module.exports = {
                     {
                         loader: MiniCssExtractPlugin.loader,
                         options: {
-                            outputPath: "static/bundles/",
                             publicPath: "../static/bundles/"
                         }
                     }, "css-loader"

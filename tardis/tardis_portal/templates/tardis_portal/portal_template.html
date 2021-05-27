@@ -201,7 +201,7 @@
                     '<div class="alert ' +
                         this.type +
                         '"><a class="close" data-dismiss="alert">×</a><span>' +
-                        text +
+                        he.encode(text) +
                         '</span></div>');
             },
             success: function(text) {
