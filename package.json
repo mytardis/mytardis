@@ -19,7 +19,7 @@
     "blueimp-file-upload": "^9.31.0",
     "bootstrap": "^4.6.0",
     "bootstrap-3-typeahead": "^4.0.2",
-    "clean-webpack-plugin": "^1.0.1",
+    "clean-webpack-plugin": "^3.0.0",
     "clipboard": "^2.0.8",
     "core-js": "^3.12.1",
     "css-loader": "^5.2.4",
