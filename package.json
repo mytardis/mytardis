@@ -24,7 +24,7 @@
     "core-js": "^3.12.1",
     "css-loader": "^5.2.4",
     "expose-loader": "^1.0.3",
-    "file-loader": "^4.2.0",
+    "file-loader": "^6.2.0",
     "file-saver": "^2.0.5",
     "filesize": "^6.3.0",
     "font-awesome": "^4.7.0",
