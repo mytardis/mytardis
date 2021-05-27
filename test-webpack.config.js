@@ -91,7 +91,6 @@ module.exports = {
                     {
                         loader: MiniCssExtractPlugin.loader,
                         options: {
-                            outputPath: "static/bundles/",
                             publicPath: "../static/bundles/"
                         }
                     }, "css-loader"
