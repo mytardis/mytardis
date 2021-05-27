@@ -100,21 +100,21 @@ def calculate_checksums(dfo, compute_md5=True, compute_sha512=False):
         md5sum_binary = 'md5sum'
         if sys.platform == 'darwin':
             md5sum_binary = 'md5'
-        proc = subprocess.Popen(
+        with subprocess.Popen(
             [md5sum_binary],
-            stdin=subprocess.PIPE, stdout=subprocess.PIPE)
-        bucket.download_fileobj(dfo.uri, proc.stdin)
-        stdout, _ = proc.communicate()
+            stdin=subprocess.PIPE, stdout=subprocess.PIPE) as proc:
+            bucket.download_fileobj(dfo.uri, proc.stdin)
+            stdout, _ = proc.communicate()
         checksums['md5sum'] = \
             re.match(b'\w+', stdout).group(0).decode('utf8')
 
     if compute_sha512:
         shasum_binary = 'shasum'
-        proc = subprocess.Popen(
+        with subprocess.Popen(
             [shasum_binary, '-a', '512'],
-            stdin=subprocess.PIPE, stdout=subprocess.PIPE)
-        bucket.download_fileobj(dfo.uri, proc.stdin)
-        stdout, _ = proc.communicate()
+            stdin=subprocess.PIPE, stdout=subprocess.PIPE) as proc:
+            bucket.download_fileobj(dfo.uri, proc.stdin)
+            stdout, _ = proc.communicate()
         checksums['sha512sum'] = \
             re.match(b'\w+', stdout).group(0).decode('utf8')
 

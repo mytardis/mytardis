@@ -341,14 +341,14 @@ class DataFile(models.Model):
         :return: the temporary file object
         :rtype: NamedTemporaryFile
         """
-        temp_file = NamedTemporaryFile(delete=True, dir=directory)
-        try:
-            temp_file.write(self.file_object.read())
-            temp_file.flush()
-            temp_file.seek(0, 0)
-            yield temp_file
-        finally:
-            temp_file.close()
+        with NamedTemporaryFile(delete=True, dir=directory) as temp_file:
+            try:
+                temp_file.write(self.file_object.read())
+                temp_file.flush()
+                temp_file.seek(0, 0)
+                yield temp_file
+            finally:
+                temp_file.close()
 
     def is_local(self):
         return self.file_objects.all()[0].is_local()
@@ -407,8 +407,8 @@ class DataFile(models.Model):
                                                preview_image_par.string_value))
 
             if path.exists(file_path):
-                preview_image_file = open(file_path, 'rb')
-                return preview_image_file
+                with open(file_path, 'rb') as preview_image_file:
+                    return preview_image_file
 
         render_image_size_limit = getattr(settings, 'RENDER_IMAGE_SIZE_LIMIT',
                                           0)

@@ -214,6 +214,7 @@ class Slapd:
         # Spawns/forks the slapd process
         config_path = self._write_config()
         self._log.info("starting slapd")
+        # pylint: disable=consider-using-with
         self._proc = subprocess.Popen([self.PATH_SLAPD,
                                        "-f", config_path,
                                        "-h", self.get_url(),
@@ -276,16 +277,16 @@ class Slapd:
             verboseflag = "-Q"
             if self._log.isEnabledFor(logging.DEBUG):
                 verboseflag = "-v"
-            p = subprocess.Popen([
+            with subprocess.Popen([
                 self.PATH_SLAPTEST,
                 verboseflag,
                 "-f", config_path
             ],
             stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT)
-            output = p.communicate()[0]
-            if p.returncode != 0:
-                raise RuntimeError("configuration test failed: %s" % output)
+            stderr=subprocess.STDOUT) as p:
+                output = p.communicate()[0]
+                if p.returncode != 0:
+                    raise RuntimeError("configuration test failed: %s" % output)
             self._log.debug("configuration seems ok")
         finally:
             os.remove(config_path)
@@ -293,23 +294,23 @@ class Slapd:
     def ldapadd(self, ldif, extra_args=[]):
         """Runs ldapadd on this slapd instance, passing it the ldif content"""
         self._log.debug("adding %s", repr(ldif))
-        p = subprocess.Popen([self.PATH_LDAPADD,
+        with subprocess.Popen([self.PATH_LDAPADD,
                               "-x",
                               "-D", self.get_root_dn(),
                               "-w", self.get_root_password(),
                               "-H", self.get_url()] + extra_args,
                              stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-                             stderr=subprocess.STDOUT)
-        output = p.communicate(ldif.encode())[0]
-        if p.returncode != 0:
-            raise RuntimeError("ldapadd process failed: %s" % output)
+                             stderr=subprocess.STDOUT) as p:
+            output = p.communicate(ldif.encode())[0]
+            if p.returncode != 0:
+                raise RuntimeError("ldapadd process failed: %s" % output)
 
     def ldapsearch(self, base=None, filter='(objectClass=*)', attrs=[],
                    scope='sub', extra_args=[]):
         if base is None:
             base = self.get_dn_suffix()
         self._log.debug("ldapsearch filter=%s", repr(filter))
-        p = subprocess.Popen([self.PATH_LDAPSEARCH,
+        with subprocess.Popen([self.PATH_LDAPSEARCH,
                               "-x",
                               "-D", self.get_root_dn(),
                               "-w", self.get_root_password(),
@@ -318,10 +319,10 @@ class Slapd:
                               "-s", scope,
                               "-LL",
                               ] + extra_args + [filter] + attrs,
-                             stdout=subprocess.PIPE)
-        output = p.communicate()[0]
-        if p.wait() != 0:
-            raise RuntimeError("ldapadd process failed")
+                             stdout=subprocess.PIPE) as p:
+            output = p.communicate()[0]
+            if p.wait() != 0:
+                raise RuntimeError("ldapadd process failed")
 
         # RFC 2849: LDIF format
         # unfold

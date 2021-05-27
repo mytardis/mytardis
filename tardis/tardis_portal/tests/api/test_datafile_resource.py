@@ -70,16 +70,16 @@ class DataFileResourceTest(MyTardisResourceTestCase):
     }]
 }""" % ds_id
 
-        post_file = tempfile.NamedTemporaryFile()
-        file_content = b"123test\n"
-        post_file.write(file_content)
-        post_file.flush()
-        post_file.seek(0)
-        datafile_count = DataFile.objects.count()
-        dfo_count = DataFileObject.objects.count()
-        self.assertHttpCreated(self.django_client.post(
-            '/api/v1/dataset_file/',
-            data={"json_data": post_data, "attached_file": post_file}))
+        with tempfile.NamedTemporaryFile() as post_file:
+            file_content = b"123test\n"
+            post_file.write(file_content)
+            post_file.flush()
+            post_file.seek(0)
+            datafile_count = DataFile.objects.count()
+            dfo_count = DataFileObject.objects.count()
+            self.assertHttpCreated(self.django_client.post(
+                '/api/v1/dataset_file/',
+                data={"json_data": post_data, "attached_file": post_file}))
         self.assertEqual(datafile_count + 1, DataFile.objects.count())
         self.assertEqual(dfo_count + 1, DataFileObject.objects.count())
         new_file = DataFile.objects.order_by('-pk')[0]
@@ -127,8 +127,10 @@ class DataFileResourceTest(MyTardisResourceTestCase):
                  {'content': b'test246\n'}]
         from django.conf import settings
         for file_dict in files:
+            # pylint: disable=consider-using-with
             post_file = tempfile.NamedTemporaryFile(
-                dir=settings.DEFAULT_STORAGE_BASE_DIR)
+                dir=settings.DEFAULT_STORAGE_BASE_DIR
+            )
             file_dict['filename'] = os.path.basename(post_file.name)
             file_dict['full_path'] = post_file.name
             post_file.write(file_dict['content'])
