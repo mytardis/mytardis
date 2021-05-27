@@ -14,6 +14,8 @@ require("sprintf-js/dist/sprintf.min");
 require("expose-loader?sprintf!sprintf-js/dist/sprintf.min");
 require("clipboard");
 require("expose-loader?ClipboardJS!clipboard/dist/clipboard");
+require('he');
+require('expose-loader?he!he/he');
 //css
 require("bootstrap/dist/css/bootstrap.css");
 require("../css/jquery-ui/jquery-ui-1.8.18.custom.css");
