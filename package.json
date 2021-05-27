@@ -62,7 +62,7 @@
     "url-loader": "^4.1.1",
     "webpack": "^4.46.0",
     "webpack-bundle-tracker": "^0.4.3",
-    "webpack-cli": "^3.3.12"
+    "webpack-cli": "^4.6.0"
   },
   "devDependencies": {
     "babel-eslint": "^10.0.3",
@@ -93,11 +93,11 @@
     "eslint.jquery": "eslint -c .eslintrc --ext .js assets/js/tardis_portal js_tests/tardis_portal/ tardis/apps/sftp/static/js/sftp/sftp.js tardis/apps/openid_migration/static/js/openid_migration/migrate_accounts.js",
     "eslint.angular": "eslint -c .eslintrc.angular assets/js/tardis_portal/facility_view/facility_view.js",
     "eslint.react": "eslint -c .eslintrc.react --ext .jsx assets/js/apps/",
-    "test-build": "webpack --config test-webpack.config.js --progress --colors --mode production",
+    "test-build": "webpack --config test-webpack.config.js --progress --color --mode production",
     "pretest": "npm run eslint.jquery && npm run eslint.angular && npm run eslint.react && npm run test-build",
     "test-react": "jest --collectCoverage=true --testMatch=\"<rootDir>/assets/js/apps/**/__tests__/*.spec.jsx\" --config jest.config.js",
     "test": "grunt test --verbose && npm run test-react",
-    "dev": "webpack --config webpack.config.js --progress --colors --watch --display-error-details --mode development",
-    "build": "webpack --config webpack.config.js --progress --colors --mode production"
+    "dev": "webpack --config webpack.config.js --progress --color --watch --display-error-details --mode development",
+    "build": "webpack --config webpack.config.js --progress --color --mode production"
   }
 }
