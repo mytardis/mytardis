@@ -5,7 +5,7 @@
           <a  class="filelink datafile_name"
               href="{{ datafile.get_view_url }}"
               title="View"
-              target="_blank">{{ datafile.filename }}</a>
+              target="_blank" rel="noreferrer noopener">{{ datafile.filename }}</a>
         {% else %}
         <span class="datafile_name">{{ datafile.filename }}</span>
         {% endif %}
