@@ -12,7 +12,8 @@ from django.conf import settings
 from django.contrib.auth.models import Group
 from django.http import HttpResponse
 
-from ..models import UserProfile, UserAuthentication, ObjectACL
+from ..models import (UserProfile, UserAuthentication, ExperimentACL,
+                      DatasetACL, DatafileACL)
 from . import localdb_auth
 from ..forms import createLinkedUserAuthenticationForm
 from ..shortcuts import render_response_index
@@ -176,7 +177,7 @@ def _setupJsonData(authForm, authenticationMethod, supportedAuthMethods):
 def merge_auth_method(request):
     """Merge the account that the user is logged in as and the account that
     he provided in the Authentication Form. Merging accounts involve relinking
-    the UserAuthentication table entries, transferring ObjectACL entries
+    the UserAuthentication table entries, transferring ACL entries
     to the merged account, changing the Group memberships and deleting the
     unneeded account.
 
@@ -237,32 +238,57 @@ def merge_auth_method(request):
         userIdToBeReplaced = user.id
         replacementUserId = request.user.id
 
-        # TODO: note that django_user here has been hardcoded. Uli's going
-        # to change the implementation on his end so that I can just use a key
-        # in here instead of a hardcoded string.
-        experimentACLs = ObjectACL.objects.filter(
-            pluginId='django_user',
-            entityId=userIdToBeReplaced)
 
+        experiment_ACLs = ExperimentACL.objects.filter(user=userIdToBeReplaced)
+        dataset_ACLs = DatasetACL.objects.filter(user=userIdToBeReplaced)
+        datafile_ACLs = DatafileACL.objects.filter(user=userIdToBeReplaced)
+
+        # now let's check if there's already an existing entry in the ACL
+        # for the given experiment/dataset/datafile and replacementUserId
         for experimentACL in experimentACLs:
-
-            # now let's check if there's already an existing entry in the ACL
-            # for the given experiment and replacementUserId
             try:
-                acl = ObjectACL.objects.get(
-                    pluginId='django_user',
-                    entityId=replacementUserId,
-                    content_type=experimentACL.content_type,
-                    object_id=experimentACL.object_id
+                acl = ExperimentACL.objects.get(
+                    user=replacementUserId,
+                    experiment=experiment_ACL.experiment
                 )
-                acl.canRead = acl.canRead or experimentACL.canRead
-                acl.canWrite = acl.canWrite or experimentACL.canWrite
-                acl.canDelete = acl.canDelete or acl.canDelete
+                acl.canRead = acl.canRead or experiment_ACL.canRead
+                acl.canWrite = acl.canWrite or experiment_ACL.canWrite
+                acl.canDelete = acl.canDelete or experiment_ACL.canDelete
                 acl.save()
-                experimentACL.delete()
-            except ObjectACL.DoesNotExist:
-                experimentACL.entityId = replacementUserId
-                experimentACL.save()
+                experiment_ACL.delete()
+            except ExperimentACL.DoesNotExist:
+                experiment_ACL.user = replacementUserId
+                experiment_ACL.save()
+
+        for dataset_ACL in dataset_ACLs:
+            try:
+                acl = DatasetACL.objects.get(
+                    user=replacementUserId,
+                    dataset=dataset_ACL.dataset
+                )
+                acl.canRead = acl.canRead or dataset_ACL.canRead
+                acl.canWrite = acl.canWrite or dataset_ACL.canWrite
+                acl.canDelete = acl.canDelete or dataset_ACL.canDelete
+                acl.save()
+                dataset_ACL.delete()
+            except DatasetACL.DoesNotExist:
+                dataset_ACL.user = replacementUserId
+                dataset_ACL.save()
+
+        for datafile_ACL in datafile_ACLs:
+            try:
+                acl = DatafileACL.objects.get(
+                    user=replacementUserId,
+                    datafile=datafile_ACL.datafile
+                )
+                acl.canRead = acl.canRead or datafile_ACL.canRead
+                acl.canWrite = acl.canWrite or datafile_ACL.canWrite
+                acl.canDelete = acl.canDelete or datafile_ACL.canDelete
+                acl.save()
+                datafile_ACL.delete()
+            except DatafileACL.DoesNotExist:
+                datafile_ACL.user = replacementUserId
+                datafile_ACL.save()
 
         # let's also change the group memberships of all the groups that 'user'
         # is a member of
