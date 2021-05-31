@@ -1,5 +1,4 @@
 const angular = require("angular");
-require("expose-loader?angular!angular");
 require("angular-resource");
 /*<script type="text/javascript" src="{% static 'js/lib/angular-animate-1.6.10/angular-animate.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'js/lib/angular-aria-1.6.10/angular-aria.min.js' %}"></script>

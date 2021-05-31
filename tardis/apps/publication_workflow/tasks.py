@@ -5,7 +5,7 @@ from django.core.cache import caches
 from django.db import transaction
 from django.utils import timezone
 
-from celery.task import task  # pylint: disable=E0401
+from celery import shared_task  # pylint: disable=E0401
 
 from tardis.tardis_portal.models import Experiment, ExperimentParameter
 from .doi import DOI
@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 LOCK_EXPIRE = 60 * 5  # Lock expires in 5 minutes
 
 
-@task(
+@shared_task(
     name="apps.publication_workflow.update_publication_records",
     ignore_result=True)
 def update_publication_records():

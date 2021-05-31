@@ -1,6 +1,5 @@
 from django.conf import settings
 from django.utils import timezone
-from django.utils.encoding import python_2_unicode_compatible
 
 from tardis.tardis_portal.models import (
     Experiment,
@@ -13,7 +12,6 @@ from tardis.tardis_portal.models import (
 from . import default_settings
 
 
-@python_2_unicode_compatible
 class Publication(Experiment):
     """
     Publication records are just experiment records with some metadata, so they
