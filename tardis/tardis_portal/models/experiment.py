@@ -3,14 +3,12 @@ from os import path
 
 from django.conf import settings
 from django.contrib.auth.models import User
-from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.urls import reverse
 from django.db import models
 from django.utils.safestring import SafeText
 
-from ..managers import OracleSafeManager, ExperimentManager
-from .access_control import ObjectACL
+from ..managers import OracleSafeManager, SafeManager
 
 from .license import License
 
@@ -23,7 +21,7 @@ class Experiment(models.Model):
     A :class:`~tardis.tardis_portal.models.dataset.Dataset` record can appear
     in multiple ``Experiment`` records.  Access controls are configured at the
     ``Experiment`` level by creating
-    :class:`~tardis.tardis_portal.models.access_control.ObjectACL` records.
+    :class:`~tardis.tardis_portal.models.access_control.ExperimentACL` records.
 
     :attribute url: An optional URL associated with the data collection
     :attribute approved: An optional field indicating whether the collection is approved
@@ -78,9 +76,8 @@ class Experiment(models.Model):
     license = models.ForeignKey(License,  # @ReservedAssignment
                                 blank=True, null=True,
                                 on_delete=models.CASCADE)
-    objectacls = GenericRelation(ObjectACL)
     objects = OracleSafeManager()
-    safe = ExperimentManager()  # The acl-aware specific manager.
+    safe = SafeManager()  # The acl-aware specific manager.
 
     class Meta:
         app_label = 'tardis_portal'
@@ -150,9 +147,9 @@ class Experiment(models.Model):
             'tardis.tardis_portal.views.create_token',
             kwargs={'experiment_id': self.id})
 
-    def get_datafiles(self):
+    def get_datafiles(self, user):
         from .datafile import DataFile
-        return DataFile.objects.filter(dataset__experiments=self)
+        return DataFile.safe.all(user).filter(dataset__experiments=self)
 
     def get_download_urls(self):
         urls = {}
@@ -166,15 +163,15 @@ class Experiment(models.Model):
 
         return urls
 
-    def get_images(self):
+    def get_images(self, user):
         from .datafile import IMAGE_FILTER
-        return self.get_datafiles().order_by('-modification_time',
-                                             '-created_time') \
+        return self.get_datafiles(user).order_by('-modification_time',
+                                                 '-created_time') \
             .filter(IMAGE_FILTER)
 
-    def get_size(self):
+    def get_size(self, user):
         from .datafile import DataFile
-        return DataFile.sum_sizes(self.get_datafiles())
+        return DataFile.sum_sizes(self.get_datafiles(user))
 
     @classmethod
     def public_access_implies_distribution(cls, public_access_level):
@@ -196,17 +193,13 @@ class Experiment(models.Model):
         return ContentType.objects.get_for_model(self)
 
     def get_owners(self):
-        acls = ObjectACL.objects.filter(pluginId='django_user',
-                                        content_type=self.get_ct(),
-                                        object_id=self.id,
-                                        isOwner=True)
+        acls = self.experimentacl_set.select_related("user").filter(
+                                            user__isnull=False, isOwner=True)
         return [acl.get_related_object() for acl in acls]
 
     def get_groups(self):
-        acls = ObjectACL.objects.filter(pluginId='django_group',
-                                        content_type=self.get_ct(),
-                                        object_id=self.id,
-                                        canRead=True)
+        acls = self.experimentacl_set.select_related("group").filter(
+                                            group__isnull=False)
         return [acl.get_related_object() for acl in acls]
 
     def _has_view_perm(self, user_obj):
@@ -216,7 +209,7 @@ class Experiment(models.Model):
 
         Returning None means we won't override permissions here,
         i.e. we'll leave it to ACLAwareBackend's has_perm method
-        to determine permissions from ObjectACLs
+        to determine permissions from ExperimentACLs
         '''
         if not hasattr(self, 'id'):
             return False
@@ -233,7 +226,7 @@ class Experiment(models.Model):
 
         Returning None means we won't override permissions here,
         i.e. we'll leave it to ACLAwareBackend's has_perm method
-        to determine permissions from ObjectACLs
+        to determine permissions from ExperimentACLs
         '''
         if not hasattr(self, 'id'):
             return False
@@ -250,12 +243,33 @@ class Experiment(models.Model):
 
         Returning None means we won't override permissions here,
         i.e. we'll leave it to ACLAwareBackend's has_perm method
-        to determine permissions from ObjectACLs
+        to determine permissions from ExperimentACLs
         '''
         if not hasattr(self, 'id'):
             return False
 
         return None
+
+    def getACLsforIndexing(self):
+            """Returns the ExperimentACLs associated with this
+            experiment, formatted for elasticsearch.
+            """
+            return_list = []
+            for acl in self.experimentacl_set.all():
+                acl_dict = {}
+                if acl.user is not None:
+                    acl_dict["pluginId"] = "django_user"
+                    acl_dict["entityId"] = acl.user.id
+                    return_list.append(acl_dict)
+                if acl.group is not None:
+                    acl_dict["pluginId"] = "django_group"
+                    acl_dict["entityId"] = acl.group.id
+                    return_list.append(acl_dict)
+                #if acl.token is not None:
+                #    acl_dict["pluginId"] = "token"
+                #    acl_dict["entityId"] = acl.token.id
+                #    return_list.append(acl_dict)
+            return return_list
 
 
 class ExperimentAuthor(models.Model):

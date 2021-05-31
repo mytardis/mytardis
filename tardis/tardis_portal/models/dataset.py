@@ -6,7 +6,7 @@ from django.urls import reverse
 from django.db import models
 from django.utils import timezone
 
-from ..managers import OracleSafeManager
+from ..managers import OracleSafeManager, SafeManager
 from .storage import StorageBox
 
 from .experiment import Experiment
@@ -21,8 +21,10 @@ class Dataset(models.Model):
     represented by a :class:`tardis.tardis_portal.models.DataFile`
     record.  A dataset can appear in one or more
     :class:`~tardis.tardis_portal.models.experiment.Experiment` records.
-    Access controls are configured at the ``Experiment`` level by creating
-    :class:`~tardis.tardis_portal.models.access_control.ObjectACL` records.
+    Access controls are configured either at the ``Experiment`` level, or at
+    the ``Dataset`` level, depending on MyTardis settings, by creating
+    :class:`~tardis.tardis_portal.models.access_control.ExperimentACL` records or
+    :class:`~tardis.tardis_portal.models.access_control.DatasetACL` records.
     Each dataset can be associated with an
     :class:`~tardis.tardis_portal.models.instrument.Instrument` record, but it is
     possible to create a dataset without specifying an instrument.
@@ -46,6 +48,7 @@ class Dataset(models.Model):
     instrument = models.ForeignKey(Instrument, null=True, blank=True,
                                    on_delete=models.CASCADE)
     objects = OracleSafeManager()
+    safe = SafeManager()  # The acl-aware specific manager.
 
     class Meta:
         app_label = 'tardis_portal'
@@ -86,9 +89,9 @@ class Dataset(models.Model):
         return path.join(str(self.get_first_experiment().id),
                          str(self.id))
 
-    def get_datafiles(self):
+    def get_datafiles(self, user):
         from .datafile import DataFile
-        return DataFile.objects.filter(dataset=self)
+        return DataFile.safe.all(user).filter(dataset=self)
 
     def get_absolute_url(self):
         """Return the absolute url to the current ``Dataset``"""
@@ -146,9 +149,10 @@ class Dataset(models.Model):
                                'quality': 'native',
                                'format': 'jpg'})
 
-    def get_size(self):
+    def get_size(self, user):
         from .datafile import DataFile
-        return DataFile.sum_sizes(self.datafile_set)
+        datafiles = DataFile.safe.all(user).filter(dataset__id=self.id)
+        return DataFile.sum_sizes(datafiles)
 
     def _has_any_perm(self, user_obj):
         if not hasattr(self, 'id'):
@@ -173,7 +177,7 @@ class Dataset(models.Model):
             file_objects__datafile__dataset=self).distinct()
         return boxes
 
-    def get_dir_tuples(self, basedir=""):
+    def get_dir_tuples(self, user, basedir=""):
         """
         List the directories immediately inside basedir.
 
@@ -218,7 +222,7 @@ class Dataset(models.Model):
         dir_tuples = []
         if basedir:
             dir_tuples.append(('..', basedir))
-        dirs_query = DataFile.objects.filter(dataset=self)
+        dirs_query = DataFile.safe.all(user).filter(dataset=self)
         if basedir:
             dirs_query = dirs_query.filter(directory__startswith='%s/' % basedir)
         dir_paths = set(dirs_query.values_list('directory', flat=True))
@@ -314,3 +318,21 @@ class Dataset(models.Model):
             }
             dir_list.append(child_dict)
         return dir_list
+
+    def getACLsforIndexing(self):
+        """Returns the datasetACLs associated with this
+        dataset, formatted for elasticsearch.
+        """
+        #TODO account for settings.ONLY_EXP setting
+        return_list = []
+        for acl in self.datasetacl_set.all():
+            acl_dict = {}
+            if acl.user is not None:
+                acl_dict["pluginId"] = "django_user"
+                acl_dict["entityId"] = acl.user.id
+                return_list.append(acl_dict)
+            if acl.group is not None:
+                acl_dict["pluginId"] = "django_group"
+                acl_dict["entityId"] = acl.group.id
+                return_list.append(acl_dict)
+        return return_list

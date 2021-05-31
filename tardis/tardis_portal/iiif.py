@@ -17,7 +17,7 @@ from django.views.decorators.http import etag
 from django.utils.cache import patch_cache_control
 
 from .models import DataFile
-from .auth.decorators import has_datafile_download_access
+from .auth.decorators import has_download_access
 
 
 MAX_AGE = getattr(settings, 'DATAFILE_CACHE_MAX_AGE', 60*60*24*7)
@@ -105,8 +105,8 @@ def compute_etag(request, datafile_id, *args, **kwargs):
         datafile = DataFile.objects.get(pk=datafile_id)
     except DataFile.DoesNotExist:
         return None
-    if not has_datafile_download_access(request=request,
-                                        datafile_id=datafile.id):
+    if not has_download_access(request=request, obj_id=datafile.id,
+                               ct_type="datafile"):
         return None
     # OK, we can compute the Etag without giving anything away now
     # Calculating SHA-512 sums is now optional, so use MD5 sums
@@ -129,8 +129,8 @@ def download_image(request, datafile_id, region, size, rotation,
     is_public = datafile.is_public()
     if not is_public:
         # Check users has access to datafile
-        if not has_datafile_download_access(request=request,
-                                            datafile_id=datafile.id):
+        if not has_download_access(request=request, obj_id=datafile.id,
+                                   ct_type="datafile"):
             return HttpResponse('')
 
     buf = BytesIO()
@@ -202,8 +202,8 @@ def download_info(request, datafile_id, format):  # @ReservedAssignment
     except DataFile.DoesNotExist:
         return HttpResponseNotFound()
     # Check users has access to datafile
-    if not has_datafile_download_access(request=request,
-                                        datafile_id=datafile.id):
+    if not has_download_access(request=request, obj_id=datafile.id,
+                               ct_type="datafile"):
         return HttpResponseNotFound()
 
     file_obj = datafile.get_file()

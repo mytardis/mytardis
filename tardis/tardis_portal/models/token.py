@@ -6,8 +6,6 @@ from django.contrib.auth.models import User
 
 from ..managers import OracleSafeManager
 
-from .experiment import Experiment
-
 logger = logging.getLogger(__name__)
 
 
@@ -19,7 +17,6 @@ def _token_expiry():
 class Token(models.Model):
 
     token = models.CharField(max_length=30, unique=True)
-    experiment = models.ForeignKey(Experiment, on_delete=models.CASCADE)
 
     expiry_date = models.DateField(default=_token_expiry)
 
@@ -43,7 +40,8 @@ class Token(models.Model):
     def save_with_random_token(self):
         from django.db import IntegrityError
 
-        if not self.user or not self.experiment:  # fail if success impossible
+        if not self.user or not any([self.experimentacls, self.datasetacls,
+                                     self.datafileacls]):  # fail if success impossible
             self.save()
 
         for _ in range(30):  # 30 is an arbitrary number

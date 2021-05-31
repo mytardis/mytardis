@@ -15,7 +15,7 @@ from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction, DEFAULT_DB_ALIAS
 
 from ...models import Experiment, Dataset, DataFile
-from ...models import ExperimentAuthor, ObjectACL
+from ...models import ExperimentAuthor, ExperimentACL
 from ...models import ExperimentParameterSet, ExperimentParameter
 from ...models import DatasetParameterSet
 from ...models import DatafileParameterSet
@@ -67,8 +67,7 @@ class Command(BaseCommand):
         uniqueDatafiles = filter((lambda df: df.dataset.id in uniqueDatasetIds), datafiles)
 
         # Fetch other stuff to be printed and deleted.
-        acls = ObjectACL.objects.filter(content_type=exp.get_ct(),
-                                        object_id=exp.id)
+        acls = ExperimentACL.objects.select_related("experiment").filter(experiment_id=exp.id)
         authors = ExperimentAuthor.objects.filter(experiment=exp)
         epsets = ExperimentParameterSet.objects.filter(experiment=exp)
 
@@ -99,7 +98,7 @@ class Command(BaseCommand):
             # List experiment ACLs
             self.stdout.write("    ACLs:\n")
             for acl in acls:
-                self.stdout.write("        {0}-{1}, flags: ".format(acl.pluginId, acl.entityId))
+                self.stdout.write("        {0}-{1}, flags: ".format(acl.user.id, acl.experiment.id))
                 if acl.canRead:
                     self.stdout.write("R")
                 if acl.canWrite:

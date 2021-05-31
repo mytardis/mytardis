@@ -185,9 +185,12 @@ class ACL(models.Model):
         (SYSTEM_OWNED, 'System-owned'),
     )
 
-    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name='%(class)ss')
-    group = models.ForeignKey(Group, on_delete=models.CASCADE, null=True, blank=True, related_name='%(class)ss')
-    token = models.ForeignKey(Token, on_delete=models.CASCADE, null=True, blank=True, related_name='%(class)ss')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True,
+                             blank=True, related_name='%(class)ss')
+    group = models.ForeignKey(Group, on_delete=models.CASCADE, null=True,
+                              blank=True, related_name='%(class)ss')
+    token = models.ForeignKey(Token, on_delete=models.CASCADE, null=True,
+                              blank=True, related_name='%(class)ss')
     canRead = models.BooleanField(default=False)
     canWrite = models.BooleanField(default=False)
     canDelete = models.BooleanField(default=False)
@@ -211,8 +214,6 @@ class ACL(models.Model):
         if sum(x is not None for x in [self.user, self.group, self.token]) < 1:
             raise AssertionError("An ACL must have one of the following fields: User, Group, or Token")
         super().save(*args, **kwargs)
-
-
 
     def get_related_object(self):
         """

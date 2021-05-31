@@ -25,6 +25,7 @@ from django.utils.functional import cached_property
 import magic
 
 from .. import tasks
+from ..managers import OracleSafeManager, SafeManager
 from .dataset import Dataset
 from .storage import StorageBox, StorageBoxOption, StorageBoxAttribute
 
@@ -58,7 +59,6 @@ class DataFile(models.Model):
     :attribute sha512sum: Digest of length 128, containing only hexadecimal
         digits
     """
-
     dataset = models.ForeignKey(Dataset, on_delete=models.CASCADE)
     filename = models.CharField(max_length=400)
     directory = models.CharField(blank=True, null=True, max_length=255)
@@ -71,6 +71,8 @@ class DataFile(models.Model):
     deleted = models.BooleanField(default=False)
     deleted_time = models.DateTimeField(blank=True, null=True)
     version = models.IntegerField(default=1)
+    objects = OracleSafeManager()
+    safe = SafeManager()  # The acl-aware specific manager.
 
     @property
     def file_object(self):
@@ -471,6 +473,25 @@ class DataFile(models.Model):
         dfos = [dfo.verify() for dfo in self.file_objects.all()
                 if reverify or not dfo.verified]
         return all(dfos)
+
+    def getACLsforIndexing(self):
+            """Returns the datafileACLs associated with this
+            datafile, formatted for elasticsearch.
+            """
+
+            #TODO embed parent ACLs if settings EXP_ONLY
+            return_list = []
+            for acl in self.datafileacl_set.all():
+                acl_dict = {}
+                if acl.user is not None:
+                    acl_dict["pluginId"] = "django_user"
+                    acl_dict["entityId"] = acl.user.id
+                    return_list.append(acl_dict)
+                if acl.group is not None:
+                    acl_dict["pluginId"] = "django_group"
+                    acl_dict["entityId"] = acl.group.id
+                    return_list.append(acl_dict)
+            return return_list
 
 
 class DataFileObject(models.Model):

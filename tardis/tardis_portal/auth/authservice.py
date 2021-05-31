@@ -127,7 +127,10 @@ class AuthService():
         user.user_permissions.add(Permission.objects.get(codename='change_experiment'))
         user.user_permissions.add(Permission.objects.get(codename='change_group'))
         user.user_permissions.add(Permission.objects.get(codename='change_userauthentication'))
-        user.user_permissions.add(Permission.objects.get(codename='change_objectacl'))
+        user.user_permissions.add(Permission.objects.get(codename='change_experimentacl'))
+        user.user_permissions.add(Permission.objects.get(codename='change_datasetacl'))
+        user.user_permissions.add(Permission.objects.get(codename='change_datafileacl'))
+
         user.user_permissions.add(Permission.objects.get(codename='add_datafile'))
         user.user_permissions.add(Permission.objects.get(codename='change_dataset'))
 
