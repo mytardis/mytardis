@@ -62,7 +62,7 @@
     "url-loader": "^4.1.1",
     "webpack": "^4.46.0",
     "webpack-bundle-tracker": "^1.0.0",
-    "webpack-cli": "^4.6.0"
+    "webpack-cli": "^4.7.0"
   },
   "devDependencies": {
     "babel-eslint": "^10.0.3",
@@ -87,7 +87,7 @@
     "js-yaml": "^4.1.0",
     "jscpd": "^3.3.26",
     "qunit": "^2.15.0",
-    "react-test-renderer": "^16.10.2"
+    "react-test-renderer": "^16.14.0"
   },
   "scripts": {
     "eslint.jquery": "eslint -c .eslintrc --ext .js assets/js/tardis_portal js_tests/tardis_portal/ tardis/apps/sftp/static/js/sftp/sftp.js tardis/apps/openid_migration/static/js/openid_migration/migrate_accounts.js",
