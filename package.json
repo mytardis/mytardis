@@ -13,7 +13,7 @@
     "@babel/preset-react": "^7.13.13",
     "@emotion/core": "^10.0.27",
     "@testing-library/react": "11.2.7",
-    "angular": "1.8.0",
+    "angular": "1.8.2",
     "angular-resource": "1.8.2",
     "babel-loader": "^8.2.2",
     "blueimp-file-upload": "^9.31.0",
