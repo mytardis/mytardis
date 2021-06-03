@@ -6,15 +6,6 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.models import User
 from django.core.serializers.json import DjangoJSONEncoder
 
-# pylint: disable=C0412
-if "sqlite" in settings.DATABASES["default"]["ENGINE"]:
-    from .fields import JSONField
-elif "mysql" in settings.DATABASES["default"]["ENGINE"]:
-    # pylint: disable=E0401
-    from django_mysql.models import JSONField
-else:
-    from django.contrib.postgres.fields import JSONField
-
 
 class Action(models.Model):
     name = models.CharField(max_length=64)
@@ -33,4 +24,4 @@ class Log(models.Model):
     content_type = models.ForeignKey(ContentType, null=True, on_delete=models.SET_NULL)
     object_id = models.PositiveIntegerField(null=True)
     obj = GenericForeignKey("content_type", "object_id")
-    extra = JSONField(DjangoJSONEncoder)
+    extra = models.JSONField(DjangoJSONEncoder)
