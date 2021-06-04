@@ -10,6 +10,7 @@ from django.db import models
 from django.db.models import Q
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.utils.functional import lazy
 
 
 class UserProfile(models.Model):
@@ -90,12 +91,20 @@ class GroupAdmin(models.Model):
         return '%s: %s' % (self.user.username, self.group.name)
 
 
+def get_auth_method_choices():
+    auth_methods = ()
+    for auth_method in settings.AUTH_PROVIDERS:
+        auth_methods += ((auth_method[0], auth_method[1]),)
+    return auth_methods
+
+
 # TODO: Generalise auth methods
 class UserAuthentication(models.Model):
-    CHOICES = ()
     userProfile = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
     username = models.CharField(max_length=50)
-    authenticationMethod = models.CharField(max_length=30, choices=CHOICES)
+    authenticationMethod = models.CharField(
+        max_length=30,
+        choices=lazy(get_auth_method_choices, tuple)())
     approved = models.BooleanField(default=True)
     __original_approved = None
 
@@ -104,10 +113,7 @@ class UserAuthentication(models.Model):
 
     def __init__(self, *args, **kwargs):
         # instantiate comparisonChoices based on settings.AUTH PROVIDERS
-        self.CHOICES = ()
-        for authMethods in settings.AUTH_PROVIDERS:
-            self.CHOICES += ((authMethods[0], authMethods[1]),)
-        self._comparisonChoicesDict = dict(self.CHOICES)
+        self._comparisonChoicesDict = dict(get_auth_method_choices())
 
         super().__init__(*args, **kwargs)
         self.__original_approved = self.approved
