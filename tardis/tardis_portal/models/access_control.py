@@ -104,7 +104,7 @@ class UserAuthentication(models.Model):
     username = models.CharField(max_length=50)
     authenticationMethod = models.CharField(
         max_length=30,
-        choices=lazy(get_auth_method_choices, tuple))
+        choices=lazy(get_auth_method_choices, tuple)())
     approved = models.BooleanField(default=True)
     __original_approved = None
 
