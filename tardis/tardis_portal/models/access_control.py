@@ -93,8 +93,8 @@ class GroupAdmin(models.Model):
 
 def get_auth_method_choices():
     auth_methods = ()
-    for auth_methods in settings.AUTH_PROVIDERS:
-        auth_methods += ((auth_methods[0], auth_methods[1]),)
+    for auth_method in settings.AUTH_PROVIDERS:
+        auth_methods += ((auth_method[0], auth_method[1]),)
     return auth_methods
 
 
