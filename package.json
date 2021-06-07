@@ -86,7 +86,7 @@
     "jquery-mockjax": "^2.6.0",
     "js-yaml": "^4.1.0",
     "jscpd": "^3.3.26",
-    "qunit": "^2.15.0",
+    "qunit": "^2.16.0",
     "react-test-renderer": "^16.14.0"
   },
   "scripts": {
