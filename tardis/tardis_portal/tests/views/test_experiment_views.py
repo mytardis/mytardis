@@ -18,8 +18,7 @@ from django.test import TestCase
 from django.test.client import Client
 from django.contrib.auth.models import User, Permission
 
-from ...auth.localdb_auth import django_user
-from ...models import ObjectACL, Experiment, Dataset
+from ...models import ExperimentACL, Experiment, Dataset
 
 
 class ExperimentTestCase(TestCase):
@@ -84,10 +83,8 @@ class ExperimentTestCase(TestCase):
             [a.author for a in experiment.experimentauthor_set.all()],
             data['authors'].split(', '))
 
-        acl = ObjectACL.objects.get(content_type=experiment.get_ct(),
-                                    object_id=experiment.id,
-                                    pluginId='django_user',
-                                    entityId=self.user.id)
+        acl = ExperimentACL.objects.get(experiment=experiment,
+                                        user=self.user)
         self.assertTrue(acl.canRead)
         self.assertTrue(acl.canWrite)
         self.assertTrue(acl.isOwner)
@@ -149,13 +146,11 @@ class ExperimentTestCase(TestCase):
                                     institution_name='Test Uni',
                                     created_by=user)
             experiment.save()
-            acl = ObjectACL(
-                pluginId=django_user,
-                entityId=str(user.id),
-                content_object=experiment,
-                canRead=True,
-                isOwner=True,
-                aclOwnershipType=ObjectACL.OWNER_OWNED,
+            acl = ExperimentACL(user=user,
+                                experiment=experiment,
+                                canRead=True,
+                                isOwner=True,
+                                aclOwnershipType=ExperimentACL.OWNER_OWNED,
             )
             acl.save()
             return experiment

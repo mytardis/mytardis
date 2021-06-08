@@ -8,14 +8,13 @@ from django.test.client import Client
 
 from django.contrib.auth.models import User, Group, Permission, AnonymousUser
 
-from ..auth.localdb_auth import django_user
 from ..auth.localdb_auth import auth_key as localdb_auth_key
-from ..models import ObjectACL, Experiment
+from ..models import ExperimentACL, Experiment
 
 logger = logging.getLogger(__name__)
 
 
-class ObjectACLTestCase(TestCase):
+class ACLTestCase(TestCase):
     urls = 'tardis.urls'
 
     def setUp(self):
@@ -32,7 +31,9 @@ class ObjectACLTestCase(TestCase):
             user.user_permissions.add(Permission.objects.get(codename='change_experiment'))
             user.user_permissions.add(Permission.objects.get(codename='change_group'))
             user.user_permissions.add(Permission.objects.get(codename='change_userauthentication'))
-            user.user_permissions.add(Permission.objects.get(codename='change_objectacl'))
+            user.user_permissions.add(Permission.objects.get(codename='change_experimentacl'))
+            user.user_permissions.add(Permission.objects.get(codename='change_datasetacl'))
+            user.user_permissions.add(Permission.objects.get(codename='change_datafileacl'))
 
         self.userProfile1 = self.user1.userprofile
         self.userProfile2 = self.user2.userprofile
@@ -87,43 +88,41 @@ class ObjectACLTestCase(TestCase):
         self.experiment4.save()
 
         # user1 owns experiment1
-        acl = ObjectACL(
-            pluginId=django_user,
-            entityId=str(self.user1.id),
-            content_object=self.experiment1,
+        acl = ExperimentACL(
+            user=self.user1,
+            experiment=self.experiment1,
             canRead=True,
             isOwner=True,
-            aclOwnershipType=ObjectACL.OWNER_OWNED,
+            aclOwnershipType=ExperimentACL.OWNER_OWNED,
             )
         acl.save()
 
         # user2 owns experiment2
-        acl = ObjectACL(
-            pluginId=django_user,
-            entityId=str(self.user2.id),
-            content_object=self.experiment2,
+        acl = ExperimentACL(
+            user=self.user2,
+            experiment=self.experiment2,
             canRead=True,
             isOwner=True,
-            aclOwnershipType=ObjectACL.OWNER_OWNED,
+            aclOwnershipType=ExperimentACL.OWNER_OWNED,
             )
         acl.save()
 
-        # experiment4 is accessible via location
-        acl = ObjectACL(
-            pluginId='ip_address',
-            entityId='127.0.0.1',
-            content_object=self.experiment4,
-            canRead=True,
-            aclOwnershipType=ObjectACL.SYSTEM_OWNED,
-        )
-        acl.save()
+        # experiment4 is NO LONGER accessible via location (as of new ACL update)
+        #acl = ObjectACL(
+        #    pluginId='ip_address',
+        #    entityId='127.0.0.1',
+        #    content_object=self.experiment4,
+        #    canRead=True,
+        #    aclOwnershipType=ObjectACL.SYSTEM_OWNED,
+        #)
+        #acl.save()
 
     def tearDown(self):
 
         self.experiment1.delete()
         self.experiment2.delete()
         self.experiment3.delete()
-        self.experiment4.delete()
+        #self.experiment4.delete()
 
         self.user1.delete()
         self.user2.delete()
@@ -168,7 +167,7 @@ class ObjectACLTestCase(TestCase):
                                     % (self.experiment1.id, 'group1'))
         self.assertEqual(response.status_code, 200)
 
-        # add user3 to experiment1
+        # add user3 to experiment1 with no permissions
         response = self.client1.get('/experiment/control_panel/%i/access_list'
                                     '/add/user/%s/?authMethod=%s'
                                     % (self.experiment1.id,
@@ -178,6 +177,7 @@ class ObjectACLTestCase(TestCase):
         self.assertContains(response, '<div class="access_list_user')
 
         # check permissions for user3 - fail as canRead not set to True
+        # ACL is auto-deleted as it has no permissions: hence the fail here
         response = self.client3.get('/experiment/view/%i/'
                                    % (self.experiment1.id))
         self.assertEqual(response.status_code, 403)
@@ -245,7 +245,7 @@ class ObjectACLTestCase(TestCase):
 
         # user1 is not allowed to modify acls for experiment2
         response = self.client1.get('/experiment/control_panel/%i/access_list'
-                                    '/add/user/%s/?authMethod=%s'
+                                    '/add/user/%s/?authMethod=%s&canRead=true'
                                     % (self.experiment2.id,
                                        self.user1.username,
                                        localdb_auth_key))
@@ -254,7 +254,7 @@ class ObjectACLTestCase(TestCase):
         # user2 *IS* allowed to modify acls for experiment1, since they are part
         # of an owning group (we add then remove access for user3)
         response = self.client1.get('/experiment/control_panel/%i/access_list'
-                                    '/add/user/%s/?authMethod=%s'
+                                    '/add/user/%s/?authMethod=%s&canRead=true'
                                     % (self.experiment1.id,
                                        self.user3.username,
                                        localdb_auth_key))
@@ -270,7 +270,7 @@ class ObjectACLTestCase(TestCase):
         # test add non-existent user
         non_existent = 'test_boozer'
         response = self.client1.get('/experiment/control_panel/%i/access_list'
-                                    '/add/user/%s/?authMethod=%s'
+                                    '/add/user/%s/?authMethod=%s&canRead=true'
                                     % (self.experiment1.id,
                                        non_existent,
                                        localdb_auth_key))
@@ -291,7 +291,7 @@ class ObjectACLTestCase(TestCase):
         # it. This could possibly be changed to a 404 error.
 
         response = self.client1.get('/experiment/control_panel/%i/access_list'
-                                    '/add/user/%s/?authMethod=%s' %
+                                    '/add/user/%s/?authMethod=%s&canRead=true' %
                                     (9999, self.user1.username, localdb_auth_key))
         self.assertEqual(response.status_code, 403)
 
@@ -589,13 +589,12 @@ class ObjectACLTestCase(TestCase):
         self.assertTrue(login)
 
         # user3 has acl to write to experiment3
-        acl = ObjectACL(
-            pluginId=django_user,
-            entityId=str(self.user3.id),
-            content_object=self.experiment3,
+        acl = ExperimentACL(
+            user=self.user3,
+            experiment=self.experiment3,
             canRead=True,
             canWrite=True,
-            aclOwnershipType=ObjectACL.OWNER_OWNED,
+            aclOwnershipType=ExperimentACL.OWNER_OWNED,
         )
         acl.save()
 

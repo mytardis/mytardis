@@ -17,8 +17,7 @@ from django.conf import settings
 from django.test import TestCase
 from django.contrib.auth.models import User
 
-from ...auth.localdb_auth import django_user
-from ...models import ObjectACL, Experiment, Dataset, DataFile
+from ...models import ExperimentACL, Experiment, Dataset, DataFile
 
 
 class ViewTemplateContextsTest(TestCase):
@@ -35,13 +34,11 @@ class ViewTemplateContextsTest(TestCase):
         self.exp = Experiment(title='test exp1',
                               institution_name='monash', created_by=self.user)
         self.exp.save()
-        self.acl = ObjectACL(
-            pluginId=django_user,
-            entityId=str(self.user.id),
-            content_object=self.exp,
-            canRead=True,
-            isOwner=True,
-            aclOwnershipType=ObjectACL.OWNER_OWNED,
+        self.acl = ExperimentACL(user=self.user,
+                                 experiment=self.exp,
+                                 canRead=True,
+                                 isOwner=True,
+                                 aclOwnershipType=ExperimentACL.OWNER_OWNED,
         )
         self.acl.save()
         self.dataset = Dataset(description='dataset description...')
@@ -59,7 +56,6 @@ class ViewTemplateContextsTest(TestCase):
         self.exp.delete()
         self.dataset.delete()
         self.datafile.delete()
-        self.acl.delete()
 
     @patch('webpack_loader.loader.WebpackLoader.get_bundle')
     def test_experiment_view(self, mock_webpack_get_bundle):
@@ -180,13 +176,12 @@ class ExperimentListsTest(TestCase):
                                             created_by=self.user)
             self.exps.append(exp)
             is_owner = exp_num <= 100
-            acl = ObjectACL.objects.create(
-                pluginId=django_user,
-                entityId=str(self.user.id),
-                content_object=exp,
+            acl = ExperimentACL.objects.create(
+                user=self.user,
+                experiment=exp,
                 canRead=True,
                 isOwner=is_owner,
-                aclOwnershipType=ObjectACL.OWNER_OWNED)
+                aclOwnershipType=ExperimentACL.OWNER_OWNED)
             self.acls.append(acl)
 
     def tearDown(self):
@@ -231,7 +226,7 @@ class ExperimentListsTest(TestCase):
         # 100 to 10, so pagination isn't needed:
         deleted_count = 0
         for acl in list(self.acls):
-            exp = Experiment.objects.get(id=acl.object_id)
+            exp = acl.experiment
             if acl.isOwner and deleted_count < 90:
                 self.exps.remove(exp)
                 self.acls.remove(acl)
@@ -278,7 +273,7 @@ class ExperimentListsTest(TestCase):
         # 200 to 10, so pagination isn't needed:
         deleted_count = 0
         for acl in list(self.acls):
-            exp = Experiment.objects.get(id=acl.object_id)
+            exp = acl.experiment
             if not acl.isOwner and deleted_count < 190:
                 self.exps.remove(exp)
                 self.acls.remove(acl)

@@ -13,9 +13,8 @@ from flexmock import flexmock
 from django.test import TestCase
 from django.contrib.auth.models import User
 
-from ...auth.localdb_auth import django_user
 from ...models import \
-    ObjectACL, Experiment, Dataset, DataFile, Schema, \
+    ExperimentACL, Experiment, Dataset, DataFile, Schema, \
     DatafileParameterSet
 
 
@@ -32,13 +31,12 @@ class ContextualViewTest(TestCase):
         self.exp = Experiment(title='test exp1',
                               institution_name='monash', created_by=self.user)
         self.exp.save()
-        self.acl = ObjectACL(
-            pluginId=django_user,
-            entityId=str(self.user.id),
-            content_object=self.exp,
+        self.acl = ExperimentACL(
+            user=self.user,
+            experiment=self.exp,
             canRead=True,
             isOwner=True,
-            aclOwnershipType=ObjectACL.OWNER_OWNED,
+            aclOwnershipType=ExperimentACL.OWNER_OWNED,
         )
         self.acl.save()
         self.dataset = Dataset(description='dataset description...')

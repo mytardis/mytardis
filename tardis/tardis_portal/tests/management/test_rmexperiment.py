@@ -3,7 +3,7 @@ from django.test import TestCase
 from django.core.management import call_command
 
 from ...models import \
-    Experiment, Dataset, DataFile, ObjectACL, License, \
+    Experiment, Dataset, DataFile, ExperimentACL, License, \
     ExperimentParameterSet, ExperimentParameter, DatasetParameterSet, \
     DatafileParameterSet
 
@@ -42,14 +42,13 @@ def _create_test_experiment(user, license_):
         order=1,
         author="Michael Palin",
         url="http://nla.gov.au/nla.party-2")
-    acl = ObjectACL(content_object=experiment,
-                    pluginId='django_user',
-                    entityId=str(user.id),
+    acl = ExperimentACL(experiemnt=experiment,
+                    user=user,
                     isOwner=True,
                     canRead=True,
                     canWrite=True,
                     canDelete=True,
-                    aclOwnershipType=ObjectACL.OWNER_OWNED)
+                    aclOwnershipType=ExperimentACL.OWNER_OWNED)
     acl.save()
     return experiment
 
@@ -127,7 +126,7 @@ class RmExperimentTestCase(TestCase):
         self.assertEqual(DataFile.objects.all().count(), 0)
 
         #Check that everything else has been removed too
-        self.assertEqual(ObjectACL.objects.all().count(), 0)
+        self.assertEqual(ExperimentACL.objects.all().count(), 0)
         self.assertEqual(ExperimentParameterSet.objects.all().count(), 0)
         self.assertEqual(ExperimentParameter.objects.all().count(), 0)
         self.assertEqual(DatasetParameterSet.objects.all().count(), 0)

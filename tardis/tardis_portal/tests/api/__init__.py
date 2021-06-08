@@ -10,8 +10,7 @@ from django.test import TestCase
 from tastypie.test import ResourceTestCaseMixin
 
 from ...auth.authservice import AuthService
-from ...auth.localdb_auth import django_user
-from ...models.access_control import ObjectACL
+from ...models.access_control import ExperimentACL
 from ...models.experiment import Experiment
 from ...models.facility import Facility
 from ...models.instrument import Instrument
@@ -64,16 +63,14 @@ class MyTardisResourceTestCase(ResourceTestCaseMixin, TestCase):
         self.testexp.created_by = self.user
         self.testexp.locked = False
         self.testexp.save()
-        testacl = ObjectACL(
-            content_type=self.testexp.get_ct(),
-            object_id=self.testexp.id,
-            pluginId=django_user,
-            entityId=str(self.user.id),
+        testacl = ExperimentACL(
+            experiment=self.testexp,
+            user=self.user,
             canRead=True,
             canWrite=True,
             canDelete=True,
             isOwner=True,
-            aclOwnershipType=ObjectACL.OWNER_OWNED)
+            aclOwnershipType=ExperimentACL.OWNER_OWNED)
         testacl.save()
 
     def get_credentials(self):

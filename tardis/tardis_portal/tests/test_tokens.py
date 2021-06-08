@@ -46,7 +46,7 @@ from django.conf import settings
 from django.contrib.auth.models import User
 
 from ..models import Experiment
-from ..models import ObjectACL
+from ..models import ExperimentACL
 from ..models import Token
 
 from ..views.authorisation import retrieve_access_list_tokens
@@ -185,19 +185,17 @@ class TokenTestCase(TestCase):
         self.assertRaises(ObjectDoesNotExist, t.save_with_random_token)
         self.assertEqual('', t.token)
 
-        t = Token(user=self.user)
-        self.assertRaises(ObjectDoesNotExist, t.save_with_random_token)
-        self.assertEqual('', t.token)
-
-        t = Token(experiment=self.experiment)
-        self.assertRaises(ObjectDoesNotExist, t.save_with_random_token)
-        self.assertEqual('', t.token)
 
 # check that failure happens eventually
     def test_save_with_random_token_gives_up(self):
         from django.db import IntegrityError
-        t = Token(user=self.user, experiment=self.experiment)
-
+        t = Token(user=self.user)
+        t.save()
+        acl = ExperimentACL(token=t,
+                            experiment=self.experiment,
+                            canRead=True,
+                            aclOwnershipType=ExperimentACL.OWNER_OWNED)
+        acl.save()
         t.save = _raise_integrity_error
         self.assertRaises(IntegrityError, t.save_with_random_token)
 
@@ -205,7 +203,13 @@ class TokenTestCase(TestCase):
         self.assertTrue(len(t.token) > 0)
 
     def test_save_with_random_token(self):
-        t = Token(user=self.user, experiment=self.experiment)
+        t = Token(user=self.user)
+        t.save()
+        acl = ExperimentACL(token=t,
+                            experiment=self.experiment,
+                            canRead=True,
+                            aclOwnershipType=ExperimentACL.OWNER_OWNED)
+        acl.save()
         t.save_with_random_token()
         self.assertTrue(len(t.token) > 0)
 
@@ -213,23 +217,26 @@ class TokenTestCase(TestCase):
         sys.modules['datetime'].datetime = old_datetime
         experiment = Experiment(title='test exp1', created_by=self.user)
         experiment.save()
-        acl = ObjectACL(pluginId='django_user',
-                        entityId=str(self.user.id),
-                        content_object=experiment,
-                        canRead=True,
-                        canWrite=True,
-                        canDelete=True,
-                        isOwner=True)
+        acl = ExperimentACL(user=self.user,
+                            experiment=experiment,
+                            canRead=True,
+                            canWrite=True,
+                            canDelete=True,
+                            isOwner=True)
         acl.save()
 
         now = old_datetime.now()
         today = now.date()
         tomorrow = today + datetime.timedelta(1)
 
-        token = Token(experiment=experiment, user=self.user)
+        token = Token(user=self.user)
         token.expiry_date = tomorrow
         token.save()
-
+        acl = ExperimentACL(token=token,
+                            experiment=experiment,
+                            canRead=True,
+                            aclOwnershipType=ExperimentACL.OWNER_OWNED)
+        acl.save()
         factory = RequestFactory()
         request = factory.get(
             '/experiment/control_panel/%s/access_list/tokens/'
@@ -252,10 +259,9 @@ class TokenTestCase(TestCase):
 
         experiment = Experiment(title='test exp1', created_by=self.user)
         experiment.save()
-        acl = ObjectACL(pluginId='django_user',
-                        entityId=str(self.user.id),
-                        content_object=experiment,
-                        isOwner=True)
+        acl = ExperimentACL(user=self.user,
+                            experiment=experiment,
+                            isOwner=True)
         acl.save()
 
         factory = RequestFactory()
@@ -271,7 +277,7 @@ class TokenTestCase(TestCase):
         response_dict = json.loads(response.content.decode())
         self.assertEqual(response_dict['success'], True)
 
-        token = Token.objects.get(experiment=experiment)
+        token = Token.objects.get(experimentacls__experiment=experiment)
         url = "/experiment/view/%s/?token=%s" % (experiment.id, token.token)
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
@@ -285,10 +291,20 @@ class TokenTestCase(TestCase):
 
         experiment = Experiment(title='test exp1', created_by=self.user)
         experiment.save()
-
-        token = Token(experiment=experiment, user=self.user)
+        acl = ExperimentACL(user=self.user,
+                            experiment=experiment,
+                            canRead=True,
+                            aclOwnershipType=ExperimentACL.OWNER_OWNED)
+        acl.save()
+        # saving this way doesn't require isOwner to be true, only the views do
+        token = Token(user=self.user)
         token.save()
-
+        acl = ExperimentACL(token=token,
+                            experiment=experiment,
+                            canRead=True,
+                            aclOwnershipType=ExperimentACL.OWNER_OWNED)
+        acl.save()
+        # saving this way doesn't require isOwner to be true, only the views do
         factory = RequestFactory()
         request = factory.post(
             '/token/delete/%s/'
@@ -300,13 +316,12 @@ class TokenTestCase(TestCase):
         response = token_delete(
             request, token_id=token.id)
         response_dict = json.loads(response.content.decode())
-        # We haven't yet created an ObjectACL to associate self.user
+        # We haven't yet created an "isOwner" ExperimentACL to associate self.user
         # with the experiment, so request.user shouldn't be allowed
         # to delete the token:
         self.assertEqual(response_dict['success'], False)
-        acl = ObjectACL(pluginId='django_user',
-                        entityId=str(self.user.id),
-                        content_object=experiment,
+        acl = ExperimentACL(user=self.user,
+                        experiment=experiment,
                         isOwner=True)
         acl.save()
         response = token_delete(

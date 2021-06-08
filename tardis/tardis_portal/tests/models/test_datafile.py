@@ -17,7 +17,7 @@ from django.db import models
 from django.test import override_settings
 from tastypie.utils import trailing_slash
 
-from tardis.tardis_portal.models import Experiment, ObjectACL
+from tardis.tardis_portal.models import Experiment, ExperimentACL
 
 from tardis.tardis_portal.models import Dataset, DataFile, DataFileObject
 
@@ -56,13 +56,12 @@ class DataFileTestCase(ModelTestCase):
                          public_access=Experiment.PUBLIC_ACCESS_NONE)
         exp.save()
 
-        acl = ObjectACL(
-            pluginId='django_user',
-            entityId=str(self.user.id),
-            content_object=exp,
+        acl = ExperimentACL(
+            user=self.user,
+            experiment=exp,
             canRead=True,
             canWrite=True,
-            aclOwnershipType=ObjectACL.OWNER_OWNED,
+            aclOwnershipType=ExperimentACL.OWNER_OWNED,
         )
         acl.save()
 
