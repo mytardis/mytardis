@@ -1,5 +1,6 @@
 {% load pagination %}
 {% load static %}
+{% load datafile_tags %}
 
 {% if datafiles.paginator.num_pages > 1 %}
   {% block top-pagination %}{% pagination datafiles paginator page_num query_string %}{% endblock %}
@@ -21,24 +22,23 @@
 
     <div class="clearfix"></div>
     <table class="datafiles table table-sm">
-        {% if has_download_permissions %}
-            <thead>
-            <tr id="datafile-selectors" class="js-required">
-                <td colspan="3">
-                    Select: <a class="dataset_selector_all btn btn-outline-secondary btn-sm">All</a> / <a class="dataset_selector_none btn btn-outline-secondary btn-sm">None</a>
-                    <div class="pull-right">
-                        <button type="submit" class="btn btn-outline-secondary btn-sm download-selected">
-                            <i class="fa fa-download"></i>
-                            Download Selected Files
-                        </button>
-                        <input type="hidden" name="comptype" value="{{default_format}}"/>
-                        <input type="hidden" name="organization" value="{{default_organization}}"/>
-                    </div></td>
-            </tr>
-            </thead>
-        {% endif %}
+        <thead>
+        <tr id="datafile-selectors" class="js-required">
+            <td colspan="3">
+                Select: <a class="dataset_selector_all btn btn-outline-secondary btn-sm">All</a> / <a class="dataset_selector_none btn btn-outline-secondary btn-sm">None</a>
+                <div class="pull-right">
+                    <button type="submit" class="btn btn-outline-secondary btn-sm download-selected">
+                        <i class="fa fa-download"></i>
+                        Download Selected Files
+                    </button>
+                    <input type="hidden" name="comptype" value="{{default_format}}"/>
+                    <input type="hidden" name="organization" value="{{default_organization}}"/>
+                </div></td>
+        </tr>
+        </thead>
         <tbody>
         {% for datafile in datafiles.object_list %}
+            {% is_datafile_writable datafile.id request as has_df_write_permissions %}
             <tr data-datafile-id="{{datafile.id}}" class="datafile search_match_file">
                 <td id="datafile-checkbox-{{datafile.id}}">
                     <i class="fa fa-spinner fa-spin fa-lg"></i>
@@ -53,7 +53,7 @@
                 </td>
                 <td style="width: 130px;">
                   <div id="datafile-buttons-{{datafile.id}}" class="btn-group pull-right">
-                    {% if has_write_permissions and not immutable %}
+                    {% if has_df_write_permissions and not immutable %}
                         <a title="Add Metadata"
                            href="{% url 'tardis.tardis_portal.views.add_datafile_par' datafile.id %}"
                            data-toggle_selector="#datafile_metadata_toggle_{{datafile.id}}"

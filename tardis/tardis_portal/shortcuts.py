@@ -150,8 +150,8 @@ class RestfulExperimentParameterSet(object):
     view_functions = property(_get_view_functions)
 
     def _list(self, request, experiment_id):
-        from .auth.decorators import has_experiment_access
-        if not has_experiment_access(request, experiment_id):
+        from .auth.decorators import has_access
+        if not hast_access(request, experiment_id, "experiment"):
             return return_response_error(request)
         sets = ExperimentParameterSet.objects.filter(schema=self.schema,
                                                      experiment__pk=experiment_id)
@@ -161,8 +161,8 @@ class RestfulExperimentParameterSet(object):
 
 
     def _get(self, request, experiment_id, ps_id):
-        from .auth.decorators import has_experiment_access
-        if not has_experiment_access(request, experiment_id):
+        from .auth.decorators import has_access
+        if not has_access(request, experiment_id, "experiment"):
             return return_response_error(request)
         try:
             ps = ExperimentParameterSet.objects.get(schema=self.schema,
@@ -175,8 +175,8 @@ class RestfulExperimentParameterSet(object):
 
 
     def _create(self, request, experiment_id):
-        from .auth.decorators import has_experiment_write
-        if not has_experiment_write(request, experiment_id):
+        from .auth.decorators import has_write
+        if not has_write(request, experiment_id, "experiment"):
             return return_response_error(request)
         form = self.form_cls(json.loads(request.body.decode()))
         if not form.is_valid():
@@ -191,8 +191,8 @@ class RestfulExperimentParameterSet(object):
 
 
     def _update(self, request, experiment_id, ps_id):
-        from .auth.decorators import has_experiment_write
-        if not has_experiment_write(request, experiment_id):
+        from .auth.decorators import has_write
+        if not has_write(request, experiment_id, "experiment"):
             return return_response_error(request)
 
         form = self.form_cls(json.loads(request.body.decode()))
@@ -212,8 +212,8 @@ class RestfulExperimentParameterSet(object):
 
 
     def _delete(self, request, experiment_id, ps_id):
-        from .auth.decorators import has_experiment_write
-        if not has_experiment_write(request, experiment_id):
+        from .auth.decorators import has_write
+        if not has_write(request, experiment_id, "experiment"):
             return return_response_error(request)
 
         try:

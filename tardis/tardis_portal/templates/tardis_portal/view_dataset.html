@@ -285,7 +285,8 @@
   <div class="row">
     <div class="col-md-8">
       <h3 id="total-count" style="display: inline">
-      {{dataset.datafile_set.count}} File{% if dataset.datafile_set.count != 1 %}s{%endif%}
+      {% datafile_count dataset.id request.user as datafile_safecount %}
+      {{datafile_safecount}} File{% if datafile_safecount != 1 %}s{%endif%}
       </h3>
     </div>
     <div class="col-md-4">
@@ -321,7 +322,7 @@
                     {% else %}
                         {% for p in protocol %}
                             <a class="btn btn-outline-secondary btn-sm" href="{{p.1}}"
-                               title="Download Entire Dataset as {{p.0|upper}}">
+                               title="Download all available Datafiles in Dataset as {{p.0|upper}}">
                                 <i class="fa fa-download"></i>
                                 {{p.0|upper}}
                             </a>
@@ -335,7 +336,7 @@
                     </a>
                     <a class="btn btn-outline-secondary btn-sm"
                        href="{% url 'tardis_portal.dataset_checksums' dataset.id %}"
-                       title="Download MD5 checksums for all files in this Dataset">
+                       title="Download MD5 checksums for all available files in this Dataset">
                       <i class="fa fa-download"></i>
                       MD5
                     </a>

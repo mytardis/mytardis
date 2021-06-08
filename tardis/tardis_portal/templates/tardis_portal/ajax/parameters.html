@@ -1,7 +1,12 @@
 {% load capture %}
+{% load datafile_tags %}
+
+{% is_datafile_downloadable datafile.id request as has_df_download_permissions %}
+{% is_datafile_writable datafile.id request as has_df_write_permissions %}
+
 <div class="datafile_parameters">
     <strong><h3 style="display: inline;"><small>For the file:</small></h3>
-        {% if has_download_permissions and datafile.is_online and datafile.get_view_url %}
+        {% if has_df_download_permissions and datafile.is_online and datafile.get_view_url %}
           <a  class="filelink datafile_name"
               href="{{ datafile.get_view_url }}"
               title="View"
@@ -13,14 +18,14 @@
     </strong>
 
     <div class="btn-group pull-right">
-      {% if has_download_permissions and datafile.is_online %}
+      {% if has_df_download_permissions and datafile.is_online %}
       <a  class="btn"
           href="{{ datafile.download_url }}"
           title="Download">
           <i class="fa fa-download fa-lg"></i>
       </a>
       {% endif %}
-      {% if has_write_permissions and not immutable %}
+      {% if has_df_write_permissions and not immutable %}
       <a title="Add Metadata" href="{% url 'tardis.tardis_portal.views.add_datafile_par' datafile.id %}"
        data-toggle_selector="#datafile_metadata_toggle_{{datafile.id}}"
        class="btn btn-outline-secondary add-metadata">
@@ -31,7 +36,7 @@
 {% for parameterset in parametersets %}
   {% capture as edit_control %}
     {% if not parameterset.schema.immutable %}
-    {% if has_write_permissions %}
+    {% if has_df_write_permissions %}
       <div class="pull-right">
         <a href="{% url 'tardis.tardis_portal.views.edit_datafile_par' parameterset.id %}"
            data-toggle_selector="#datafile_metadata_toggle_{{parameterset.datafile_id}}"
@@ -49,6 +54,6 @@
 {% empty %}
     <br/>
     <em>There is no metadata for this file.
-        {% if has_write_permissions and not immutable %}Click the <i class="fa fa-plus"></i> button to add.</em>{% endif %}
+        {% if has_df_write_permissions and not immutable %}Click the <i class="fa fa-plus"></i> button to add.</em>{% endif %}
 {% endfor %}
 </div>
