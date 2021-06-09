@@ -35,7 +35,7 @@ requests==2.25.1
 uritemplate==3.0.1
 # GraphQL
 graphene-django==2.15.0
-graphene-django-plus==2.6.1
+graphene-django-plus==2.3.2
 django-filter==2.4.0
 django-crispy-forms==1.11.2
 django-graphql-jwt==0.3.1
