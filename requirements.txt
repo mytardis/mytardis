@@ -2,6 +2,7 @@
 -r requirements-docs.txt
 -r requirements-test.txt
 -r requirements-ldap.txt
+-r requirements-graphql.txt
 
 # apps go here:
 -r tardis/apps/social_auth/requirements.txt

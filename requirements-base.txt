@@ -21,7 +21,6 @@ gevent==21.1.2
 html2text==2020.1.16
 html5lib==1.1
 isodate==0.6.0
-pyjwt==1.7.1
 lxml==4.6.3
 paramiko==2.7.2
 pillow==8.2.0
@@ -34,10 +33,11 @@ pytz==2021.1
 requests==2.25.1
 uritemplate==3.0.1
 # GraphQL
+pyjwt==1.7.1 # to support Python 3.6
 graphene-django==2.15.0
 graphene-django-plus==2.3.2
 django-filter==2.4.0
 django-crispy-forms==1.11.2
-django-graphql-jwt==0.3.1
+django-graphql-jwt==0.3.2
 django-graphiql==0.4.4
 django-cors-headers==3.7.0

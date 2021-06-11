@@ -70,10 +70,6 @@ for app_name, app in get_tardis_apps():
 urlpatterns = [
     url(r'', include(core_urls)),
 
-    # GraphQL
-    url(r'^graphql/', csrf_exempt(GraphQLView.as_view(
-        graphiql=getattr(settings, 'GRAPHIQL', False)))),
-
     # API views
     url(r'^api/', include(api_urls)),
 
@@ -129,6 +125,13 @@ urlpatterns = [
     # Class-based views that may be overriden by apps
     url(r'', include(overridable_urls)),
 ]
+
+# GraphQL
+if getattr(settings, "GRAPHQL", False):
+    urlpatterns += [
+        url(r"^graphql/", csrf_exempt(GraphQLView.as_view(
+            graphiql=getattr(settings, "GRAPHIQL", False)))),
+    ]
 
 # Handle static files from /static
 urlpatterns += staticfiles_urlpatterns()
