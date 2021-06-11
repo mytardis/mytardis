@@ -13,6 +13,8 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import redirect
 from django.template.defaultfilters import filesizeformat
 
+from ..models.datafile import DataFile
+
 logger = logging.getLogger(__name__)
 
 
@@ -54,7 +56,7 @@ def _add_protocols_and_organizations(request, collection_object, c):
         settings, 'DEFAULT_PATH_MAPPER', 'classic')
 
 
-def get_dataset_info(dataset, include_thumbnail=False, exclude=None):  # too complex # noqa
+def get_dataset_info(dataset, request, include_thumbnail=False, exclude=None):  # too complex # noqa
     obj = model_to_dict(dataset)
 
     # Changed in Django 1.10: Private API django.forms.models.model_to_dict()
@@ -64,7 +66,7 @@ def get_dataset_info(dataset, include_thumbnail=False, exclude=None):  # too com
     if exclude is None or 'datafiles' not in exclude or 'file_count' \
        not in exclude:
         datafiles = list(
-            dataset.datafile_set.values_list('id', flat=True))
+            DataFile.safe.all(request.user).filter(dataset__id=dataset.id).values_list('id', flat=True))
         if exclude is None or 'datafiles' not in exclude:
             obj['datafiles'] = datafiles
         if exclude is None or 'file_count' not in exclude:
@@ -73,7 +75,7 @@ def get_dataset_info(dataset, include_thumbnail=False, exclude=None):  # too com
     obj['url'] = dataset.get_absolute_url()
 
     if exclude is None or 'size' not in exclude:
-        obj['size'] = dataset.get_size()
+        obj['size'] = dataset.get_size(request.user)
         obj['size_human_readable'] = filesizeformat(obj['size'])
 
     if (dataset.instrument

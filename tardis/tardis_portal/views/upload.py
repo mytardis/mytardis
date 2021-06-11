@@ -8,7 +8,7 @@ from django.http import HttpResponse
 from django.shortcuts import render
 
 from ..auth import decorators as authz
-from ..models import Dataset, DataFile
+from ..models import Dataset, DataFile, DatafileACL
 
 logger = logging.getLogger(__name__)
 
@@ -65,5 +65,16 @@ def upload(request, dataset_id):
             logger.debug('created file')
             datafile.file_object = uploaded_file_post
             logger.debug('saved datafile')
+
+            if not settings.ONLY_EXPERIMENT_ACLS:
+                # add default ACL
+                acl = DatafileACL(datafile=datafile,
+                                  user=request.user,
+                                  canRead=True,
+                                  canWrite=True,
+                                  canDelete=True,
+                                  isOwner=True,
+                                  aclOwnershipType=DatafileACL.OWNER_OWNED)
+                acl.save()
 
     return HttpResponse('True')

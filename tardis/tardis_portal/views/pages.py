@@ -23,13 +23,10 @@ from django.views.decorators.cache import cache_page
 from django.views.generic.base import TemplateView, View
 
 from ..auth import decorators as authz
-from ..auth.decorators import (
-    has_experiment_write,
-    has_dataset_write
-)
+from ..auth.decorators import has_write
 from ..auth.localdb_auth import django_user
 from ..forms import ExperimentForm, DatasetForm
-from ..models import Experiment, Dataset, DataFile, ObjectACL
+from ..models import Experiment, Dataset, DataFile, ExperimentACL, DatasetACL
 from ..shortcuts import render_response_index, \
     return_response_error, return_response_not_found, get_experiment_referer
 from ..views.utils import (
@@ -277,10 +274,10 @@ class DatasetView(TemplateView):
              'datafiles': get_datafiles_page(),
              'parametersets': dataset.getParameterSets().exclude(
                      schema__hidden=True),
-             'has_download_permissions': authz.has_dataset_download_access(
-                 request, dataset_id),
-             'has_write_permissions': authz.has_dataset_write(request,
-                                                              dataset_id),
+             'has_download_permissions': authz.has_download_access(
+                 request, dataset_id, "dataset"),
+             'has_write_permissions': authz.has__write(request, dataset_id,
+                                                       "dataset"),
              'from_instrument': instrument_name,
              'from_facility': facility_name,
              'from_experiment': get_experiment_referer(request, dataset_id),
@@ -325,9 +322,9 @@ class DatasetView(TemplateView):
             return return_response_error(request)
 
         try:
-            if not authz.has_dataset_access(request, dataset_id):
+            dataset = Dataset.safe.get(request.user, dataset_id)
+        except PermissionDenied:
                 return return_response_error(request)
-            dataset = Dataset.objects.get(id=dataset_id)
         except Dataset.DoesNotExist:
             return return_response_not_found(request)
 
@@ -490,14 +487,14 @@ class ExperimentView(TemplateView):
 
         c['experiment'] = experiment
         c['has_write_permissions'] = \
-            authz.has_write_permissions(request, experiment.id)
+            authz.has_write(request, experiment.id, "experiment")
         c['has_download_permissions'] = \
-            authz.has_experiment_download_access(request, experiment.id)
+            authz.has_download_access(request, experiment.id, "experiment")
         if request.user.is_authenticated:
             c['is_owner'] = \
-                authz.has_experiment_ownership(request, experiment.id)
+                authz.has_ownership(request, experiment.id, "experiment")
             c['has_read_or_owner_ACL'] = \
-                authz.has_read_or_owner_ACL(request, experiment.id)
+                authz.has_read_or_owner_ACL(request, experiment.id, "experiment")
 
         # Enables UI elements for the HSM app
         c['hsm_enabled'] = 'tardis.apps.hsm' in settings.INSTALLED_APPS
@@ -681,14 +678,13 @@ def create_experiment(request,
             full_experiment.save_m2m()
 
             # add defaul ACL
-            acl = ObjectACL(content_object=experiment,
-                            pluginId=django_user,
-                            entityId=str(request.user.id),
-                            canRead=True,
-                            canWrite=True,
-                            canDelete=True,
-                            isOwner=True,
-                            aclOwnershipType=ObjectACL.OWNER_OWNED)
+            acl = ExperimentACL(experiment=experiment,
+                                user=request.user,
+                                canRead=True,
+                                canWrite=True,
+                                canDelete=True,
+                                isOwner=True,
+                                aclOwnershipType=ExperimentACL.OWNER_OWNED)
             acl.save()
 
             request.POST = {'status': "Experiment Created."}
@@ -767,6 +763,14 @@ def add_dataset(request, experiment_id):
             experiment = Experiment.objects.get(id=experiment_id)
             dataset.experiments.add(experiment)
             dataset.save()
+            if not settings.ONLY_EXPERIMENT_ACLS:
+                acl = DatasetACL(dataset=dataset,
+                                 user=request.user,
+                                 canRead=True,
+                                 canWrite=True,
+                                 canDelete=True,
+                                 isOwner=True,
+                                 aclOwnershipType=DatasetACL.OWNER_OWNED)
             return _redirect_303('tardis_portal.view_dataset',
                                  dataset.id)
     else:
@@ -779,7 +783,7 @@ def add_dataset(request, experiment_id):
 
 @login_required
 def edit_dataset(request, dataset_id):
-    if not has_dataset_write(request, dataset_id):
+    if not has_write(request, dataset_id, "dataset"):
         return HttpResponseForbidden()
     dataset = Dataset.objects.get(id=dataset_id)
 
@@ -801,14 +805,14 @@ def edit_dataset(request, dataset_id):
         request, 'tardis_portal/add_or_edit_dataset.html', c)
 
 
-def _get_dataset_checksums(dataset, type='md5'):
+def _get_dataset_checksums(request, dataset, type='md5'):
     valid_types = ['md5', 'sha512']
     if type not in valid_types:
         raise ValueError('Invalid checksum type (%s). Valid values are %s' %
                          (type, ', '.join(valid_types)))
     hash_attr = type+'sum'
     checksums = [(getattr(df, hash_attr), path.join(df.directory or '', df.filename))
-                 for df in dataset.get_datafiles()]
+                 for df in dataset.get_datafiles(request.user)]
     return checksums
 
 

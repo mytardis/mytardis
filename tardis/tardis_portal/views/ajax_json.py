@@ -41,7 +41,7 @@ def dataset_json(request, experiment_id=None, dataset_id=None):
 
     # Convenience methods for permissions
     def can_update():
-        return authz.has_dataset_ownership(request, dataset_id)
+        return authz.has_ownership(request, dataset_id, "dataset")
 
     can_delete = can_update
 
@@ -51,7 +51,7 @@ def dataset_json(request, experiment_id=None, dataset_id=None):
         # Get all the experiments that currently aren't associated
         for experiment_id in updated_experiments - current_experiments:
             # You must own the experiment to assign datasets to it
-            if authz.has_experiment_ownership(request, experiment_id):
+            if authz.has_ownership(request, experiment_id, "experiment"):
                 experiment = Experiment.safe.get(request.user, experiment_id)
                 logger.info("Adding dataset #%d to experiment #%d" %
                             (dataset.id, experiment.id))
@@ -88,7 +88,7 @@ def dataset_json(request, experiment_id=None, dataset_id=None):
         dataset.save()
 
     has_download_permissions = \
-        authz.has_dataset_download_access(request, dataset_id)
+        authz.has_download_access(request, dataset_id, "dataset")
 
     dataset_dict = get_dataset_info(dataset, has_download_permissions)
     return HttpResponse(
@@ -105,7 +105,7 @@ def experiment_datasets_json(request, experiment_id):
         return return_response_not_found(request)
 
     has_download_permissions = \
-        authz.has_experiment_download_access(request, experiment_id)
+        authz.has_download_access(request, experiment_id, "experiment")
 
     dataset_ordering = getattr(settings, "DATASET_ORDERING", 'description')
     objects = [

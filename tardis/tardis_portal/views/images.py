@@ -34,7 +34,7 @@ def load_image(request, parameter):
 def load_experiment_image(request, parameter_id):
     parameter = ExperimentParameter.objects.get(pk=parameter_id)
     experiment_id = parameter.parameterset.experiment.id
-    if authz.has_experiment_access(request, experiment_id):
+    if authz.has_access(request, experiment_id, "experiment"):
         return load_image(request, parameter)
     return return_response_error(request)
 
@@ -42,7 +42,7 @@ def load_experiment_image(request, parameter_id):
 def load_dataset_image(request, parameter_id):
     parameter = DatasetParameter.objects.get(pk=parameter_id)
     dataset = parameter.parameterset.dataset
-    if authz.has_dataset_access(request, dataset.id):
+    if authz.has_access(request, dataset.id, "dataset"):
         return load_image(request, parameter)
     return return_response_error(request)
 
@@ -53,7 +53,7 @@ def load_datafile_image(request, parameter_id):
     except DatafileParameter.DoesNotExist:
         return HttpResponseNotFound()
     datafile = parameter.parameterset.datafile
-    if authz.has_datafile_access(request, datafile.id):
+    if authz.has_access(request, datafile.id, "datafile"):
         return load_image(request, parameter)
     return return_response_error(request)
 
@@ -64,7 +64,7 @@ def display_experiment_image(
 
     # TODO handle not exist
 
-    if not authz.has_experiment_access(request, experiment_id):
+    if not authz.has_access(request, experiment_id, "experiment"):
         return return_response_error(request)
 
     image = ExperimentParameter.objects.get(name__name=parameter_name,
@@ -79,7 +79,7 @@ def display_dataset_image(
 
     # TODO handle not exist
 
-    if not authz.has_dataset_access(request, dataset_id):
+    if not authz.has_access(request, dataset_id, "dataset"):
         return return_response_error(request)
 
     image = DatasetParameter.objects.get(name__name=parameter_name,
@@ -94,7 +94,7 @@ def display_datafile_image(
 
     # TODO handle not exist
 
-    if not authz.has_datafile_access(request, datafile_id):
+    if not authz.hase_access(request, datafile_id, "datafile"):
         return return_response_error(request)
 
     image = DatafileParameter.objects.get(name__name=parameter_name,

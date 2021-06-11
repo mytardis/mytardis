@@ -14,7 +14,7 @@ from django.contrib.auth.models import User, Group
 from django.contrib.sites.models import Site
 from django.db import transaction
 from django.db import IntegrityError
-from django.db.models import Q
+from django.db.models import Q, Prefetch
 from django.http import HttpResponse, JsonResponse
 from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_POST
@@ -22,7 +22,7 @@ from django.views.decorators.http import require_POST
 from ..auth import decorators as authz
 from ..auth.localdb_auth import django_user
 from ..models import UserAuthentication, UserProfile, Experiment, \
-    Token, GroupAdmin, ObjectACL
+    Token, GroupAdmin, ExperimentACL
 from ..shortcuts import render_response_index
 
 logger = logging.getLogger(__name__)
@@ -164,8 +164,9 @@ def retrieve_access_list_external(request, experiment_id):
 @never_cache
 @authz.experiment_download_required
 def retrieve_access_list_tokens(request, experiment_id):
-    tokens = Token.objects.filter(experiment=experiment_id)
-
+    tokens = Token.objects.prefetch_related(Prefetch("experimentacls",
+                        ExperimentACL.objects.select_related("experiment"
+                        ))).filter(experimentacls__experiment__id=experiment_id)
     def token_url(url, token):
         if not url:
             return ''
@@ -188,7 +189,7 @@ def retrieve_access_list_tokens(request, experiment_id):
                'id': token.id,
                'experiment_id': experiment_id,
                'is_owner': request.user.has_perm('tardis_acls.owns_experiment',
-                                                 token.experiment),
+                                                 Experiment.objects.get(pk=experiment_id)),
                } for token in tokens]
 
     has_archive_download_url = False
@@ -385,22 +386,17 @@ def add_experiment_access_user(request, experiment_id, username):
             'Experiment (id=%d) does not exist.' % (experiment.id),
             status=400)
 
-    acl = ObjectACL.objects.filter(
-        content_type=experiment.get_ct(),
-        object_id=experiment.id,
-        pluginId=django_user,
-        entityId=str(user.id),
-        aclOwnershipType=ObjectACL.OWNER_OWNED)
+    acl = ExperimentACL.objects.filter(experiment=experiment, user=user,
+                                       aclOwnershipType=ExperimentACL.OWNER_OWNED)
 
     if acl.count() == 0:
-        acl = ObjectACL(content_object=experiment,
-                        pluginId=django_user,
-                        entityId=str(user.id),
-                        canRead=canRead,
-                        canWrite=canWrite,
-                        canDelete=canDelete,
-                        isOwner=isOwner,
-                        aclOwnershipType=ObjectACL.OWNER_OWNED)
+        acl = ExperimentACL(experiment=experiment,
+                            user=user,
+                            canRead=canRead,
+                            canWrite=canWrite,
+                            canDelete=canDelete,
+                            isOwner=isOwner,
+                            aclOwnershipType=ExperimentACL.OWNER_OWNED)
 
         acl.save()
         c = {'authMethod': authMethod,
@@ -431,7 +427,7 @@ def remove_experiment_access_user(request, experiment_id, username):
 
     expt_acls = Experiment.safe.user_acls(experiment_id)
 
-    target_acl = expt_acls.filter(entityId=str(user.id))
+    target_acl = expt_acls.filter(user=user)
     owner_acls = [acl for acl in expt_acls if acl.isOwner]
 
     if target_acl.count() == 0:
@@ -556,12 +552,8 @@ def add_experiment_access_group(request, experiment_id, groupname):
         return HttpResponse(
             'Group %s does not exist' % (groupname), status=400)
 
-    acl = ObjectACL.objects.filter(
-        content_type=experiment.get_ct(),
-        object_id=experiment.id,
-        pluginId='django_group',
-        entityId=str(group.id),
-        aclOwnershipType=ObjectACL.OWNER_OWNED)
+    acl = ExperimentACL.objects.filter(experiment=experiment, group=group,
+                                       aclOwnershipType=ExperimentACL.OWNER_OWNED)
 
     if acl.count() > 0:
         # An ACL already exists for this experiment/group.
@@ -570,14 +562,13 @@ def add_experiment_access_group(request, experiment_id, groupname):
                             (groupname),
                             status=400)
 
-    acl = ObjectACL(content_object=experiment,
-                    pluginId='django_group',
-                    entityId=str(group.id),
-                    canRead=canRead,
-                    canWrite=canWrite,
-                    canDelete=canDelete,
-                    isOwner=isOwner,
-                    aclOwnershipType=ObjectACL.OWNER_OWNED)
+    acl = ExperimentACL(experiment=experiment,
+                        group=group,
+                        canRead=canRead,
+                        canWrite=canWrite,
+                        canDelete=canDelete,
+                        isOwner=isOwner,
+                        aclOwnershipType=ExperimentACL.OWNER_OWNED)
     acl.save()
 
     c = {'group': group,
@@ -605,12 +596,8 @@ def remove_experiment_access_group(request, experiment_id, group_id):
         # checked this.
         return HttpResponse('Experiment does not exist')
 
-    acl = ObjectACL.objects.filter(
-        content_type=experiment.get_ct(),
-        object_id=experiment.id,
-        pluginId='django_group',
-        entityId=str(group.id),
-        aclOwnershipType=ObjectACL.OWNER_OWNED)
+    acl = ExperimentACL.objects.filter(experiment=experiment, group=group,
+                                       aclOwnershipType=ExperimentACL.OWNER_OWNED)
 
     if acl.count() == 1:
         acl[0].delete()
@@ -626,7 +613,13 @@ def remove_experiment_access_group(request, experiment_id, group_id):
 @authz.experiment_ownership_required
 def create_token(request, experiment_id):
     experiment = Experiment.objects.get(id=experiment_id)
-    token = Token(experiment=experiment, user=request.user)
+    token = Token(user=request.user)
+    token.save()
+    acl = ExperimentACL(token=token,
+                        experiment=experiment,
+                        canRead=True,
+                        aclOwnershipType=ExperimentACL.OWNER_OWNED)
+    acl.save()
     token.save_with_random_token()
     logger.info('created token: %s' % token)
     return HttpResponse('{"success": true}', content_type='application/json')
@@ -635,7 +628,12 @@ def create_token(request, experiment_id):
 @require_POST
 def token_delete(request, token_id):
     token = Token.objects.get(id=token_id)
-    if authz.has_experiment_ownership(request, token.experiment_id):
+    # To refactor once token more generic than just an experiment
+    experiment_ids = token.experimentacls.select_related("experiment").values_list("experiment__id", flat=True)
+    is_owner_of_any = []
+    for exp_id in experiment_ids:
+        is_owner_of_any.append(authz.has_ownership(request, exp_id, 'experiment'))
+    if any(is_owner_of_any):
         token.delete()
         return HttpResponse('{"success": true}', content_type='application/json')
     return HttpResponse('{"success": false}', content_type='application/json')
@@ -651,11 +649,11 @@ def share(request, experiment_id):
     c = {}
 
     c['has_write_permissions'] = \
-        authz.has_write_permissions(request, experiment_id)
+        authz.has_write(request, experiment_id, "experiment")
     c['has_download_permissions'] = \
-        authz.has_experiment_download_access(request, experiment_id)
+        authz.has_download_access(request, experiment_id, "experiment")
     if user.is_authenticated:
-        c['is_owner'] = authz.has_experiment_ownership(request, experiment_id)
+        c['is_owner'] = authz.has_ownership(request, experiment_id, "experiment")
         c['is_superuser'] = user.is_superuser
 
     domain = Site.objects.get_current().domain
