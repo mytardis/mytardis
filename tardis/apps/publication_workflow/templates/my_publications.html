@@ -1,32 +1,25 @@
 {% extends "tardis_portal/portal_template.html" %}
 {% load static %}
+{% load render_bundle from webpack_loader %}
 {% load experiment_tags %}
 {% load experimentstats %}
 {% load humanize %}
 {% load bleach_tag %}
 {% load capture %}
-{% load render_bundle from webpack_loader %}
-
-{% block content %}
 
 {% render_bundle 'publication_workflow' %}
 
-<script>
+{% block content %}
 
-</script>
+<div id="publication-workflow-app"></div>
 
-{% comment %}
-Verbatim tells Django to stop interpreting {{ }} as Django template variables,
-and leave them to be interpreted by AngularJS instead.
-{% endcomment %}
-{% verbatim %}
-<div ng-app="publicationWorkflow">
+<!--<div ng-app="publicationWorkflow">
   <div id="content" ng-controller="MyPublicationsController as myPubsCtrl">
   <div class="row-fluid">
     <h2 class="visible-phone">My Publications</h2>
       <div class="pull-left">
         <h2 class="hidden-phone" style="text-align: center">My Publications</h2>
-      </div>  <!-- class="pull-left" -->
+      </div>  &lt;!&ndash; class="pull-left" &ndash;&gt;
       <div class="pull-right"
            ng-controller="PublicationActionsController as pubActionsCtrl"
            ng-init="pubActionsCtrl.init(myPubsCtrl, null)">
@@ -35,8 +28,8 @@ and leave them to be interpreted by AngularJS instead.
           <i class="fa fa-share"></i>
           <span>Create publication</span>
         </a>
-      </div>  <!-- class="pull-right" -->
-  </div>  <!-- class="row-fluid" -->
+      </div>  &lt;!&ndash; class="pull-right" &ndash;&gt;
+  </div>  &lt;!&ndash; class="row-fluid" &ndash;&gt;
 
   <br/>
 
@@ -99,10 +92,10 @@ and leave them to be interpreted by AngularJS instead.
                <i class="fa fa-share-alt"></i>
              Share
              </button>
-             <!-- For now, we're using Bootstrap (not Angular Material) for buttons -->
-             <!-- to make them look consistent with the rest of MyTardis. -->
-             <!-- This requires a few workarounds to make the two frameworks -->
-             <!-- play nicely together, e.g. using style="inline-block" -->
+             &lt;!&ndash; For now, we're using Bootstrap (not Angular Material) for buttons &ndash;&gt;
+             &lt;!&ndash; to make them look consistent with the rest of MyTardis. &ndash;&gt;
+             &lt;!&ndash; This requires a few workarounds to make the two frameworks &ndash;&gt;
+             &lt;!&ndash; play nicely together, e.g. using style="inline-block" &ndash;&gt;
              <md-progress-circular md-mode="indeterminate"
                                    ng-show="pubActionsCtrl.updating"
                                    md-diameter="20px"
@@ -163,10 +156,10 @@ and leave them to be interpreted by AngularJS instead.
                <i class="fa fa-share-alt"></i>
              Share
              </button>
-             <!-- For now, we're using Bootstrap (not Angular Material) for buttons -->
-             <!-- to make them look consistent with the rest of MyTardis. -->
-             <!-- This requires a few workarounds to make the two frameworks -->
-             <!-- play nicely together, e.g. using style="inline-block" -->
+             &lt;!&ndash; For now, we're using Bootstrap (not Angular Material) for buttons &ndash;&gt;
+             &lt;!&ndash; to make them look consistent with the rest of MyTardis. &ndash;&gt;
+             &lt;!&ndash; This requires a few workarounds to make the two frameworks &ndash;&gt;
+             &lt;!&ndash; play nicely together, e.g. using style="inline-block" &ndash;&gt;
              <md-progress-circular md-mode="indeterminate"
                                    ng-show="pubActionsCtrl.updating"
                                    md-diameter="20px"
@@ -225,10 +218,10 @@ and leave them to be interpreted by AngularJS instead.
                <i class="fa fa-exclamation-triangle"></i>
                Retract
              </button>
-             <!-- For now, we're using Bootstrap (not Angular Material) for buttons -->
-             <!-- to make them look consistent with the rest of MyTardis. -->
-             <!-- This requires a few workarounds to make the two frameworks -->
-             <!-- play nicely together, e.g. using style="inline-block" -->
+             &lt;!&ndash; For now, we're using Bootstrap (not Angular Material) for buttons &ndash;&gt;
+             &lt;!&ndash; to make them look consistent with the rest of MyTardis. &ndash;&gt;
+             &lt;!&ndash; This requires a few workarounds to make the two frameworks &ndash;&gt;
+             &lt;!&ndash; play nicely together, e.g. using style="inline-block" &ndash;&gt;
              <md-progress-circular md-mode="indeterminate"
                                    ng-show="pubActionsCtrl.updating"
                                    md-diameter="20px"
@@ -281,7 +274,8 @@ and leave them to be interpreted by AngularJS instead.
     </md-table-container>
   </md-content>
 
-</div>  <!-- id="content" -->
-</div>
-{% endverbatim %}
+</div>  &lt;!&ndash; id="content" &ndash;&gt;
+</div>-->
+{% render_bundle 'publication_workflow' %}
+
 {% endblock %}
