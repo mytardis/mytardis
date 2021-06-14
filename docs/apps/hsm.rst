@@ -30,10 +30,11 @@ To configure a :py:class:`tardis.tardis_portal.models.storage.StorageBox` as a t
 
 ``Django storage class`` as ``tardis.apps.hsm.storage.HsmFileSystemStorage``
 
-Also update following ```Storage Box Attributes```
+Also update following ``Storage Box Attributes``
 
-Key as `remote_path` and value as path to remote HSM filesystem share e.g: `vault-v2.erc.monash.edu/abc/vault`
-Key as `mount` and value as mount point for above remote path e.g: `/srv/abc_vault`
+    * Key as ``remote_path`` and value as path to remote HSM filesystem share e.g: ``vault-v2.erc.monash.edu/abc/vault``
+
+    * Key as ``mount`` and value as mount point for above remote path e.g: ``/srv/abc_vault``
 
 
 Default settings for this app is available at :py:mod:`tardis.apps.hsm.default_settings`
