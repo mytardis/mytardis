@@ -3,7 +3,7 @@ from django.conf import settings
 from django.contrib.sites.models import Site
 
 from . import default_settings
-from ...tardis_portal.models import StorageBoxOption, StorageBoxAttribute
+from ...tardis_portal.models import StorageBoxOption, StorageBoxAttribute, DataFileObject
 
 
 def interpolate_template(template_name, **kwargs):
@@ -29,6 +29,17 @@ def email_dfo_recall_complete(dfo, user):
         file_path=file_path,
         download_url=download_url,
         support_email=settings.SUPPORT_EMAIL, site_title=settings.SITE_TITLE)
+
+
+def email_dfo_recall_requested(dfo_id, user):
+    dfo = DataFileObject.objects.get(id=dfo_id)
+    file_name = dfo.datafile.filename
+    return interpolate_template(
+        'dfo_recall_requested',
+        first_name=user.first_name, last_name=user.last_name,
+        file_name=file_name, site_title=settings.SITE_TITLE,
+        support_email=settings.SUPPORT_EMAIL
+    )
 
 
 def email_dfo_recall_failed(dfo, user):

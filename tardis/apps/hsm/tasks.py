@@ -9,8 +9,9 @@ from django.contrib.auth.models import User
 from django.utils import timezone
 
 from tardis.celery import tardis_app
-from .email_text import email_dfo_recall_complete
+from .email_text import email_dfo_recall_complete, email_dfo_recall_requested
 from .email_text import email_dfo_recall_failed
+from .exceptions import HsmException
 
 logger = logging.getLogger(__name__)
 
@@ -37,6 +38,21 @@ def dfo_recall(dfo_id, user_id):
     from .exceptions import (DataFileObjectNotVerified,
                              StorageClassNotSupportedError)
     from .storage import HsmFileSystemStorage
+
+    # send an email to user acknowledging received request
+    """
+    send an email to user
+    """
+    if user_id:
+        user = User.objects.get(id=user_id)
+        try:
+            subject, content = email_dfo_recall_requested(dfo_id, user)
+            logger.info("sending recall requested email to user %s" % user)
+            user.email_user(subject, content,
+                            from_email=settings.DEFAULT_FROM_EMAIL,
+                            fail_silently=False)
+        except HsmException as err:
+            logger.error("Error sending email", str(err))
 
     dfo = DataFileObject.objects.get(id=dfo_id)
 
