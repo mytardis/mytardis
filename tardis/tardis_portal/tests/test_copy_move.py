@@ -74,7 +74,7 @@ class CopyMoveTestCase(TestCase):
         copy.verified = False
         copy.save()
         copy = self.dfo.copy_file(self.second_box)
-        # Thanks to task_always_eager = True in test_settings.py:
+        # Thanks to CELERY_TASK_ALWAYS_EAGER = True in test_settings.py:
         self.assertTrue(copy.verified)
 
         # Now let's delete the copy in self.second_box:

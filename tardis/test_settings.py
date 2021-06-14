@@ -28,11 +28,12 @@ DATABASES = {
 }
 
 # During testing it's always eager
-task_always_eager = True
-task_eager_propagates = True
-broker_url = 'memory://'
+CELERY_TASK_ALWAYS_EAGER = True
+CELERY_TASK_EAGER_PROPAGATES = True
+CELERY_BROKER_URL = 'memory://'
+
 tardis_app = Celery('tardis')
-tardis_app.config_from_object('django.conf:settings')
+tardis_app.config_from_object('django.conf:settings', namespace='CELERY')
 tardis_app.autodiscover_tasks(lambda: [n.name for n in apps.get_app_configs()])
 
 TEMPLATES[0]['DIRS'].append(

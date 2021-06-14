@@ -41,7 +41,7 @@ class DataFileTestCase(ModelTestCase):
                 storage_box=datafile.get_default_storage_box(),
                 uri=url)
             dfo.save()
-            # Tests are run with task_always_eager = True,
+            # Tests are run with CELERY_TASK_ALWAYS_EAGER = True,
             # so saving a DFO will trigger an immediate attempt
             # to verify the DFO which will trigger an attempt
             # to apply filters because we are overriding the

@@ -189,7 +189,7 @@ class DataFileResourceTest(MyTardisResourceTestCase):
         '''
         Re-run the upload test in order to create a verified file to
         download - it will be verified immediately because
-        task_always_eager is True in test_settings.py
+        CELERY_TASK_ALWAYS_EAGER is True in test_settings.py
 
         Then download the file, check the HTTP status code and check
         the file content.

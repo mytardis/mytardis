@@ -8,7 +8,7 @@ from kombu import Exchange, Queue
 
 # Using Celery for asynchronous task processing requires a broker e.g. RabbitMQ
 # Use a strong password for production
-broker_url = 'amqp://%(user)s:%(password)s@%(host)s:%(port)s/%(vhost)s' % {
+CELERY_BROKER_URL = 'amqp://%(user)s:%(password)s@%(host)s:%(port)s/%(vhost)s' % {
     'host': 'localhost',
     'port': 5672,
     'user': 'guest',
@@ -17,29 +17,29 @@ broker_url = 'amqp://%(user)s:%(password)s@%(host)s:%(port)s/%(vhost)s' % {
 }
 
 # Where to send task state and results
-result_backend = 'rpc://'
+CELERY_RESULT_BACKEND = 'rpc://'
 
 # List of modules to import when the Celery worker starts
-imports = ('tardis.tardis_portal.tasks',)
+CELERY_IMPORTS = ('tardis.tardis_portal.tasks',)
 
 # These settings help with task prioritization:
-task_acks_late = True
-worker_prefetch_multiplier = 1
+CELERY_TASK_ACKS_LATE = True
+CELERY_WORKER_PREFETCH_MULTIPLIER = 1
 
 MAX_TASK_PRIORITY = 10
 DEFAULT_TASK_PRIORITY = 5
 DEFAULT_EMAIL_TASK_PRIORITY = 10
 
-task_default_queue = 'celery'
+CELERY_TASK_DEFAULT_QUEUE = 'celery'
 # The 'x-max-priority' argument will only be respected by the RabbitMQ broker,
 # which is the recommended broker for MyTardis:
-task_queues = (
+CELERY_TASK_QUEUES = (
     Queue('celery', Exchange('celery'),
           routing_key='celery',
           queue_arguments={'x-max-priority': MAX_TASK_PRIORITY}),
 )
 
-beat_schedule = {
+CELERY_BEAT_SCHEDULE = {
     "verify-files": {
         "task": "tardis_portal.verify_dfos",
         "schedule": timedelta(seconds=300),
@@ -48,5 +48,5 @@ beat_schedule = {
 }
 
 # For local development, you can force Celery tasks to run synchronously:
-# task_always_eager = True
-# task_eager_propagates = True
+# CELERY_TASK_ALWAYS_EAGER = True
+# CELERY_TASK_EAGER_PROPAGATES = True
