@@ -47,12 +47,12 @@ def dfo_recall(dfo_id, user_id):
         user = User.objects.get(id=user_id)
         try:
             subject, content = email_dfo_recall_requested(dfo_id, user)
-            logger.info("sending recall requested email to user %s" % user)
+            logger.info("sending recall requested email to user %s", user)
             user.email_user(subject, content,
                             from_email=settings.DEFAULT_FROM_EMAIL,
                             fail_silently=False)
         except HsmException as err:
-            logger.error("Error sending email", str(err))
+            logger.error("Error sending email %s", str(err))
 
     dfo = DataFileObject.objects.get(id=dfo_id)
 
