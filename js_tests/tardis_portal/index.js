@@ -1,3 +1,3 @@
 
 require("jquery-mockjax");
-require("expose-loader?$.mockjax!jquery-mockjax");
+require("expose-loader?exposes=$.mockjax!jquery-mockjax");
