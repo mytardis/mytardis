@@ -6,8 +6,9 @@ from elasticsearch_dsl import analysis, analyzer
 from django_elasticsearch_dsl import Document, fields
 from django_elasticsearch_dsl.registries import registry
 
-from tardis.tardis_portal.models import Dataset, Experiment, \
-    DataFile, Instrument, ObjectACL
+from tardis.tardis_portal.models import (Dataset, Experiment, DataFile,
+    Instrument, ObjectACL, ParameterName, ExperimentParameter, DatasetParameter,
+    DatafileParameter)
 
 
 logger = logging.getLogger(__name__)
@@ -61,6 +62,53 @@ class ExperimentDocument(Document):
         'entityId': fields.KeywordField()
     }
     )
+    parameters = fields.NestedField(attr='getParametersforIndexing', properties={
+        'string': fields.NestedField(properties={
+            'pn_id': fields.KeywordField(),
+            'pn_name': fields.KeywordField(),
+            'value': fields.TextField(),
+        }),
+        'numerical': fields.NestedField(properties={
+            'pn_id': fields.KeywordField(),
+            'pn_name': fields.KeywordField(),
+            'value': fields.FloatField(),
+        }),
+        'datetime': fields.NestedField(properties={
+            'pn_id': fields.KeywordField(),
+            'pn_name': fields.KeywordField(),
+            'value': fields.DateField(),
+        })
+    })
+
+    def prepare_parameters(self, instance):
+        """Returns the experiment parameters associated with this
+        experiment, formatted for elasticsearch.
+
+        """
+        paramsets = list(instance.getParameterSets())
+        parameter_groups = {"string": [], "numerical" : [], "datetime" : []}
+        for paramset in paramsets:
+            param_type = {1: 'datetime', 2: 'string', 3: 'numerical'}
+            param_glob = ExperimentParameter.objects.filter(
+                parameterset=paramset).all().values_list(
+                    'name','datetime_value', 'string_value','numerical_value')
+            for sublist in param_glob:
+                PN_id = ParameterName.objects.get(id=sublist[0])
+                param_dict = {}
+                type_idx = 0
+                for idx, value in enumerate(sublist[1:-1]):
+                    if value not in [None, ""]:
+                        param_dict['pn_id'] = str(PN_id.id)
+                        param_dict['pn_name'] = str(PN_id.full_name)
+                        type_idx = idx+1
+                        if type_idx == 1:
+                            param_dict['value'] = value
+                        elif type_idx == 2:
+                            param_dict['value'] = str(value)
+                        elif type_idx == 3:
+                            param_dict['value'] = float(value)
+                parameter_groups[param_type[type_idx]].append(param_dict)
+        return dict(parameter_groups)
 
     class Django:
         model = Experiment
@@ -114,6 +162,53 @@ class DatasetDocument(Document):
     )
     created_time = fields.DateField()
     modified_time = fields.DateField()
+    parameters = fields.NestedField(attr='getParametersforIndexing', properties={
+        'string': fields.NestedField(properties={
+            'pn_id': fields.KeywordField(),
+            'pn_name': fields.KeywordField(),
+            'value': fields.TextField(),
+        }),
+        'numerical': fields.NestedField(properties={
+            'pn_id': fields.KeywordField(),
+            'pn_name': fields.KeywordField(),
+            'value': fields.FloatField(),
+        }),
+        'datetime': fields.NestedField(properties={
+            'pn_id': fields.KeywordField(),
+            'pn_name': fields.KeywordField(),
+            'value': fields.DateField(),
+        })
+    })
+
+    def prepare_parameters(self, instance):
+        """Returns the experiment parameters associated with this
+        experiment, formatted for elasticsearch.
+
+        """
+        paramsets = list(instance.getParameterSets())
+        parameter_groups = {"string": [], "numerical" : [], "datetime" : []}
+        for paramset in paramsets:
+            param_type = {1: 'datetime', 2: 'string', 3: 'numerical'}
+            param_glob = DatasetParameter.objects.filter(
+                parameterset=paramset).all().values_list(
+                    'name','datetime_value', 'string_value','numerical_value')
+            for sublist in param_glob:
+                PN_id = ParameterName.objects.get(id=sublist[0])
+                param_dict = {}
+                type_idx = 0
+                for idx, value in enumerate(sublist[1:-1]):
+                    if value not in [None, ""]:
+                        param_dict['pn_id'] = str(PN_id.id)
+                        param_dict['pn_name'] = str(PN_id.full_name)
+                        type_idx = idx+1
+                        if type_idx == 1:
+                            param_dict['value'] = value
+                        elif type_idx == 2:
+                            param_dict['value'] = str(value)
+                        elif type_idx == 3:
+                            param_dict['value'] = float(value)
+                parameter_groups[param_type[type_idx]].append(param_dict)
+        return dict(parameter_groups)
 
     class Django:
         model = Dataset
@@ -148,6 +243,53 @@ class DataFileDocument(Document):
     })
 
     experiments = fields.ObjectField()
+    parameters = fields.NestedField(attr='getParametersforIndexing', properties={
+        'string': fields.NestedField(properties={
+            'pn_id': fields.KeywordField(),
+            'pn_name': fields.KeywordField(),
+            'value': fields.TextField(),
+        }),
+        'numerical': fields.NestedField(properties={
+            'pn_id': fields.KeywordField(),
+            'pn_name': fields.KeywordField(),
+            'value': fields.FloatField(),
+        }),
+        'datetime': fields.NestedField(properties={
+            'pn_id': fields.KeywordField(),
+            'pn_name': fields.KeywordField(),
+            'value': fields.DateField(),
+        })
+    })
+
+    def prepare_parameters(self, instance):
+        """Returns the experiment parameters associated with this
+        experiment, formatted for elasticsearch.
+
+        """
+        paramsets = list(instance.getParameterSets())
+        parameter_groups = {"string": [], "numerical" : [], "datetime" : []}
+        for paramset in paramsets:
+            param_type = {1: 'datetime', 2: 'string', 3: 'numerical'}
+            param_glob = DatafileParameter.objects.filter(
+                parameterset=paramset).all().values_list(
+                    'name','datetime_value', 'string_value','numerical_value')
+            for sublist in param_glob:
+                PN_id = ParameterName.objects.get(id=sublist[0])
+                param_dict = {}
+                type_idx = 0
+                for idx, value in enumerate(sublist[1:-1]):
+                    if value not in [None, ""]:
+                        param_dict['pn_id'] = str(PN_id.id)
+                        param_dict['pn_name'] = str(PN_id.full_name)
+                        type_idx = idx+1
+                        if type_idx == 1:
+                            param_dict['value'] = value
+                        elif type_idx == 2:
+                            param_dict['value'] = str(value)
+                        elif type_idx == 3:
+                            param_dict['value'] = float(value)
+                parameter_groups[param_type[type_idx]].append(param_dict)
+        return dict(parameter_groups)
 
     def prepare_experiments(self, instance):
         experiments = []

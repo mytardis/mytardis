@@ -94,7 +94,15 @@ class SearchAppResource(Resource):
         index_list = ['experiments', 'dataset', 'datafile']
         ms = MultiSearch(index=index_list)
 
-        query_exp = Q("match", title=query_text)
+        # The amount of brackets required for dictionary-based Q() queries
+        # is horrible, but can build very complex and powerful queries!
+        # This query is also generic enough to just "OR" logic into any
+        # of the three object-type searches
+        query_meta = Q({"nested" : {"path":"parameters.string",
+                        "query": Q({"match": {
+                        "parameters.string.value":query_text}})}})
+
+        query_exp = Q("match", title=query_text) | query_meta
         query_exp_oacl = Q("term", objectacls__entityId=user.id) | \
             Q("term", public_access=100)
         for group in groups:
@@ -105,7 +113,7 @@ class SearchAppResource(Resource):
                     .extra(size=MAX_SEARCH_RESULTS, min_score=MIN_CUTOFF_SCORE)
                     .query(query_exp))
 
-        query_dataset = Q("match", description=query_text)
+        query_dataset = Q("match", description=query_text) | query_meta
         query_dataset_oacl = Q("term", **{'experiments.objectacls.entityId': user.id}) | \
             Q("term", **{'experiments.public_access': 100})
         for group in groups:
@@ -115,7 +123,7 @@ class SearchAppResource(Resource):
                     .extra(size=MAX_SEARCH_RESULTS, min_score=MIN_CUTOFF_SCORE).query(query_dataset)
                     .query('nested', path='experiments', query=query_dataset_oacl))
 
-        query_datafile = Q("match", filename=query_text)
+        query_datafile = Q("match", filename=query_text) | query_meta
         query_datafile_oacl = Q("term", experiments__objectacls__entityId=user.id) | \
             Q("term", experiments__public_access=100)
         for group in groups:
@@ -147,18 +155,25 @@ def simple_search_public_data(query_text):
     result_dict = {k: [] for k in ["experiments", "datasets", "datafiles"]}
     index_list = ['experiments', 'dataset', 'datafile']
     ms = MultiSearch(index=index_list)
-    query_exp = Q("match", title=query_text)
+    # The amount of brackets required for dictionary-based Q() queries
+    # is horrible, but can build very complex and powerful queries!
+    # This query is also generic enough to just "OR" logic into any
+    # of the three object-type searches
+    query_meta = Q({"nested" : {"path":"parameters.string",
+                    "query": Q({"match": {
+                    "parameters.string.value":query_text}})}})
+    query_exp = Q("match", title=query_text) | query_meta
     query_exp_oacl = Q("term", public_access=100)
     query_exp = query_exp & query_exp_oacl
     ms = ms.add(Search(index='experiments')
                 .extra(size=MAX_SEARCH_RESULTS, min_score=MIN_CUTOFF_SCORE)
                 .query(query_exp))
-    query_dataset = Q("match", description=query_text)
+    query_dataset = Q("match", description=query_text) | query_meta
     query_dataset_oacl = Q("term", **{'experiments.public_access': 100})
     ms = ms.add(Search(index='dataset')
                 .extra(size=MAX_SEARCH_RESULTS, min_score=MIN_CUTOFF_SCORE).query(query_dataset)
                 .query('nested', path='experiments', query=query_dataset_oacl))
-    query_datafile = Q("match", filename=query_text)
+    query_datafile = Q("match", filename=query_text) | query_meta
     query_datafile_oacl = Q("term", experiments__public_access=100)
     query_datafile = query_datafile & query_datafile_oacl
     ms = ms.add(Search(index='datafile')
@@ -239,8 +254,15 @@ class AdvanceSearchAppResource(Resource):
                 instrument_list_id.append(Instrument.objects.get(name__exact=ins).id)
         # query for experiment model
         ms = MultiSearch(index=index_list)
+        # The amount of brackets required for dictionary-based Q() queries
+        # is horrible, but can build very complex and powerful queries!
+        # This query is also generic enough to just "OR" logic into any
+        # of the three object-type searches
+        query_meta = Q({"nested" : {"path":"parameters.string",
+                        "query": Q({"match": {
+                        "parameters.string.value":query_text}})}})
         if 'experiments' in index_list:
-            query_exp = Q("match", title=query_text)
+            query_exp = Q("match", title=query_text) | query_meta
             if user.is_authenticated:
                 query_exp_oacl = Q("term", objectacls__entityId=user.id) | \
                                  Q("term", public_access=100)
@@ -256,7 +278,7 @@ class AdvanceSearchAppResource(Resource):
                         .extra(size=MAX_SEARCH_RESULTS, min_score=MIN_CUTOFF_SCORE)
                         .query(query_exp))
         if 'dataset' in index_list:
-            query_dataset = Q("match", description=query_text)
+            query_dataset = Q("match", description=query_text) | query_meta
             if user.is_authenticated:
                 query_dataset_oacl = Q("term", **{'experiments.objectacls.entityId': user.id}) | \
                                      Q("term", **{'experiments.public_access': 100})
@@ -274,7 +296,7 @@ class AdvanceSearchAppResource(Resource):
                         .extra(size=MAX_SEARCH_RESULTS, min_score=MIN_CUTOFF_SCORE).query(query_dataset)
                         .query('nested', path='experiments', query=query_dataset_oacl))
         if 'datafile' in index_list:
-            query_datafile = Q("match", filename=query_text)
+            query_datafile = Q("match", filename=query_text) | query_meta
             if user.is_authenticated:
                 query_datafile_oacl = Q("term", experiments__objectacls__entityId=user.id) | \
                                       Q("term", experiments__public_access=100)
