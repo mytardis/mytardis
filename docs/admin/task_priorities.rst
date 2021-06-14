@@ -17,10 +17,10 @@ the Celery app in ``tardis/celery.py``::
   DEFAULT_TASK_PRIORITY = 5
   DEFAULT_EMAIL_TASK_PRIORITY = 10
   
-  CELERY_DEFAULT_QUEUE = 'celery'
+  CELERY_TASK_DEFAULT_QUEUE = 'celery'
   # The 'x-max-priority' argument will only be respected by the RabbitMQ broker,
   # which is the recommended broker for MyTardis:
-  CELERY_QUEUES = (
+  CELERY_TASK_QUEUES = (
       Queue('celery', Exchange('celery'),
             routing_key='celery',
             queue_arguments={'x-max-priority': MAX_TASK_PRIORITY}),
@@ -30,7 +30,7 @@ the Celery app in ``tardis/celery.py``::
   ----------------
   ...
   tardis_app = Celery('tardis')
-  tardis_app.config_from_object('django.conf:settings')
+  tardis_app.config_from_object('django.conf:settings', namespace='CELERY')
   ...
 
 Celery's ``apply_async`` method's ``shadow`` argument is used to annotate storage
