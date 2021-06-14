@@ -28,9 +28,9 @@ DATABASES = {
 }
 
 # During testing it's always eager
-CELERY_ALWAYS_EAGER = True
-BROKER_URL = 'memory://'
-CELERY_EAGER_PROPAGATES_EXCEPTIONS = True
+task_always_eager = True
+task_eager_propagates = True
+broker_url = 'memory://'
 tardis_app = Celery('tardis')
 tardis_app.config_from_object('django.conf:settings')
 tardis_app.autodiscover_tasks(lambda: [n.name for n in apps.get_app_configs()])
