@@ -149,71 +149,58 @@ class SafeManager(models.Manager):
         return query.distinct()
 
 
-    def _query_on_acls(MODEL, ENTITY, ):
-        # MDOEL = Experiment, Dataset, DataFile
-        # ENTITY = User, Group, Token
-        # TODO MAKE GENERAL FUNCTION FOR QUERIES
+    def _query_on_acls(self, user=None, group=None, token=None, isOwner=False):
+        filter_dict = {}
+        exclude_dict = {}
+        if self.model.get_ct(self.model).model == "experiment":
+            from .models import Experiment, ExperimentACL
+            OBJECT = Experiment
+            OBJECTACL = ExperimentACL
+            acl_str = "experimentacl"
+        if self.model.get_ct(self.model).model == "dataset":
+            from .models import Dataset, DatasetACL
+            OBJECT = Dataset
+            OBJECTACL = DatasetACL
+            acl_str = "datasetacl"
+        if self.model.get_ct(self.model).model == "datafile":
+            from .models import DataFile, DatafileACL
+            OBJECT = DataFile
+            OBJECTACL = DatafileACL
+            acl_str = "datafileacl"
 
-    query = DataFile.objects.prefetch_related(Prefetch("datafileacl_set", queryset=DatafileACL.objects.select_related("user"))
-                                        ).filter(datafileacl__user=user,
-                                                 datafileacl__isOwner=True,
-                                                 ).exclude(datafileacl__effectiveDate__gte=datetime.today(),
-                                                           datafileacl__expiryDate__lte=datetime.today()
-                                                           )
-    query = DataFile.objects.prefetch_related(Prefetch("datafileacl_set", queryset=DatafileACL.objects.select_related("user"))
-                                        ).filter(datafileacl__user=user,
-                                                 datafileacl__isOwner=False,
-                                                 ).exclude(datafileacl__effectiveDate__gte=datetime.today(),
-                                                           datafileacl__expiryDate__lte=datetime.today()
-                                                           )
-    query = DataFile.objects.prefetch_related(Prefetch("datafileacl_set", queryset=DatafileACL.objects.select_related("group"))
-                                        ).filter(datafileacl__group=group,
-                                                 datafileacl__isOwner=True,
-                                                 ).exclude(datafileacl__effectiveDate__gte=datetime.today(),
-                                                           datafileacl__expiryDate__lte=datetime.today()
-                                                           )
-    query |= DataFile.objects.prefetch_related(Prefetch("datafileacl_set", queryset=DatafileACL.objects.select_related("group"))
-                                        ).filter(datafileacl__group=group,
-                                                 datafileacl__isOwner=False,
-                                                 ).exclude(datafileacl__effectiveDate__gte=datetime.today(),
-                                                           datafileacl__expiryDate__lte=datetime.today()
-                                                           )
-    query |= DataFile.objects.prefetch_related(Prefetch("datafileacl_set", queryset=DatafileACL.objects.select_related("token"))
-                                        ).filter(datafileacl__token=token,
-                                                 datafileacl__isOwner=False,
-                                                 ).exclude(datafileacl__effectiveDate__gte=datetime.today(),
-                                                           datafileacl__expiryDate__lte=datetime.today()
-                                                           )
+        if not any(user, group, token, isOwner):
+            return OBJECT.objects.none()
+
+        if user:
+            related = "user"
+            filter_dict[acl_str+"__user"] = user
+        elif group:
+            related = "group"
+            filter_dict[acl_str+"__group"] = group
+        elif token:
+            related = "token"
+            filter_dict[acl_str+"__token"] = token
+
+        if isOwner:
+            filter_dict[acl_str+"__isOwner"] = True
+        else:
+            filter_dict[acl_str+"__isOwner"] = False
+
+        exclude_dict[acl_str+"__effectiveDate__gte"] = datetime.today()
+        exclude_dict[acl_str+"__expiryDate__lte"] = datetime.today()
+
+        query = OBJECT.objects.prefetch_related(Prefetch(acl_str+"_set",
+                             queryset=OBJECTACL.objects.select_related(related))
+                                 ).filter(**filter_dict).exclude(**exclude_dict)
+        return query
+
 
     def _query_owned(self, user, user_id=None):
         if user_id is not None:
             user = User.objects.get(pk=user_id)
         if user.id is None:
             return super().get_queryset().none()
-        if self.model.get_ct(self.model).model == "experiment":
-            from .models import Experiment, ExperimentACL
-            query = Experiment.objects.prefetch_related(Prefetch("experimentacl_set", queryset=ExperimentACL.objects.select_related("user"))
-                                                ).filter(experimentacl__user=user,
-                                                         experimentacl__isOwner=True,
-                                                         ).exclude(experimentacl__effectiveDate__gte=datetime.today(),
-                                                                   experimentacl__expiryDate__lte=datetime.today()
-                                                                   )
-        if self.model.get_ct(self.model).model == "dataset":
-            from .models import Dataset, DatasetACL
-            query = Dataset.objects.prefetch_related(Prefetch("datasetacl_set", queryset=DatasetACL.objects.select_related("user"))
-                                                ).filter(datasetacl__user=user,
-                                                         datasetacl__isOwner=True,
-                                                         ).exclude(datasetacl__effectiveDate__gte=datetime.today(),
-                                                                   datasetacl__expiryDate__lte=datetime.today()
-                                                                   )
-        if self.model.get_ct(self.model).model.replace(' ','') == "datafile":
-            from .models import DataFile, DatafileACL
-            query = DataFile.objects.prefetch_related(Prefetch("datafileacl_set", queryset=DatafileACL.objects.select_related("user"))
-                                                ).filter(datafileacl__user=user,
-                                                         datafileacl__isOwner=True,
-                                                         ).exclude(datafileacl__effectiveDate__gte=datetime.today(),
-                                                                   datafileacl__expiryDate__lte=datetime.today()
-                                                                   )
+        query = _query_on_acls(user=user, isOwner=True)
         return query
 
 
@@ -222,36 +209,11 @@ class SafeManager(models.Manager):
             group = Group.objects.get(pk=group_id)
         if group.id is None:
             return super().get_queryset().none()
-        if self.model.get_ct(self.model).model == "experiment":
-            from .models import Experiment, ExperimentACL
-            query = Experiment.objects.prefetch_related(Prefetch("experimentacl_set", queryset=ExperimentACL.objects.select_related("group"))
-                                                ).filter(experimentacl__group=group,
-                                                         experimentacl__isOwner=True,
-                                                         ).exclude(experimentacl__effectiveDate__gte=datetime.today(),
-                                                                   experimentacl__expiryDate__lte=datetime.today()
-                                                                   )
-        if self.model.get_ct(self.model).model == "dataset":
-            from .models import Dataset, DatasetACL
-            query = Dataset.objects.prefetch_related(Prefetch("datasetacl_set", queryset=DatasetACL.objects.select_related("group"))
-                                                ).filter(datasetacl__group=group,
-                                                         datasetacl__isOwner=True,
-                                                         ).exclude(datasetacl__effectiveDate__gte=datetime.today(),
-                                                                   datasetacl__expiryDate__lte=datetime.today()
-                                                                   )
-        if self.model.get_ct(self.model).model.replace(' ','') == "datafile":
-            from .models import DataFile, DatafileACL
-            query = DataFile.objects.prefetch_related(Prefetch("datafileacl_set", queryset=DatafileACL.objects.select_related("group"))
-                                                ).filter(datafileacl__group=group,
-                                                         datafileacl__isOwner=True,
-                                                         ).exclude(datafileacl__effectiveDate__gte=datetime.today(),
-                                                                   datafileacl__expiryDate__lte=datetime.today()
-                                                                   )
+        query = _query_on_acls(group=group, isOwner=True)
         return query
 
 
     def _query_shared(self, user):
-        from .models.access_control import (ProjectACL, ExperimentACL,
-                                            DatasetACL, DatafileACL)
         '''
         get all shared proj/exp/set/files, not owned ones
         '''
@@ -259,101 +221,18 @@ class SafeManager(models.Manager):
         # this is almost duplicate code of end of has_perm in authorisation.py
         # should be refactored, but cannot think of good way atm
         if not user.is_authenticated:
-            from .auth.token_auth import TokenGroupProvider
-
-            if self.model.get_ct(self.model).model == "experiment":
-                from .models import Experiment
-                query = Experiment.objects.none()
-            if self.model.get_ct(self.model).model == "dataset":
-                from .models import Dataset
-                query = Dataset.objects.none()
-            if self.model.get_ct(self.model).model.replace(" ","") == "datafile":
-                from .models import DataFile
-                query = DataFile.objects.none()
-
+            query = _query_on_acls()
             tgp = TokenGroupProvider()
             for token in tgp.getGroups(user):
-
-                if self.model.get_ct(self.model).model == "experiment":
-                    query |= Experiment.objects.prefetch_related(Prefetch("experimentacl_set", queryset=ExperimentACL.objects.select_related("token"))
-                                                        ).filter(experimentacl__token=token,
-                                                                 experimentacl__isOwner=False,
-                                                                 ).exclude(experimentacl__effectiveDate__gte=datetime.today(),
-                                                                           experimentacl__expiryDate__lte=datetime.today()
-                                                                           )
-
-                if self.model.get_ct(self.model).model == "dataset":
-                    query |= Dataset.objects.prefetch_related(Prefetch("datasetacl_set", queryset=DatasetACL.objects.select_related("token"))
-                                                        ).filter(datasetacl__token=token,
-                                                                 datasetacl__isOwner=False,
-                                                             ).exclude(datasetacl__effectiveDate__gte=datetime.today(),
-                                                                           datasetacl__expiryDate__lte=datetime.today()
-                                                                           )
-
-                if self.model.get_ct(self.model).model.replace(' ','') == "datafile":
-                    query |= DataFile.objects.prefetch_related(Prefetch("datafileacl_set", queryset=DatafileACL.objects.select_related("token"))
-                                                        ).filter(datafileacl__token=token,
-                                                                 datafileacl__isOwner=False,
-                                                                 ).exclude(datafileacl__effectiveDate__gte=datetime.today(),
-                                                                           datafileacl__expiryDate__lte=datetime.today()
-                                                                           )
+                query |= _query_on_acls(token=token)
             return query
         # for which proj/exp/set/files does the user have read access
         # based on USER permissions?
-        if self.model.get_ct(self.model).model == "experiment":
-            from .models import Experiment
-            query = Experiment.objects.prefetch_related(Prefetch("experimentacl_set", queryset=ExperimentACL.objects.select_related("user"))
-                                                ).filter(experimentacl__user=user,
-                                                         experimentacl__isOwner=False,
-                                                         ).exclude(experimentacl__effectiveDate__gte=datetime.today(),
-                                                                   experimentacl__expiryDate__lte=datetime.today()
-                                                                   )
-
-        if self.model.get_ct(self.model).model == "dataset":
-            from .models import Dataset
-            query = Dataset.objects.prefetch_related(Prefetch("datasetacl_set", queryset=DatasetACL.objects.select_related("user"))
-                                                ).filter(datasetacl__user=user,
-                                                         datasetacl__isOwner=False,
-                                                         ).exclude(datasetacl__effectiveDate__gte=datetime.today(),
-                                                                   datasetacl__expiryDate__lte=datetime.today()
-                                                                   )
-
-        if self.model.get_ct(self.model).model.replace(' ','') == "datafile":
-            from .models import DataFile
-            query = DataFile.objects.prefetch_related(Prefetch("datafileacl_set", queryset=DatafileACL.objects.select_related("user"))
-                                                ).filter(datafileacl__user=user,
-                                                         datafileacl__isOwner=False,
-                                                         ).exclude(datafileacl__effectiveDate__gte=datetime.today(),
-                                                                   datafileacl__expiryDate__lte=datetime.today()
-                                                                   )
+        query = _query_on_acls(user=user)
         # for which does proj/exp/set/files does the user have read access
         # based on GROUP permissions
-            if self.model.get_ct(self.model).model == "experiment":
-                from .models import Experiment
-                query |= Experiment.objects.prefetch_related(Prefetch("experimentacl_set", queryset=ExperimentACL.objects.select_related("group"))
-                                                    ).filter(experimentacl__group=group,
-                                                             experimentacl__isOwner=False,
-                                                             ).exclude(experimentacl__effectiveDate__gte=datetime.today(),
-                                                                       experimentacl__expiryDate__lte=datetime.today()
-                                                                       )
-
-            if self.model.get_ct(self.model).model == "dataset":
-                from .models import Dataset
-                query |= Dataset.objects.prefetch_related(Prefetch("datasetacl_set", queryset=DatasetACL.objects.select_related("group"))
-                                                    ).filter(datasetacl__group=group,
-                                                             datasetacl__isOwner=False,
-                                                             ).exclude(datasetacl__effectiveDate__gte=datetime.today(),
-                                                                       datasetacl__expiryDate__lte=datetime.today()
-                                                                       )
-
-            if self.model.get_ct(self.model).model.replace(' ','') == "datafile":
-                from .models import DataFile
-                query |= DataFile.objects.prefetch_related(Prefetch("datafileacl_set", queryset=DatafileACL.objects.select_related("group"))
-                                                    ).filter(datafileacl__group=group,
-                                                             datafileacl__isOwner=False,
-                                                             ).exclude(datafileacl__effectiveDate__gte=datetime.today(),
-                                                                       datafileacl__expiryDate__lte=datetime.today()
-                                                                       )
+        for group in user.groups.all():
+            query |= _query_on_acls(group=group)
         return query
 
 
@@ -362,148 +241,226 @@ class SafeManager(models.Manager):
 
 
     def _query_all_public(self):
-        from .models import Experiment
-        return ~Q(public_access=Experiment.PUBLIC_ACCESS_NONE) &\
-               ~Q(public_access=Experiment.PUBLIC_ACCESS_EMBARGO)
+        if self.model.get_ct(self.model).model == "experiment":
+            from .models import Experiment
+            return ~Q(public_access=Experiment.PUBLIC_ACCESS_NONE) &\
+                   ~Q(public_access=Experiment.PUBLIC_ACCESS_EMBARGO)
+        # Dataset does not have a "public" functionality on a Micro-level yet
+        elif self.model.get_ct(self.model).model == "dataset":
+            from .models import Dataset
+            return Dataset.objects.none()
+        # DataFile does not have a "public" functionality on a Micro-level yet
+        elif self.model.get_ct(self.model).model == "datafile":
+            from .models import DataFile
+            return DataFile.objects.none()
 
 
     def owned_by_user(self, user):
         """
-        Return all experiments which are owned by a particular user id
+        Return all exps/sets/files which are owned by a particular user id
 
         :param User user: a User Object
-        :return: QuerySet of Experiments owned by user
+        :return: QuerySet of exps/sets/files owned by user
         :rtype: QuerySet
         """
         query = self._query_owned(user)
-        return super().get_queryset().filter(query)
+        return query
+
 
     def owned_by_group(self, group):
         """
-        Return all experiments that are owned by a particular group
+        Return all exps/sets/files that are owned by a particular group
         """
         query = self._query_owned_by_group(group)
-        return super().get_queryset().filter(query)
+        return query
+
 
     def owned_by_user_id(self, userId):
         """
-        Return all experiments which are owned by a particular user id
+        Return all exps/sets/files which are owned by a particular user id
 
         :param int userId: a User ID
-        :returns: QuerySet of Experiments owned by user id
+        :returns: QuerySet of exps/sets/files owned by user id
         :rtype: QuerySet
         """
         query = self._query_owned(user=None, user_id=userId)
-        return super().get_queryset().filter(query)
+        return query
 
-    def user_acls(self, experiment_id):
+
+    def user_acls(self, obj_id):
         """
-        Returns a list of ACL rules associated with this experiment.
-
-        :param experiment_id: the ID of the experiment
-        :type experiment_id: string
+        Returns a list of ACL rules associated with this exp/set/file.
+        :param obj_id: the ID of the exp/set/file
+        :type obj_id: string
         :returns: QuerySet of ACLs
         :rtype: QuerySet
         """
-        experiment = super().get(pk=experiment_id)
+        obj = super().get(pk=obj_id)
+        if self.model.get_ct(self.model).model == "experiment":
+            from .models.access_control import ExperimentACL
+            return obj.experimentacl_set.select_related("user").filter(user__isnull=False,
+                                             aclOwnershipType=ExperimentACL.OWNER_OWNED)
+        if self.model.get_ct(self.model).model == "dataset":
+            from .models.access_control import DatasetACL
+            return obj.datasetacl_set.select_related("user").filter(user__isnull=False,
+                                             aclOwnershipType=DatasetACL.OWNER_OWNED)
+        if self.model.get_ct(self.model).model.replace(" ","") == "datafile":
+            from .models.access_control import DatafileACL
+            return obj.datafileacl_set.select_related("user").filter(user__isnull=False,
+                                             aclOwnershipType=DatafileACL.OWNER_OWNED)
+        return super().get_queryset().none()
 
-        return ObjectACL.objects.filter(
-            pluginId=django_user,
-            content_type=experiment.get_ct(),
-            object_id=experiment_id,
-            aclOwnershipType=ObjectACL.OWNER_OWNED)
 
-    def users(self, experiment_id):
+    def users(self, obj_id):
         """
         Returns a list of users who have ACL rules associated with this
-        experiment.
+        exp/set/file.
 
-        :param int experiment_id: the ID of the experiment
-        :returns: QuerySet of Users with experiment access
+        :param int experiment_id: the ID of the exp/set/file
+        :returns: QuerySet of Users with exp/set/file access
         :rtype: QuerySet
         """
-        acl = self.user_acls(experiment_id)
-        return User.objects.filter(pk__in=[int(a.entityId) for a in acl])
+        acl = self.user_acls(obj_id)
+        return User.objects.filter(pk__in=[int(a.user.id) for a in acl])
 
-    def user_owned_groups(self, experiment_id):
+
+    def group_acls(self, obj_id):
+        """
+        Returns a list of ACL rules associated with this exp/set/file.
+        :param obj_id: the ID of the exp/set/file
+        :type obj_id: string
+        :returns: QuerySet of ACLs
+        :rtype: QuerySet
+        """
+        from .models.access_control import (ExperimentACL, DatasetACL, DatafileACL)
+        obj = super().get(pk=obj_id)
+        if self.model.get_ct(self.model).model == "experiment":
+            return obj.experimentacl_set.select_related("group").filter(group__isnull=False,
+                                             aclOwnershipType=ExperimentACL.OWNER_OWNED)
+        if self.model.get_ct(self.model).model == "dataset":
+            return obj.datasetacl_set.select_related("group").filter(group__isnull=False,
+                                             aclOwnershipType=DatasetACL.OWNER_OWNED)
+        if self.model.get_ct(self.model).model.replace(" ","") == "datafile":
+            return obj.datafileacl_set.select_related("group").filter(group__isnull=False,
+                                             aclOwnershipType=DatafileACL.OWNER_OWNED)
+        return super().get_queryset().none()
+
+
+    def groups(self, obj_id):
+        """
+        Returns a list of groups who have ACL rules associated with this
+        exp/set/file.
+
+        :param int experiment_id: the ID of the exp/set/file
+        :returns: QuerySet of Groups with exp/set/file access
+        :rtype: QuerySet
+        """
+        acl = self.group_acls(obj_id)
+        return Group.objects.filter(pk__in=[int(a.group.id) for a in acl])
+
+
+    def user_owned_groups(self, obj_id):
         """
         returns a list of user owned-groups which have ACL rules
-        associated with this experiment
-
-        :param int experiment_id: the ID of the experiment to be edited
+        associated with this exp/set/file
+        :param int obj_id: the ID of the exp/set/file to be edited
         :returns: QuerySet of non system Groups
         :rtype: QuerySet
         """
+        from .models.access_control import (ExperimentACL, DatasetACL, DatafileACL)
+        obj = super().get(pk=obj_id)
+        if self.model.get_ct(self.model).model == "experiment":
+            acl = obj.experimentacl_set.select_related("group").filter(group__isnull=False,
+                                             aclOwnershipType=ExperimentACL.OWNER_OWNED)
+        if self.model.get_ct(self.model).model == "dataset":
+            acl = obj.datasetacl_set.select_related("group").filter(group__isnull=False,
+                                             aclOwnershipType=DatasetACL.OWNER_OWNED)
+        if self.model.get_ct(self.model).model.replace(" ","") == "datafile":
+            acl = obj.datafileacl_set.select_related("group").filter(group__isnull=False,
+                                             aclOwnershipType=DatafileACL.OWNER_OWNED)
 
-        acl = ObjectACL.objects.filter(
-            pluginId='django_group',
-            content_type__model='experiment',
-            object_id=experiment_id,
-            aclOwnershipType=ObjectACL.OWNER_OWNED)
+        return Group.objects.filter(pk__in=[str(a.group.id) for a in acl])
 
-        return Group.objects.filter(pk__in=[str(a.entityId) for a in acl])
 
-    def group_acls_user_owned(self, experiment_id):
+    def group_acls_user_owned(self, obj_id):
         """
-        Returns a list of ACL rules associated with this experiment.
-
-        :param int experiment_id: the ID of the experiment
+        Returns a list of ACL rules associated with this exp/set/file.
+        :param int obj_id: the ID of the exp/set/file
         :returns: QuerySet of ACLs
         :rtype: QuerySet
         """
-        return ObjectACL.objects.filter(
-            pluginId='django_group',
-            content_type__model='experiment',
-            object_id=experiment_id,
-            aclOwnershipType=ObjectACL.OWNER_OWNED)
+        from .models.access_control import (ExperimentACL, DatasetACL, DatafileACL)
+        obj = super().get(pk=obj_id)
+        if self.model.get_ct(self.model).model == "experiment":
+            return obj.experimentacl_set.select_related("group").filter(group__isnull=False,
+                                             aclOwnershipType=ExperimentACL.OWNER_OWNED)
+        if self.model.get_ct(self.model).model == "dataset":
+            return obj.datasetacl_set.select_related("group").filter(group__isnull=False,
+                                             aclOwnershipType=DatasetACL.OWNER_OWNED)
+        if self.model.get_ct(self.model).model.replace(" ","") == "datafile":
+            return obj.datafileacl_set.select_related("group").filter(group__isnull=False,
+                                             aclOwnershipType=DatafileACL.OWNER_OWNED)
+        return super().get_queryset().none()
 
-    def group_acls_system_owned(self, experiment_id):
+
+    def group_acls_system_owned(self, obj_id):
         """
-        Returns a list of ACL rules associated with this experiment.
-
-        :param int experiment_id: the ID of the experiment
-        :returns: QuerySet of system-owned ACLs for experiment
+        Returns a list of ACL rules associated with this exp/set/file.
+        :param int obj_id: the ID of the exp/set/file
+        :returns: QuerySet of system-owned ACLs for exp/set/file
         :rtype: QuerySet
         """
-        return ObjectACL.objects.filter(
-            pluginId='django_group',
-            content_type__model='experiment',
-            object_id=experiment_id,
-            aclOwnershipType=ObjectACL.SYSTEM_OWNED)
+        from .models.access_control import (ExperimentACL, DatasetACL, DatafileACL)
+        obj = super().get(pk=obj_id)
+        if self.model.get_ct(self.model).model == "experiment":
+            return obj.experimentacl_set.select_related("group").filter(group__isnull=False,
+                                             aclOwnershipType=ExperimentACL.SYSTEM_OWNED)
+        if self.model.get_ct(self.model).model == "dataset":
+            return obj.datasetacl_set.select_related("group").filter(group__isnull=False,
+                                             aclOwnershipType=DatasetACL.SYSTEM_OWNED)
+        if self.model.get_ct(self.model).model.replace(" ","") == "datafile":
+            return obj.datafileacl_set.select_related("group").filter(group__isnull=False,
+                                             aclOwnershipType=DatafileACL.SYSTEM_OWNED)
+        return super().get_queryset().none()
 
-    def system_owned_groups(self, experiment_id):
+
+    def system_owned_groups(self, obj_id):
         """
         returns a list of sytem-owned groups which have ACL rules
-        associated with this experiment
-
-        :param experiment_id: the ID of the experiment to be edited
-        :type experiment_id: string
-        :returns: system owned groups for experiment
+        associated with this proj/exp/set/file
+        :param obj_id: the ID of the proj/exp/set/file to be edited
+        :type obj_id: string
+        :returns: system owned groups for proj/exp/set/file
         :rtype: QuerySet
         """
-        from .models import ObjectACL
-        acl = ObjectACL.objects.filter(
-            pluginId='django_group',
-            content_type__model='experiment',
-            object_id=experiment_id,
-            aclOwnershipType=ObjectACL.SYSTEM_OWNED)
+        from .models.access_control import (ExperimentACL, DatasetACL, DatafileACL)
+        obj = super().get(pk=obj_id)
+        if self.model.get_ct(self.model).model == "experiment":
+            acl = obj.experimentacl_set.select_related("group").filter(group__isnull=False,
+                                             aclOwnershipType=ExperimentACL.SYSTEM_OWNED)
+        if self.model.get_ct(self.model).model == "dataset":
+            acl = obj.datasetacl_set.select_related("group").filter(group__isnull=False,
+                                             aclOwnershipType=DatasetACL.SYSTEM_OWNED)
+        if self.model.get_ct(self.model).model.replace(" ","") == "datafile":
+            acl = obj.datafileacl_set.select_related("group").filter(group__isnull=False,
+                                             aclOwnershipType=DatafileACL.SYSTEM_OWNED)
+        return Group.objects.filter(pk__in=[str(a.group.id) for a in acl])
 
-        return Group.objects.filter(pk__in=[str(a.entityId) for a in acl])
 
-    def external_users(self, experiment_id):
+    def external_users(self, obj_id):
         """
         returns a list of groups which have external ACL rules
-
-        :param int experiment_id: the ID of the experiment to be edited
+        :param int obj_id: the ID of the /exp/set/file to be edited
         :returns: list of groups with external ACLs
         :rtype: list
         """
-
-        from .models import ObjectACL
-        acl = ObjectACL.objects.exclude(pluginId=django_user)
-        acl = acl.exclude(pluginId='django_group')
-        acl = acl.filter(content_type__model='experiment',
-                         object_id=experiment_id)
+        obj = super().get(pk=obj_id)
+        if self.model.get_ct(self.model).model == "experiment":
+            acl = obj.experimentacl_set.select_related("token").filter(token__isnull=False)
+        if self.model.get_ct(self.model).model == "dataset":
+            acl = obj.datasetacl_set.select_related("token").filter(token__isnull=False)
+        if self.model.get_ct(self.model).model.replace(" ","") == "datafile":
+            acl = obj.datafileacl_set.select_related("token").filter(token__isnull=False)
 
         if not acl:
             return None
@@ -513,8 +470,8 @@ class SafeManager(models.Manager):
 
         result = []
         for a in acl:
-            group = authService.searchGroups(plugin=a.pluginId,
-                                             name=a.entityId)
+            group = authService.searchGroups(plugin=u'token_group',
+                                             name=acl.experiment.id)
             if group:
                 result += group
         return result
