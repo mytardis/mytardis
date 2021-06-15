@@ -121,7 +121,7 @@ class HsmAppApiTestCase(MyTardisResourceTestCase):
         '''
         Test API endpoint for HSM online check without ACL access to DFO
         '''
-        # Test 403 forbidden (no ObjectACL access to dataset):
+        # Test 403 forbidden (no ExperimentACL access to dataset):
         self.dataset.experiments.remove(self.testexp)
         self.assertHttpForbidden(self.api_client.get(
             '/api/v1/hsm_replica/%s/online/' % self.dfo.id,
@@ -212,7 +212,7 @@ class HsmAppApiTestCase(MyTardisResourceTestCase):
         datafile = DataFile.objects.get(id=self.dfo.datafile.id)
         self.assertIsNone(datafile.recall_url)
 
-        # Test 403 forbidden (no ObjectACL access to dataset):
+        # Test 403 forbidden (no ExperimentACL access to dataset):
         self.dataset.experiments.remove(self.testexp)
         self.assertHttpForbidden(self.api_client.get(
             '/api/v1/hsm_replica/%s/recall/' % self.dfo.id,

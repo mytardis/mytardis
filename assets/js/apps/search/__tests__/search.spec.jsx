@@ -34,7 +34,7 @@ const datasetData = {
   experiments: [
     {
       id: 78,
-      objectacls: [
+      acls: [
         {
           entityId: '73',
           pluginId: 'django_user',
@@ -84,7 +84,7 @@ const apiResponse = {
               experiments: [
                 {
                   id: 7,
-                  objectacls: [
+                  acls: [
                     {
                       entityId: '13',
                       pluginId: 'django_user',
@@ -110,7 +110,7 @@ const apiResponse = {
             experiments: [
               {
                 id: 6292,
-                objectacls: [
+                acls: [
                   {
                     entityId: '1033',
                     pluginId: 'django_user',
@@ -142,7 +142,7 @@ const apiResponse = {
             end_time: null,
             id: 3883,
             institution_name: 'Monash University',
-            objectacls: [
+            acls: [
               {
                 entityId: '13',
                 pluginId: 'django_user',

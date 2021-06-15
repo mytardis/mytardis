@@ -28,6 +28,9 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
+# pylint: disable=R1702
+from datetime import datetime
+
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib.sessions.models import Session
@@ -191,8 +194,8 @@ def has_read_or_owner_ACL(request, experiment_id):
                       | Q(expiryDate__isnull=True))
 
     # is there at least one ACL rule which satisfies the rules?
-    from ..models.access_control import ObjectACL
-    acl = ObjectACL.objects.filter(query)
+    from ..models.access_control import ExperimentACL
+    acl = ExperimentACL.objects.filter(query)
     return bool(acl)
 
 

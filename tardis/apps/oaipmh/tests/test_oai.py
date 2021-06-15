@@ -36,7 +36,7 @@ def _create_test_data():
                     canRead=True,
                     canWrite=True,
                     canDelete=True,
-                    aclOwnershipType=ObjectACL.OWNER_OWNED)
+                    aclOwnershipType=ExperimentACL.OWNER_OWNED)
     acl.save()
     return user, experiment
 
