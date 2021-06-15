@@ -70,7 +70,7 @@ def create_new_acl_objects(apps, schema_editor):
         if acl.pluginId == 'token_group':
             # We do not have enough information to correctly create new ACLs for Tokens using only the old ACL data
             # so we unfortunately need to skip token ACLs!
-            print("WARNING  old_acl_id="+str(acl.id)" belongs to a token, and thus cannot be converted to the new ACL model")
+            print("WARNING  old_acl_id="+str(acl.id)+" belongs to a token, and thus cannot be converted to the new ACL model")
             continue
 
 
