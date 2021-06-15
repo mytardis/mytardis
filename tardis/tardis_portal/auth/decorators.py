@@ -53,12 +53,7 @@ def get_accessible_experiments_for_dataset(request, dataset_id):
 
 
 def get_shared_experiments(request):
-    experiments = Experiment.safe.owned_and_shared(request.user)
-
-    # exclude owned experiments
-    owned = get_owned_experiments(request)
-    experiments = experiments.exclude(id__in=[o.id for o in owned])
-    return experiments
+    return Experiment.safe.shared(request.user)
 
 
 def get_owned_experiments(request):
@@ -76,9 +71,24 @@ def get_accessible_datafiles_for_user(request):
         Q(dataset__experiments__id__in=experiment_ids))
 
 
-def has_experiment_ownership(request, experiment_id):
-    return Experiment.safe.owned(request.user).filter(
-        pk=experiment_id).exists()
+def has_ownership(request, obj_id, ct_type):
+    if ct_type == 'experiment':
+        return Experiment.safe.owned(request.user).filter(
+            pk=obj_id).exists()
+    if ct_type == 'dataset':
+        return Dataset.safe.owned(request.user).filter(
+            pk=obj_id).exists()
+    if ct_type == 'datafile':
+        return DataFile.safe.owned(request.user).filter(
+            pk=obj_id).exists()
+
+def has_dataset_ownership(request, dataset_id):
+    dataset = Dataset.objects.get(id=dataset_id)
+    return any(has_experiment_ownership(request, experiment.id)
+               for experiment in dataset.experiments.all())
+
+
+
 
 
 def has_experiment_access(request, experiment_id):
@@ -104,10 +114,7 @@ def has_experiment_download_access(request, experiment_id):
     return Experiment.public_access_implies_distribution(exp.public_access)
 
 
-def has_dataset_ownership(request, dataset_id):
-    dataset = Dataset.objects.get(id=dataset_id)
-    return any(has_experiment_ownership(request, experiment.id)
-               for experiment in dataset.experiments.all())
+
 
 
 def has_dataset_access(request, dataset_id):
