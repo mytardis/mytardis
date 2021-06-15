@@ -27,13 +27,16 @@ class OpenidUserMigration(models.Model):
 
 class OpenidACLMigration(models.Model):
     user_migration = models.ForeignKey(OpenidUserMigration, on_delete=models.CASCADE)
-    acl_id = models.ForeignKey(ExperimentACL, on_delete=models.CASCADE)
+    acl_id = models.ForeignKey(ExperimentACL, on_delete=models.CASCADE, null=True, blank=True)
 
     class Meta:
         app_label = 'openid_migration'
 
     def __str__(self):
-        return '%s | %s' % (self.user_migration, self.acl_id)
+        if self.acl_id:
+            return '%s | %s' % (self.user_migration, self.acl_id)
+        else:
+            return '%s | %s' % (self.user_migration, "old ACL no longer exists")
 
 
 class OpenidACLMigrationAdmin(admin.ModelAdmin):
