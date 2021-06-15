@@ -11,6 +11,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('openid_migration', '0001_initial'),
+        ('tardis_portal', '0019_create_and_populate_new_acls'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
