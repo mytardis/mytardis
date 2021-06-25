@@ -56,8 +56,7 @@ class ReplicaAppResource(tardis.tardis_portal.api.ReplicaResource):
         self.throttle_check(request)
 
         dfo = DataFileObject.objects.get(id=kwargs['pk'])
-        if not has_download_access(
-                request=request, datafile_id=dfo.datafile.id, "datafile"):
+        if not has_download_access(request, dfo.datafile.id, "datafile"):
             return HttpResponseForbidden()
 
         self.authorized_read_detail(
@@ -87,8 +86,7 @@ class ReplicaAppResource(tardis.tardis_portal.api.ReplicaResource):
         self.throttle_check(request)
 
         dfo = DataFileObject.objects.get(id=kwargs['pk'])
-        if not has_download_access(
-                request=request, datafile_id=dfo.datafile.id, "datafile"):
+        if not has_download_access(request, dfo.datafile.id, "datafile"):
             return HttpResponseForbidden()
 
         self.authorized_read_detail(
@@ -187,8 +185,7 @@ class DatasetAppResource(tardis.tardis_portal.api.DatasetResource):
         self.throttle_check(request)
 
         ds = Dataset.objects.get(id=kwargs['pk'])
-        if not has_download_access(
-                request=request, dataset_id=ds.id, "dataset"):
+        if not has_download_access(request, ds.id, "dataset"):
             return HttpResponseForbidden()
 
         """
