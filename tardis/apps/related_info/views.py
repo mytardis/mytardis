@@ -35,7 +35,7 @@ def index(request, experiment_id):
 
     c = {'experiment': experiment}
 
-    if authz.has_write_permissions(request, experiment_id, "experiment"):
+    if authz.has_write(request, experiment_id, "experiment"):
         template = 'related_info/index.html'
     else:
         template = 'related_info/index_ro.html'

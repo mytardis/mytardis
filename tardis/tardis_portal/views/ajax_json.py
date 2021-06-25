@@ -143,9 +143,9 @@ def get_experiment_permissions(request, experiment_id):
     except Experiment.DoesNotExist:
         return return_response_not_found(request)
     has_download_permissions = \
-        authz.has_experiment_download_access(request, experiment_id)
+        authz.has_download_access(request, experiment_id, "experiment")
     has_write_permissions = \
-        authz.has_write_permissions(request, experiment_id)
+        authz.has_write(request, experiment_id, "experiment")
     experiment_is_publication = \
         experiment.is_publication()
     objects = {'download_permissions': has_download_permissions, 'write_permissions': has_write_permissions,

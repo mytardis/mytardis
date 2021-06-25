@@ -748,7 +748,7 @@ def edit_experiment(request, experiment_id,
 
 @login_required
 def add_dataset(request, experiment_id):
-    if not has_experiment_write(request, experiment_id):
+    if not has_write(request, experiment_id, "experiment"):
         return HttpResponseForbidden()
 
     # Process form or prepopulate it

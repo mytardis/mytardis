@@ -117,32 +117,68 @@ def has_access(request, obj_id, ct_type):
     return request.user.has_perm('tardis_acls.view_'+ct_type, obj)
 
 
-############################################################
-def has_experiment_write(request, experiment_id):
-    return has_write_permissions(request, experiment_id)
-def has_dataset_write(request, dataset_id):
-    dataset = Dataset.objects.get(id=dataset_id)
-    if dataset.immutable:
+def has_write(request, obj_id, ct_type):
+    try:
+        if ct_type == 'experiment':
+            obj = Experiment.objects.get(id=obj_id)
+        if settings.ONLY_EXPERIMENT_ACLS:
+            if ct_type == 'dataset':
+                dataset = Dataset.objects.get(id=obj_id)
+                if obj.immutable:
+                    return False
+                return any(has_write(request, experiment.id, "experiment")
+                           for experiment in dataset.experiments.all())
+            if ct_type == 'datafile':
+                datafile = DataFile.objects.get(id=obj_id)
+                return any(has_write(request, experiment.id, "experiment")
+                           for experiment in datafile.dataset.experiments.all())
+        else:
+            if ct_type == 'dataset':
+                obj = Dataset.objects.get(id=obj_id)
+                if obj.immutable:
+                    return False
+            if ct_type == 'datafile':
+                obj = DataFile.objects.get(id=obj_id)
+    except (Experiment.DoesNotExist, Dataset.DoesNotExist, DataFile.DoesNotExist):
         return False
-    return any(has_experiment_write(request, experiment.id)
-               for experiment in dataset.experiments.all())
-############################################################
+    return request.user.has_perm('tardis_acls.change_'+ct_type, obj)
 
 ############################################################
-def has_experiment_download_access(request, experiment_id):
-    if Experiment.safe.owned_and_shared(request.user) \
-                      .filter(id=experiment_id) \
-                      .exists():
-        return True
-    exp = Experiment.objects.get(id=experiment_id)
-    return Experiment.public_access_implies_distribution(exp.public_access)
-def has_dataset_download_access(request, dataset_id):
-    dataset = Dataset.objects.get(id=dataset_id)
-    return any(has_experiment_download_access(request, experiment.id)
-               for experiment in dataset.experiments.all())
-def has_datafile_download_access(request, datafile_id):
-    dataset = Dataset.objects.get(datafile=datafile_id)
-    return has_dataset_download_access(request, dataset.id)
+
+def has_download_access(request, obj_id, ct_type):
+    try:
+        if ct_type == 'experiment':
+            if Experiment.safe.owned_and_shared(request.user) \
+                              .filter(id=obj_id) \
+                              .exists():
+                return True
+            exp = Experiment.objects.get(id=obj_id)
+            return Experiment.public_access_implies_distribution(exp.public_access)
+        if settings.ONLY_EXPERIMENT_ACLS:
+            if ct_type == 'dataset':
+                dataset = Dataset.objects.get(id=obj_id)
+                return any(has_download_access(request, experiment.id, "experiment")
+                           for experiment in dataset.experiments.all())
+            if ct_type == 'datafile':
+                datafile = DataFile.objects.get(id=obj_id)
+                return any(has_download_access(request, experiment.id, "experiment")
+                           for experiment in datafile.dataset.experiments.all())
+        else:
+            if ct_type == 'dataset':
+                if Dataset.safe.owned_and_shared(request.user) \
+                                  .filter(id=obj_id) \
+                                  .exists():
+                    return True
+            if ct_type == 'datafile':
+                if DataFile.safe.owned_and_shared(request.user) \
+                                  .filter(id=obj_id) \
+                                  .exists():
+                    return True
+    except (Experiment.DoesNotExist, Dataset.DoesNotExist, DataFile.DoesNotExist):
+        return False
+    return False
+
+
 ############################################################
 
 def has_read_or_owner_ACL(request, experiment_id):
@@ -158,51 +194,19 @@ def has_read_or_owner_ACL(request, experiment_id):
 
     As such, this method should NOT be used to check whether the user has
     general read permission.
+
+    Note: this function does not take into account token access
     """
-    from datetime import datetime
-    from .localdb_auth import django_user
-
-    experiment = Experiment.safe.get(request.user, experiment_id)
-
-    # does the user own this experiment
-    query = Q(content_type=experiment.get_ct(),
-              object_id=experiment.id,
-              pluginId=django_user,
-              entityId=str(request.user.id),
-              isOwner=True)
-
-    # check if there is a user based authorisation role
-    query |= Q(content_type=experiment.get_ct(),
-               object_id=experiment.id,
-               pluginId=django_user,
-               entityId=str(request.user.id),
-               canRead=True)\
-               & (Q(effectiveDate__lte=datetime.today())
-                  | Q(effectiveDate__isnull=True))\
-               & (Q(expiryDate__gte=datetime.today())
-                  | Q(expiryDate__isnull=True))
-
-    # and finally check all the group based authorisation roles
-    for name, group in request.user.userprofile.ext_groups:
-        query |= Q(pluginId=name,
-                   entityId=str(group),
-                   content_type=experiment.get_ct(),
-                   object_id=experiment.id,
-                   canRead=True)\
-                   & (Q(effectiveDate__lte=datetime.today())
-                      | Q(effectiveDate__isnull=True))\
-                   & (Q(expiryDate__gte=datetime.today())
-                      | Q(expiryDate__isnull=True))
-
-    # is there at least one ACL rule which satisfies the rules?
-    from ..models.access_control import ExperimentACL
-    acl = ExperimentACL.objects.filter(query)
-    return bool(acl)
-
-
-def has_write_permissions(request, experiment_id):
-    experiment = Experiment.objects.get(id=experiment_id)
-    return request.user.has_perm('tardis_acls.change_experiment', experiment)
+    query = request.user.experimentacls.select_related("experiment"
+                             ).filter(experiment__id=obj_id
+                             ).exclude(effectiveDate__gte=datetime.today(),
+                                       expiryDate__lte=datetime.today())
+    for group in request.user.groups.all():
+        query |= group.experimentacls.select_related("experiment"
+                                 ).filter(experiment__id=obj_id, isOwner=True
+                                 ).exclude(effectiveDate__gte=datetime.today(),
+                                           expiryDate__lte=datetime.today())
+    return query.exists()
 
 
 def has_delete_permissions(request, experiment_id):
@@ -295,8 +299,8 @@ def experiment_access_required(f):
 def experiment_download_required(f):
 
     def wrap(request, *args, **kwargs):
-        if not has_experiment_download_access(
-                request, kwargs['experiment_id']):
+        if not has_download_access(
+                request, kwargs['experiment_id'], "experiment"):
             return return_response_error(request)
         return f(request, *args, **kwargs)
 
@@ -308,7 +312,7 @@ def experiment_download_required(f):
 def dataset_download_required(f):
 
     def wrap(request, *args, **kwargs):
-        if not has_dataset_download_access(request, kwargs['dataset_id']):
+        if not has_download_access(request, kwargs['dataset_id'], "dataset"):
             return return_response_error(request)
         return f(request, *args, **kwargs)
 
@@ -356,7 +360,7 @@ def write_permissions_required(f):
 
     def wrap(request, *args, **kwargs):
 
-        if not has_write_permissions(request, kwargs['experiment_id']):
+        if not has_write(request, kwargs['experiment_id'], "experiment"):
             return return_response_error(request)
         return f(request, *args, **kwargs)
 
@@ -368,7 +372,7 @@ def write_permissions_required(f):
 def dataset_write_permissions_required(f):
     def wrap(request, *args, **kwargs):
         dataset_id = kwargs['dataset_id']
-        if not has_dataset_write(request, dataset_id):
+        if not has_write(request, dataset_id, "dataset"):
             if request.is_ajax():
                 return HttpResponse("")
             return return_response_error(request)

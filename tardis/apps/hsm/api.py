@@ -12,7 +12,7 @@ from django.http import (HttpResponseForbidden,
 from tastypie.utils import trailing_slash
 
 import tardis.tardis_portal.api
-from tardis.tardis_portal.auth.decorators import has_datafile_download_access, has_dataset_download_access
+from tardis.tardis_portal.auth.decorators import has_download_access
 from tardis.tardis_portal.models.dataset import Dataset
 from tardis.tardis_portal.models.datafile import DataFileObject
 
@@ -56,8 +56,8 @@ class ReplicaAppResource(tardis.tardis_portal.api.ReplicaResource):
         self.throttle_check(request)
 
         dfo = DataFileObject.objects.get(id=kwargs['pk'])
-        if not has_datafile_download_access(
-                request=request, datafile_id=dfo.datafile.id):
+        if not has_download_access(
+                request=request, datafile_id=dfo.datafile.id, "datafile"):
             return HttpResponseForbidden()
 
         self.authorized_read_detail(
@@ -87,8 +87,8 @@ class ReplicaAppResource(tardis.tardis_portal.api.ReplicaResource):
         self.throttle_check(request)
 
         dfo = DataFileObject.objects.get(id=kwargs['pk'])
-        if not has_datafile_download_access(
-                request=request, datafile_id=dfo.datafile.id):
+        if not has_download_access(
+                request=request, datafile_id=dfo.datafile.id, "datafile"):
             return HttpResponseForbidden()
 
         self.authorized_read_detail(
@@ -187,8 +187,8 @@ class DatasetAppResource(tardis.tardis_portal.api.DatasetResource):
         self.throttle_check(request)
 
         ds = Dataset.objects.get(id=kwargs['pk'])
-        if not has_dataset_download_access(
-                request=request, dataset_id=ds.id):
+        if not has_download_access(
+                request=request, dataset_id=ds.id, "dataset"):
             return HttpResponseForbidden()
 
         """
