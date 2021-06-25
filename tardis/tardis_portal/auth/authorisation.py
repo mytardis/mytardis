@@ -5,6 +5,7 @@ Object-level authorisation backend
 '''
 from datetime import datetime
 
+from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
 from django.contrib.contenttypes.models import ContentType
 from django.db.models import Q
