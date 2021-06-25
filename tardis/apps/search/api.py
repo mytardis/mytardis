@@ -106,7 +106,6 @@ class SearchAppResource(Resource):
                     .query(query_exp))
 
         query_dataset = Q("match", description=query_text)
-        if settings.ONLY_EXPERIMENT_ACLS:
 
         query_dataset_oacl = Q("term", **{'acls.entityId': user.id}) | \
             Q("term", **{'experiments.public_access': 100})
