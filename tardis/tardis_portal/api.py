@@ -738,7 +738,7 @@ class DatasetResource(MyTardisModelResource):
 
         file_path = kwargs.get("file_path", None)
 
-        if not has_access(request=request, dataset_id=dataset_id, "dataset"):
+        if not has_access(request, dataset_id, "dataset"):
             return HttpResponseForbidden()
 
         kwargs["dataset__id"] = dataset_id
@@ -772,7 +772,7 @@ class DatasetResource(MyTardisModelResource):
 
         dataset_id = kwargs['pk']
         dataset = Dataset.objects.get(id=dataset_id)
-        if not has_access(request=request, dataset_id=dataset_id, "dataset"):
+        if not has_access(request, dataset_id, "dataset"):
             return HttpResponseForbidden()
 
         # get dirs at root level
@@ -839,7 +839,7 @@ class DatasetResource(MyTardisModelResource):
         self.is_authenticated(request)
 
         dataset_id = kwargs['pk']
-        if not has_access(request=request, dataset_id=dataset_id, "dataset"):
+        if not has_access(request, dataset_id, "dataset"):
             return HttpResponseForbidden()
 
         base_dir = request.GET.get('dir_path', None)
@@ -882,7 +882,7 @@ class DatasetResource(MyTardisModelResource):
         self.method_check(request, allowed=['get'])
         self.is_authenticated(request)
         dataset_id = kwargs['pk']
-        if not has_access(request=request, dataset_id=dataset_id, "dataset"):
+        if not has_access(request, dataset_id, "dataset"):
             return HttpResponseForbidden()
 
         dir_path = request.GET.get('dir_path', None)
@@ -954,8 +954,7 @@ class DataFileResource(MyTardisModelResource):
         self.is_authenticated(request)
         self.throttle_check(request)
 
-        if not has_download_access(
-                request=request, datafile_id=kwargs['pk'], "datafile"):
+        if not has_download_access(request, kwargs['pk'], "datafile"):
             return HttpResponseForbidden()
 
         file_record = self._meta.queryset.get(pk=kwargs['pk'])
@@ -1024,7 +1023,7 @@ class DataFileResource(MyTardisModelResource):
         self.is_authenticated(request)
         self.throttle_check(request)
 
-        if not has_download_access(request=request, datafile_id=kwargs['pk'], "datafile"):
+        if not has_download_access(request, kwargs['pk'], "datafile"):
             return HttpResponseForbidden()
 
         file_record = self._meta.queryset.get(pk=kwargs['pk'])
