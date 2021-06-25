@@ -42,15 +42,12 @@ from tardis.analytics.tracker import IteratorTracker
 from . import tasks
 from .auth.decorators import (
     get_accessible_datafiles_for_user,
-    has_datafile_access,
-    has_datafile_download_access,
-    has_dataset_access,
-    has_dataset_write,
-    has_delete_permissions,
-    has_experiment_access,
-    has_write_permissions)
+    has_access,
+    has_download_access,
+    has_write,
+    has_delete_permissions)
 from .auth.localdb_auth import django_user
-from .models.access_control import ObjectACL
+from .models.access_control import ExperimentACL, DatasetACL, DatafileACL
 from .models.datafile import DataFile, DataFileObject, compute_checksums
 from .models.dataset import Dataset
 from .models.experiment import Experiment, ExperimentAuthor
@@ -167,39 +164,45 @@ class ACLAuthorization(Authorization):
             )
         if isinstance(bundle.obj, Dataset):
             dataset_ids = [ds.id for ds in object_list
-                           if has_dataset_access(bundle.request, ds.id)]
+                           if has_access(bundle.request, ds.id, "dataset")]
             return Dataset.objects.filter(id__in=dataset_ids)
         if isinstance(bundle.obj, DatasetParameterSet):
             return [dps for dps in object_list
-                    if has_dataset_access(bundle.request, dps.dataset.id)]
+                    if has_access(bundle.request, dps.dataset.id, "dataset")]
         if isinstance(bundle.obj, DatasetParameter):
             return [dp for dp in object_list
-                    if has_dataset_access(bundle.request,
-                                          dp.parameterset.dataset.id)]
+                    if has_access(bundle.request,
+                                  dp.parameterset.dataset.id, "dataset")]
         if isinstance(bundle.obj, DataFile):
-            all_files = get_accessible_datafiles_for_user(bundle.request)
-            return all_files.filter(id__in=obj_ids)
+            datafile_ids = [df.id for fd in object_list
+                           if has_access(bundle.request, df.id, "datafile")]
+            return DataFile.objects.filter(id__in=datafile_ids)
         if isinstance(bundle.obj, DatafileParameterSet):
-            datafiles = get_accessible_datafiles_for_user(bundle.request)
-            return DatafileParameterSet.objects.filter(
-                datafile__in=datafiles, id__in=obj_ids
-            )
+            return [dps for dps in object_list
+                    if has_access(bundle.request, dps.datafile.id, "datafile")]
         if isinstance(bundle.obj, DatafileParameter):
-            datafiles = get_accessible_datafiles_for_user(bundle.request)
-            return DatafileParameter.objects.filter(
-                parameterset__datafile__in=datafiles, id__in=obj_ids)
+            return [dp for dp in object_list
+                    if has_access(bundle.request,
+                                  dp.parameterset.fatafile.id, "datafile")]
         if isinstance(bundle.obj, Schema):
             return object_list
         if isinstance(bundle.obj, ParameterName):
             return object_list
-        if isinstance(bundle.obj, ObjectACL):
+        if isinstance(bundle.obj, ExperimentACL):
             experiment_ids = Experiment.safe.all(
                 bundle.request.user).values_list('id', flat=True)
-            return ObjectACL.objects.filter(
-                content_type__model='experiment',
-                object_id__in=experiment_ids,
-                id__in=obj_ids
-            )
+            return ExperimentACL.objects.filter(object_id__in=experiment_ids,
+                id__in=obj_ids)
+        if isinstance(bundle.obj, DatasetACL):
+            dataset_ids = Dataset.safe.all(
+                bundle.request.user).values_list('id', flat=True)
+            return DatasetACL.objects.filter(object_id__in=dataset_ids,
+                id__in=obj_ids)
+        if isinstance(bundle.obj, DatafileACL):
+            datafile_ids = DataFile.safe.all(
+                bundle.request.user).values_list('id', flat=True)
+            return DatafileACL.objects.filter(object_id__in=datafile_ids,
+                id__in=obj_ids)
         if bundle.request.user.is_authenticated and \
                 isinstance(bundle.obj, User):
             if facilities_managed_by(bundle.request.user):
@@ -240,31 +243,25 @@ class ACLAuthorization(Authorization):
         if re.match("^/api/v1/[a-z_]+/schema/$", bundle.request.path):
             return True
         if isinstance(bundle.obj, Experiment):
-            return has_experiment_access(bundle.request, bundle.obj.id)
+            return has_access(bundle.request, bundle.obj.id, "experiment")
         if isinstance(bundle.obj, ExperimentAuthor):
-            return has_experiment_access(
-                bundle.request, bundle.obj.experiment.id)
+            return has_access(bundle.request, bundle.obj.experiment.id, "experiment")
         if isinstance(bundle.obj, ExperimentParameterSet):
-            return has_experiment_access(
-                bundle.request, bundle.obj.experiment.id)
+            return has_access(bundle.request, bundle.obj.experiment.id, "experiment")
         if isinstance(bundle.obj, ExperimentParameter):
-            return has_experiment_access(
-                bundle.request, bundle.obj.parameterset.experiment.id)
+            return has_access(bundle.request, bundle.obj.parameterset.experiment.id, "experiment")
         if isinstance(bundle.obj, Dataset):
-            return has_dataset_access(bundle.request, bundle.obj.id)
+            return has_access(bundle.request, bundle.obj.id, "dataset")
         if isinstance(bundle.obj, DatasetParameterSet):
-            return has_dataset_access(bundle.request, bundle.obj.dataset.id)
+            return has_access(bundle.request, bundle.obj.dataset.id, "dataset")
         if isinstance(bundle.obj, DatasetParameter):
-            return has_dataset_access(
-                bundle.request, bundle.obj.parameterset.dataset.id)
+            return has_access(bundle.request, bundle.obj.parameterset.dataset.id, "dataset")
         if isinstance(bundle.obj, DataFile):
-            return has_datafile_access(bundle.request, bundle.obj.id)
+            return has_access(bundle.request, bundle.obj.id, "datafile")
         if isinstance(bundle.obj, DatafileParameterSet):
-            return has_datafile_access(
-                bundle.request, bundle.obj.datafile.id)
+            return has_access(bundle.request, bundle.obj.datafile.id, "datafile")
         if isinstance(bundle.obj, DatafileParameter):
-            return has_datafile_access(
-                bundle.request, bundle.obj.parameterset.datafile.id)
+            return has_access(bundle.request, bundle.obj.parameterset.datafile.id, "datafile")
         if isinstance(bundle.obj, User):
             # allow all authenticated users to read public user info
             # the dehydrate function also adds/removes some information
@@ -313,16 +310,14 @@ class ACLAuthorization(Authorization):
             if experiment_uri is not None:
                 experiment = ExperimentResource.get_via_uri(
                     ExperimentResource(), experiment_uri, bundle.request)
-                return has_write_permissions(bundle.request, experiment.id)
+                return has_write(bundle.request, experiment.id, "experiment")
             if getattr(bundle.obj.experiment, 'id', False):
-                return has_write_permissions(bundle.request,
-                                             bundle.obj.experiment.id)
+                return has_write(bundle.request,bundle.obj.experiment.id, "experiment")
             return False
         if isinstance(bundle.obj, ExperimentParameter):
             return bundle.request.user.has_perm(
                 'tardis_portal.change_experiment') and \
-                has_write_permissions(bundle.request,
-                                      bundle.obj.parameterset.experiment.id)
+                has_write(bundle.request,bundle.obj.parameterset.experiment.id, "experiment")
         if isinstance(bundle.obj, Dataset):
             if not bundle.request.user.has_perm(
                     'tardis_portal.change_dataset'):
@@ -334,7 +329,7 @@ class ACLAuthorization(Authorization):
                         ExperimentResource(), exp_uri, bundle.request)
                 except:
                     return False
-                if has_write_permissions(bundle.request, this_exp.id):
+                if has_write(bundle.request, this_exp.id, "experiment"):
                     perm = True
                 else:
                     return False
@@ -347,16 +342,16 @@ class ACLAuthorization(Authorization):
             if dataset_uri is not None:
                 dataset = DatasetResource.get_via_uri(
                     DatasetResource(), dataset_uri, bundle.request)
-                return has_dataset_write(bundle.request, dataset.id)
+                return has_write(bundle.request, dataset.id, "dataset")
             if getattr(bundle.obj.dataset, 'id', False):
-                return has_dataset_write(bundle.request,
-                                         bundle.obj.dataset.id)
+                return has_write(bundle.request,
+                                         bundle.obj.dataset.id, "dataset")
             return False
         if isinstance(bundle.obj, DatasetParameter):
             return bundle.request.user.has_perm(
                 'tardis_portal.change_dataset') and \
-                has_dataset_write(bundle.request,
-                                  bundle.obj.parameterset.dataset.id)
+                has_write(bundle.request,
+                                  bundle.obj.parameterset.dataset.id, "dataset")
         if isinstance(bundle.obj, DataFile):
             dataset = DatasetResource.get_via_uri(DatasetResource(),
                                                   bundle.data['dataset'],
@@ -364,7 +359,7 @@ class ACLAuthorization(Authorization):
             return all([
                 bundle.request.user.has_perm('tardis_portal.change_dataset'),
                 bundle.request.user.has_perm('tardis_portal.add_datafile'),
-                has_dataset_write(bundle.request, dataset.id),
+                has_write(bundle.request, dataset.id, "dataset"),
             ])
         if isinstance(bundle.obj, DatafileParameterSet):
             dataset = Dataset.objects.get(
@@ -372,7 +367,7 @@ class ACLAuthorization(Authorization):
             return all([
                 bundle.request.user.has_perm('tardis_portal.change_dataset'),
                 bundle.request.user.has_perm('tardis_portal.add_datafile'),
-                has_dataset_write(bundle.request, dataset.id),
+                has_write(bundle.request, dataset.id, "dataset"),
             ])
         if isinstance(bundle.obj, DatafileParameter):
             dataset = Dataset.objects.get(
@@ -380,17 +375,21 @@ class ACLAuthorization(Authorization):
             return all([
                 bundle.request.user.has_perm('tardis_portal.change_dataset'),
                 bundle.request.user.has_perm('tardis_portal.add_datafile'),
-                has_dataset_write(bundle.request, dataset.id),
+                has_write(bundle.request, dataset.id, "dataset"),
             ])
         if isinstance(bundle.obj, DataFileObject):
             return all([
                 bundle.request.user.has_perm('tardis_portal.change_dataset'),
                 bundle.request.user.has_perm('tardis_portal.add_datafile'),
-                has_dataset_write(bundle.request,
-                                  bundle.obj.datafile.dataset.id),
+                has_write(bundle.request,
+                                  bundle.obj.datafile.dataset.id, "dataset"),
             ])
-        if isinstance(bundle.obj, ObjectACL):
-            return bundle.request.user.has_perm('tardis_portal.add_objectacl')
+        if isinstance(bundle.obj, ExperimentACL):
+            return bundle.request.user.has_perm('tardis_portal.add_experimentacl')
+        if isinstance(bundle.obj, DatasetACL):
+            return bundle.request.user.has_perm('tardis_portal.add_experimentacl')
+        if isinstance(bundle.obj, DatafileACL):
+            return bundle.request.user.has_perm('tardis_portal.add_experimentacl')
         if isinstance(bundle.obj, Group):
             return bundle.request.user.has_perm('tardis_portal.add_group')
         if isinstance(bundle.obj, Facility):
@@ -619,15 +618,13 @@ class ExperimentResource(MyTardisModelResource):
             experiment = bundle.obj
             # TODO: unify this with the view function's ACL creation,
             # maybe through an ACL toolbox.
-            acl = ObjectACL(content_type=experiment.get_ct(),
-                            object_id=experiment.id,
-                            pluginId=django_user,
-                            entityId=str(bundle.request.user.id),
+            acl = ExperimentACL(experiment=experiment.id,
+                            user=bundle.request.user.id,
                             canRead=True,
                             canWrite=True,
                             canDelete=True,
                             isOwner=True,
-                            aclOwnershipType=ObjectACL.OWNER_OWNED)
+                            aclOwnershipType=ExperimentACL.OWNER_OWNED)
             acl.save()
 
         return super().hydrate_m2m(bundle)
@@ -741,7 +738,7 @@ class DatasetResource(MyTardisModelResource):
 
         file_path = kwargs.get("file_path", None)
 
-        if not has_dataset_access(request=request, dataset_id=dataset_id):
+        if not has_access(request=request, dataset_id=dataset_id, "dataset"):
             return HttpResponseForbidden()
 
         kwargs["dataset__id"] = dataset_id
@@ -775,8 +772,7 @@ class DatasetResource(MyTardisModelResource):
 
         dataset_id = kwargs['pk']
         dataset = Dataset.objects.get(id=dataset_id)
-        if not has_dataset_access(
-                request=request, dataset_id=dataset_id):
+        if not has_access(request=request, dataset_id=dataset_id, "dataset"):
             return HttpResponseForbidden()
 
         # get dirs at root level
@@ -843,8 +839,7 @@ class DatasetResource(MyTardisModelResource):
         self.is_authenticated(request)
 
         dataset_id = kwargs['pk']
-        if not has_dataset_access(
-                request=request, dataset_id=dataset_id):
+        if not has_access(request=request, dataset_id=dataset_id, "dataset"):
             return HttpResponseForbidden()
 
         base_dir = request.GET.get('dir_path', None)
@@ -887,8 +882,7 @@ class DatasetResource(MyTardisModelResource):
         self.method_check(request, allowed=['get'])
         self.is_authenticated(request)
         dataset_id = kwargs['pk']
-        if not has_dataset_access(
-                request=request, dataset_id=dataset_id):
+        if not has_access(request=request, dataset_id=dataset_id, "dataset"):
             return HttpResponseForbidden()
 
         dir_path = request.GET.get('dir_path', None)
@@ -960,8 +954,8 @@ class DataFileResource(MyTardisModelResource):
         self.is_authenticated(request)
         self.throttle_check(request)
 
-        if not has_datafile_download_access(
-                request=request, datafile_id=kwargs['pk']):
+        if not has_download_access(
+                request=request, datafile_id=kwargs['pk'], "datafile"):
             return HttpResponseForbidden()
 
         file_record = self._meta.queryset.get(pk=kwargs['pk'])
@@ -1030,8 +1024,7 @@ class DataFileResource(MyTardisModelResource):
         self.is_authenticated(request)
         self.throttle_check(request)
 
-        if not has_datafile_download_access(
-                request=request, datafile_id=kwargs['pk']):
+        if not has_download_access(request=request, datafile_id=kwargs['pk'], "datafile"):
             return HttpResponseForbidden()
 
         file_record = self._meta.queryset.get(pk=kwargs['pk'])
@@ -1298,17 +1291,14 @@ class ReplicaResource(MyTardisModelResource):
         return bundle
 
 
-class ObjectACLResource(MyTardisModelResource):
-    content_object = GenericForeignKeyField({
-        Experiment: ExperimentResource,
-        # ...
-    }, 'content_object')
+class ExperimentACLResource(MyTardisModelResource):
+    experiment = fields.ForeignKey(ExperimentResource, 'experiment')
 
     class Meta:
-        object_class = ObjectACL
+        object_class = ExperimentACL
         authentication = default_authentication
         authorization = ACLAuthorization()
-        queryset = ObjectACL.objects.all()
+        queryset = ExperimentACL.objects.all()
         filtering = {
             'pluginId': ('exact', ),
             'entityId': ('exact', ),
@@ -1318,12 +1308,68 @@ class ObjectACLResource(MyTardisModelResource):
         ]
 
     def hydrate(self, bundle):
-        # Fill in the content type.
-        if bundle.data['content_type'] == 'experiment':
-            experiment = Experiment.objects.get(pk=bundle.data['object_id'])
-            bundle.obj.content_type = experiment.get_ct()
-        else:
-            raise NotImplementedError(str(bundle.obj))
+        try:
+            experiment = ExperimentResource.get_via_uri(ExperimentResource(),
+                                                bundle.data['experiment'],
+                                                bundle.request)
+        except NotFound:
+            experiment = Experiment.objects.get(namespace=bundle.data['experiment'])
+        bundle.obj.experiment = experiment
+        del(bundle.data['experiment'])
+        return bundle
+
+class DatasetACLResource(MyTardisModelResource):
+    dataset = fields.ForeignKey(DatasetResource, 'dataset')
+
+    class Meta:
+        object_class = DatasetACL
+        authentication = default_authentication
+        authorization = ACLAuthorization()
+        queryset = DatasetACL.objects.all()
+        filtering = {
+            'pluginId': ('exact', ),
+            'entityId': ('exact', ),
+        }
+        ordering = [
+            'id'
+        ]
+
+    def hydrate(self, bundle):
+        try:
+            dataset = DatasetResource.get_via_uri(DatasetResource(),
+                                                bundle.data['dataset'],
+                                                bundle.request)
+        except NotFound:
+            dataset = Dataset.objects.get(namespace=bundle.data['dataset'])
+        bundle.obj.dataset = dataset
+        del(bundle.data['dataset'])
+        return bundle
+
+class DatafileACLResource(MyTardisModelResource):
+    datafile = fields.ForeignKey(DataFileResource, 'datafile')
+
+    class Meta:
+        object_class = ExperimentACL
+        authentication = default_authentication
+        authorization = ACLAuthorization()
+        queryset = ExperimentACL.objects.all()
+        filtering = {
+            'pluginId': ('exact', ),
+            'entityId': ('exact', ),
+        }
+        ordering = [
+            'id'
+        ]
+
+    def hydrate(self, bundle):
+        try:
+            datafile = DataFileResource.get_via_uri(DataFileResource(),
+                                                bundle.data['datafile'],
+                                                bundle.request)
+        except NotFound:
+            datafile = DataFile.objects.get(namespace=bundle.data['datafile'])
+        bundle.obj.datafile = datafile
+        del(bundle.data['datafile'])
         return bundle
 
 
