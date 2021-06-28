@@ -10,6 +10,7 @@ from uritemplate import URITemplate
 
 
 from django.conf import settings
+from django.contrib.contenttypes.models import ContentType
 from django.core.files import File
 from django.core.files.storage import get_storage_class
 from django.urls import reverse

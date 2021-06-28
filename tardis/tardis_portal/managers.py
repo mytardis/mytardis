@@ -168,7 +168,7 @@ class SafeManager(models.Manager):
             OBJECTACL = DatafileACL
             acl_str = "datafileacl"
 
-        if not any(user, group, token, isOwner):
+        if not any([user, group, token, isOwner]):
             return OBJECT.objects.none()
 
         if user:

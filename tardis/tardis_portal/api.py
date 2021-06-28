@@ -618,7 +618,7 @@ class ExperimentResource(MyTardisModelResource):
             experiment = bundle.obj
             # TODO: unify this with the view function's ACL creation,
             # maybe through an ACL toolbox.
-            acl = ExperimentACL(experiment=experiment.id,
+            acl = ExperimentACL(experiment=experiment,
                             user=bundle.request.user,
                             canRead=True,
                             canWrite=True,

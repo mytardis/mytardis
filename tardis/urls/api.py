@@ -27,6 +27,8 @@ from tardis.tardis_portal.api import (
     InstrumentResource,
     LocationResource,
     ExperimentACLResource,
+    DatasetACLResource,
+    DatafileACLResource,
     ParameterNameResource,
     ReplicaResource,
     SchemaResource,
@@ -59,6 +61,8 @@ v1_api.register(StorageBoxAttributeResource())
 v1_api.register(UserResource())
 v1_api.register(GroupResource())
 v1_api.register(ExperimentACLResource())
+v1_api.register(DatasetACLResource())
+v1_api.register(DatafileACLResource())
 v1_api.register(FacilityResource())
 v1_api.register(InstrumentResource())
 
