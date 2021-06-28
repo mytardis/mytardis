@@ -200,7 +200,7 @@ class SafeManager(models.Manager):
             user = User.objects.get(pk=user_id)
         if user.id is None:
             return super().get_queryset().none()
-        query = _query_on_acls(user=user, isOwner=True)
+        query = self._query_on_acls(user=user, isOwner=True)
         return query
 
 
@@ -209,7 +209,7 @@ class SafeManager(models.Manager):
             group = Group.objects.get(pk=group_id)
         if group.id is None:
             return super().get_queryset().none()
-        query = _query_on_acls(group=group, isOwner=True)
+        query = self._query_on_acls(group=group, isOwner=True)
         return query
 
 
@@ -221,18 +221,18 @@ class SafeManager(models.Manager):
         # this is almost duplicate code of end of has_perm in authorisation.py
         # should be refactored, but cannot think of good way atm
         if not user.is_authenticated:
-            query = _query_on_acls()
+            query = self._query_on_acls()
             tgp = TokenGroupProvider()
             for token in tgp.getGroups(user):
-                query |= _query_on_acls(token=token)
+                query |= self._query_on_acls(token=token)
             return query
         # for which proj/exp/set/files does the user have read access
         # based on USER permissions?
-        query = _query_on_acls(user=user)
+        query = self._query_on_acls(user=user)
         # for which does proj/exp/set/files does the user have read access
         # based on GROUP permissions
         for group in user.groups.all():
-            query |= _query_on_acls(group=group)
+            query |= self._query_on_acls(group=group)
         return query
 
 

@@ -42,7 +42,7 @@ def _create_test_experiment(user, license_):
         order=1,
         author="Michael Palin",
         url="http://nla.gov.au/nla.party-2")
-    acl = ExperimentACL(experiemnt=experiment,
+    acl = ExperimentACL(experiment=experiment,
                     user=user,
                     isOwner=True,
                     canRead=True,

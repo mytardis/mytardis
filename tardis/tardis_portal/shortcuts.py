@@ -151,7 +151,7 @@ class RestfulExperimentParameterSet(object):
 
     def _list(self, request, experiment_id):
         from .auth.decorators import has_access
-        if not hast_access(request, experiment_id, "experiment"):
+        if not has_access(request, experiment_id, "experiment"):
             return return_response_error(request)
         sets = ExperimentParameterSet.objects.filter(schema=self.schema,
                                                      experiment__pk=experiment_id)

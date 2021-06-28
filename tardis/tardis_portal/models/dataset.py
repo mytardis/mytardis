@@ -177,6 +177,9 @@ class Dataset(models.Model):
             file_objects__datafile__dataset=self).distinct()
         return boxes
 
+    def get_ct(self):
+        return ContentType.objects.get_for_model(self)
+
     def get_dir_tuples(self, user, basedir=""):
         """
         List the directories immediately inside basedir.

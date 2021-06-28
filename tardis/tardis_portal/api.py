@@ -387,9 +387,9 @@ class ACLAuthorization(Authorization):
         if isinstance(bundle.obj, ExperimentACL):
             return bundle.request.user.has_perm('tardis_portal.add_experimentacl')
         if isinstance(bundle.obj, DatasetACL):
-            return bundle.request.user.has_perm('tardis_portal.add_experimentacl')
+            return bundle.request.user.has_perm('tardis_portal.add_datasetacl')
         if isinstance(bundle.obj, DatafileACL):
-            return bundle.request.user.has_perm('tardis_portal.add_experimentacl')
+            return bundle.request.user.has_perm('tardis_portal.add_datafileacl')
         if isinstance(bundle.obj, Group):
             return bundle.request.user.has_perm('tardis_portal.add_group')
         if isinstance(bundle.obj, Facility):
@@ -603,9 +603,9 @@ class ExperimentResource(MyTardisModelResource):
         bundle.data['owner_ids'] = [o.id for o in owners]
         dataset_count = exp.datasets.all().count()
         bundle.data['dataset_count'] = dataset_count
-        datafile_count = exp.get_datafiles().count()
+        datafile_count = exp.get_datafiles(bundle.request.user).count()
         bundle.data['datafile_count'] = datafile_count
-        experiment_size = exp.get_size()
+        experiment_size = exp.get_size(bundle.request.user)
         bundle.data['experiment_size'] = experiment_size
         return bundle
 
@@ -619,7 +619,7 @@ class ExperimentResource(MyTardisModelResource):
             # TODO: unify this with the view function's ACL creation,
             # maybe through an ACL toolbox.
             acl = ExperimentACL(experiment=experiment.id,
-                            user=bundle.request.user.id,
+                            user=bundle.request.user,
                             canRead=True,
                             canWrite=True,
                             canDelete=True,
@@ -700,7 +700,7 @@ class DatasetResource(MyTardisModelResource):
 
     def dehydrate(self, bundle):
         dataset = bundle.obj
-        size = dataset.get_size()
+        size = dataset.get_size(bundle.request.user)
         bundle.data['dataset_size'] = size
         dataset_experiment_count = dataset.experiments.count()
         bundle.data['dataset_experiment_count'] = dataset_experiment_count
@@ -1348,10 +1348,10 @@ class DatafileACLResource(MyTardisModelResource):
     datafile = fields.ForeignKey(DataFileResource, 'datafile')
 
     class Meta:
-        object_class = ExperimentACL
+        object_class = DatafileACL
         authentication = default_authentication
         authorization = ACLAuthorization()
-        queryset = ExperimentACL.objects.all()
+        queryset = DatafileACL.objects.all()
         filtering = {
             'pluginId': ('exact', ),
             'entityId': ('exact', ),

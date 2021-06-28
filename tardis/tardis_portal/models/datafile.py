@@ -420,6 +420,9 @@ class DataFile(models.Model):
 
         return None
 
+    def get_ct(self):
+        return ContentType.objects.get_for_model(self)
+
     def is_public(self):
         from .experiment import Experiment
         return Experiment.objects.filter(

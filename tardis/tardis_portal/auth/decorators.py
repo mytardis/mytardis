@@ -123,7 +123,7 @@ def has_write(request, obj_id, ct_type):
             obj = Experiment.objects.get(id=obj_id)
         if settings.ONLY_EXPERIMENT_ACLS:
             if ct_type == 'dataset':
-                dataset = Dataset.objects.get(id=obj_id)
+                obj = Dataset.objects.get(id=obj_id)
                 if obj.immutable:
                     return False
                 return any(has_write(request, experiment.id, "experiment")

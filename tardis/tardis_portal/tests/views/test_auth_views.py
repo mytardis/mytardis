@@ -181,7 +181,7 @@ class RightsTestCase(TestCase):
                             experiment=experiment,
                             canRead=True,
                             isOwner=True,
-                            ExperimentACL=ExperimentACL.OWNER_OWNED,
+                            aclOwnershipType=ExperimentACL.OWNER_OWNED,
         )
         acl.save()
 
