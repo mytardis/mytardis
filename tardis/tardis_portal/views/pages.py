@@ -276,7 +276,7 @@ class DatasetView(TemplateView):
                      schema__hidden=True),
              'has_download_permissions': authz.has_download_access(
                  request, dataset_id, "dataset"),
-             'has_write_permissions': authz.has__write(request, dataset_id,
+             'has_write_permissions': authz.has_write(request, dataset_id,
                                                        "dataset"),
              'from_instrument': instrument_name,
              'from_facility': facility_name,
