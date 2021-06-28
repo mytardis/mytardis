@@ -20,7 +20,7 @@ class TokenGroupProvider(GroupProvider):
             valid_tokens = []
             for token in tokens:
                 if not token.is_expired():
-                    valid_tokens.append(token.experiment.id)
+                    valid_tokens.append(token)
             return valid_tokens
         return []
 
