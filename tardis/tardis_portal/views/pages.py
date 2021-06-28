@@ -494,7 +494,7 @@ class ExperimentView(TemplateView):
             c['is_owner'] = \
                 authz.has_ownership(request, experiment.id, "experiment")
             c['has_read_or_owner_ACL'] = \
-                authz.has_read_or_owner_ACL(request, experiment.id, "experiment")
+                authz.has_read_or_owner_ACL(request, experiment.id)
 
         # Enables UI elements for the HSM app
         c['hsm_enabled'] = 'tardis.apps.hsm' in settings.INSTALLED_APPS

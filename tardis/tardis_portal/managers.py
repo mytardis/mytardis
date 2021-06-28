@@ -13,6 +13,8 @@ from django.core.exceptions import PermissionDenied
 from django.contrib.auth.models import User, Group
 from django.db.models import Prefetch
 
+from .auth.token_auth import TokenGroupProvider
+
 
 class OracleSafeManager(models.Manager):
     """
@@ -243,8 +245,9 @@ class SafeManager(models.Manager):
     def _query_all_public(self):
         if self.model.get_ct(self.model).model == "experiment":
             from .models import Experiment
-            return ~Q(public_access=Experiment.PUBLIC_ACCESS_NONE) &\
-                   ~Q(public_access=Experiment.PUBLIC_ACCESS_EMBARGO)
+            query = Experiment.objects.filter(public_access=Experiment.PUBLIC_ACCESS_NONE)
+            query |= Experiment.objects.filter(public_access=Experiment.PUBLIC_ACCESS_EMBARGO)
+            return query
         # Dataset does not have a "public" functionality on a Micro-level yet
         elif self.model.get_ct(self.model).model == "dataset":
             from .models import Dataset

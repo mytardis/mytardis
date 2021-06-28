@@ -90,7 +90,7 @@ def dataset_json(request, experiment_id=None, dataset_id=None):
     has_download_permissions = \
         authz.has_download_access(request, dataset_id, "dataset")
 
-    dataset_dict = get_dataset_info(dataset, has_download_permissions)
+    dataset_dict = get_dataset_info(dataset, request, has_download_permissions)
     return HttpResponse(
         json.dumps(dataset_dict, cls=DjangoJSONEncoder, default=str),
         content_type='application/json')
@@ -109,7 +109,7 @@ def experiment_datasets_json(request, experiment_id):
 
     dataset_ordering = getattr(settings, "DATASET_ORDERING", 'description')
     objects = [
-        get_dataset_info(ds, include_thumbnail=has_download_permissions,
+        get_dataset_info(ds, request, include_thumbnail=has_download_permissions,
                          exclude=['datafiles'])
         for ds in experiment.datasets.all().order_by(dataset_ordering)]
 

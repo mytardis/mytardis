@@ -9,6 +9,7 @@ from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
 from django.contrib.contenttypes.models import ContentType
 from django.db.models import Q
+from django.db.models.query import QuerySet
 
 from ..models.access_control import ExperimentACL, DatasetACL, DatafileACL
 from .token_auth import TokenGroupProvider

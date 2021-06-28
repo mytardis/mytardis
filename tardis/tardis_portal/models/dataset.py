@@ -201,24 +201,24 @@ class Dataset(models.Model):
         test files/subdir3/subdir4/
 
         List directories in the dataset's top level directory:
-        >>> ds.get_dir_tuples("")
+        >>> ds.get_dir_tuples(user, "")
         [('test files')]
 
         List directories within the dataset's "test files" directory:
-        >>> ds.get_dir_tuples("test files")
+        >>> ds.get_dir_tuples(user, "test files")
         [('..', 'test files'), ('subdir1', 'test /filessubdir1'),
          ('subdir2', 'test files/subdir2'), ('subdir3', 'test files/subdir3')]
 
         Request directories within a non-existent directory:
-        >>> ds.get_dir_tuples("test file")
+        >>> ds.get_dir_tuples(user, "test file")
         []
 
         List directories within the dataset's "test files/subdir3" directory:
-        >>> ds.get_dir_tuples("test files/subdir3")
+        >>> ds.get_dir_tuples(user, "test files/subdir3")
         [('..', 'test files/subdir3'), ('subdir4', 'test files/subdir3/subdir4')]
 
         List directories within the dataset's "test files/subdir3/subdir4" directory:
-        >>> ds.get_dir_tuples("test files/subdir3/subdir4")
+        >>> ds.get_dir_tuples(user, "test files/subdir3/subdir4")
         [('..', 'test files/subdir3/subdir4')]
         """
         from .datafile import DataFile
@@ -264,7 +264,7 @@ class Dataset(models.Model):
         test files/subdir3/subdir4/
 
         List directories in the dataset's top level directory:
-        >>> dir_tuples = ds.get_dir_tuples("")
+        >>> dir_tuples = ds.get_dir_tuples(user, "")
         >>> ds.get_dir_nodes(dir_tuples)
         [
             {
@@ -275,7 +275,7 @@ class Dataset(models.Model):
         ]
 
         List directories within the dataset's "test files" directory:
-        >>> dir_tuples = ds.get_dir_tuples("test files")
+        >>> dir_tuples = ds.get_dir_tuples(user, "test files")
         >>> ds.get_dir_nodes(dir_tuples)
         [
             {
@@ -296,12 +296,12 @@ class Dataset(models.Model):
         ]
 
         Request directories within a non-existent directory:
-        >>> dir_tuples = ds.get_dir_tuples("test file")
+        >>> dir_tuples = ds.get_dir_tuples(user, "test file")
         >>> ds.get_dir_nodes(dir_tuples)
         []
 
         List directories within the dataset's "test files/subdir3" directory:
-        >>> dir_tuples = ds.get_dir_tuples("test files3/subdir3")
+        >>> dir_tuples = ds.get_dir_tuples(user, "test files3/subdir3")
         >>> ds.get_dir_nodes(dir_tuples)
         [
             'name': 'subdir4',
