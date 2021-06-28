@@ -198,12 +198,12 @@ def has_read_or_owner_ACL(request, experiment_id):
     Note: this function does not take into account token access
     """
     query = request.user.experimentacls.select_related("experiment"
-                             ).filter(experiment__id=obj_id
+                             ).filter(experiment__id=experiment_id
                              ).exclude(effectiveDate__gte=datetime.today(),
                                        expiryDate__lte=datetime.today())
     for group in request.user.groups.all():
         query |= group.experimentacls.select_related("experiment"
-                                 ).filter(experiment__id=obj_id, isOwner=True
+                                 ).filter(experiment__id=experiment_id, isOwner=True
                                  ).exclude(effectiveDate__gte=datetime.today(),
                                            expiryDate__lte=datetime.today())
     return query.exists()

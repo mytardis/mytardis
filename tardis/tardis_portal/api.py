@@ -776,7 +776,7 @@ class DatasetResource(MyTardisModelResource):
             return HttpResponseForbidden()
 
         # get dirs at root level
-        dir_tuples = dataset.get_dir_tuples(bundle.request.user, "")
+        dir_tuples = dataset.get_dir_tuples(request.user, "")
         # get files at root level
         dfs = (DataFile.objects.filter(dataset=dataset, directory='') |
                DataFile.objects.filter(dataset=dataset, directory__isnull=True)).distinct()
@@ -852,7 +852,7 @@ class DatasetResource(MyTardisModelResource):
         # but now that logic will be moved to the front-end component.
 
         # list dir under base_dir
-        child_dir_tuples = dataset.get_dir_tuples(bundle.request.user, base_dir)
+        child_dir_tuples = dataset.get_dir_tuples(request.user, base_dir)
         # list files under base_dir
         dfs = DataFile.objects.filter(dataset=dataset, directory=base_dir)
         # walk the directory tree and append files and dirs

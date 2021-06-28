@@ -20,7 +20,6 @@ class TokenGroupProvider(GroupProvider):
             valid_tokens = []
             for token in tokens:
                 if not token.is_expired():
-                    _ensure_acl_exists(token.experiment.id)
                     valid_tokens.append(token.experiment.id)
             return valid_tokens
         return []
