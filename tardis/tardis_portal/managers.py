@@ -13,8 +13,6 @@ from django.core.exceptions import PermissionDenied
 from django.contrib.auth.models import User, Group
 from django.db.models import Prefetch
 
-from .auth.token_auth import TokenGroupProvider
-
 
 class OracleSafeManager(models.Manager):
     """
@@ -223,6 +221,8 @@ class SafeManager(models.Manager):
         # this is almost duplicate code of end of has_perm in authorisation.py
         # should be refactored, but cannot think of good way atm
         if not user.is_authenticated:
+            from .auth.token_auth import TokenGroupProvider
+
             query = self._query_on_acls()
             tgp = TokenGroupProvider()
             for token in tgp.getGroups(user):
