@@ -100,7 +100,7 @@ class ReplicaAppResource(tardis.tardis_portal.api.ReplicaResource):
                 args=[dfo.id, request.user.id],
                 priority=dfo.priority)
         except HsmException as err:
-            # We would only see an exception here if CELERY_ALWAYS_EAGER is
+            # We would only see an exception here if CELERY_TASK_ALWAYS_EAGER is
             # True, making the task run synchronously
             logger.error("Recall failed for DFO %s: %s" % (dfo.id, str(err)))
             return JsonResponse({
