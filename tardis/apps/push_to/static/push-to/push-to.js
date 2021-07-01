@@ -66,12 +66,14 @@ pushToApp.controller('DestinationSelectorCtrl', function ($scope, $resource) {
             },
             transform: function (data) {
                 var transformedData = [];
-                var queryResult = data[currentQueryBase];
-                var children = queryResult['valid_children'];
-                for (var i = 0; i < children.length; i++) {
-                    var result = currentQueryBase + children[i];
-                    if (result.startsWith(currentQuery)) {
-                        transformedData.push(result)
+                if(data.hasOwnProperty(currentQueryBase)) {
+                    var queryResult = data[currentQueryBase];
+                    var children = queryResult['valid_children'];
+                    for (var i = 0; i < children.length; i++) {
+                        var result = currentQueryBase + children[i];
+                        if (result.startsWith(currentQuery)) {
+                            transformedData.push(result)
+                        }
                     }
                 }
                 return transformedData;

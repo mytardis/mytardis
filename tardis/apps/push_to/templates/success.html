@@ -1,11 +1,28 @@
+{% load static %}
+{% load render_bundle from webpack_loader %}
 <!DOCTYPE html>
-<html>
+<html ng-app="push-to">
 <head lang="en">
     <meta charset="UTF-8">
-    <title>Success</title>
-    <link href="/static/push-to/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <title>Push to - Success</title>
+    {% render_bundle 'push_to_app' %}
+    <style>
+        html,body {
+            height: 100%;
+        }
+    </style>
 </head>
-    <body style="margin: 5px 5px 5px 5px">
-    <div class="alert alert-success" role="alert">{{ message | safe }}</div>
-    </body>
+
+<body>
+    <div class="container h-100" ng-if="loading">
+        <div class="d-flex align-items-center justify-content-center h-100">
+            <div class="alert alert-success" role="alert">
+                <h4 class="alert-heading">Success</h4>
+                <hr>
+                {{ message | safe }}
+            </div>
+        </div>
+    </div>
+</body>
+
 </html>
