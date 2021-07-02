@@ -78,7 +78,7 @@
     "eslint-plugin-react": "^7.24.0",
     "grunt": "^1.4.1",
     "grunt-cli": "^1.4.3",
-    "grunt-contrib-qunit": "^4.0.0",
+    "grunt-contrib-qunit": "^5.0.1",
     "grunt-webpack": "^4.0.3",
     "identity-obj-proxy": "^3.0.0",
     "jest": "^26.4.2",
