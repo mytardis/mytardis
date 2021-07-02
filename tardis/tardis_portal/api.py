@@ -9,6 +9,7 @@ Implemented with Tastypie.
 import json
 import re
 from wsgiref.util import FileWrapper
+from urllib.parse import quote
 
 from django.conf import settings
 from django.conf.urls import url
@@ -983,13 +984,19 @@ class DataFileResource(MyTardisModelResource):
 
         if settings.PROXY_DOWNLOADS:
             full_path = preferred_dfo.get_full_path()
-            for dir_prefix, url_prefix in settings.PROXY_DOWNLOAD_PREFIXES:
-                if full_path.startswith(dir_prefix):
-                    response = HttpResponse()
-                    response["Content-Disposition"] = \
-                        "attachment; filename={0}".format(file_record.filename)
-                    path = full_path.split(dir_prefix)[1]
-                    response['X-Accel-Redirect'] = "%s/%s" % (url_prefix, path)
+            for key, value in settings.PROXY_DOWNLOAD_PREFIXES.items():
+                if full_path.startswith(key):
+                    cd = 'attachment; filename="{}"'.format(
+                        file_record.filename)
+                    xar = quote("{}{}".format(value, full_path.split(key)[1]))
+                    response = HttpResponse(
+                        status=200,
+                        content_type="application/force-download",
+                        headers={
+                            "Content-Disposition": cd,
+                            "X-Accel-Redirect": xar
+                        }
+                    )
                     return response
 
         # Log file download event
