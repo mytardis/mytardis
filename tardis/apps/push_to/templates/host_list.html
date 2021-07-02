@@ -4,17 +4,13 @@
 <html ng-app="push-to">
 <head lang="en">
     <meta charset="UTF-8">
-    <title>Push to</title>
+    <title>Push to - Select host</title>
     {% render_bundle 'push_to_app' %}
+    <script type="text/javascript" src="{% static 'push-to.js' %}"></script>
     <script type="text/javascript">
         var accessible_hosts_url = '{{ accessible_hosts_url }}';
         var cert_signing_services_url = '{{ cert_signing_services_url }}';
     </script>
-    <style>
-        html,body {
-            height: 100%;
-        }
-    </style>
 </head>
 {% verbatim %}
     <body ng-controller="HostSelectCtrl">
@@ -52,6 +48,4 @@
     </div>
     </body>
 {% endverbatim %}
-<script type="application/javascript" src="{% static 'push-to/angular-typeahead.js' %}"></script>
-<script type="application/javascript" src="{% static 'push-to/push-to.js' %}"></script>
 </html>

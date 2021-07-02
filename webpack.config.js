@@ -31,7 +31,7 @@ module.exports = {
         related_info_index: "./assets/js/apps/related_info/index.js",
         related_info_index_ro: "./assets/js/apps/related_info/index_ro.js",
         lib: glob.sync("./assets/js/lib/**/*.js"),
-        push_to_app: "./assets/js/apps/push_to/index.js",
+        push_to_app: "./tardis/apps/push_to/static/index.js",
         search_app : "./assets/js/apps/search/index.jsx",
         tree_view : "./assets/js/apps/tree_view/index.jsx",
         index_page_badges: "./assets/js/apps/badges/components/IndexPageBadges.jsx",

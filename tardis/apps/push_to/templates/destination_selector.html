@@ -4,20 +4,13 @@
 <html ng-app="push-to">
 <head lang="en">
     <meta charset="UTF-8">
-    <title>Push to</title>
+    <title>Push to - Select path</title>
     {% render_bundle 'push_to_app' %}
-    <script type="text/javascript" src="{% static 'push-to/typeahead.bundle.js' %}"></script>
-    <script type="text/javascript" src="{% static 'push-to/angular-typeahead.js' %}"></script>
-    <script type="text/javascript" src="{% static 'push-to/push-to.js' %}"></script>
+    <script type="text/javascript" src="{% static 'push-to.js' %}"></script>
     <script type="text/javascript">
         var remote_destination_name = '{{ remote_destination_name }}';
         var remote_path_verify_url = '{{ remote_path_verify_url }}';
     </script>
-    <style>
-        html,body {
-            height: 100%;
-        }
-    </style>
 </head>
 {% verbatim %}
 <body ng-controller="DestinationSelectorCtrl">
@@ -44,8 +37,7 @@
                 <a ng-href="?path={{ destinationPath }}" type="button" class="btn btn-primary">Push</a>
             </div>
             <div class="p-1"></div>
-            <div
-                    class="spinner-border spinner-border-sm text-secondary align-self-center" role="status" ng-if="ajaxRunning"></div>
+            <div class="spinner-border spinner-border-sm text-secondary align-self-center" role="status" ng-if="ajaxRunning"></div>
         </div>
     </div>
 </body>
