@@ -38,17 +38,17 @@ jobs:
       uses: actions/setup-python@v1
       with:
         python-version: ${{ matrix.python-version }}
-        - name: Install prerequisites
-          run: |
-            sudo apt-get update -yqq
-            sudo apt-get -yqq install --no-install-recommends -o=Dpkg::Use-Pty=0 \
-              libldap2-dev libsasl2-dev libmagic-dev libmagickwand-dev \
-              libssl-dev libxml2-dev libxslt1-dev zlib1g-dev \
-              libfreetype6-dev libjpeg-dev
-        - name: Install dependencies
-          run: |
-            python -m pip install --upgrade pip
-            pip install -Ur requirements.txt
+      - name: Install prerequisites
+        run: |
+          sudo apt-get update -yqq
+          sudo apt-get -yqq install --no-install-recommends -o=Dpkg::Use-Pty=0 \
+            libldap2-dev libsasl2-dev libmagic-dev libmagickwand-dev \
+            libssl-dev libxml2-dev libxslt1-dev zlib1g-dev \
+            libfreetype6-dev libjpeg-dev
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -Ur requirements.txt
       - name: pylint-${{ matrix.python-version }}
         run: |
           pylint --rcfile .pylintrc --django-settings-module=tardis.test_settings tardis
@@ -64,7 +64,7 @@ jobs:
       uses: actions/setup-python@v1
       with:
         python-version: ${{ matrix.python-version }}
-        - name: Install prerequisites
+      - name: Install prerequisites
         run: |
           sudo apt-get update -yqq
           sudo apt-get -yqq install --no-install-recommends -o=Dpkg::Use-Pty=0 \
@@ -75,7 +75,7 @@ jobs:
           run: |
             python -m pip install --upgrade pip
             pip install -Ur requirements.txt
-      - name: tests-${{ matrix.python-version }}
-        run: |
-          mkdir -p var/store
-          python test.py
+        - name: tests-${{ matrix.python-version }}
+          run: |
+            mkdir -p var/store
+            python test.py
