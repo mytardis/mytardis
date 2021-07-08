@@ -33,11 +33,11 @@ jobs:
       matrix:
         python-version: [ '3.6', '3.7', '3.8', '3.9' ]
     steps:
-      - name: run pylint
+      - name: pylint-${{ matrix.python-version }}
         run: |
           pylint --rcfile .pylintrc --django-settings-module=tardis.test_settings tardis
   test:
-    needs: pylint-${{ matrix.python-version }}
+    needs: pylint
     runs-on: [ubuntu-20.04]
     strategy:
       matrix:
