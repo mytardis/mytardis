@@ -13,13 +13,13 @@
 
 <div id="publication-workflow-app"></div>
 
-<!--<div ng-app="publicationWorkflow">
+<div ng-app="publicationWorkflow">
   <div id="content" ng-controller="MyPublicationsController as myPubsCtrl">
   <div class="row-fluid">
     <h2 class="visible-phone">My Publications</h2>
       <div class="pull-left">
         <h2 class="hidden-phone" style="text-align: center">My Publications</h2>
-      </div>  &lt;!&ndash; class="pull-left" &ndash;&gt;
+      </div>  <!-- class="pull-left" -->
       <div class="pull-right"
            ng-controller="PublicationActionsController as pubActionsCtrl"
            ng-init="pubActionsCtrl.init(myPubsCtrl, null)">
@@ -28,8 +28,8 @@
           <i class="fa fa-share"></i>
           <span>Create publication</span>
         </a>
-      </div>  &lt;!&ndash; class="pull-right" &ndash;&gt;
-  </div>  &lt;!&ndash; class="row-fluid" &ndash;&gt;
+      </div>  <!-- class="pull-right" -->
+  </div>  <!-- class="row-fluid" -->
 
   <br/>
 
@@ -92,10 +92,10 @@
                <i class="fa fa-share-alt"></i>
              Share
              </button>
-             &lt;!&ndash; For now, we're using Bootstrap (not Angular Material) for buttons &ndash;&gt;
-             &lt;!&ndash; to make them look consistent with the rest of MyTardis. &ndash;&gt;
-             &lt;!&ndash; This requires a few workarounds to make the two frameworks &ndash;&gt;
-             &lt;!&ndash; play nicely together, e.g. using style="inline-block" &ndash;&gt;
+             <!-- For now, we're using Bootstrap (not Angular Material) for buttons -->
+             <!-- to make them look consistent with the rest of MyTardis. -->
+             <!-- This requires a few workarounds to make the two frameworks -->
+             <!-- play nicely together, e.g. using style="inline-block" -->
              <md-progress-circular md-mode="indeterminate"
                                    ng-show="pubActionsCtrl.updating"
                                    md-diameter="20px"
@@ -156,10 +156,10 @@
                <i class="fa fa-share-alt"></i>
              Share
              </button>
-             &lt;!&ndash; For now, we're using Bootstrap (not Angular Material) for buttons &ndash;&gt;
-             &lt;!&ndash; to make them look consistent with the rest of MyTardis. &ndash;&gt;
-             &lt;!&ndash; This requires a few workarounds to make the two frameworks &ndash;&gt;
-             &lt;!&ndash; play nicely together, e.g. using style="inline-block" &ndash;&gt;
+             <!-- For now, we're using Bootstrap (not Angular Material) for buttons -->
+             <!-- to make them look consistent with the rest of MyTardis. -->
+             <!-- This requires a few workarounds to make the two frameworks -->
+             <!-- play nicely together, e.g. using style="inline-block" -->
              <md-progress-circular md-mode="indeterminate"
                                    ng-show="pubActionsCtrl.updating"
                                    md-diameter="20px"
@@ -218,10 +218,10 @@
                <i class="fa fa-exclamation-triangle"></i>
                Retract
              </button>
-             &lt;!&ndash; For now, we're using Bootstrap (not Angular Material) for buttons &ndash;&gt;
-             &lt;!&ndash; to make them look consistent with the rest of MyTardis. &ndash;&gt;
-             &lt;!&ndash; This requires a few workarounds to make the two frameworks &ndash;&gt;
-             &lt;!&ndash; play nicely together, e.g. using style="inline-block" &ndash;&gt;
+             <!-- For now, we're using Bootstrap (not Angular Material) for buttons -->
+             <!-- to make them look consistent with the rest of MyTardis. -->
+             <!-- This requires a few workarounds to make the two frameworks -->
+             <!-- play nicely together, e.g. using style="inline-block" -->
              <md-progress-circular md-mode="indeterminate"
                                    ng-show="pubActionsCtrl.updating"
                                    md-diameter="20px"
@@ -274,8 +274,8 @@
     </md-table-container>
   </md-content>
 
-</div>  &lt;!&ndash; id="content" &ndash;&gt;
-</div>-->
+</div>  <!-- id="content" -->
+</div>
 {% render_bundle 'publication_workflow' %}
 
 {% endblock %}

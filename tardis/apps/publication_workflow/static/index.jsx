@@ -2,15 +2,17 @@ import React from 'react';
 
 import ReactDOM from 'react-dom';
 
-import PublicationsList from '../components/PublicationsList';
+import PublicationsHome from "../components/PublicationsHome";
 
 // react stuff
 
 const content = document.getElementById('publication-workflow-app');
 console.log(content);
-ReactDOM.render(<PublicationsList />, content);
+ReactDOM.render(<PublicationsHome />, content);
 
-/*const angular = require("angular");
+/*
+const angular = require("angular");
+
 require("angular-resource");
 
 require('./js/lib/ng-dialog/js/ngDialog.min');
