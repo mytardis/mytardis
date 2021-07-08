@@ -33,6 +33,7 @@
     "file-saver": "^2.0.5",
     "filesize": "^7.0.0",
     "font-awesome": "^4.7.0",
+    "formik": "^2.2.9",
     "glob": "^7.1.7",
     "he": "^1.2.0",
     "html-webpack-plugin": "^5.3.2",
@@ -67,7 +68,8 @@
     "url-loader": "^4.1.1",
     "webpack": "^5.49.0",
     "webpack-bundle-tracker": "^1.1.0",
-    "webpack-cli": "^4.8.0"
+    "webpack-cli": "^4.8.0",
+    "yup": "^0.32.9"
   },
   "devDependencies": {
     "babel-eslint": "^10.0.3",
