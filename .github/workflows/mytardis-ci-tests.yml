@@ -10,8 +10,8 @@ jobs:
         uses: actions/checkout@v2
       - name: build test docker image
         run: docker-compose -f docker-ci/docker-build.yml run builder
-      - name: list images
-        run: docker image ls
+      - name: save image
+        run: docker save mytardis-base > /tmp/base-image.tar
       - name: upload artifact
         uses: actions/upload-artifact@v2
         with:
