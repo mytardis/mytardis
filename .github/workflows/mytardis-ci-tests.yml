@@ -12,6 +12,11 @@ jobs:
         run: docker-compose -f docker-ci/docker-build.yml run builder
       - name: list images
         run: docker image ls
+      - name: upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: base-image
+          path: /tmp/base-image.tar
 
   test-on-sqlite:
     runs-on: ubuntu-20.04
