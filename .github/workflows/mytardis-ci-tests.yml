@@ -28,9 +28,9 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: base-image
-          path: /tmp/base-image.tar
+          path: /tmp
       - name: load image
         run: docker load < /tmp/base-image.tar
       - name: list images
-        run: docker images
+        run: docker image ls -a
 
