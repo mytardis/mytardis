@@ -20,7 +20,17 @@ jobs:
 
   test-on-sqlite:
     runs-on: ubuntu-20.04
+    needs: build-docker
     steps:
-      - name: checout
+      - name: checkout
         uses: actions/checkout@v2
+      - name: Download artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: base-image
+          path: /tmp/base-image.tar
+      - name: load image
+        run: docker load < /tmp/base-image.tar
+      - name: list images
+        run: docker images
 
