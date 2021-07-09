@@ -71,11 +71,11 @@ jobs:
           libldap2-dev libsasl2-dev libmagic-dev libmagickwand-dev \
           libssl-dev libxml2-dev libxslt1-dev zlib1g-dev \
           libfreetype6-dev libjpeg-dev
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -Ur requirements.txt
-      - name: tests-${{ matrix.python-version }}
-        run: |
-          mkdir -p var/store
-          python test.py
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -Ur requirements.txt
+    - name: tests-${{ matrix.python-version }}
+      run: |
+        mkdir -p var/store
+        python test.py
