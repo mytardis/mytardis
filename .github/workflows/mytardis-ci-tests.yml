@@ -17,6 +17,11 @@ jobs:
         with:
           name: base-image
           path: /tmp/base-image.tar
+      - name: cache wheelhouse
+        uses: actions/cache@v2
+        with:
+          path: |
+            /wheelhouse
 
   test-on-sqlite:
     runs-on: ubuntu-20.04
