@@ -318,13 +318,11 @@ def _initiate_push(request, callback_view, remote_host_id, obj_type, push_obj_id
             },
             request=request
         )
-
-    success_message = ('The requested item will be pushed to %s. <strong>You '
-                       'will be notified by email once this has been '
-                       'completed.</strong>'
-                       '<br/>'
-                       'Data will be pushed to '
-                       '<pre>%s</pre>')
+    success_message = """
+        <p>The requested item will be pushed to <span class="text-monospace">%s</span>.</p>
+        <p class='font-weight-bold'>You will be notified by email once this has been completed.</p>
+        <p>Data will be pushed to <span class="text-monospace">%s</span>.</p>
+    """
     success_message %= (remote_host.nickname, destination)
     return render_success_message(
         request,
