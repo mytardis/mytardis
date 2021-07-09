@@ -15,4 +15,7 @@ jobs:
 
   test-on-sqlite:
     runs-on: ubuntu-20.04
+    steps:
+      - name: checout
+        uses: actions/checkout@v2
 
