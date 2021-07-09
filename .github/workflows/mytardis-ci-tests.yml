@@ -11,7 +11,7 @@ jobs:
       - name: build test docker image
         run: docker-compose -f docker-ci/docker-build.yml run builder
       - name: save image
-        run: docker save mytardis-base > /tmp/base-image.tar
+        run: docker save mytardis/mytardis-base > /tmp/base-image.tar
       - name: upload artifact
         uses: actions/upload-artifact@v2
         with:
