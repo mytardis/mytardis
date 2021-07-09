@@ -34,7 +34,8 @@ jobs:
       - name: list images
         run: docker image ls -a
       - name: run test
-        run: docker-compose -f docker-ci/docker-test.yml run -e TEST_TYPE=memory \
+        run: |
+          docker-compose -f docker-ci/docker-test.yml run -e TEST_TYPE=memory \
               -e CODACY_PROJECT_TOKEN=$CODACY_PROJECT_TOKEN \
               -e COVERALLS_REPO_TOKEN=$COVERALLS_REPO_TOKEN \
               -e CI_NAME=SemaphoreCI -e CI_BUILD_NUMBER=$SEMAPHORE_BUILD_NUMBER \
