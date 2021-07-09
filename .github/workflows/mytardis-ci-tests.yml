@@ -17,11 +17,13 @@ jobs:
         with:
           name: base-image
           path: /tmp/base-image.tar
+      - name: list dir
+        run: ls -ll
       - name: cache wheelhouse
         uses: actions/cache@v2
         with:
           path: |
-            /wheelhouse
+            wheelhouse
           key: ${{ runner.os }}-wheelhouse
 
   test-on-sqlite:
