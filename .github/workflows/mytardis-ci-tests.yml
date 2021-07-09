@@ -22,6 +22,7 @@ jobs:
         with:
           path: |
             /wheelhouse
+          key: ${{ runner.os }}-wheelhouse
 
   test-on-sqlite:
     runs-on: ubuntu-20.04
