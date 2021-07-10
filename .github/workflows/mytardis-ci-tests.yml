@@ -17,13 +17,11 @@ jobs:
         with:
           name: base-image
           path: /tmp/base-image.tar
-      - name: list dir
-        run: ls -ll
       - name: cache wheelhouse
         uses: actions/cache@v2
         with:
           path: |
-            wheelhouse
+            ~/wheelhouse
           key: ${{ runner.os }}-wheelhouse
 
   test-on-sqlite:
@@ -41,6 +39,10 @@ jobs:
         run: docker load < /tmp/base-image.tar
       - name: list images
         run: docker image ls -a
+      - name: copy wheelhouse
+        run: cp ~/whelhouse wheelhouse
+      - name: list dir
+        run: ls -ll
       - name: run test
         run: |
           docker-compose -f docker-ci/docker-test.yml run -e TEST_TYPE=memory \
