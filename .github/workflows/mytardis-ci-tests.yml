@@ -39,10 +39,10 @@ jobs:
         run: docker load < /tmp/base-image.tar
       - name: list images
         run: docker image ls -a
-      - name: copy wheelhouse
-        run: cp ~/whelhouse wheelhouse
       - name: list dir
-        run: ls -ll
+        run: ls -ll ~/
+      - name: copy wheelhouse
+        run: cp ~/wheelhouse wheelhouse
       - name: run test
         run: |
           docker-compose -f docker-ci/docker-test.yml run -e TEST_TYPE=memory \
