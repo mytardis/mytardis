@@ -62,7 +62,7 @@ jobs:
       - name: run test
         run: |
           docker-compose -f docker-ci/docker-test.yml run -e TEST_TYPE=memory \
-              -e ELASTICSEARCH_URL: http://es:${{ job.services.es.ports[9200] }}
+              -e ELASTICSEARCH_URL=http://es:${{ job.services.es.ports[9200] }}
               -e CODACY_PROJECT_TOKEN=$CODACY_PROJECT_TOKEN \
               -e COVERALLS_REPO_TOKEN=$COVERALLS_REPO_TOKEN \
               -e CI_NAME=SemaphoreCI -e CI_BUILD_NUMBER=$SEMAPHORE_BUILD_NUMBER \
@@ -105,5 +105,5 @@ jobs:
       - name: run test
         run: |
           docker-compose -f docker-ci/docker-test.yml run -e TEST_TYPE=pg test \
-          -e POSTGRES_PORT: ${{ job.services.postgres.ports[5432] }}
+          -e POSTGRES_PORT=${{ job.services.pg.ports[5432] }}
 
