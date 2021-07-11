@@ -11,7 +11,7 @@ services:
       dockerfile: docker-ci/Dockerfile-test
     image: mytardis/mytardis-test
     environment:
-      ELASTICSEARCH_URL: 'http://localhost:9200'
+      ELASTICSEARCH_URL: 'http://es:9200'
     volumes:
       - ../tardis:/home/webapp/tardis
       - ../docs:/home/webapp/docs
