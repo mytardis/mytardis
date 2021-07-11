@@ -17,28 +17,28 @@ services:
       - ../docs:/home/webapp/docs
     depends_on:
       - run
-      - pg
+      #- pg
       - mysql
-      - es
+      #- es
     links:
-      - pg
+      #- pg
       - mysql
-      - es
-  pg:
-    image: postgres:9.6
-    environment:
-      POSTGRES_PASSWORD: postgres
+      #- es
+  #pg:
+  #  image: postgres:9.6
+  #  environment:
+  #    POSTGRES_PASSWORD: postgres
   mysql:
     image: mysql
     environment:
       MYSQL_ROOT_PASSWORD: mysql
     command: --default-authentication-plugin=mysql_native_password
-  es:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.12.1
-    environment:
-      - bootstrap.memory_lock=true
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-      - discovery.type=single-node
-    ports:
-      - "9300:9300"
-      - "9200:9200"
+  #es:
+  #  image: docker.elastic.co/elasticsearch/elasticsearch:7.12.1
+  #  environment:
+  #    - bootstrap.memory_lock=true
+  #    - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+  #    - discovery.type=single-node
+  #  ports:
+  #    - "9300:9300"
+  #    - "9200:9200"
