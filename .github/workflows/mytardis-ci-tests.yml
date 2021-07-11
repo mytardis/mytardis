@@ -51,4 +51,27 @@ jobs:
               -e CI_NAME=SemaphoreCI -e CI_BUILD_NUMBER=$SEMAPHORE_BUILD_NUMBER \
               -e CI_BRANCH=$BRANCH_NAME -e PULL_REQUEST_NUMBER=$PULL_REQUEST_NUMBER \
               test
+  test-on-postgres:
+    runs-on: ubuntu-20.04
+    needs: build-docker
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+      - name: Download base-image
+        uses: actions/download-artifact@v2
+        with:
+          name: base-image
+          path: /tmp
+      - name: load image
+        run: docker load < /tmp/base-image.tar
+      - name: list images
+        run: docker image ls -a
+      - name: download wheelhouse
+        uses: actions/download-artifact@v2
+        with:
+          name: wheelhouse
+          path: wheelhouse
+      - name: run test
+        run: |
+          docker-compose -f docker-ci/docker-test.yml run -e TEST_TYPE=pg test
 
