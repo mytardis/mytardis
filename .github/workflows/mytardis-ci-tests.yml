@@ -18,6 +18,7 @@ jobs:
           name: base-image
           path: /tmp/base-image.tar
       - name: upload wheelhouse
+        uses: actions/upload-artifact@v2
         with:
           name: wheelhouse
           path: wheelhouse
