@@ -12,17 +12,15 @@ jobs:
         run: docker-compose -f docker-ci/docker-build.yml run builder
       - name: save image
         run: docker save mytardis/mytardis-base > /tmp/base-image.tar
-      - name: upload artifact
+      - name: upload base image
         uses: actions/upload-artifact@v2
         with:
           name: base-image
           path: /tmp/base-image.tar
-      - name: cache wheelhouse
-        uses: actions/cache@v2
+      - name: upload wheelhouse
         with:
-          path: |
-            ~/wheelhouse
-          key: ${{ runner.os }}-wheelhouse
+          name: wheelhouse
+          path: wheelhouse
 
   test-on-sqlite:
     runs-on: ubuntu-20.04
@@ -30,7 +28,7 @@ jobs:
     steps:
       - name: checkout
         uses: actions/checkout@v2
-      - name: Download artifact
+      - name: Download base-image
         uses: actions/download-artifact@v2
         with:
           name: base-image
@@ -39,10 +37,11 @@ jobs:
         run: docker load < /tmp/base-image.tar
       - name: list images
         run: docker image ls -a
-      - name: list dir
-        run: ls -ll ~/
-      - name: copy wheelhouse
-        run: cp ~/wheelhouse wheelhouse
+      - name: download wheelhouse
+        uses: actions/download-artifact@v2
+        with:
+          name: wheelhouse
+          path: wheelhouse
       - name: run test
         run: |
           docker-compose -f docker-ci/docker-test.yml run -e TEST_TYPE=memory \
