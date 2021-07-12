@@ -84,7 +84,7 @@ exports[`render dataset tiles on page load should match snapshot 1`] = `
             class="btn-group"
           >
             <button
-              class="btn btn-outline-secondary float-right"
+              class="btn btn-outline-secondary float-end"
               type="button"
             >
               Sort by
@@ -281,7 +281,7 @@ exports[`render dataset tiles on page load should match snapshot 1`] = `
                 style="margin-right: 10px;"
               />
               <div
-                class="float-right"
+                class="float-end"
                 style="text-align: right;"
               >
                 <p>
@@ -385,7 +385,7 @@ exports[`render dataset tiles on page load should match snapshot 1`] = `
                 style="margin-right: 10px;"
               />
               <div
-                class="float-right"
+                class="float-end"
                 style="text-align: right;"
               >
                 <p>
@@ -531,7 +531,7 @@ exports[`render dataset tiles on page load should match snapshot 1`] = `
                 style="margin-right: 10px;"
               />
               <div
-                class="float-right"
+                class="float-end"
                 style="text-align: right;"
               >
                 <p>
@@ -619,7 +619,7 @@ exports[`render dataset tiles on page load should match snapshot 1`] = `
                 style="margin-right: 10px;"
               />
               <div
-                class="float-right"
+                class="float-end"
                 style="text-align: right;"
               >
                 <p>

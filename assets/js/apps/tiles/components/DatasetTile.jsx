@@ -53,7 +53,7 @@ const DatasetTile = ({
                   ) : ''}
               </div>
               <div className="float-start" style={{ marginRight: '10px' }} />
-              <div className="float-right" style={{ textAlign: 'right' }}>
+              <div className="float-end" style={{ textAlign: 'right' }}>
                 <p>
                   {hsmEnabled ? <HSMDataFileCountBadge datasetId={data.id} />
                     : <DatafileCountBadge experimentData={experimentData} />}

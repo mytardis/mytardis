@@ -42,7 +42,7 @@
 <div class="page-header">
   <h4>Experiment</h4>
   {% if not experiment.public %}
-  <div class="float-right">
+  <div class="float-end">
     {% if push_to_enabled and is_authenticated %}
     <a class="btn btn-sm btn-outline-secondary push-to" title="Push to..."
        href="{{ push_to_url }}" target="_blank" rel="noreferrer noopener">

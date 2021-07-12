@@ -55,7 +55,7 @@
                       {% endfor %}&nbsp;
                     </div>
                     <div class="col">
-                      <span class="float-right">
+                      <span class="float-end">
                        {% for dltype, dlurl in exp.get_download_urls.items %}
                         {% if forloop.first %}
                           <a class="dllink" href="{{dlurl}}"
@@ -110,7 +110,7 @@
                   &nbsp;
                 </div>
                 <div class="col">
-                  <span class="float-right">
+                  <span class="float-end">
                   {% if exp.public_download_allowed %}
                     {% for dltype, dlurl in exp.get_download_urls.items %}
                       {% if forloop.first %}

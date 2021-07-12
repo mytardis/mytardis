@@ -3,7 +3,7 @@
 exports[`renders badges on index page should render correctly 1`] = `
 <div>
   <ul
-    class="list-inline float-right list-unstyled"
+    class="list-inline float-end list-unstyled"
   >
     <li
       class="mr-1 list-inline-item"
