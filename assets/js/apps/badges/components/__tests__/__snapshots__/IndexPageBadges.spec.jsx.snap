@@ -6,7 +6,7 @@ exports[`renders badges on index page should render correctly 1`] = `
     class="list-inline float-end list-unstyled"
   >
     <li
-      class="mr-1 list-inline-item"
+      class="me-1 list-inline-item"
     >
       <span
         class="badge badge-info"
@@ -20,7 +20,7 @@ exports[`renders badges on index page should render correctly 1`] = `
       </span>
     </li>
     <li
-      class="mr-1 list-inline-item"
+      class="me-1 list-inline-item"
     >
       <span
         class="badge badge-info"
@@ -34,7 +34,7 @@ exports[`renders badges on index page should render correctly 1`] = `
       </span>
     </li>
     <li
-      class="mr-1 list-inline-item"
+      class="me-1 list-inline-item"
     >
       <span
         class="badge badge-info"
@@ -48,7 +48,7 @@ exports[`renders badges on index page should render correctly 1`] = `
       </span>
     </li>
     <li
-      class="mr-1 list-inline-item"
+      class="me-1 list-inline-item"
     >
       <span
         class="badge badge-secondary"

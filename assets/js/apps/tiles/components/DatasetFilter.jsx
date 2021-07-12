@@ -51,7 +51,7 @@ const DatasetFilter = ({ onFilter, onSort }) => {
                     </span>
                   </div>
                   <div className="col col-md-4">
-                    <button className="fa fa-sort-alpha-asc mr-2 mt-2" style={sortButtonStyle} type="button" onClick={() => onSort('description', 'asc')} />
+                    <button className="fa fa-sort-alpha-asc me-2 mt-2" style={sortButtonStyle} type="button" onClick={() => onSort('description', 'asc')} />
                     <button className="fa fa-sort-alpha-desc mt-2" type="button" style={sortButtonStyle} onClick={() => onSort('description', 'desc')} />
                   </div>
                 </div>
@@ -62,7 +62,7 @@ const DatasetFilter = ({ onFilter, onSort }) => {
                     </span>
                   </div>
                   <div className="col col-md-4">
-                    <button className="fa fa-sort-numeric-asc mr-2 mt-2" type="button" style={sortButtonStyle} onClick={() => onSort('datafileCount', 'asc')} />
+                    <button className="fa fa-sort-numeric-asc me-2 mt-2" type="button" style={sortButtonStyle} onClick={() => onSort('datafileCount', 'asc')} />
                     <button className="fa fa-sort-numeric-desc mt-2" type="button" style={sortButtonStyle} onClick={() => onSort('datafileCount', 'desc')} />
                   </div>
                 </div>
@@ -73,7 +73,7 @@ const DatasetFilter = ({ onFilter, onSort }) => {
                     </span>
                   </div>
                   <div className="col col-md-4">
-                    <button className="fa fa-sort-numeric-asc mr-2 mt-2" type="button" style={sortButtonStyle} onClick={() => onSort('datasetSize', 'asc')} />
+                    <button className="fa fa-sort-numeric-asc me-2 mt-2" type="button" style={sortButtonStyle} onClick={() => onSort('datasetSize', 'asc')} />
                     <button className="fa fa-sort-numeric-desc mt-2" type="button" style={sortButtonStyle} onClick={() => onSort('datasetSize', 'desc')} />
                   </div>
                 </div>
@@ -84,7 +84,7 @@ const DatasetFilter = ({ onFilter, onSort }) => {
                     </span>
                   </div>
                   <div className="col col-md-4">
-                    <button className="fa fa-sort-numeric-asc mr-2 mt-2" type="button" style={sortButtonStyle} onClick={() => onSort('datasetTime', 'asc')} />
+                    <button className="fa fa-sort-numeric-asc me-2 mt-2" type="button" style={sortButtonStyle} onClick={() => onSort('datasetTime', 'asc')} />
                     <button className="fa fa-sort-numeric-desc mt-2" type="button" style={sortButtonStyle} onClick={() => onSort('datasetTime', 'desc')} />
                   </div>
                 </div>
