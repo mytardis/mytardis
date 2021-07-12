@@ -66,6 +66,9 @@ services:
     volumes:
       - ../e2e:/opt/robotframework/reports
       - ../e2e:/opt/robotframework/tests
+    environment:
+      MYTARDIS_URL: http://run:8000/
+      BROWSER: chrome
     depends_on:
       run:
         condition: service_started
