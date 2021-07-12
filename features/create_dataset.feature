@@ -14,8 +14,8 @@ Feature: Create a Dataset
     Then the experiment metadata tab content is shown
     When they click the Sharing link
     Then the experiment sharing tab content is shown
-    When they click the Change Public Access link
-    Then they see the Change Public Access form
+    # When they click the Change Public Access link
+    # Then they see the Change Public Access form
     When they click the Add New dataset button
     Then they see the dataset creation form
     When they fill in the Add Dataset form and click Save
