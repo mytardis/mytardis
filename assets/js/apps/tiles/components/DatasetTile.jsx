@@ -45,7 +45,7 @@ const DatasetTile = ({
                         name="dataset"
                         type="checkbox"
                         onChange={e => onCheckBoxSelect(data.id, e)}
-                        className="dataset_checkbox ml-2"
+                        className="dataset_checkbox ms-2"
                         style={{ display: 'inline' }}
                         value={data.id}
                       />

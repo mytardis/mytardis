@@ -183,7 +183,7 @@ const LicenseModal = ({ experimentId, container, onLicenseUpdate }) => {
                       </pre>
                       <div className="checkbox">
                         <label>
-                          <input id="publishing-consent" className="mr-1" type="checkbox" required value="Agree" />
+                          <input id="publishing-consent" className="me-1" type="checkbox" required value="Agree" />
                           I agree to the above terms
                         </label>
                       </div>
@@ -191,7 +191,7 @@ const LicenseModal = ({ experimentId, container, onLicenseUpdate }) => {
                     <div id="confirm-license-btn-group" className="form-group text-right" style={{ display: showButtons ? 'block' : 'None' }}>
                       <button
                         type="button"
-                        className="cancel-button btn btn-outline-secondary mr-1"
+                        className="cancel-button btn btn-outline-secondary me-1"
                         data-dismiss="modal"
                       >
                         <i className="fa fa-close" />

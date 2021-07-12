@@ -18,7 +18,7 @@
       {% endfor %}
 
     <div class="form-group row">
-      <select id="parameternameselect" class="form-control form-control-sm ml-3 col-md-6">
+      <select id="parameternameselect" class="form-control form-control-sm ms-3 col-md-6">
         {% for pn in parameternames %}
           {% if not pn.immutable %}
             <option value="{{pn.name|parametername_form}}"
@@ -28,7 +28,7 @@
           {% endif %}
         {% endfor %}
       </select>
-      <button id="add_new_parameter" type="button" class="btn btn-success btn-sm ml-1 my-0">
+      <button id="add_new_parameter" type="button" class="btn btn-success btn-sm ms-1 my-0">
         <i class="fa fa-plus"></i>
         Add Metadata Parameter
       </button>

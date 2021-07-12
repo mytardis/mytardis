@@ -37,19 +37,19 @@ const ExperimentViewPageBadges = ({ experimentID, container, licenseUpdatedCount
         )
           : (
             <Fragment>
-              <span className="mr-2">
+              <span className="me-2">
                 <DatasetCountBadge experimentData={expData} />
               </span>
-              <span className="mr-2">
+              <span className="me-2">
                 <DatafileCountBadge experimentData={expData} />
               </span>
-              <span className="mr-2">
+              <span className="me-2">
                 <ExperimentSizeBadge experimentData={expData} />
               </span>
-              <span className="mr-2">
+              <span className="me-2">
                 <ExperimentLastUpdatedBadge experimentData={expData} />
               </span>
-              <span className="mr-2">
+              <span className="me-2">
                 <PublicAccessBadge experimentData={expData} />
               </span>
             </Fragment>

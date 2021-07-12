@@ -267,7 +267,7 @@ exports[`render dataset tiles on page load should match snapshot 1`] = `
                     class="fa fa-download"
                   />
                   <input
-                    class="dataset_checkbox ml-2"
+                    class="dataset_checkbox ms-2"
                     id="dataset-checkbox-26"
                     name="dataset"
                     style="display: inline;"
@@ -371,7 +371,7 @@ exports[`render dataset tiles on page load should match snapshot 1`] = `
                     class="fa fa-download"
                   />
                   <input
-                    class="dataset_checkbox ml-2"
+                    class="dataset_checkbox ms-2"
                     id="dataset-checkbox-30"
                     name="dataset"
                     style="display: inline;"
