@@ -16,29 +16,44 @@ services:
       - ../tardis:/home/webapp/tardis
       - ../docs:/home/webapp/docs
     depends_on:
-      - run
-      #- pg
-      - mysql
-      #- es
-    links:
-      #- pg
-      - mysql
-      #- es
-  #pg:
-  #  image: postgres:9.6
-  #  environment:
-  #    POSTGRES_PASSWORD: postgres
+      run:
+        condition: service_started
+      pg:
+        condition: service_healthy
+      mysql:
+        condition: service_healthy
+      es:
+        condition: service_healthy
+  pg:
+    image: postgres:9.6
+    environment:
+      POSTGRES_PASSWORD: postgres
+    healthcheck:
+      test: ["CMD", "pg_isready"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
   mysql:
     image: mysql
     environment:
       MYSQL_ROOT_PASSWORD: mysql
     command: --default-authentication-plugin=mysql_native_password
-  #es:
-  #  image: docker.elastic.co/elasticsearch/elasticsearch:7.12.1
-  #  environment:
-  #    - bootstrap.memory_lock=true
-  #    - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-  #    - discovery.type=single-node
-  #  ports:
-  #    - "9300:9300"
-  #    - "9200:9200"
+    healthcheck:
+      test: "/etc/init.d/mysql status"
+      interval: 1s
+      retries: 120
+      timeout: 5s
+  es:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.12.1
+    environment:
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - discovery.type=single-node
+    ports:
+      - "9300:9300"
+      - "9200:9200"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://es:9200/_cluster/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
