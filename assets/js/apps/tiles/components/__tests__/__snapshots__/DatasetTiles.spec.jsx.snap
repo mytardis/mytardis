@@ -93,7 +93,7 @@ exports[`render dataset tiles on page load should match snapshot 1`] = `
               aria-expanded="false"
               aria-haspopup="true"
               class="btn btn-outline-secondary dropdown-toggle dropdown-toggle-split"
-              data-toggle="dropdown"
+              data-bs-toggle="dropdown"
               type="button"
             >
               <span

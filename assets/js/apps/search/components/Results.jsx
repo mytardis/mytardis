@@ -15,7 +15,7 @@ function Results({ results, counts }) {
             <a
               className="nav-link active"
               id="experiments-tab"
-              data-toggle="tab"
+              data-bs-toggle="tab"
               href="#experiments"
               role="tab"
               aria-controls="experiments"
@@ -30,7 +30,7 @@ function Results({ results, counts }) {
             <a
               className="nav-link"
               id="datasets-tab"
-              data-toggle="tab"
+              data-bs-toggle="tab"
               href="#datasets"
               role="tab"
               aria-controls="profile"
@@ -45,7 +45,7 @@ function Results({ results, counts }) {
             <a
               className="nav-link"
               id="datafiles-tab"
-              data-toggle="tab"
+              data-bs-toggle="tab"
               href="#datafiles"
               role="tab"
               aria-controls="contact"

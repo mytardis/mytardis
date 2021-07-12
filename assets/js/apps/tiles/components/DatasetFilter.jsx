@@ -37,7 +37,7 @@ const DatasetFilter = ({ onFilter, onSort }) => {
               <button
                 type="button"
                 className="btn btn-outline-secondary dropdown-toggle dropdown-toggle-split"
-                data-toggle="dropdown"
+                data-bs-toggle="dropdown"
                 aria-haspopup="true"
                 aria-expanded="false"
               >
