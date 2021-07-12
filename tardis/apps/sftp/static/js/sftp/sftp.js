@@ -8,13 +8,13 @@ var sftp = (function() {
     function addKeyRow(rowData) {
         return "<tr id='keyRow" + rowData.id + "'>\
           <td style='padding: 16px 20px'>\
-              <div class='pull-left'>\
+              <div class='float-start'>\
                 <strong>" + rowData.name + "</strong><br>\
                 <span>Type: " + rowData.key_type.toUpperCase() + "</span><br>\
                 <span style='word-break: break-all;'>Fingerprint: " + rowData.fingerprint + "</span><br>\
                 <span>Date added: " + rowData.added + "</span>\
               </div>\
-            <div class='text-right pull-right'>\
+            <div class='text-right float-end'>\
               <button id='delete-btn' class='btn btn-danger' \
                       onclick='sftp.handleKeyDelete(" + rowData.id + ")'>\
                 <i class='fa fa-trash'></i>\

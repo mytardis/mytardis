@@ -11,7 +11,7 @@
   <div class="row">
     <div class="col-md-12">
       <h3 class="d-block d-sm-none">Experiments</h3>
-      <div class="pull-left">
+      <div class="float-start">
           <h3 class="d-none d-sm-block" style="text-align: center">Experiments</h3>
       </div>
     </div>
@@ -23,12 +23,12 @@
         No experiments have been published yet.
       </p>
       {% else %}
-      <div class="pull-left">
+      <div class="float-start">
         <h4><strong>{{ public_experiments.count }}</strong>
         Public Experiment{{ public_experiments.count|pluralize}}
         </h4>
       </div>
-      <div class="pull-right mb-1">
+      <div class="float-end mb-1">
         <button type="button" class="btn btn-outline-secondary btn-sm"
                 onclick="$('#public-experiments .collapse').collapse('hide');" >
         Collapse all</button>

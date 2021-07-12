@@ -15,7 +15,7 @@ exports[`render dataset tiles on page load should match snapshot 1`] = `
       Datasets
     </h3>
     <a
-      class="add-dataset btn btn-primary btn-sm pull-right"
+      class="add-dataset btn btn-primary btn-sm float-end"
       href="/experiment/1234/add-dataset"
       id="add-dataset"
     >

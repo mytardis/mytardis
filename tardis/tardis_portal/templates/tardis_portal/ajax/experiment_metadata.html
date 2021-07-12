@@ -16,7 +16,7 @@
 {% for parameterset in parametersets %}
   {% capture as edit_control %}
    {% if has_write_permissions and not parameterset.schema.immutable %}
-   <div class="pull-right">
+   <div class="float-end">
        <a class="edit-metadata btn btn-sm btn-outline-secondary"
           href="{% url 'tardis.tardis_portal.views.edit_experiment_par' parameterset.id %}">
           <i class="fa fa-pencil"></i>

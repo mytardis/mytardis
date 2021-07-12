@@ -34,7 +34,7 @@
                {{facility.name}}
             </a>
         </div>
-      </div>  <!-- div class="btn-group pull-right" -->
+      </div>  <!-- div class="btn-group float-end" -->
     </div>
   </div>
   {% endverbatim %}
@@ -74,7 +74,7 @@
                 </div>
                 <div class="col-md-4">
                   <!-- Auto-refresh button -->
-                  <div class="btn-group pull-right" ng-cloak>
+                  <div class="btn-group float-end" ng-cloak>
                     <button type="button" class="btn btn-outline-secondary btn-sm"
                             ng-click="facilityCtrl.fetchFacilityData(0,facilityCtrl.defaultFetchLimit); facilityCtrl.refreshCountdown = facilityCtrl.refreshInterval">
                       <i class="fa fa-refresh"></i>
@@ -103,7 +103,7 @@
                          ng-click="facilityCtrl.setRefreshInterval(300)">Every
                           5 minutes</a>
                     </div>  <!-- dropdown-menu -->
-                  </div>  <!-- btn-group pull-right Auto-refresh button -->
+                  </div>  <!-- btn-group float-end Auto-refresh button -->
                 </div>  <!-- col-md-4 -->
             </div>  <!-- row -->
             <div class="row">
