@@ -26,22 +26,6 @@ jobs:
   test-on-sqlite:
     runs-on: ubuntu-20.04
     needs: build-docker
-    services:
-      es:
-        image: docker.elastic.co/elasticsearch/elasticsearch:7.12.1
-        env:
-          bootstrap.memory_lock: true
-          ES_JAVA_OPTS: "-Xms512m -Xmx512m"
-          discovery.type: single-node
-        ports:
-          - 9200:9200
-          - 9300:9300
-        # Set health checks to wait until postgres has started
-        options: >-
-          --health-cmd "curl http://localhost:9200/_cluster/health"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
     steps:
       - name: checkout
         uses: actions/checkout@v2
@@ -71,20 +55,6 @@ jobs:
   test-on-postgres:
     runs-on: ubuntu-20.04
     needs: build-docker
-    services:
-      pg:
-        image: postgres:9.6
-        env:
-          POSTGRES_PASSWORD: postgres
-        # Set health checks to wait until postgres has started
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          # Maps tcp port 5432 on service container to the host
-          - 5432:5432
     steps:
       - name: checkout
         uses: actions/checkout@v2
