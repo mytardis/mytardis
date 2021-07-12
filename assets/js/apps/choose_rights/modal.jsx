@@ -95,7 +95,7 @@ const LicenseModal = ({ experimentId, container, onLicenseUpdate }) => {
             data-bs-toggle="modal"
             data-bs-target="#modal-public-access"
             title="Change"
-            type="submit"
+            type="button"
           >
             <i className="fa fa-cog me-1" />
             Change Public Access
