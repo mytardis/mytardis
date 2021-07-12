@@ -247,7 +247,7 @@ exports[`render dataset tiles on page load should match snapshot 1`] = `
               class="card-body"
             >
               <div
-                class="float-left"
+                class="float-start"
                 style="margin-right: 10px;"
               >
                 <div
@@ -277,7 +277,7 @@ exports[`render dataset tiles on page load should match snapshot 1`] = `
                 </label>
               </div>
               <div
-                class="float-left"
+                class="float-start"
                 style="margin-right: 10px;"
               />
               <div
@@ -306,7 +306,7 @@ exports[`render dataset tiles on page load should match snapshot 1`] = `
                 </p>
               </div>
               <div
-                class="float-left ds-thumb"
+                class="float-start ds-thumb"
                 style="margin-right: 10px;"
               >
                 <canvas
@@ -314,7 +314,7 @@ exports[`render dataset tiles on page load should match snapshot 1`] = `
                 />
               </div>
               <div
-                class="float-left"
+                class="float-start"
               >
                 <p
                   class="mb-2"
@@ -351,7 +351,7 @@ exports[`render dataset tiles on page load should match snapshot 1`] = `
               class="card-body"
             >
               <div
-                class="float-left"
+                class="float-start"
                 style="margin-right: 10px;"
               >
                 <div
@@ -381,7 +381,7 @@ exports[`render dataset tiles on page load should match snapshot 1`] = `
                 </label>
               </div>
               <div
-                class="float-left"
+                class="float-start"
                 style="margin-right: 10px;"
               />
               <div
@@ -410,7 +410,7 @@ exports[`render dataset tiles on page load should match snapshot 1`] = `
                 </p>
               </div>
               <div
-                class="float-left ds-thumb"
+                class="float-start ds-thumb"
                 style="margin-right: 10px;"
               >
                 <canvas
@@ -418,7 +418,7 @@ exports[`render dataset tiles on page load should match snapshot 1`] = `
                 />
               </div>
               <div
-                class="float-left"
+                class="float-start"
               >
                 <p
                   class="mb-2"
@@ -513,7 +513,7 @@ exports[`render dataset tiles on page load should match snapshot 1`] = `
               class="card-body"
             >
               <div
-                class="float-left"
+                class="float-start"
                 style="margin-right: 10px;"
               >
                 <div
@@ -527,7 +527,7 @@ exports[`render dataset tiles on page load should match snapshot 1`] = `
                 
               </div>
               <div
-                class="float-left"
+                class="float-start"
                 style="margin-right: 10px;"
               />
               <div
@@ -556,7 +556,7 @@ exports[`render dataset tiles on page load should match snapshot 1`] = `
                 </p>
               </div>
               <div
-                class="float-left ds-thumb"
+                class="float-start ds-thumb"
                 style="margin-right: 10px;"
               >
                 <canvas
@@ -564,7 +564,7 @@ exports[`render dataset tiles on page load should match snapshot 1`] = `
                 />
               </div>
               <div
-                class="float-left"
+                class="float-start"
               >
                 <p
                   class="mb-2"
@@ -601,7 +601,7 @@ exports[`render dataset tiles on page load should match snapshot 1`] = `
               class="card-body"
             >
               <div
-                class="float-left"
+                class="float-start"
                 style="margin-right: 10px;"
               >
                 <div
@@ -615,7 +615,7 @@ exports[`render dataset tiles on page load should match snapshot 1`] = `
                 
               </div>
               <div
-                class="float-left"
+                class="float-start"
                 style="margin-right: 10px;"
               />
               <div
@@ -644,7 +644,7 @@ exports[`render dataset tiles on page load should match snapshot 1`] = `
                 </p>
               </div>
               <div
-                class="float-left ds-thumb"
+                class="float-start ds-thumb"
                 style="margin-right: 10px;"
               >
                 <canvas
@@ -652,7 +652,7 @@ exports[`render dataset tiles on page load should match snapshot 1`] = `
                 />
               </div>
               <div
-                class="float-left"
+                class="float-start"
               >
                 <p
                   class="mb-2"
