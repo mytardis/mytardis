@@ -47,7 +47,6 @@ case "$TEST_TYPE" in
         npm install && \
         npm audit --audit-level=high --production && \
         npm run-script build && \
-        npm test && \
         python test.py behave
         (( exit_status = exit_status || $? ))
         ;;

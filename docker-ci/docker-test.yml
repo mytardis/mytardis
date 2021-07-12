@@ -5,6 +5,10 @@ services:
       context: ..
       dockerfile: docker-ci/Dockerfile-run
     image: mytardis/mytardis-run
+    ports:
+    - "8000:8000"
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://run:8000/" ]
   test:
     build:
       context: ..
@@ -57,3 +61,11 @@ services:
       interval: 10s
       timeout: 5s
       retries: 3
+  robot-tests:
+    image: ppodgorsek/robot-framework:latest
+    volumes:
+      - ../e2e:/opt/robotframework/reports
+      - ../e2e:/opt/robotframework/tests
+    depends_on:
+      run:
+        condition: service_started
