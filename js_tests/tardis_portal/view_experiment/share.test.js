@@ -27,7 +27,7 @@ QUnit.skip("Test clicking on Public Access button", function(assert) {
         
         <button class="public_access_button btn btn-outline-secondary btn-sm" 
                 data-bs-toggle="modal"
-                data-target="#modal-public-access" 
+                data-bs-target="#modal-public-access"
                 title="Change" 
                 type="submit">
               <i class="fa fa-cog mr-1"></i>

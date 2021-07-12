@@ -58,7 +58,7 @@ function Result({ result }) {
               type="button"
               onClick={dataToggler}
               className="btn btn-link"
-              data-target="#data"
+              data-bs-target="#data"
               name="showChild"
             >
               <i className={dataToggleClass ? 'fa fa-plus' : 'fa fa-minus'} />
@@ -102,7 +102,7 @@ function Result({ result }) {
               type="button"
               onClick={dataToggler}
               className="btn btn-link"
-              data-target="#data"
+              data-bs-target="#data"
               name="showChild"
             >
               <i className={dataToggleClass ? 'fa fa-plus' : 'fa fa-minus'} />
@@ -150,7 +150,7 @@ function Result({ result }) {
               type="button"
               onClick={dataToggler}
               className="btn btn-link"
-              data-target="#data"
+              data-bs-target="#data"
               name="showChild"
             >
               <i className={dataToggleClass ? 'fa fa-plus' : 'fa fa-minus'} />
