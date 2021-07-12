@@ -8,7 +8,7 @@ services:
     ports:
     - "8000:8000"
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://run:8000/" ]
+      test: [ "CMD", "curl", "-f", "http://localhost:8000/" ]
   test:
     build:
       context: ..
@@ -71,4 +71,4 @@ services:
       BROWSER: chrome
     depends_on:
       run:
-        condition: service_started
+        condition: service_healthy
