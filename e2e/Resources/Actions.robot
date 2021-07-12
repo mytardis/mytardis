@@ -1,7 +1,7 @@
 *** Settings ***
 
 Library    SeleniumLibrary
-Documentation    This file is to test experiement creation, adding metadata to experiment, adding datasets to experiment, adding metadata to experiment
+
 
 *** Keywords ***
 
@@ -32,17 +32,14 @@ Create Experiment
     Add Experiment Details              ${ExperimentName}      ${ExperimentAuthor}    ${Institution}    ${Description}
     page should contain                 ${ExperimentName}
 
-    #Open My Data page and verify Experiment is displayed
-    #click element                       xpath://*[@class='nav-link' and @href='/mydata/']
-    #page should contain                 ${ExperimentName}
 
     #Open Home page and verify Experiment is displayed
-    click element                       xpath://*[@class='nav-link' and @href='/']
-    wait until element is enabled       xpath://*[contains(text(),'${ExperimentName}')]
-    element should contain              xpath://*[contains(text(),'${ExperimentName}')]      ${ExperimentName}
+   # click element                       xpath://*[@class='nav-link' and @href='/']
+   # wait until element is enabled       xpath://*[contains(text(),'${ExperimentName}')]
+   # element should contain              xpath://*[contains(text(),'${ExperimentName}')]      ${ExperimentName}
 
     #Reopen Experiment
-    click element                       xpath://*[contains(text(),'${ExperimentName}')]
+    #click element                       xpath://*[contains(text(),'${ExperimentName}')]
 
 Edit Experiment
     [Arguments]                         ${ExperimentName}      ${ExperimentAuthor}    ${Institution}    ${Description}
@@ -87,9 +84,6 @@ Add DataSet
     Add DataSet Details                 ${Description}   ${Directory}    ${Instrument}
     page should contain                 ${Description}
 
-    #Open My Data page and verify Experiment is displayed
-   # click element                       xpath://*[@class='nav-link' and @href='/mydata/']
-   # page should contain                 ${Description}
 
    # click element                       xpath://*[@class='nav-link' and @href='/']
    # wait until element is enabled       xpath://*[contains(text(),'${Description}')]
@@ -161,6 +155,8 @@ Add DataSet Details
 
 
 Verify page contains item
-    [Arguments]         ${Item}
-
-
+    [Arguments]         ${Item}         ${Page}
+    #Open page and verify item is displayed
+    click element                       ${Page}
+    wait until element is enabled       link:${Item}
+    click element                       link:${Item}
