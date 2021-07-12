@@ -105,8 +105,12 @@ const LicenseModal = ({ experimentId, container, onLicenseUpdate }) => {
               <div className="modal-content">
                 <div className="modal-header">
                   <h1 className="title">Public Access</h1>
-                  <button type="button" className="btn-close"
-                  data-bs-dismiss="modal" aria-label="Close" />
+                  <button
+                    type="button"
+                    className="btn-close"
+                    data-bs-dismiss="modal"
+                    aria-label="Close"
+                  />
                 </div>
                 <div className="loading-placeholder" style={{ display: 'none' }}>
                   <p>
