@@ -17,7 +17,8 @@
              </label>
           </div>
           <div class="col-md-9 ms-4 me-0">
-            <select id="schemaselect" class="form-control" data-type="{{type}}" data-parent_object_id="{{parentObject.id}}">
+            <select id="schemaselect" class="form-select" data-type="{{type}}"
+                    data-parent_object_id="{{parentObject.id}}">
             {% for schema in all_schema %}
               <option value="{{schema.id}}" {% if schema.id == schema_id %}selected{% endif %}>{{schema.name}}</option>
             {% endfor %}

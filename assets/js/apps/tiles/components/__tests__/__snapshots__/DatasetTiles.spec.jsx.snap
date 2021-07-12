@@ -466,7 +466,7 @@ exports[`render dataset tiles on page load should match snapshot 1`] = `
               class="col-md-10"
             >
               <select
-                class="form-control"
+                class="form-select"
                 name="experiment_id"
               >
                 <option

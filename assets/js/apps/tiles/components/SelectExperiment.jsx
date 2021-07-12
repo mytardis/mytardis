@@ -11,7 +11,7 @@ const ExperimentListDropDown = ({ onChange, experimentListData }) => (
           <div className="col-md-10">
             <select
               onChange={onChange}
-              className="form-control"
+              className="form-select"
               name="experiment_id"
             >
               {experimentListData.map(

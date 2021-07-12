@@ -105,7 +105,8 @@ const LicenseModal = ({ experimentId, container, onLicenseUpdate }) => {
               <div className="modal-content">
                 <div className="modal-header">
                   <h1 className="title">Public Access</h1>
-                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                  <button type="button" className="btn-close"
+                  data-bs-dismiss="modal" aria-label="Close" />
                 </div>
                 <div className="loading-placeholder" style={{ display: 'none' }}>
                   <p>
@@ -147,7 +148,7 @@ const LicenseModal = ({ experimentId, container, onLicenseUpdate }) => {
                       <div className="col-md-9 ">
                         <select
                           name="public_access"
-                          className="form-control"
+                          className="form-select"
                           id="id_public_access"
                           value={selectedAccessTypeId}
                           onChange={handleChange}

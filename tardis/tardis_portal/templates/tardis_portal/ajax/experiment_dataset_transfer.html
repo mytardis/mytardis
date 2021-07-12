@@ -6,7 +6,7 @@
     <div class="form-group">
       <label class="col-md-2 col-form-label" for="input01">Experiment</label>
       <div class="col-md-10">
-        <select class="form-control" name="experiment_id">
+        <select class="form-select" name="experiment_id">
           {% for experiment in experiments %}
           <option value="{{experiment.id}}">{{experiment.title}}</option>
           {% endfor %}
