@@ -340,3 +340,9 @@ h4 {
 h5 {
     font-size: 1.125rem
 }
+
+form p.help-block {
+    margin-left: 15px;
+    font-size: .87rem;
+    color: #888
+}
