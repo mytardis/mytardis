@@ -346,3 +346,7 @@ form p.help-block {
     font-size: .87rem;
     color: #888
 }
+
+footer {
+    border-top: 1px solid #ced4da
+}
