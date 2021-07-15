@@ -99,7 +99,7 @@
     "pretest": "npm run eslint.jquery && npm run eslint.angular && npm run eslint.react && npm run test-build",
     "test-react": "jest --collectCoverage=true --testMatch=\"<rootDir>/assets/js/apps/**/__tests__/*.spec.jsx\" --config jest.config.js",
     "test": "grunt test --verbose && npm run test-react",
-    "dev": "webpack --config webpack.config.js --progress --color --watch --display-error-details --mode development",
+    "dev": "webpack --config webpack.config.js --progress --color --watch --mode development",
     "build": "webpack --config webpack.config.js --progress --color --mode production"
   }
 }
