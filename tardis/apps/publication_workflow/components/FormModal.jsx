@@ -9,6 +9,7 @@ import SelectDatasetForm from './Forms/SelectDatasetForm';
 import ExtraInformationForm from './Forms/ExtraInformationForm';
 import AtrributeAndLicensingForm from './Forms/AtrributeAndLicensingForm';
 import ProgressBarComponent from './Stepper/ProgressBar';
+import { SubmitFormData } from "./utils/FetchData";
 
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -26,12 +27,14 @@ const FormModal = () => {
               publicationTitle: '',
               publicationDescription: '',
               selectedDatasets: [],
-              authors: [{ AuthorName: "", AuthorInstitution: "", AuthorEmail: "" }],
-              /* AuthorName: '',
-              AuthorInstitution: '',
-              AuthorEmail: '', */
+              authors: [{ AuthorName: '', AuthorInstitution: '', AuthorEmail: '' }],
+              acknowledgment: {},
+              AcknowledgementText: '',
+              license: '',
+              releaseDate: '',
+              consent: false,
             }}
-            onSubmit={async values => sleep(300).then(() => console.log('Wizard submit', values))}
+            onSubmit={async values => SubmitFormData(values).then(() => handleClose())}
           >
             <Steps
               onSubmit={async values => sleep(50).then(() => console.log('step 1 submit', values))}
@@ -64,9 +67,9 @@ const FormModal = () => {
             <Steps
               onSubmit={() => console.log('Step4 onsubmit')}
               validationSchema={Yup.object({
-                /* AuthorName: Yup.string().required('Author Name is required'),
-                AuthorInstitution: Yup.string(),
-                AuthorEmail: Yup.string().email('Invalid email address'), */
+                license: Yup.number().required('license is required'),
+                releaseDate: Yup.date().required('Select release date'),
+                consent: Yup.bool().oneOf([true], 'Please select checkbox to provide your consent'),
               })}
             />
           </Stepper>

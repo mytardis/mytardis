@@ -288,7 +288,7 @@ def map_form_to_schemas(extraInfo, publication):
                     pass
 
 
-def get_licenses():
+def get_licenses(self):
     licenses = License.objects.filter(
         is_active=True, allows_distribution=True)
     licenses_json = []
@@ -300,7 +300,7 @@ def get_licenses():
         l['description'] = license.internal_description
         l['image'] = license.image_url
         licenses_json.append(l)
-    return licenses_json
+    return JsonResponse(licenses_json, safe=False)
 
 
 def set_publication_authors(author_list, publication):
@@ -512,7 +512,8 @@ def retrieve_draft_pubs_list(request):
                 'id': draft_pub.id,
                 'title': draft_pub.title,
                 'release_date': release_date,
-                'doi': doi
+                'doi': doi,
+                'description': draft_pub.description
             })
 
     return JsonResponse(draft_pubs_data, safe=False)

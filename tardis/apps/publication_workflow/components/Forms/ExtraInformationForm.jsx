@@ -1,5 +1,5 @@
 import React from 'react';
-import { Form } from 'react-bootstrap';
+import { Card, Form } from 'react-bootstrap';
 
 const ExtraInformationForm = ({ formik }) => {
   const handleDatasetDescriptionChange = (i, event) => {
@@ -12,7 +12,7 @@ const ExtraInformationForm = ({ formik }) => {
     }];
     const res = selectedDatasets
       .map(obj => updatedDatasetDescription.find(o => o.dataset_id === obj.dataset_id) || obj);
-    formik.setFieldValue("selectedDatasets", res, false);
+    formik.setFieldValue('selectedDatasets', res, false);
     console.log(selectedDatasets);
   };
   return (
@@ -20,21 +20,25 @@ const ExtraInformationForm = ({ formik }) => {
       <h3>Dataset description</h3>
       <p>The following extra information is required based on your dataset selection:</p>
       {formik.values.selectedDatasets.map((dataset, i) => (
-        <div key={dataset.dataset_id}>
-          <h4>{dataset.dataset_description}</h4>
-          <Form.Group className="mb-3" controlId="formGroupDatasetDescription">
-            <Form.Label>Description</Form.Label>
-            <Form.Control
-              as="textarea"
-              rows={3}
-              placeholder="Describe your Dataset"
-              name={`datasetDescription_${i}`}
-              onChange={e => handleDatasetDescriptionChange(i, e)}
-              key={formik.values.selectedDatasets[i]}
-              value={formik.values.selectedDatasets[i].publication_dataset_description}
-            />
-          </Form.Group>
-        </div>
+        <Card className="mb-3">
+          <Card.Body>
+            <div key={dataset.dataset_id}>
+              <h4>{dataset.dataset_description}</h4>
+              <Form.Group className="mb-3" controlId="formGroupDatasetDescription">
+                <Form.Label>Description</Form.Label>
+                <Form.Control
+                  as="textarea"
+                  rows={3}
+                  placeholder="Describe your Dataset"
+                  name={`datasetDescription_${i}`}
+                  onChange={e => handleDatasetDescriptionChange(i, e)}
+                  key={formik.values.selectedDatasets[i]}
+                  value={formik.values.selectedDatasets[i].publication_dataset_description}
+                />
+              </Form.Group>
+            </div>
+          </Card.Body>
+        </Card>
       ))}
     </>
   );

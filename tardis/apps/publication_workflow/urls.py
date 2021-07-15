@@ -17,7 +17,8 @@ from .views import (
     is_publication_draft,
     delete_publication,
     retract_publication,
-    mint_doi_and_deactivate
+    mint_doi_and_deactivate,
+    get_licenses,
 )
 
 urlpatterns = [
@@ -48,5 +49,7 @@ urlpatterns = [
     url(r'^publication/retract/(?P<publication_id>\d+)/$', retract_publication,
         name='tardis.apps.publication_workflow.views.retract_publication'),
     url(r'^publication/mint_doi/(?P<experiment_id>\d+)/$', mint_doi_and_deactivate,
-         name='tardis.apps.publication_workflow.views.mint_doi_and_deactivate')
+         name='tardis.apps.publication_workflow.views.mint_doi_and_deactivate'),
+    url(r'^licenses', get_licenses,
+        name='tardis.apps.publication_workflow.views.get_licenses')
 ]
