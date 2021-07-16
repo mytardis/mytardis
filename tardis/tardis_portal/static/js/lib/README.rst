@@ -19,21 +19,6 @@ replaced any time soon.
 If you're going to use it, ask yourself if Bootstrap has an equivalent first.
 
 
-Mustache.js (from django-jstemplate)
-------------------------------------
-URL: https://pypi.org/project/django-jstemplate/
-
-Regular logic-less `Mustache <http://mustache.github.com/>`_ templates, but
-with Django integration.
-
-If you're about to send HTML to the client, consider using a Mustache template
-and some JSON first. (Reusing JSON services is much easier!)
-
-For Javascript tests, django.mustache.js is copied into this directory, because
-we can't use {% static ... %} to access it in the django-jstemplate package
-because Django is not running during the Javascript tests.
-
-
 Underscore.js
 -------------
 URL: http://underscorejs.org/
