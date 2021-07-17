@@ -60,169 +60,167 @@ exports[`render dataset tiles on page load should match snapshot 1`] = `
         Download Selected
       </button>
     </form>
-    <p>
+    <div
+      class="row mb-3"
+    >
       <div
-        class="row"
+        class="col-md-8"
       >
         <div
-          class="form-horizontal col-md-8"
+          class="has-search"
         >
-          <div
-            class="form-group has-search"
-          >
-            <input
-              class="form-control"
-              placeholder="Just start typing to filter datasets based on description"
-              type="text"
-            />
-          </div>
+          <input
+            class="form-control"
+            placeholder="Start typing to filter datasets based on description"
+            type="text"
+          />
         </div>
+      </div>
+      <div
+        class="col-md-4"
+      >
         <div
-          class="form-horizontal col-md-4"
+          class="btn-group"
         >
-          <div
-            class="btn-group"
+          <button
+            class="btn btn-outline-secondary float-end"
+            type="button"
           >
-            <button
-              class="btn btn-outline-secondary float-end"
-              type="button"
+            Sort by
+          </button>
+          <button
+            aria-expanded="false"
+            aria-haspopup="true"
+            class="btn btn-outline-secondary dropdown-toggle dropdown-toggle-split"
+            data-bs-toggle="dropdown"
+            type="button"
+          >
+            <span
+              class="sr-only"
             >
-              Sort by
-            </button>
-            <button
-              aria-expanded="false"
-              aria-haspopup="true"
-              class="btn btn-outline-secondary dropdown-toggle dropdown-toggle-split"
-              data-bs-toggle="dropdown"
-              type="button"
-            >
-              <span
-                class="sr-only"
-              >
-                Toggle Dropdown
-              </span>
-            </button>
+              Toggle Dropdown
+            </span>
+          </button>
+          <div
+            class="dropdown-menu"
+            style="min-width: max-content; transform: translate3d(0px 38px 0px);"
+          >
             <div
-              class="dropdown-menu"
-              style="min-width: max-content; transform: translate3d(0px 38px 0px);"
+              class="row"
             >
               <div
-                class="row"
+                class="col col-md-8"
               >
-                <div
-                  class="col col-md-8"
+                <span
+                  class="dropdown-item"
+                  href="#"
                 >
-                  <span
-                    class="dropdown-item"
-                    href="#"
-                  >
-                    Description
-                  </span>
-                </div>
-                <div
-                  class="col col-md-4"
-                >
-                  <button
-                    class="fa fa-sort-alpha-asc me-2 mt-2"
-                    style="background-color: transparent; cursor: pointer; text-decoration: underline; display: inline; margin: 0px; padding: 0px; color: blue;"
-                    type="button"
-                  />
-                  <button
-                    class="fa fa-sort-alpha-desc mt-2"
-                    style="background-color: transparent; cursor: pointer; text-decoration: underline; display: inline; margin: 0px; padding: 0px; color: blue;"
-                    type="button"
-                  />
-                </div>
+                  Description
+                </span>
               </div>
               <div
-                class="row"
+                class="col col-md-4"
               >
-                <div
-                  class="col col-md-8"
+                <button
+                  class="fa fa-sort-alpha-asc me-2 mt-2"
+                  style="background-color: transparent; cursor: pointer; text-decoration: underline; display: inline; margin: 0px; padding: 0px; color: blue;"
+                  type="button"
+                />
+                <button
+                  class="fa fa-sort-alpha-desc mt-2"
+                  style="background-color: transparent; cursor: pointer; text-decoration: underline; display: inline; margin: 0px; padding: 0px; color: blue;"
+                  type="button"
+                />
+              </div>
+            </div>
+            <div
+              class="row"
+            >
+              <div
+                class="col col-md-8"
+              >
+                <span
+                  class="dropdown-item"
+                  href="#"
                 >
-                  <span
-                    class="dropdown-item"
-                    href="#"
-                  >
-                    DataFile count
-                  </span>
-                </div>
-                <div
-                  class="col col-md-4"
-                >
-                  <button
-                    class="fa fa-sort-numeric-asc me-2 mt-2"
-                    style="background-color: transparent; cursor: pointer; text-decoration: underline; display: inline; margin: 0px; padding: 0px; color: blue;"
-                    type="button"
-                  />
-                  <button
-                    class="fa fa-sort-numeric-desc mt-2"
-                    style="background-color: transparent; cursor: pointer; text-decoration: underline; display: inline; margin: 0px; padding: 0px; color: blue;"
-                    type="button"
-                  />
-                </div>
+                  Files count
+                </span>
               </div>
               <div
-                class="row"
+                class="col col-md-4"
               >
-                <div
-                  class="col col-md-8"
+                <button
+                  class="fa fa-sort-numeric-asc me-2 mt-2"
+                  style="background-color: transparent; cursor: pointer; text-decoration: underline; display: inline; margin: 0px; padding: 0px; color: blue;"
+                  type="button"
+                />
+                <button
+                  class="fa fa-sort-numeric-desc mt-2"
+                  style="background-color: transparent; cursor: pointer; text-decoration: underline; display: inline; margin: 0px; padding: 0px; color: blue;"
+                  type="button"
+                />
+              </div>
+            </div>
+            <div
+              class="row"
+            >
+              <div
+                class="col col-md-8"
+              >
+                <span
+                  class="dropdown-item"
+                  href="#"
                 >
-                  <span
-                    class="dropdown-item"
-                    href="#"
-                  >
-                    Dataset size
-                  </span>
-                </div>
-                <div
-                  class="col col-md-4"
-                >
-                  <button
-                    class="fa fa-sort-numeric-asc me-2 mt-2"
-                    style="background-color: transparent; cursor: pointer; text-decoration: underline; display: inline; margin: 0px; padding: 0px; color: blue;"
-                    type="button"
-                  />
-                  <button
-                    class="fa fa-sort-numeric-desc mt-2"
-                    style="background-color: transparent; cursor: pointer; text-decoration: underline; display: inline; margin: 0px; padding: 0px; color: blue;"
-                    type="button"
-                  />
-                </div>
+                  Size
+                </span>
               </div>
               <div
-                class="row"
+                class="col col-md-4"
               >
-                <div
-                  class="col col-md-8"
+                <button
+                  class="fa fa-sort-numeric-asc me-2 mt-2"
+                  style="background-color: transparent; cursor: pointer; text-decoration: underline; display: inline; margin: 0px; padding: 0px; color: blue;"
+                  type="button"
+                />
+                <button
+                  class="fa fa-sort-numeric-desc mt-2"
+                  style="background-color: transparent; cursor: pointer; text-decoration: underline; display: inline; margin: 0px; padding: 0px; color: blue;"
+                  type="button"
+                />
+              </div>
+            </div>
+            <div
+              class="row"
+            >
+              <div
+                class="col col-md-8"
+              >
+                <span
+                  class="dropdown-item"
+                  href="#"
                 >
-                  <span
-                    class="dropdown-item"
-                    href="#"
-                  >
-                    Dataset modified time
-                  </span>
-                </div>
-                <div
-                  class="col col-md-4"
-                >
-                  <button
-                    class="fa fa-sort-numeric-asc me-2 mt-2"
-                    style="background-color: transparent; cursor: pointer; text-decoration: underline; display: inline; margin: 0px; padding: 0px; color: blue;"
-                    type="button"
-                  />
-                  <button
-                    class="fa fa-sort-numeric-desc mt-2"
-                    style="background-color: transparent; cursor: pointer; text-decoration: underline; display: inline; margin: 0px; padding: 0px; color: blue;"
-                    type="button"
-                  />
-                </div>
+                  Last modified
+                </span>
+              </div>
+              <div
+                class="col col-md-4"
+              >
+                <button
+                  class="fa fa-sort-numeric-asc me-2 mt-2"
+                  style="background-color: transparent; cursor: pointer; text-decoration: underline; display: inline; margin: 0px; padding: 0px; color: blue;"
+                  type="button"
+                />
+                <button
+                  class="fa fa-sort-numeric-desc mt-2"
+                  style="background-color: transparent; cursor: pointer; text-decoration: underline; display: inline; margin: 0px; padding: 0px; color: blue;"
+                  type="button"
+                />
               </div>
             </div>
           </div>
         </div>
       </div>
-    </p>
+    </div>
     <div
       data-rbd-droppable-context-id="0"
       data-rbd-droppable-id="main-list"
