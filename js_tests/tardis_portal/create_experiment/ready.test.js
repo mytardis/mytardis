@@ -13,11 +13,11 @@ QUnit.test("Test disabling duplicate submit in create experiment form", function
 
     // Submit form without applying the disableDuplicateSubmit() function:
     $("#create_experiment_form").submit();
-    assert.notOk($("#create_experiment_form").find(":submit").prop("disabled"));
+    assert.notOk($("#create_experiment_form").data("submitted"));
 
     // Submit form after applying the disableDuplicateSubmit() function:
     disableDuplicateSubmit();
     $("#create_experiment_form").submit();
-    assert.ok($("#create_experiment_form").find(":submit").prop("disabled"));
+    assert.ok($("#create_experiment_form").data("submitted"));
 
 });
