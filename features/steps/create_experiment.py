@@ -121,7 +121,8 @@ def they_click_the_change_public_access_button(context):
     :type context: behave.runner.Context
     """
     public_access_link = context.browser.find_element_by_class_name("public_access_button")
-    public_access_link.click()
+    context.browser.execute_script("arguments[0].scrollIntoView();", public_access_link)
+    context.browser.execute_script("arguments[0].click();", public_access_link)
 
 
 @then("they see the Change Public Access form")
@@ -132,8 +133,7 @@ def they_see_the_change_public_access_form(context):
     wait_for_jquery(context)
     exp_id = Experiment.objects.get(title="test exp1").id
     form = context.browser.find_element_by_css_selector("form.experiment-rights")
-    context.test.assertIn(
-        "post", form.get_attribute("method"))
+    context.test.assertIn("post", form.get_attribute("method"))
     close_link = context.browser.\
         find_element_by_css_selector("#modal-public-access > div > div > div.modal-header > button > span")
     close_link.click()
