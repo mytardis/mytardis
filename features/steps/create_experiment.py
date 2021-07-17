@@ -43,7 +43,8 @@ def fill_in_create_exp_and_save(context):
     authors_input = context.browser.find_element_by_css_selector("input[name='authors']")
     authors_input.send_keys("Test User1")
     save_button = context.browser.find_element_by_css_selector("button[type='submit']")
-    save_button.click()
+    context.browser.execute_script("arguments[0].scrollIntoView();", save_button)
+    context.browser.execute_script("arguments[0].click();", save_button)
 
 
 @then("a new experiment is created")
