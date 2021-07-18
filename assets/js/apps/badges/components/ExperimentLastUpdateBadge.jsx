@@ -18,11 +18,11 @@ const ExperimentLastUpdatedBadge = ({ experimentData }) => {
   return (
     <Fragment>
       {loading
-        ? <span className=" float-end spinner-grow spinner-grow-sm" role="status" aria-hidden="true" />
+        ? <span className="float-end spinner-grow spinner-grow-sm" role="status" aria-hidden="true" />
         : (
-          <Badge variant="info" title={title}>
+          <Badge bg="info" title={title}>
             <i className="fa fa-clock-o" />
-&nbsp;
+            &nbsp;
             {lastUpdatedTime}
           </Badge>
         )
