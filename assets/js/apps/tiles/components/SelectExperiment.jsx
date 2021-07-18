@@ -5,25 +5,25 @@ import PropTypes from 'prop-types';
 const ExperimentListDropDown = ({ onChange, experimentListData }) => (
   <Fragment>
     <form id="other-experiment-selection" className="form-horizontal">
-      <fieldset>
-        <div className="form-group">
-          <label className="col-md-2 col-form-label" htmlFor="input01">Experiment</label>
-          <div className="col-md-10">
-            <select
-              onChange={onChange}
-              className="form-select"
-              name="experiment_id"
-            >
-              {experimentListData.map(
-                exp => (
-                  <option value={exp.id} key={exp.id}>{exp.title}</option>),
-              )}
-            </select>
-          </div>
+      <div className="row">
+        <div className="col-md-2">
+          <label className="form-label" htmlFor="experiment_id">Experiment</label>
         </div>
-      </fieldset>
+        <div className="col-md-10">
+          <select
+            onChange={onChange}
+            className="form-select"
+            name="experiment_id"
+          >
+            {experimentListData.map(
+              exp => (
+                <option value={exp.id} key={exp.id}>{exp.title}</option>),
+            )}
+          </select>
+        </div>
+      </div>
     </form>
-    <p className="help-text">
+    <p className="mt-3">
       <strong>Instructons:</strong>
       {' '}
       Using the above list, select an experiment to copy from,
