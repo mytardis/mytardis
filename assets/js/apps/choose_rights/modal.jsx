@@ -113,43 +113,49 @@ const LicenseModal = ({ experimentId, container, onLicenseUpdate }) => {
                   />
                 </div>
                 <div className="loading-placeholder" style={{ display: 'none' }}>
-                  <p>
-                    Please wait...
-                  </p>
+                  <p>Please wait...</p>
                 </div>
                 <div className="modal-body">
                   { showMessage
                     ? (
                       <div id="choose-rights-message">
                         {isrightsUpdated ? (
-                          <div className="alert alert-success">
-                            {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
-                            <a className="close" data-dismiss="alert">×</a>
-                            <strong>Success!</strong>
-                            <span> Licensing Changed.</span>
+                          <div className="alert alert-success alert-dismissible">
+                            <button
+                              type="button"
+                              className="btn-close"
+                              data-bs-dismiss="alert"
+                              aria-label="Close"
+                            />
+                            <strong>Success!</strong> Licensing changed.
                           </div>
                         )
                           : (
-                            <div className="alert alert-danger">
-                              {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
-                              <a className="close" data-dismiss="alert">×</a>
-                              <strong>Error! Something went wrong</strong>
+                            <div className="alert alert-danger alert-dismissible">
+                              <button
+                                type="button"
+                                className="btn-close"
+                                data-bs-dismiss="alert"
+                                aria-label="Close"
+                              />
+                              <strong>Error!</strong> Something went wrong.
                             </div>
                           )
-                    }
-
+                        }
                       </div>
                     ) : null
-              }
-                  <h3>Step 1: Change Public Access:</h3>
-                  <br />
-                  <form method="POST" onSubmit={handleSubmit} className="experiment-rights form-horizontal">
+                  }
+                  <form method="POST" onSubmit={handleSubmit} className="experiment-rights">
                     <input type="hidden" name="csrfmiddlewaretoken" value={csrfToken} />
                     <input type="hidden" name="license" value={selectedLicenseId} />
                     <input type="hidden" name="legal_text" value={modalData.legal_text} />
-                    <div className="form-group">
-                      <label className="col-form-label col-md-3 " htmlFor="id_public_access">Public access</label>
-                      <div className="col-md-9 ">
+
+                    <h3>Step 1: Change Public Access:</h3>
+                    <div className="row">
+                      <div className="col-md-3">
+                        <label className="form-label" htmlFor="id_public_access">Public access</label>
+                      </div>
+                      <div className="col-md-9">
                         <select
                           name="public_access"
                           className="form-select"
@@ -165,7 +171,7 @@ const LicenseModal = ({ experimentId, container, onLicenseUpdate }) => {
                       </div>
                     </div>
 
-                    <h3>Step 2: Select a license:</h3>
+                    <h3 className="mt-3">Step 2: Select a license:</h3>
                     <div id="license-options">
                       <LicenseSelector
                         selectedAccessTypeId={selectedAccessTypeId}
@@ -175,34 +181,38 @@ const LicenseModal = ({ experimentId, container, onLicenseUpdate }) => {
                         handleReselectChange={handleReselectChange}
                       />
                     </div>
-                    <div id="selected-license-text" />
-                    <div id="legal" style={{ display: !showLegalSection ? 'None' : 'block' }}>
-                      <h3>Step 3: Accept The Legal Agreement:</h3>
+
+                    <div id="legal" style={{ display: !showLegalSection ? 'none' : 'block' }}>
+                      <h3 className="mt-3">Step 3: Accept The Legal Agreement:</h3>
                       <pre
                         id="publishing-legal-text"
                         style={{ whiteSpace: 'pre-wrap', wordBreak: 'keep-all' }}
                       >
                         { modalData.legal_text }
                       </pre>
-                      <div className="checkbox">
-                        <label>
-                          <input id="publishing-consent" className="me-1" type="checkbox" required value="Agree" />
+                      <div className="form-check">
+                        <input id="publishing-consent" className="form-check-input" type="checkbox" required value="Agree" />
+                        <label class="form-check-label" for="publishing-consent">
                           I agree to the above terms
                         </label>
                       </div>
                     </div>
-                    <div id="confirm-license-btn-group" className="form-group text-right" style={{ display: showButtons ? 'block' : 'None' }}>
+
+                    <div id="confirm-license-btn-group" className="mt-3" style={{ display: showButtons ? 'block' : 'none' }}>
+                      <button
+                        type="submit"
+                        className="submit-button btn btn-primary me-2"
+                      >
+                        <i className="fa fa-check" />
+                        Confirm
+                      </button>
                       <button
                         type="button"
                         className="cancel-button btn btn-outline-secondary me-1"
-                        data-dismiss="modal"
+                        data-bs-dismiss="modal"
                       >
                         <i className="fa fa-close" />
                         Cancel
-                      </button>
-                      <button type="submit" className="submit-button btn btn-primary">
-                        <i className="fa fa-check" />
-                        Confirm
                       </button>
                     </div>
                   </form>
