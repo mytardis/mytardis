@@ -127,7 +127,8 @@ const LicenseModal = ({ experimentId, container, onLicenseUpdate }) => {
                               data-bs-dismiss="alert"
                               aria-label="Close"
                             />
-                            <strong>Success!</strong> Licensing changed.
+                            <strong>Success!</strong>
+                            Licensing changed.
                           </div>
                         )
                           : (
@@ -138,7 +139,8 @@ const LicenseModal = ({ experimentId, container, onLicenseUpdate }) => {
                                 data-bs-dismiss="alert"
                                 aria-label="Close"
                               />
-                              <strong>Error!</strong> Something went wrong.
+                              <strong>Error!</strong>
+                              Something went wrong.
                             </div>
                           )
                         }
@@ -192,7 +194,7 @@ const LicenseModal = ({ experimentId, container, onLicenseUpdate }) => {
                       </pre>
                       <div className="form-check">
                         <input id="publishing-consent" className="form-check-input" type="checkbox" required value="Agree" />
-                        <label class="form-check-label" for="publishing-consent">
+                        <label className="form-check-label" htmlFor="publishing-consent">
                           I agree to the above terms
                         </label>
                       </div>
