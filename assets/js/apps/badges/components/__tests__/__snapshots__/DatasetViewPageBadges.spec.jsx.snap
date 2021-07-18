@@ -9,7 +9,7 @@ exports[`renders badges on experiment view page should render all badges 1`] = `
     class="me-2"
   >
     <span
-      class="badge badge-info"
+      class="badge bg-info"
       title="In 3 experiments"
     >
       <i
@@ -23,7 +23,7 @@ exports[`renders badges on experiment view page should render all badges 1`] = `
     class="me-2"
   >
     <span
-      class="badge badge-info"
+      class="badge bg-info"
       title="4 of 4 Files online"
     >
       <i
@@ -37,7 +37,7 @@ exports[`renders badges on experiment view page should render all badges 1`] = `
     class="me-2"
   >
     <span
-      class="badge badge-info"
+      class="badge bg-info"
       title="Dataset size is"
     >
       13.56 MB

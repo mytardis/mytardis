@@ -284,7 +284,7 @@ exports[`render dataset tiles on page load should match snapshot 1`] = `
               >
                 <p>
                   <span
-                    class="badge badge-info"
+                    class="badge bg-info"
                     title="4 of 4 Files online"
                   >
                     <i
@@ -296,7 +296,7 @@ exports[`render dataset tiles on page load should match snapshot 1`] = `
                 </p>
                 <p>
                   <span
-                    class="badge badge-info"
+                    class="badge bg-info"
                     title="Dataset size is"
                   >
                     160.64 KB
@@ -388,7 +388,7 @@ exports[`render dataset tiles on page load should match snapshot 1`] = `
               >
                 <p>
                   <span
-                    class="badge badge-info"
+                    class="badge bg-info"
                     title="4 of 4 Files online"
                   >
                     <i
@@ -400,7 +400,7 @@ exports[`render dataset tiles on page load should match snapshot 1`] = `
                 </p>
                 <p>
                   <span
-                    class="badge badge-info"
+                    class="badge bg-info"
                     title="Dataset size is"
                   >
                     342.35 KB
@@ -450,40 +450,42 @@ exports[`render dataset tiles on page load should match snapshot 1`] = `
         class="form-horizontal"
         id="other-experiment-selection"
       >
-        <fieldset>
+        <div
+          class="row"
+        >
           <div
-            class="form-group"
+            class="col-md-2"
           >
             <label
-              class="col-md-2 col-form-label"
-              for="input01"
+              class="form-label"
+              for="experiment_id"
             >
               Experiment
             </label>
-            <div
-              class="col-md-10"
-            >
-              <select
-                class="form-select"
-                name="experiment_id"
-              >
-                <option
-                  value="34"
-                >
-                  My Test Exp
-                </option>
-                <option
-                  value="38"
-                >
-                  My Test Exp 2
-                </option>
-              </select>
-            </div>
           </div>
-        </fieldset>
+          <div
+            class="col-md-10"
+          >
+            <select
+              class="form-select"
+              name="experiment_id"
+            >
+              <option
+                value="34"
+              >
+                My Test Exp
+              </option>
+              <option
+                value="38"
+              >
+                My Test Exp 2
+              </option>
+            </select>
+          </div>
+        </div>
       </form>
       <p
-        class="help-text"
+        class="mt-3"
       >
         <strong>
           Instructons:
@@ -534,7 +536,7 @@ exports[`render dataset tiles on page load should match snapshot 1`] = `
               >
                 <p>
                   <span
-                    class="badge badge-info"
+                    class="badge bg-info"
                     title="4 of 4 Files online"
                   >
                     <i
@@ -546,7 +548,7 @@ exports[`render dataset tiles on page load should match snapshot 1`] = `
                 </p>
                 <p>
                   <span
-                    class="badge badge-info"
+                    class="badge bg-info"
                     title="Dataset size is"
                   >
                     160.64 KB
@@ -622,7 +624,7 @@ exports[`render dataset tiles on page load should match snapshot 1`] = `
               >
                 <p>
                   <span
-                    class="badge badge-info"
+                    class="badge bg-info"
                     title="4 of 4 Files online"
                   >
                     <i
@@ -634,7 +636,7 @@ exports[`render dataset tiles on page load should match snapshot 1`] = `
                 </p>
                 <p>
                   <span
-                    class="badge badge-info"
+                    class="badge bg-info"
                     title="Dataset size is"
                   >
                     342.35 KB

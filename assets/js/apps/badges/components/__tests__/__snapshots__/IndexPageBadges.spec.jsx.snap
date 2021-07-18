@@ -9,7 +9,7 @@ exports[`renders badges on index page should render correctly 1`] = `
       class="me-1 list-inline-item"
     >
       <span
-        class="badge badge-info"
+        class="badge bg-info"
         title="Last updated: Mon, Jan 13, 2020 2:00 PM"
       >
         <i
@@ -23,7 +23,7 @@ exports[`renders badges on index page should render correctly 1`] = `
       class="me-1 list-inline-item"
     >
       <span
-        class="badge badge-info"
+        class="badge bg-info"
         title="1 dataset"
       >
         <i
@@ -37,7 +37,7 @@ exports[`renders badges on index page should render correctly 1`] = `
       class="me-1 list-inline-item"
     >
       <span
-        class="badge badge-info"
+        class="badge bg-info"
         title="100 files"
       >
         <i
@@ -51,7 +51,7 @@ exports[`renders badges on index page should render correctly 1`] = `
       class="me-1 list-inline-item"
     >
       <span
-        class="badge badge-secondary"
+        class="badge bg-secondary"
         content=" No public access"
         title=" No public access"
       >
