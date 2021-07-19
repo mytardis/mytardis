@@ -69,8 +69,10 @@ function Result({ result }) {
               style={{ display: 'inline-block' }}
             >
               <li className="float-end">
-                <span className="badge bg-info me-2" title={`Date Created:
-                ${result.created_time}`}>
+                <span
+                  className="badge bg-info me-2"
+                  title={`Date Created: ${result.created_time}`}
+                >
                   <i className="fa fa-clock-o" />
                   <span>
                     {result.created_time}
@@ -80,7 +82,10 @@ function Result({ result }) {
               {result.instrument
               && (
               <li className="float-end">
-                <span className="badge bg-info me-2" title={`Instrument Name: ${result.instrument}`}>
+                <span
+                  className="badge bg-info me-2"
+                  title={`Instrument Name: ${result.instrument}`}
+                >
                   {/* upgrade to font-awesome 5 will bring this icon */}
                   <i className="fa fa-microscope" />
                   <span>
@@ -111,7 +116,10 @@ function Result({ result }) {
             <a style={{ fontWeight: 'bold', display: 'inline-block' }} href={result.url}>{result.title}</a>
             <ul className="nav nav-pills badgelist float-end" style={{ display: 'inline-block' }}>
               <li className="float-end">
-                <span className="badge badge-info me-2" title={`Date Created: ${result.created_time}`}>
+                <span
+                  className="badge badge-info me-2"
+                  title={`Date Created: ${result.created_time}`}
+                >
                   <i className="fa fa-clock-o" />
                   <span>
                     {result.created_time}
@@ -119,7 +127,10 @@ function Result({ result }) {
                 </span>
               </li>
               <li className="float-end">
-                <span className="badge badge-info me-2" title={`Created by: ${result.created_by}`}>
+                <span
+                  className="badge badge-info me-2"
+                  title={`Created by: ${result.created_by}`}
+                >
                   <i className="fa fa-user" />
                   <span>
                     {result.created_by}
@@ -129,7 +140,10 @@ function Result({ result }) {
               {result.institution_name
               && (
                 <li className="float-end">
-                  <span className="badge bg-info me-2" title={`Institution Name: ${result.institution_name}`}>
+                  <span
+                    className="badge bg-info me-2"
+                    title={`Institution Name: ${result.institution_name}`}
+                  >
                     <i className="fa fa-institution" />
                     <span>
                       {result.institution_name}
@@ -159,7 +173,10 @@ function Result({ result }) {
             <a style={{ fontWeight: 'bold' }} href={result.url}>{result.title}</a>
             <ul className="nav nav-pills badgelist float-end" style={{ display: 'inline-block' }}>
               <li className="float-end">
-                <span className="badge bg-info me-2" title={`Date Created: ${result.created_time}`}>
+                <span
+                  className="badge bg-info me-2"
+                  title={`Date Created: ${result.created_time}`}
+                >
                   <i className="fa fa-clock-o" />
                   <span>
                     {result.created_time}
