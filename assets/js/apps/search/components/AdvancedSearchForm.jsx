@@ -95,7 +95,7 @@ function AdvancedSearchForm({ searchText, showResults }) {
       <h5 className="mb-3">Advanced Search</h5>
       <div className="row mb-3">
         <div className="col-12">
-          <label htmlFor="filter">Filter by Date created</label>
+          <label htmlFor="select-start-date">Filter by Date created</label>
           <div className="row">
             <div className="col-sm-6">
               <DateTime
@@ -125,7 +125,7 @@ function AdvancedSearchForm({ searchText, showResults }) {
       </div>
       <div className="row mb-3">
         <div className="col-12">
-          <label htmlFor="contain">Search In</label>
+          <label htmlFor="modelType">Search In</label>
           <Typeahead
             id="modelType"
             multiple
@@ -138,7 +138,7 @@ function AdvancedSearchForm({ searchText, showResults }) {
       </div>
       <div className="row mb-3 d-{instrumentList.length > 0 ? {'block'} : {'none'}}">
         <div className="col-12">
-          <label htmlFor="contain">Filter by Instrument</label>
+          <label htmlFor="instrumentList">Filter by Instrument</label>
           <Typeahead
             id="instrumentList"
             multiple
