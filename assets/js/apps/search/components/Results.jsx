@@ -6,7 +6,7 @@ import Result from './Result';
 function Results({ results, counts }) {
   return (
     <div className="mt-3">
-      <h3 class="mb-3">Search Results</h3>
+      <h3 className="mb-3">Search Results</h3>
       <div id="tabbed-pane">
         <ul className="nav nav-tabs" id="searchTab" role="tablist">
           <li className="nav-item">

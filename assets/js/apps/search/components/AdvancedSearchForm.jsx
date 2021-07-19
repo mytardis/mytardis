@@ -150,9 +150,9 @@ function AdvancedSearchForm({ searchText, showResults }) {
         </div>
       </div>
       {isLoading && (
-        <div class="clearfix float-end mt-1">
-          <div class="spinner-border spinner-border-sm text-primary" role="status">
-            <span class="sr-only">Loading...</span>
+        <div className="clearfix float-end mt-1">
+          <div className="spinner-border spinner-border-sm text-primary" role="status">
+            <span className="sr-only">Loading...</span>
           </div>
         </div>
       )}
