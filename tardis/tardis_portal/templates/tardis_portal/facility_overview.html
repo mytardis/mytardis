@@ -316,7 +316,7 @@
 </script>
 <script type="text/ng-template" id="datafileCount">
   <span class="badge"
-        ng-class="(dataset.verified_datafiles_count<dataset.datafile_count||!dataset.datafile_count)?'badge-danger':'badge-info'">
+        ng-class="(dataset.verified_datafiles_count<dataset.datafile_count||!dataset.datafile_count)?'bg-danger':'bg-info'">
     <ng-pluralize count="dataset.verified_datafiles_count"
                   when="{'0': 'no verified files', 'one': '1 verified file', 'other': '{} verified files'}">
     </ng-pluralize>

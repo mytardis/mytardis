@@ -117,7 +117,7 @@ function Result({ result }) {
             <ul className="nav nav-pills badgelist float-end" style={{ display: 'inline-block' }}>
               <li className="float-end">
                 <span
-                  className="badge badge-info me-2"
+                  className="badge bg-info me-2"
                   title={`Date Created: ${result.created_time}`}
                 >
                   <i className="fa fa-clock-o" />
@@ -128,7 +128,7 @@ function Result({ result }) {
               </li>
               <li className="float-end">
                 <span
-                  className="badge badge-info me-2"
+                  className="badge bg-info me-2"
                   title={`Created by: ${result.created_by}`}
                 >
                   <i className="fa fa-user" />

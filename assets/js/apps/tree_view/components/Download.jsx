@@ -113,7 +113,7 @@ const TreeDownloadButton = ({ count, onClick }) => (
       >
         <i className="fa fa-download fa-sm me-1 " />
         {count > 0 ? 'Download Selected' : 'Select Files...'}
-        {count > 0 ? <span className="badge badge-light ms-1">{count}</span> : ''}
+        {count > 0 ? <span className="badge bg-light ms-1">{count}</span> : ''}
       </button>
     </form>
 

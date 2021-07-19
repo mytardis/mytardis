@@ -22,7 +22,7 @@ function Results({ results, counts }) {
               <i className="fa fa-flask fa-2x" />
               &nbsp;
               Experiments
-              <span className="badge badge-secondary count-badge">{counts.experimentsCount}</span>
+              <span className="badge bg-secondary count-badge">{counts.experimentsCount}</span>
             </a>
           </li>
           <li className="nav-item">
@@ -38,7 +38,7 @@ function Results({ results, counts }) {
               <i className="fa fa-folder fa-2x" />
               &nbsp;
               Datasets
-              <span className="badge badge-secondary count-badge">{counts.datasetsCount}</span>
+              <span className="badge bg-secondary count-badge">{counts.datasetsCount}</span>
             </a>
           </li>
           <li className="nav-item">
@@ -54,7 +54,7 @@ function Results({ results, counts }) {
               <i className="fa fa-file fa-2x" />
               &nbsp;
               Datafiles
-              <span className="badge badge-secondary count-badge">{counts.datafilesCount}</span>
+              <span className="badge bg-secondary count-badge">{counts.datafilesCount}</span>
             </a>
           </li>
         </ul>
