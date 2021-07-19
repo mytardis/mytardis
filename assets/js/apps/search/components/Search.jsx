@@ -94,10 +94,12 @@ function Search() {
     setCounts(_counts);
   });
   return (
-    <main>
-      <SimpleSearchForm showResults={showResults} searchText={searchText} />
-      <Results results={results} counts={counts} />
-    </main>
+    <div className="row justify-content-center">
+      <div className="col-sm-8">
+        <SimpleSearchForm showResults={showResults} searchText={searchText} />
+        <Results results={results} counts={counts} />
+      </div>
+    </div>
   );
 }
 

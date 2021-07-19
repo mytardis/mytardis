@@ -43,54 +43,40 @@ function SimpleSearchForm({ showResults, searchText }) {
     fetchResults();
   }, [searchText]);
   return (
-    <main>
-      <div className="row">
-        <div className="mx-auto align-items-center">
-          <div className="card align-items-center">
-            <div className="card-body">
-              <div className="row align-items-center">
-                <div className="col-md-12">
-                  <form className="form-horizontal" onSubmit={handleSimpleSearchSubmit} id="simple-search">
-                    <div className="input-group mb-3">
-                      <input
-                        type="text"
-                        name="simple_search_text"
-                        onChange={event => handleSimpleSearchTextChange(event, event.target.value)}
-                        value={simpleSearchText}
-                        className="form-control"
-                        placeholder="Search for Experiments, Datasets, Datafiles"
-                      />
-                      <div className="input-group-append">
-                        <button
-                          type="button"
-                          className="input-group-text"
-                          onClick={handleSimpleSearchSubmit}
-                        >
-                          <span className="fa fa-search" />
-                        </button>
-                      </div>
-                    </div>
-                    <AdvancedSearchForm
-                      searchText={simpleSearchText}
-                      showResults={showResults}
-                    />
-                  </form>
-                </div>
-              </div>
-            </div>
+    <div>
+      <form onSubmit={handleSimpleSearchSubmit} id="simple-search" className="my-3">
+        <div className="input-group">
+          <input
+            type="text"
+            name="simple_search_text"
+            onChange={event => handleSimpleSearchTextChange(event, event.target.value)}
+            value={simpleSearchText}
+            className="form-control"
+            placeholder="Search for Experiments, Datasets, Datafiles"
+          />
+          <div className="input-group-append">
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={handleSimpleSearchSubmit}
+            >
+              <span className="fa fa-search" />
+            </button>
           </div>
         </div>
-      </div>
-      {isLoading
-       && (
-       <div className="col-md-12" style={{ textAlign: 'center', position: 'absolute' }}>
-         <div id="spinner" style={{ textAlign: 'center' }}>
-           <i id="mo-spin-icon" className="fa fa-spinner fa-pulse fa-2x" />
-         </div>
-       </div>
-       )
-      }
-    </main>
+      </form>
+      {isLoading && (
+        <div class="d-flex justify-content-center mb-3">
+          <div class="spinner-border spinner-border-sm text-primary" role="status">
+            <span class="sr-only">Loading...</span>
+          </div>
+        </div>
+      )}
+      <AdvancedSearchForm
+        searchText={simpleSearchText}
+        showResults={showResults}
+      />
+    </div>
   );
 }
 SimpleSearchForm.propTypes = {
