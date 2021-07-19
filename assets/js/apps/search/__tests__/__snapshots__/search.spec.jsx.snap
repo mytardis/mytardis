@@ -1548,7 +1548,7 @@ exports[`Search Component Render Search Component 1`] = `
                 />
                   Experiments
                 <span
-                  class="badge badge-secondary count-badge"
+                  class="badge bg-secondary count-badge"
                 />
               </a>
             </li>
@@ -1569,7 +1569,7 @@ exports[`Search Component Render Search Component 1`] = `
                 />
                   Datasets
                 <span
-                  class="badge badge-secondary count-badge"
+                  class="badge bg-secondary count-badge"
                 />
               </a>
             </li>
@@ -1590,7 +1590,7 @@ exports[`Search Component Render Search Component 1`] = `
                 />
                   Datafiles
                 <span
-                  class="badge badge-secondary count-badge"
+                  class="badge bg-secondary count-badge"
                 />
               </a>
             </li>
