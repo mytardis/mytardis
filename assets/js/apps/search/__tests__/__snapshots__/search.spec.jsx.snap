@@ -20,7 +20,7 @@ exports[`Result Component Test Render Simple Search Form 1`] = `
         </h5>
         <div className=\\"row mb-3\\">
           <div className=\\"col-12\\">
-            <label htmlFor=\\"filter\\">
+            <label htmlFor=\\"select-start-date\\">
               Filter by Date created
             </label>
             <div className=\\"row\\">
@@ -431,7 +431,7 @@ exports[`Result Component Test Render Simple Search Form 1`] = `
         </div>
         <div className=\\"row mb-3\\">
           <div className=\\"col-12\\">
-            <label htmlFor=\\"contain\\">
+            <label htmlFor=\\"modelType\\">
               Search In
             </label>
             <ForwardRef id=\\"modelType\\" multiple={true} onChange={[Function: onChange]} options={{...}} placeholder=\\"Search in Experiments, Datasets or Datafiles\\" defaultSelected={{...}}>
@@ -524,7 +524,7 @@ exports[`Result Component Test Render Simple Search Form 1`] = `
         </div>
         <div className=\\"row mb-3 d-{instrumentList.length > 0 ? {\\\\'block\\\\'} : {\\\\'none\\\\'}}\\">
           <div className=\\"col-12\\">
-            <label htmlFor=\\"contain\\">
+            <label htmlFor=\\"instrumentList\\">
               Filter by Instrument
             </label>
             <ForwardRef id=\\"instrumentList\\" multiple={true} labelKey=\\"name\\" onChange={[Function: onChange]} placeholder=\\"Start typing to select instruments\\" options={{...}}>
@@ -621,7 +621,7 @@ exports[`Search Component Render Search Component 1`] = `
               class="col-12"
             >
               <label
-                for="filter"
+                for="select-start-date"
               >
                 Filter by Date created
               </label>
@@ -1342,7 +1342,7 @@ exports[`Search Component Render Search Component 1`] = `
               class="col-12"
             >
               <label
-                for="contain"
+                for="modelType"
               >
                 Search In
               </label>
@@ -1461,7 +1461,7 @@ exports[`Search Component Render Search Component 1`] = `
               class="col-12"
             >
               <label
-                for="contain"
+                for="instrumentList"
               >
                 Filter by Instrument
               </label>
