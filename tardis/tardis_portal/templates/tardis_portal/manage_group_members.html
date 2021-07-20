@@ -2,11 +2,8 @@
 {% load static %}
 {% load render_bundle from webpack_loader %}
 {% block script %}
-{% render_bundle 'tardis_portal_manage_group_members' %}
-
-
-<input type="hidden" id="csrf-token" value="{{ csrf_token }}">
-
+  {% render_bundle 'tardis_portal_manage_group_members' %}
+  <input type="hidden" id="csrf-token" value="{{ csrf_token }}">
 {% endblock %}
 
 {% block content %}
@@ -16,19 +13,16 @@
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h1 class="title">Create Group</h1>
-        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h5 class="modal-title">Create Group</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
-
       <div class="alert alert-danger alert-dismissible" style="display:none">
-        <button type="button" class="close" onclick="$('.alert').hide()">×</button>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         <div id="error-message"></div>
       </div>
-
       <div class="loading-placeholder" style="display: none">
         <p>Please wait... <img src="{% static 'images/ajax-loader.gif'%}" alt="loading" /></p>
       </div>
-
       <div class="modal-body"></div>
     </div>  <!-- class="modal-content" -->
   </div>  <!-- class="modal-dialog" -->
@@ -39,21 +33,19 @@
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h1 class="title">Create User</h1>
-        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h3 class="modal-title">Create User</h3>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
-
       <div class="loading-placeholder" style="display: none">
         <p>Please wait... <img src="{% static 'images/ajax-loader.gif'%}" alt="loading" /></p>
       </div>
-
       <div class="modal-body"></div>
     </div>  <!-- class="modal-content" -->
   </div>  <!-- class="modal-dialog" -->
 </div>
 
 <div class="alert alert-success alert-dismissible" style="display:none">
-  <button type="button" class="close" data-dismiss="alert">×</button>
+  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
   <strong>Success!</strong>
   <div id="success-message"></div>
 </div>
@@ -63,20 +55,18 @@
 </div>
 
 {% if perms.auth.add_group %}
-<div class="float-end">
-  <button style="margin-left: 10px;" class="create_group_link btn btn-primary" title="Create Group">
-    <i class="fa fa-plus"></i>
-    Create Group
-  </button>
-</div>
+  <div class="float-end ms-2">
+    <button class="create_group_link btn btn-primary" title="Create Group">
+      <i class="fa fa-plus"></i> Create Group
+    </button>
+  </div>
 {% endif %}
 {% if perms.auth.add_user %}
-<div class="float-end">
-  <button class="create_user_link btn btn-primary" title="Create User">
-    <i class="fa fa-plus"></i>
-    Create User
-  </button>
-</div>
+  <div class="float-end">
+    <button class="create_user_link btn btn-primary" title="Create User">
+      <i class="fa fa-plus"></i> Create User
+    </button>
+  </div>
 {% endif %}
 
 {% if perms.auth.change_group %}
