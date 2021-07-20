@@ -34,6 +34,8 @@ const SelectDatasetForm = ({ formik }) => {
     currentlySelectedDatasetList = selectedDatasetList.concat(currentlySelectedDatasetList);
     setSelectedDatasetList(currentlySelectedDatasetList);
     console.log(selectedDatasetList);
+    // run field validation
+    formik.validateField('selectedDatasets');
   };
 
   useEffect(() => {
@@ -77,7 +79,14 @@ const SelectDatasetForm = ({ formik }) => {
               placeholder="Describe your publication..."
               onChange={formik.handleChange}
               value={formik.values.publicationDescription}
+              isValid={formik.touched.publicationDescription
+              && !formik.errors.publicationDescription
+              }
+              isInvalid={!!formik.errors.publicationDescription}
             />
+            <Form.Control.Feedback type="invalid">
+              {formik.errors.publicationDescription}
+            </Form.Control.Feedback>
           </Form.Group>
           <Row>
             <Col className="col-md-6">
@@ -121,6 +130,11 @@ const SelectDatasetForm = ({ formik }) => {
               type="hidden"
               name="selectedDatasets"
               value={formik.values.selectedDatasets}
+              onChange={formik.handleChange}
+              isValid={formik.touched.selectedDatasets
+              && !formik.errors.selectedDatasets
+              }
+              isInvalid={!!formik.errors.selectedDatasets}
             />
             <Col className="col-md-6">
               <h4>Added Datasets</h4>
@@ -147,6 +161,9 @@ const SelectDatasetForm = ({ formik }) => {
                 </tbody>
               </Table>
             </Col>
+            <Form.Control.Feedback type="invalid" className="ml-3">
+              {formik.errors.selectedDatasets}
+            </Form.Control.Feedback>
           </Row>
           <Row>
             <Form.Group />

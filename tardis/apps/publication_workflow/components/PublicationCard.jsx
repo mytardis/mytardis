@@ -1,7 +1,8 @@
 import React, { Fragment } from 'react';
 import { css } from '@emotion/core';
 import styled from '@emotion/styled';
-import {Button} from "react-bootstrap";
+import { Button, Row } from 'react-bootstrap';
+import moment from 'moment';
 
 const Hover = styled.div({
   ':hover': {
@@ -10,13 +11,15 @@ const Hover = styled.div({
   },
 });
 
-const PublicationCard = ({ publicationType, data, handleDelete }) => {
-  return (
-    <Fragment>
-      <div className="col mb-4">
-        <Hover>
+const PublicationCard = ({
+  publicationType, data, handleDelete, handleRetract,
+}) => (
+  <Fragment>
+    <div className="col mb-4">
+      <Hover>
+        <div className="card-deck">
           <div className="card">
-            <img src="https://dummyimage.com/600x400/000/fff.jpg&text=No+Image" className="card-img-top" alt="..." />
+             <img src="https://dummyimage.com/600x400/000/fff.jpg&text=No+Image" className="card-img-top" alt="..." />
             <div className="card-body">
               {/* eslint-disable-next-line consistent-return */}
               {(() => {
@@ -29,7 +32,7 @@ const PublicationCard = ({ publicationType, data, handleDelete }) => {
               })()}
 
               <h5 className="card-title">{data.title}</h5>
-              <p className="card-text">
+              <p className="card-text text-muted">
                 {data.description}
               </p>
               {/* eslint-disable-next-line consistent-return */}
@@ -42,10 +45,11 @@ const PublicationCard = ({ publicationType, data, handleDelete }) => {
                           <a href="https://dx.doi.org/10.1371/journal.pone.0210842" className="card-link" style={{ color: 'Black' }}>{data.doi}</a>
                         </span>
                       ) : <></>}
-
-                      <span className="badge badge-info" title={`Released on ${data.release_date}`}>
-                        {data.release_date}
-                      </span>
+                      {data.releaseDate ? (
+                        <span className="text-muted" title={`Release Date ${moment(data.release_date, 'YYYY-MM-DD').format('ll')}`}>
+                          {`Release Date ${moment(data.release_date, 'YYYY-MM-DD').format('ll')}`}
+                        </span>
+                      ) : <></>}
                     </>
                   );
                   case 'released': return (
@@ -58,8 +62,8 @@ const PublicationCard = ({ publicationType, data, handleDelete }) => {
                         ) : <></>
                     }
 
-                      <span className="badge badge-info" title={`Released on ${data.release_date}`}>
-                        {data.release_date}
+                      <span className="text-muted" title={`Released on ${moment(data.release_date, 'YYYY-MM-DD').format('ll')}`}>
+                        {`Released on ${moment(data.release_date, 'YYYY-MM-DD').format('ll')}`}
                       </span>
                     </>
                   );
@@ -70,13 +74,17 @@ const PublicationCard = ({ publicationType, data, handleDelete }) => {
                           <a href="https://dx.doi.org/10.1371/journal.pone.0210842" className="card-link" style={{ color: 'Black' }}>{data.doi}</a>
                         </span>
                       ) : <></>}
+                      <div>
+                        <span className="text-muted" style={{ whiteSpace: 'nowrap' }} title={`Released on ${moment(data.release_date, 'YYYY-MM-DD').format('ll')}`}>
+                          {`Released on ${moment(data.release_date, 'YYYY-MM-DD').format('ll')}`}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-muted" style={{ whiteSpace: 'nowrap' }} title={`Retracted on ${moment(data.retracted_date, 'YYYY-MM-DD').format('ll')}`}>
+                          {`Retracted on ${moment(data.retracted_date, 'YYYY-MM-DD').format('ll')}`}
+                        </span>
+                      </div>
 
-                      <span className="badge badge-info mr-2" title={`Released on ${data.release_date}`}>
-                        {data.release_date}
-                      </span>
-                      <span className="badge badge-info" title={`Retracted on ${data.retracted_date}`}>
-                        {data.retracted_date}
-                      </span>
                     </>
                   );
                   default: return (
@@ -87,8 +95,8 @@ const PublicationCard = ({ publicationType, data, handleDelete }) => {
                         </span>
                       ) : <></>}
 
-                      <span className="badge badge-info" title={`Released on ${data.release_date}`}>
-                        {data.release_date}
+                      <span className="text-muted" title={`Scheduled Released on ${moment(data.release_date, 'YYYY-MM-DD').format('ll')}`}>
+                        {`Scheduled Released on ${moment(data.release_date, 'YYYY-MM-DD').format('ll')}`}
                       </span>
                     </>
                   );
@@ -119,7 +127,7 @@ const PublicationCard = ({ publicationType, data, handleDelete }) => {
                   );
                   default: return (
                     <Fragment>
-                      <button type="button" className="btn btn-danger btn-sm mr-2 mb-1">
+                      <button onClick={e => handleRetract(e, data.id)} type="button" className="btn btn-danger btn-sm mr-2 mb-1">
                         <i className="fa fa-exclamation-triangle mr-1" />
                         Retract
                       </button>
@@ -129,12 +137,11 @@ const PublicationCard = ({ publicationType, data, handleDelete }) => {
                   case 'retracted': return <span />;
                 }
               })()}
-
             </div>
           </div>
-        </Hover>
-      </div>
-    </Fragment>
-  );
-};
+        </div>
+      </Hover>
+    </div>
+  </Fragment>
+);
 export default PublicationCard;

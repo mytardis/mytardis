@@ -9,7 +9,9 @@ import ExtraInformationForm from '../Forms/ExtraInformationForm';
 import LicensingAndReleaseForm from '../Forms/LicensingAndReleaseForm';
 
 
-const Stepper = ({ children, initialValues, onSubmit }) => {
+const Stepper = ({
+  children, initialValues, onSubmit, onSave,
+}) => {
   const [stepNumber, setStepNumber] = useState(0);
   const steps = React.Children.toArray(children);
   const [snapshot, setSnapshot] = useState(initialValues);
@@ -30,14 +32,25 @@ const Stepper = ({ children, initialValues, onSubmit }) => {
 
   // eslint-disable-next-line consistent-return
   const handleSubmit = async (values, bag) => {
-    if (step.props.onSubmit) {
-      await step.props.onSubmit(values, bag);
-    }
+    /*if (step.props.onSubmit) {
+      // await step.props.onSubmit(values, bag);
+    }*/
+    console.log(values);
     if (isLastStep) {
       return onSubmit(values, bag);
     }
     bag.setTouched({});
     next(values);
+  };
+  const handleSave = async (values, bag) => {
+    bag.setTouched({});
+    await bag.validateForm().then((errors) => {
+      if (Object.keys(errors).length === 0) {
+        console.log("submitting form");
+        step.props.onSubmit(values, bag);
+      }
+    });
+    // await step.props.onSubmit(values, bag);
   };
 
   const renderStepContent = (formik, activeStep) => {
@@ -76,6 +89,11 @@ const Stepper = ({ children, initialValues, onSubmit }) => {
                 {isLastStep ? 'Submit' : 'Next'}
               </Button>
             </div>
+          </div>
+          <div>
+            <Button disabled={formik.isSubmitting} className="mt-2 float-right" onClick={() => handleSave(formik.values, formik)}>
+              Save and Finish later
+            </Button>
           </div>
           {/* <Debug /> */}
         </Form>

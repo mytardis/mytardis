@@ -1,5 +1,5 @@
 import React, { Fragment, useState } from 'react';
-import { Modal, Button } from 'react-bootstrap';
+import { Modal, Button, Toast } from 'react-bootstrap';
 import * as Yup from 'yup';
 import { ErrorMessage, Field } from 'formik';
 import PublicationButton from './PublicationButton';
@@ -9,17 +9,32 @@ import SelectDatasetForm from './Forms/SelectDatasetForm';
 import ExtraInformationForm from './Forms/ExtraInformationForm';
 import AtrributeAndLicensingForm from './Forms/AtrributeAndLicensingForm';
 import ProgressBarComponent from './Stepper/ProgressBar';
-import { SubmitFormData } from "./utils/FetchData";
+import { SubmitFormData } from './utils/FetchData';
+import PublicationToast from './utils/PublicationToast';
 
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
-const FormModal = () => {
+const FormModal = ({ onPubUpdate }) => {
   const [show, setShow] = useState(false);
-  const handleClose = () => setShow(false);
+  const [toastShow, setToastShow] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const handleClose = () => {
+    setShow(false);
+    // show message
+    setToastMessage('Publication created successfully');
+    setToastShow(true);
+    // reload pub list
+    onPubUpdate('');
+  };
   const handleShow = () => setShow(true);
   return (
     <>
       <PublicationButton onclick={handleShow} />
+      <PublicationToast
+        show={toastShow}
+        toastMessage={toastMessage}
+        onClose={() => setToastShow(false)}
+      />
       <Modal show={show} onHide={handleClose} size="lg">
         <Modal.Body>
           <Stepper
@@ -34,14 +49,30 @@ const FormModal = () => {
               releaseDate: '',
               consent: false,
             }}
-            onSubmit={async values => SubmitFormData(values).then(() => handleClose())}
+            onSubmit={values => SubmitFormData(values, 'submit').then(() => {
+              handleClose();
+            })}
+            modalFooter
           >
             <Steps
-              onSubmit={async values => sleep(50).then(() => console.log('step 1 submit', values))}
+              onSubmit={values => SubmitFormData(values, 'update-dataset-selection').then(() => { handleClose(); })}
               validationSchema={Yup.object({
                 publicationTitle: Yup.string().required('Publication title is required'),
-                publicationDescription: Yup.string(),
-                // selectedDatasets: Yup.object(),
+                publicationDescription: Yup.string().required('Publication description is required'),
+                selectedDatasets: Yup.array()
+                  .required('Dataset is required')
+                  .min(1, 'Select at least 1 dataset')
+                  .of(
+                    Yup.object().shape({
+                      dataset_description: Yup.string(),
+                      publication_dataset_description: Yup.string(),
+                      dataset_id: Yup.string(),
+                      exp: Yup.object().shape({
+                        id: Yup.number(),
+                        title: Yup.string(),
+                      }),
+                    }),
+                  ),
               })}
             />
             <Steps
@@ -74,14 +105,14 @@ const FormModal = () => {
             />
           </Stepper>
         </Modal.Body>
-        <Modal.Footer>
+        {/* <Modal.Footer>
           <Button variant="secondary" onClick={handleClose}>
             Close
           </Button>
           <Button variant="primary" onClick={handleClose}>
             Save and Finish later
           </Button>
-        </Modal.Footer>
+        </Modal.Footer> */}
       </Modal>
     </>
   );
