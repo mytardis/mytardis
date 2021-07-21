@@ -35,7 +35,7 @@ const DatasetTile = ({
                 {showDownloadCheckbox
                   ? (
                     <label
-                      className="label label-info"
+                      className="badge bg-info"
                       htmlFor={`dataset-checkbox-${data.id}`}
                       title="Mark dataset for download"
                     >
