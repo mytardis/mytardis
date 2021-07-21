@@ -257,7 +257,7 @@ exports[`render dataset tiles on page load should match snapshot 1`] = `
                 </div>
                 <br />
                 <label
-                  class="label label-info"
+                  class="badge bg-info"
                   for="dataset-checkbox-26"
                   title="Mark dataset for download"
                 >
@@ -361,7 +361,7 @@ exports[`render dataset tiles on page load should match snapshot 1`] = `
                 </div>
                 <br />
                 <label
-                  class="label label-info"
+                  class="badge bg-info"
                   for="dataset-checkbox-30"
                   title="Mark dataset for download"
                 >
@@ -447,7 +447,6 @@ exports[`render dataset tiles on page load should match snapshot 1`] = `
       data-rbd-droppable-id="share-list"
     >
       <form
-        class="form-horizontal"
         id="other-experiment-selection"
       >
         <div
@@ -490,8 +489,7 @@ exports[`render dataset tiles on page load should match snapshot 1`] = `
         <strong>
           Instructons:
         </strong>
-         
-        Using the above list, select an experiment to copy from, then drag datasets to the right to associate them with the current experiment.
+          Using the above list, select an experiment to copy from, then drag datasets to the right to associate them with the current experiment.
       </p>
       <ul
         class="datasets thumbnails"
