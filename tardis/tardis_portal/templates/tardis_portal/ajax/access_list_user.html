@@ -1,45 +1,45 @@
 <div class="access_list1">
-<div class="users">
-<h3>Current User Permissions</h3>
-{% for user_acl in user_acls %}
-  {% with user=user_acl.get_related_object %}
-  {% include "tardis_portal/ajax/add_user_result.html" %}
-  {% endwith %}
-{% endfor %}
-</div> <!-- users -->
-<div id="user-sharing-messages">
-</div>
-<p>
-  <h3>Add new user</h3>
-  <br/>
-  {% for field in addUserPermissionsForm %}
-      {% if field.label == "Authentication Method" %}
-          <br/>
-          <br/>Permissions: 
-          <br/>
-          <select id="id_permission">
-              <option value="read">View Only</option>
-              <option value="edit">View and Edit</option>
-              <option value="owner">Full Owner</option>
-          </select><br/>
-          <br/>
-          <p><em>Owners have the ability to change access controls and share experiments with others.</em></p>
-      {% endif %}
 
-      {% if field.label == "User" %}
-          Username:<br/>
-          {{ field }}
-      {% else %}
-          {% if not field.label == "Read access" and not field.label == "Edit access" and not field.label == "Authentication Method" %}
-              {{ field }} {{ field.label }}
-          {% endif %}
-      {% endif %}     
-  {% endfor %}
-  <br/>
-  <a class="form_submit btn btn-primary" id="user" href="">
-    <i class="fa fa-plus"></i>
-    Add User
-  </a>
-  <input type="hidden" name="experiment_id" class="experiment_id" value="{{experiment_id}}">
-</p>
+    <div class="users">
+        <h4>Current User Permissions</h4>
+        {% for user_acl in user_acls %}
+            {% with user=user_acl.get_related_object %}
+                {% include "tardis_portal/ajax/add_user_result.html" %}
+            {% endwith %}
+        {% endfor %}
+    </div> <!-- users -->
+
+    <div id="user-sharing-messages"></div>
+
+    <h4>Add New User</h4>
+
+    <form>
+        {% for field in addUserPermissionsForm %}
+            {% if field.label == "User" %}
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <label class="form-label" for="{{ field.name }}">{{ field.label }}</label>
+                        <input type="text" name="entered_user" maxlength="100" id="id_entered_user" class="form-control">
+                    </div>
+                </div>
+            {% elif field.label == "Authentication Method" %}
+                <div class="row mb-3">
+                    <div class="col-6">
+                        <label class="form-label" for="id_permission">Permissions</label>
+                        <select id="id_permission" class="form-select">
+                            <option value="read">View Only</option>
+                            <option value="edit">View and Edit</option>
+                            <option value="owner">Full Owner</option>
+                        </select>
+                    </div>
+                </div>
+            {% endif %}
+        {% endfor %}
+        <p class="mb-3"><em>Owners have the ability to change access controls and share experiments with others.</em></p>
+        <button type="button" class="form_submit btn btn-primary" id="user" href="">
+            <i class="fa fa-plus"></i> Add User
+        </button>
+        <input type="hidden" name="experiment_id" class="experiment_id" value="{{experiment_id}}">
+    </form>
+
 </div>
