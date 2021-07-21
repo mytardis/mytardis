@@ -28,7 +28,7 @@ var sftp = (function() {
         table.append(head);
 
         var body = $("<tbody/>");
-        var rows = keyData.reduce(function(acc, key) {
+        keyData.reduce(function(acc, key) {
             return acc.append(addKeyRow(key));
         }, body);
         table.append(body);
