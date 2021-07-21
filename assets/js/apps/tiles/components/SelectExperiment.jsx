@@ -7,7 +7,7 @@ const ExperimentListDropDown = ({ onChange, experimentListData }) => (
     <form id="other-experiment-selection">
       <div className="row">
         <div className="col-md-2">
-          <label className="form-label" for="experiment_id">Experiment</label>
+          <label className="form-label" htmlFor="experiment_id">Experiment</label>
         </div>
         <div className="col-md-10">
           <select
