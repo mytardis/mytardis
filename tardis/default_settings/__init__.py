@@ -61,3 +61,8 @@ def get_git_version():
     return info
 
 MYTARDIS_VERSION = get_git_version()
+
+# Django 3.2 allows to customise the field type
+# used when creating automatic primary keys.
+# You can set the default auto field at a project, app, or model level.
+DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
