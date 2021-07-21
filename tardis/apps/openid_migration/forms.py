@@ -13,8 +13,5 @@ def openid_user_migration_form():
         required=True, widget=forms.PasswordInput(),
         label='Password')
 
-    for _, field in fields.items():
-        field.widget.attrs['style'] = "width: 80%; max-width: 150px;"
-
     return type('openid_user_migration_form', (forms.BaseForm, ),
                 {'base_fields': fields})
