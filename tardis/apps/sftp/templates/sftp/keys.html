@@ -10,28 +10,23 @@
 {% endblock %}
 
 {% block content %}
-<div class="col-md-8">
-  <h2>SSH Keys</h2>
+<div class="container">
+  <h2 class="my-3">SSH Keys</h2>
   <p>Add and manage your public SSH keys for accessing {{site_title|default:'MyTardis'}} via SFTP.</p>
-  <div class="row">
-    <div class="ml-auto" style="margin: 0px 0px 10px 10px;">
+  <ul class="list-inline">
+    <li class="list-inline-item mx-0">
       <a class="btn btn-outline-secondary" data-bs-toggle="modal" href="#keyGenerateModal">
-        <i class="fa fa-plus"></i>
-        <span>Generate key</span>
+        <i class="fa fa-plus"></i> Generate Key
       </a>
-    </div>
-    <div style="margin: 0px 0px 10px 10px;">
+    </li>
+    <li class="list-inline-item mx-0">
       <a class="btn btn-outline-secondary" data-bs-toggle="modal" href="#keyAddModal">
-        <i class="fa fa-plus"></i>
-        <span>Add key</span>
+        <i class="fa fa-plus"></i> Add Key
       </a>
-    </div>
-  </div>
-  <div class="row">
-    {# Note: This table is loaded via AJAX. Check sftp.loadKeyTable() method in static/js/sftp/sftp.js #}
-    <div id='keyTable'>
-      <span><i class="fa fa-2x fa-spinner fa-pulse"></i> Loading keys...</span>
-    </div>
+    </li>
+  </ul>
+  <div id="keyTable">
+    <i class="fa fa-2x fa-spinner fa-pulse"></i> Loading keys...
   </div>
 </div>
 
@@ -40,35 +35,32 @@
     <form id="keyAddForm" class="modal-content">
       <div class="modal-header">
         <h3 class="modal-title">Add SSH Keys</h3>
-        <button type="button" class="close" data-dismiss="modal" onclick="sftp.clearKeyAddForm()">×</button>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" onclick="sftp.clearKeyAddForm();"></button>
       </div>
       <div class="modal-body">
-        <div>
-          <span>Add your own public SSH Key using the form below.</span>
-          <span><b>Important:</b> Don't add your private key.</span>
-        </div>
-        <div class="form-group mt-1">
-          <label for="keyName">Device Name:</label>
-          <input type="text" id="keyName" class="form-control" name="name">
-        </div>
-        <div class="form-group">
-          <label for="key">Public Key:</label>
-          <textarea id="key" class="form-control" rows="6" name="public_key"></textarea>
-        </div>
-        <div class="form-group">
-          <div id="keyAddAlert" class="alert alert-danger" style="display: none;">
-            <div id="keyAddAlertMessage"></div>
+        <p>Add your own public SSH Key using the form below. <b>Important:</b> Don't add your private key.</p>
+        <div class="row mb-3">
+          <div class="col-12">
+            <label class="form-label" for="keyName">Device Name:</label>
+            <input type="text" id="keyName" class="form-control" name="name">
           </div>
+        </div>
+        <div class="row mb-3">
+          <div class="col-12">
+            <label class="form-label" for="key">Public Key:</label>
+            <textarea id="key" class="form-control" rows="6" name="public_key"></textarea>
+          </div>
+        </div>
+        <div id="keyAddAlert" class="alert alert-danger mb-3" style="display: none;">
+          <div id="keyAddAlertMessage"></div>
         </div>
       </div>
       <div class="modal-footer">
-        <button class="btn btn-outline-secondary" style="margin: 0px 0px 10px 10px;" data-dismiss="modal" onclick="sftp.clearKeyAddForm();return false;">
-          <i class="fa fa-close"></i>
-          Close
+        <button class="btn btn-outline-secondary" data-bs-dismiss="modal" onclick="return sftp.clearKeyAddForm();">
+          <i class="fa fa-close"></i> Close
         </button>
-        <button class="btn btn-primary" style="margin: 0px 0px 10px 10px;" onclick="sftp.addKey();return false;">
-          <i class="fa fa-plus"></i>
-          Add Key
+        <button class="btn btn-primary" onclick="return sftp.addKey();">
+          <i class="fa fa-plus"></i> Add Key
         </button>
       </div>
     </form>  <!-- class="modal-content" -->
@@ -79,54 +71,41 @@
   <div class="modal-dialog modal-lg" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h3>Generate an SSH key pair</h3>
-        <button type="button" class="close" data-dismiss="modal" onclick="sftp.clearKeyGenerateForm()">×</button>
+        <h3 class="modal-title">Generate an SSH key pair</h3>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" onclick="sftp.clearKeyGenerateForm();"></button>
       </div>
       <div class="modal-body">
         <p>{{site_title|default:'MyTardis'}} can generate an SSH key pair for you. Only the public part of the key pair will be stored by {{site_title|default:'MyTardis'}} and you will be provided with a one time opportunity to download the private part of the key pair.</p>
-        <br>
-        <form id="keyGenerateForm" action="{% url 'tardis.apps.sftp:sftp_keys' %}" method="post">
-          {% if enable_generate %}
-          {% else %}
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-              The SSH key generation feature has been disabled because your connection is insecure.
-              Please contact your MyTardis service administrator about securing your connection.
-            </div>
-          {% endif %}
-          <div class="form-group">
-            <label class="col-form-label" for="id_name">Name</label>
-            <div class=" ">
-              {% if enable_generate %}
-                <input type="text" name="name" maxlength="256" class="form-control" required="required" id="id_name">
-              {% else %}
-                <input type="text" name="name" maxlength="256" class="form-control" disabled required="" id="id_name">
-              {% endif %}
-            </div>
+        {% if not enable_generate %}
+          <div class="alert alert-danger" role="alert">
+            The SSH key generation feature has been disabled because your connection is insecure.<br/>
+            Please contact your MyTardis service administrator about securing your connection.
           </div>
-          {% if enable_generate %}
-            <button type="submit" class="btn btn-outline-secondary">
-          {% else %}
-            <button type="submit" class="btn btn-outline-secondary" disabled>
-          {% endif %}
-              <i class="fa fa-download"></i>
-              Generate &amp; Download
+        {% else %}
+          <form id="keyGenerateForm" class="mb-4"
+                action="{% url 'tardis.apps.sftp:sftp_keys' %}" method="post">
+            <div class="row mb-3">
+              <div class="col-12">
+                <label class="form-label" for="id_name">Name</label>
+                <input type="text" name="name" maxlength="256" class="form-control" required="required" id="id_name">
+              </div>
+            </div>
+            <button type="submit" class="btn btn-primary">
+              <i class="fa fa-download"></i> Generate &amp; Download
             </button>
-        </form>
-        <br/>
-        <p><b>Important:</b> Keep your private key in a safe place. Anyone with access to the private key will be able to access your data on {{site_title|default:'MyTardis'}}.</p>
-        <div id="keyGenerateAlert" class="alert alert-danger" style="display: none">
-          <div id="keyGenerateAlertMessage"></div>
-        </div>
+          </form>
+          <p><b>Important:</b> Keep your private key in a safe place. Anyone with access to the private key will be able to access your data on {{site_title|default:'MyTardis'}}.</p>
+          <div id="keyGenerateAlert" class="alert alert-danger" style="display: none">
+            <div id="keyGenerateAlertMessage"></div>
+          </div>
+        {% endif %}
       </div>
       <div class="modal-footer">
-        <button class="btn btn-outline-secondary" data-dismiss="modal" onclick="sftp.clearKeyGenerateForm()">
-          <i class="fa fa-close"></i>
-          Close
+        <button class="btn btn-outline-secondary" data-bs-dismiss="modal" onclick="sftp.clearKeyGenerateForm()">
+          <i class="fa fa-close"></i> Close
         </button>
       </div>
     </div>  <!-- class="modal-content" -->
   </div>  <!-- class="modal-dialog" -->
 </div>
 {% endblock content %}
-
