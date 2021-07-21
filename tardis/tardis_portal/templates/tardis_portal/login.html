@@ -18,23 +18,27 @@
  <div class="row">
   <div class="col-md-7">
     <h3>Please Log In</h3>
-    <form id="login-form" action method="post">
+    <form id="login-form" action method="post" class="p-5 bg-light">
       {% csrf_token %}
       <input name="next_page" type="hidden" value="{{ next_page|default:"/" }}" />
       <div class="row mb-3">
-        <label class="col-form-label col-md-2" for="id_username">Username</label>
+        <div class="col-md-2">
+            <label class="form-label" for="id_username">Username</label>
+        </div>
         <div class="col-md-5">
           <input type="text" name="username" class="form-control" id="id_username" required placeholder="username">
         </div>
       </div>
       <div class="row mb-3">
-        <label class="col-form-label col-md-2" for="id_password">Password</label>
+        <div class="col-md-2">
+            <label class="form-label" for="id_password">Password</label>
+        </div>
         <div class="col-md-5">
           <input type="password" name="password" class="form-control" id="id_password" required placeholder="password">
         </div>
       </div>
       <div class="row mb-3">
-        <div class="offset-md-2 col-md-5 ps-1">
+        <div class="offset-md-2 col-md-5">
           <button id="login-button" type="submit" class="btn btn-primary">
             <i class="fa fa-sign-in"></i> Log In
           </button>

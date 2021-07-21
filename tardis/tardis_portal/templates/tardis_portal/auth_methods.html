@@ -45,17 +45,25 @@
 <div id="authForm">
   {% if supportedAuthMethods|length > 0 %}
 
-    <form id="authForm" action="." method="post" class="form-horizontal">{% csrf_token %}
-      <fieldset>
-        <legend>Add a new account</legend>
-        {% for field in authForm %}
-          {{ field }}
-        {% endfor %}
-      </fieldset>
-      <div class="">
-        <button type="submit" id="link" class="btn btn-primary">
-          Link the Accounts
-        </button>
+    <form id="authForm" action="." method="post" class="p-5 bg-light">
+      {% csrf_token %}
+      <h3 class="mb-4">Add a new account</h3>
+      {% for field in authForm %}
+        <div class="row mb-3">
+          <div class="col-md-2">
+            <label class="form-label" for="{{ field.name }}">{{ field.label }}</label>
+          </div>
+          <div class="col-md-10">
+            {{ field }}
+          </div>
+        </div>
+      {% endfor %}
+      <div class="row">
+        <div class="offset-md-2">
+          <button type="submit" id="link" class="btn btn-primary">
+            Link the Accounts
+          </button>
+        </div>
       </div>
     </form>
 
