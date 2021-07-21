@@ -4,10 +4,10 @@ import PropTypes from 'prop-types';
 
 const ExperimentListDropDown = ({ onChange, experimentListData }) => (
   <Fragment>
-    <form id="other-experiment-selection" className="form-horizontal">
+    <form id="other-experiment-selection">
       <div className="row">
         <div className="col-md-2">
-          <label className="form-label" htmlFor="experiment_id">Experiment</label>
+          <label className="form-label" for="experiment_id">Experiment</label>
         </div>
         <div className="col-md-10">
           <select
@@ -25,7 +25,7 @@ const ExperimentListDropDown = ({ onChange, experimentListData }) => (
     </form>
     <p className="mt-3">
       <strong>Instructons:</strong>
-      {' '}
+      &nbsp;
       Using the above list, select an experiment to copy from,
       then drag datasets to the right to associate them with the current experiment.
     </p>
