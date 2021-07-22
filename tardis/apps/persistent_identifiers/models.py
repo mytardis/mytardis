@@ -36,7 +36,7 @@ class ExperimentPID(PID):
                                       related_name='pid')
 
 
-@reciever(post_save, sender=Experiment, dispatch_uid="create_experiment_pid")
+@receiver(post_save, sender=Experiment, dispatch_uid="create_experiment_pid")
 def create_experiment_pid(sender, instance, created, **kwargs):
     if created:
         ExperimentPID(experiment=instance).save()
