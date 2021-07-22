@@ -27,7 +27,7 @@ class PID(models.Model):
         abstract = True
 
 class ExperimentPID(PID):
-    experiment = models.OneToOneField("Experiment",
+    experiment = models.OneToOneField(Experiment,
                                       on_delete=models.CASCADE,
                                       related_name='pid')
 
