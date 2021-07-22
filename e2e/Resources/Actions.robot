@@ -1,7 +1,7 @@
 *** Settings ***
 
 Library    SeleniumLibrary
-
+Resource   ../../Resources/ReusableKeywords.robot
 
 *** Keywords ***
 
@@ -31,16 +31,7 @@ Create Experiment
 
     Add Experiment Details              ${ExperimentName}      ${ExperimentAuthor}    ${Institution}    ${Description}
     page should contain                 ${ExperimentName}
-
-
-    #Open Home page and verify Experiment is displayed
-   # click element                       xpath://*[@class='nav-link' and @href='/']
-   # wait until element is enabled       xpath://*[contains(text(),'${ExperimentName}')]
-   # element should contain              xpath://*[contains(text(),'${ExperimentName}')]      ${ExperimentName}
-
-    #Reopen Experiment
-    #click element                       xpath://*[contains(text(),'${ExperimentName}')]
-
+    sleep    6
 Edit Experiment
     [Arguments]                         ${ExperimentName}      ${ExperimentAuthor}    ${Institution}    ${Description}
 
@@ -49,7 +40,7 @@ Edit Experiment
 
     Add Experiment Details              ${ExperimentName}      ${ExperimentAuthor}    ${Institution}    ${Description}
     page should contain                 ${ExperimentName}
-
+    sleep    6
 Add Experiment Metadata
     [Arguments]                         ${Schema}       ${Param1}       ${Param2}
     wait until element is enabled       xpath://*[@title='Metadata']
@@ -72,8 +63,22 @@ Add Experiment Metadata
 
     press keys    None      ESC
 
-    #page should contain                 ${Param1}
-    #page should contain                 ${Param2}
+    #Verify Experiment Metadata are displayed under Metadata section
+    wait until page contains            ${Param1}
+    page should contain                 ${Param2}
+    sleep    6
+Edit Experiment Metadata
+    [Arguments]                         ${Param1}       ${Param2}
+    wait until element is enabled       xpath://*[@class='edit-metadata btn btn-sm btn-outline-secondary']
+    click element                       xpath://*[@class='edit-metadata btn btn-sm btn-outline-secondary']
+    wait until element is enabled       id:id_Test Parameter 1__1
+    input text                          id:id_Test Parameter 1__1       ${Param1}
+
+    wait until element is enabled       id:id_Test Parameter 2__1
+    input text                          id:id_Test Parameter 2__1       ${Param2}
+
+    wait until element is enabled       xpath://*[@class='col-md-12 text-right']//*[@class='submit-button btn btn-primary']
+    click button                        xpath://*[@class='col-md-12 text-right']//*[@class='submit-button btn btn-primary']
 
 Add DataSet
     [Arguments]                         ${Description}   ${Directory}    ${Instrument}
@@ -83,15 +88,7 @@ Add DataSet
 
     Add DataSet Details                 ${Description}   ${Directory}    ${Instrument}
     page should contain                 ${Description}
-
-
-   # click element                       xpath://*[@class='nav-link' and @href='/']
-   # wait until element is enabled       xpath://*[contains(text(),'${Description}')]
-   # element should contain              xpath://*[contains(text(),'${Description}')]      ${Description}
-
-    #Reopen Experiment
-   # click element                       xpath://*[contains(text(),'${Description}')]
-
+    sleep    6
 Edit DataSet
     [Arguments]                         ${Description}   ${Directory}    ${Instrument}
 
@@ -100,7 +97,7 @@ Edit DataSet
 
     Add DataSet Details                 ${Description}   ${Directory}    ${Instrument}
     page should contain                 ${Description}
-
+    sleep    6
 Add Dataset MetaData
     [Arguments]                         ${Schema}       ${Param1}       ${Param2}
 
@@ -120,9 +117,11 @@ Add Dataset MetaData
     click button                        xpath://*[@class='col-md-12 text-right']//*[@class='submit-button btn btn-primary']
 
     press keys    None      ESC
-    #page should contain                 ${Param1}
-    #page should contain                 ${Param2}
 
+    #Verify Dataset Metadata are displayed on Dataset page
+    wait until page contains            ${Param1}
+    page should contain                 ${Param2}
+    sleep    6
 Add Experiment Details
     [Arguments]                         ${ExperimentName}      ${ExperimentAuthor}    ${Institution}    ${Description}
 
@@ -153,10 +152,111 @@ Add DataSet Details
     wait until element is enabled       xpath://*[@class='offset-md-2 col-md-9 text-right']//button
     click button                        xpath://*[@class='offset-md-2 col-md-9 text-right']//button
 
+Verify Mytardis Home Page
+    [Arguments]                         ${Page}     ${Text1}    ${Text2}    ${Text3}
 
-Verify page contains item
-    [Arguments]         ${Item}         ${Page}
-    #Open page and verify item is displayed
     click element                       ${Page}
-    wait until element is enabled       link:${Item}
-    click element                       link:${Item}
+    wait until page contains            ${Text1}
+    page should contain                 ${Text2}
+    page should contain                 ${Text3}
+
+
+Verify Mytardis About Page
+    [Arguments]                         ${Page}     ${Heading}
+      click element                     ${Page}
+      page should contain               ${Heading}
+
+      #Verify user can open Mytardis site
+      page should contain               mytardis.org
+
+      #Verify user can open Mytardis GitHub
+      page should contain               GitHub
+
+      #Verify user can see PubMed link on About page
+      page should contain               [PubMed]
+
+      #Verify user can open Mytardis contact page
+      page should contain                http://www.mytardis.org/contact/
+
+      #Verify user can open MyTardis User Guide
+      wait until element is enabled     xpath://*[@class='list-unstyled']//a[@href='http://mytardis.readthedocs.io/en/v4.5.0-rc2/userguide.html']
+      click element                     xpath://*[@class='list-unstyled']//a[@href='http://mytardis.readthedocs.io/en/v4.5.0-rc2/userguide.html']
+      switch window                     new
+      ${href}                           get location
+      should be equal as strings        ${href}         https://mytardis.readthedocs.io/en/v4.5.0-rc2/userguide.html
+
+      #Verify user can open MyTardis Documentation
+      go to                             http://localhost:8000/about/
+      wait until element is enabled     xpath://*[@class='list-unstyled']//a[@href='http://mytardis.readthedocs.org/en/v4.5.0-rc2/index.html']
+      click element                     xpath://*[@class='list-unstyled']//a[@href='http://mytardis.readthedocs.org/en/v4.5.0-rc2/index.html']
+      switch window                     new
+      ${href}                           get location
+      should be equal as strings        ${href}         https://mytardis.readthedocs.io/en/v4.5.0-rc2/index.html
+
+Verify MyTardis Help page
+    [Arguments]                         ${Page}
+      wait until element is enabled     ${Page}
+      click element                     ${Page}
+      switch window                     new
+      ${href}                           get location
+      should be equal as strings        ${href}         https://mytardis.readthedocs.io/en/v4.5.0-rc2/userguide.html
+
+
+Verify Create User
+
+    wait until element is enabled       xpath://*[@href='#user-menu']
+    click element                       xpath://*[@href='#user-menu']
+    click element                       xpath://*[@href='/group/groups/']
+
+    wait until element is enabled       xpath://*[@title='Create User']
+    click button                        xpath://*[@title='Create User']
+
+    wait until element is enabled       id:id_username
+    input text                          id:id_username      Jane8
+    input text                          id:id_email         Jane@example.com
+    input text                          id:id_password1     12345
+    input text                          id:id_password2     12345
+
+    click button                        id:user
+
+Verify Create Group
+
+    sleep    3
+    click button                        xpath://*[@title='Create Group']
+
+    wait until element is enabled       id:id_addgroup
+    input text                          id:id_addgroup      TestGroup2
+
+    input text                          id:id_groupadmin    joe
+    click button                        id:group
+
+    wait until element is enabled       link:TestGroup1
+    click element                       link:TestGroup1
+
+
+View Facility Page
+
+    wait until element is enabled        xpath://*[@class='nav-link' and @href='/facility/overview/']
+    click element                        xpath://*[@class='nav-link' and @href='/facility/overview/']
+    page should contain                  Facility Overview
+
+
+View Stats Page
+
+    wait until element is enabled        xpath://*[@class='nav-link' and @href='/stats/']
+    click element                        xpath://*[@class='nav-link' and @href='/stats/']
+    page should contain                  Stats
+    page should contain                  Experiments stored
+    page should contain                  Datasets stored
+    page should contain                  Files stored
+    page should contain                  Data stored (at least)
+
+View SFTP page
+    [Arguments]                          ${ExperimentName}      ${DatasetName}
+    wait until element is enabled        xpath://*[@title='Download with SFTP']
+    click element                        xpath://*[@title='Download with SFTP']
+
+    sleep    3
+    page should contain                  ${ExperimentName}
+    page should contain                  ${DatasetName}
+
