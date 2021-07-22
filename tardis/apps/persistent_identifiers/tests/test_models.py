@@ -1,7 +1,7 @@
 from django.test import TestCase
 from django.contrib.auth.models import User
 from tardis.tardis_portal.models.experiment import Experiment
-from ..models import ExperimentPID
+# from ..models import ExperimentPID
 
 
 class ModelsTestCase(TestCase):

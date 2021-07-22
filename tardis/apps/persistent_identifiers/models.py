@@ -18,21 +18,31 @@ class PID(models.Model):
     :attribute pid: A CharField holding the chosen PID
 
     """
-    pid = models.CharField(max_length=400,
-                           null=True,
-                           blank=True,
-                           unique=True)
+    pid = models.CharField(max_length = 400,
+                           null = True,
+                           blank = True,
+                           unique = True)
 
     class Meta:
         abstract = True
 
 class ExperimentPID(PID):
     experiment = models.OneToOneField(Experiment,
-                                      on_delete=models.CASCADE,
-                                      related_name='pid')
+                                      on_delete = models.CASCADE,
+                                      related_name = 'pid')
 
 
 @receiver(post_save, sender=Experiment, dispatch_uid="create_experiment_pid")
 def create_experiment_pid(sender, instance, created, **kwargs):
     if created:
         ExperimentPID(experiment=instance).save()
+
+class DatasetPID(PID):
+    dataset = models.OneToOneField(Dataset,
+                                   on_delete = models.CASCADE,
+                                   related_name = 'pid')
+
+@receiver(post_save, sender=Dataset, dispatch_uid="create_dataset_pid")
+def create_dataset_pid(sender, instance, created, **kwargs):
+    if created:
+        DatasetPID(dataset=instance).save()
