@@ -5,7 +5,7 @@ const Licenses = ({ licenses, onLicenseChange, selectedLicenseId }) => (
   <Fragment>
     {licenses.map(
       license => (
-        <div className="license-option form-group">
+        <div className="license-option">
           <div className="row">
             <div className="col-md-2">
               <input
