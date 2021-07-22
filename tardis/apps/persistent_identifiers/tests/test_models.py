@@ -1,9 +1,11 @@
 from django.test import TestCase
-from ..models import ExperimentPID
+from django.contrib.auth.models import User
 from tardis.tardis_portal.models.experiment import Experiment
+from ..models import ExperimentPID
+
 
 class ModelsTestCase(TestCase):
-    
+
     def test_experiment_had_pid(self):
         user = 'testuser'
         pwd = User.objects.make_random_password()
