@@ -120,5 +120,28 @@ jobs:
       - name: run test
         run: |
           docker-compose -f docker-ci/docker-test.yml run -e TEST_TYPE=behave test
+  robot-test:
+    runs-on: ubuntu-20.04
+    needs: build-docker
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+      - name: Download base-image
+        uses: actions/download-artifact@v2
+        with:
+          name: base-image
+          path: /tmp
+      - name: load image
+        run: docker load < /tmp/base-image.tar
+      - name: list images
+        run: docker image ls -a
+      - name: download wheelhouse
+        uses: actions/download-artifact@v2
+        with:
+          name: wheelhouse
+          path: wheelhouse
+      - name: run test
+        run: |
+          docker-compose -f docker-ci/docker-test.yml run robot-tests
 
 
