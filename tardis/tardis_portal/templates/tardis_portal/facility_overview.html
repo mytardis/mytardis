@@ -130,31 +130,38 @@
                   <div class="col-md-12">
                     <div class="card mb-2" style="border-top: 0">
                       <div class="card-body">
-                        <form class="form-inline">
-                      <div class="form-group me-2">
-                        <label class="me-2">Filter by:</label>
-                        <input type="text" class="input-small form-control"
-                               placeholder="user name"
-                               ng-model="facilityCtrl.search_owner.owner">
-                      </div>
-                      <div class="form-group me-2">
-                        <label class="sr-only">Experiment:</label>
-                        <input type="text" class="input-small form-control"
-                               placeholder="experiment"
-                               ng-model="facilityCtrl.search_experiment.parent_experiment.title">
-                      </div>
-                      <div class="form-group me-2">
-                        <label class="sr-only">Instrument:</label>
-                        <input type="text" class="input-small form-control"
-                               placeholder="instrument"
-                               ng-model="facilityCtrl.search_instrument.instrument.name">
-                      </div>
-                      <button type="button" class="btn btn-outline-secondary"
-                              ng-click="facilityCtrl.filterFormReset()">
-                          <i class="fa fa-remove"></i>
-                          Clear filters
-                      </button>
-                    </form>
+                        <form>
+                          <div class="row">
+                            <div class="col">
+                              <label class="form-label">Filter by:</label>
+                            </div>
+                            <div class="col">
+                              <input type="text"
+                                     class="form-control"
+                                     placeholder="user name"
+                                     ng-model="facilityCtrl.search_owner.owner">
+                            </div>
+                            <div class="col">
+                              <input type="text"
+                                     class="form-control"
+                                     placeholder="experiment"
+                                     ng-model="facilityCtrl.search_experiment.parent_experiment.title">
+                            </div>
+                            <div class="col">
+                              <input type="text"
+                                     class="form-control"
+                                     placeholder="instrument"
+                                     ng-model="facilityCtrl.search_instrument.instrument.name">
+                            </div>
+                            <div class="col">
+                              <button type="button"
+                                      class="btn btn-outline-secondary"
+                                      ng-click="facilityCtrl.filterFormReset()">
+                                <i class="fa fa-remove"></i> Clear filters
+                              </button>
+                            </div>
+                          </div>
+                        </form>
                       </div>
                     </div>
                   </div>  <!-- col-md-12 -->
