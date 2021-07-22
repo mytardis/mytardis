@@ -22,9 +22,13 @@ TEST CASE 4.2: Open Dataset page
 
     Verify page contains item    ${EditDataSetName}     xpath://*[@class='nav-link' and @href='/']
 
-TEST CASE 4.3: Open SFTP page
+TEST CASE 4.3: Open SFTP Instructions page
 
-    View SFTP page                ${EditExperimentName}     ${EditDataSetName}
+    View SFTP Instructions page                EditExperiment     EditDataset
+
+TEST CASE 4.4: Open SFTP Keys page
+
+    View SFTP Keys page                        EditExperiment     EditDataset
 
 
 

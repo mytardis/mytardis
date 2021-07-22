@@ -251,12 +251,25 @@ View Stats Page
     page should contain                  Files stored
     page should contain                  Data stored (at least)
 
-View SFTP page
+View SFTP Instructions page
     [Arguments]                          ${ExperimentName}      ${DatasetName}
     wait until element is enabled        xpath://*[@title='Download with SFTP']
     click element                        xpath://*[@title='Download with SFTP']
 
+    switch window                        new
     sleep    3
     page should contain                  ${ExperimentName}
     page should contain                  ${DatasetName}
+
+    element should contain                xpath://html/body/div/div[3]/div/div/div/p[3]/a     ${ExperimentName}
+    element should contain                xpath://html/body/div/div[3]/div/div/div/p[3]/a     ${DatasetName}
+
+    element should contain                xpath://html/body/div/div[3]/div/div/div/table/tbody/tr[6]/td[2]      ${ExperimentName}
+    element should contain                xpath://html/body/div/div[3]/div/div/div/table/tbody/tr[6]/td[2]      ${DatasetName}
+
+View SFTP Keys page
+     [Arguments]                          ${ExperimentName}      ${DatasetName}
+
+    click element                         xpath://*[@href='/apps/sftp/keys/']
+    page should contain                   SSH Keys
 
