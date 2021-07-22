@@ -25,10 +25,6 @@ class PID(models.Model):
 
     class Meta:
         abstract = True
-        app_label = 'pids'
-
-    def __str__(self):
-        return self.pid
 
 class ExperimentPID(PID):
     experiment = models.OneToOneField("Experiment",
