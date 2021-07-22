@@ -4,6 +4,7 @@ Library    SeleniumLibrary
 
 Resource   ../../Resources/SetUp.robot
 Resource   ../../Resources/Actions.robot
+Resource   ../../Resources/ReusableKeywords.robot
 
 Documentation    This file is to test MAnage Users and manage groups
 

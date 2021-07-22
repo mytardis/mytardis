@@ -5,21 +5,6 @@ Resource   ../../Resources/ReusableKeywords.robot
 
 *** Keywords ***
 
-Login
-    [Arguments]                      ${name}        ${password}
-
-    wait until element is enabled    id:login-button
-    click element                    id:login-button
-
-    wait until element is enabled    id:id_username
-    input text                       id:id_username     ${name}
-
-    wait until element is enabled    id:id_password
-    input text                       id:id_password     ${password}
-
-    wait until element is enabled    id:login-button
-    click button                     id:login-button
-
 Create Experiment
     [Arguments]                         ${ExperimentName}      ${ExperimentAuthor}    ${Institution}    ${Description}
 
@@ -67,6 +52,7 @@ Add Experiment Metadata
     wait until page contains            ${Param1}
     page should contain                 ${Param2}
     sleep    6
+
 Edit Experiment Metadata
     [Arguments]                         ${Param1}       ${Param2}
     wait until element is enabled       xpath://*[@class='edit-metadata btn btn-sm btn-outline-secondary']
@@ -79,6 +65,13 @@ Edit Experiment Metadata
 
     wait until element is enabled       xpath://*[@class='col-md-12 text-right']//*[@class='submit-button btn btn-primary']
     click button                        xpath://*[@class='col-md-12 text-right']//*[@class='submit-button btn btn-primary']
+
+    press keys    None      ESC
+
+    #Verify Experiment Metadata are displayed under Metadata section
+    wait until page contains            ${Param1}
+    page should contain                 ${Param2}
+    sleep    6
 
 Add DataSet
     [Arguments]                         ${Description}   ${Directory}    ${Instrument}
@@ -98,6 +91,7 @@ Edit DataSet
     Add DataSet Details                 ${Description}   ${Directory}    ${Instrument}
     page should contain                 ${Description}
     sleep    6
+
 Add Dataset MetaData
     [Arguments]                         ${Schema}       ${Param1}       ${Param2}
 
@@ -122,6 +116,30 @@ Add Dataset MetaData
     wait until page contains            ${Param1}
     page should contain                 ${Param2}
     sleep    6
+
+Edit Dataset MetaData
+    [Arguments]                         ${Param1}       ${Param2}
+
+    wait until element is enabled       xpath://*[@class='edit-metadata btn btn-sm btn-outline-secondary']
+    click element                       xpath://*[@class='edit-metadata btn btn-sm btn-outline-secondary']
+
+    wait until element is enabled       id:id_Dataset Param 1__1
+    input text                          id:id_Dataset Param 1__1        ${Param1}
+
+    wait until element is enabled       id:id_Dataset Param 2__1
+    input text                          id:id_Dataset Param 2__1        ${Param2}
+
+    wait until element is enabled       xpath://*[@class='col-md-12 text-right']//*[@class='submit-button btn btn-primary']
+    click button                        xpath://*[@class='col-md-12 text-right']//*[@class='submit-button btn btn-primary']
+
+    press keys    None      ESC
+
+    #Verify Dataset Metadata are displayed on Dataset page
+    wait until page contains            ${Param1}
+    page should contain                 ${Param2}
+    sleep    6
+
+
 Add Experiment Details
     [Arguments]                         ${ExperimentName}      ${ExperimentAuthor}    ${Institution}    ${Description}
 
@@ -159,7 +177,6 @@ Verify Mytardis Home Page
     wait until page contains            ${Text1}
     page should contain                 ${Text2}
     page should contain                 ${Text3}
-
 
 Verify Mytardis About Page
     [Arguments]                         ${Page}     ${Heading}

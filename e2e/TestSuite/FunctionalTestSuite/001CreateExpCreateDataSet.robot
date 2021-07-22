@@ -38,25 +38,30 @@ TEST CASE 1.6: Add Experiment Metadata
 
     Add Experiment Metadata     TestSchema   Adding value to Param 1    Adding value to Param 2
 
+TEST CASE 1.7: Edit Experiment Metadata
 
-TEST CASE 1.7: Add Dataset
+    Edit Experiment Metadata    EditParam1      EditParam2
+
+TEST CASE 1.8: Add Dataset
 
     Add DataSet                 ${DatasetName}        DataDirectory       DataInstrument
 
-TEST CASE 1.8: Verify Dataset is displayed on My Data page
+TEST CASE 1.9: Verify Dataset is displayed on My Data page
 
     Verify page contains item   ${DatasetName}     xpath://*[@class='nav-link' and @href='/mydata/']
 
-TEST CASE 1.9: Verify Dataset is displayed on Home page
+TEST CASE 1.10: Verify Dataset is displayed on Home page
 
     Verify page contains item    ${DatasetName}     xpath://*[@class='nav-link' and @href='/']
 
-TEST CASE 1.10: Edit Dataset
+TEST CASE 1.11: Edit Dataset
 
     Edit DataSet            ${EditDataSetName}        EditDataDirectory       EditDataInstrument
 
-TEST CASE 1.11: Add Dataset Metadata
+TEST CASE 1.12: Add Dataset Metadata
 
     Add Dataset MetaData    DatasetSchema   Adding value to Param 1    Adding value to Param 2
 
+TEST CASE 1.13: Edit Dataset Metadata
 
+    Edit Dataset MetaData   Edit Adding value to Param 1        Edit Adding value to Param 2
