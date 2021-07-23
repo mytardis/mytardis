@@ -162,13 +162,14 @@ def update_extra_info(request, form_state, publication):
     map_form_to_schemas(form_state['extraInfo'], publication)
 
     # --- Get data for the next page --- #
-    licenses_json = get_licenses()
-    form_state['licenses'] = licenses_json
+    licenses_json = get_licenses(request)
+    # form_state['licenses'] = licenses_json
 
     # Select the first license as default
     if licenses_json:
         if 'selectedLicenseId' not in form_state:
-            form_state['selectedLicenseId'] = licenses_json[0]['id']
+            license_id = json.loads(licenses_json.content)[0]['id']
+            form_state['selectedLicenseId'] = license_id
     else:  # No licenses configured...
         form_state['selectedLicenseId'] = -1
 
@@ -288,7 +289,7 @@ def map_form_to_schemas(extraInfo, publication):
                     pass
 
 
-def get_licenses(self):
+def get_licenses(request):
     licenses = License.objects.filter(
         is_active=True, allows_distribution=True)
     licenses_json = []

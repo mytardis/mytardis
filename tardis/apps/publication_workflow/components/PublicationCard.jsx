@@ -12,7 +12,7 @@ const Hover = styled.div({
 });
 
 const PublicationCard = ({
-  publicationType, data, handleDelete, handleRetract,
+  publicationType, data, handleDelete, handleRetract, handleResume,
 }) => (
   <Fragment>
     <div className="col mb-4">
@@ -108,7 +108,7 @@ const PublicationCard = ({
                 switch (publicationType) {
                   case 'draft': return (
                     <Fragment>
-                      <button type="button" className="btn btn-primary btn-sm mr-2 mb-1">
+                      <button type="button" onClick={e => handleResume(e, data.id)} className="btn btn-primary btn-sm mr-2 mb-1">
                         <i className="fa fa-edit mr-1" />
                         Resume Draft
                       </button>

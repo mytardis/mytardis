@@ -12,6 +12,7 @@ const PublicationsList = ({
   scheduledPubsList,
   draftPubsList,
   onPubUpdate,
+  onResumeDraft,
 }) => {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [retractModalOpen, setRetractModalOpen] = useState(false);
@@ -92,6 +93,7 @@ const PublicationsList = ({
               publicationType="draft"
               data={item}
               handleDelete={confirmDelete}
+              handleResume={onResumeDraft}
             />
           )) : <></>}
           {scheduledPubsList.length > 0 ? scheduledPubsList.map(item => (

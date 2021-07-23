@@ -26,10 +26,12 @@ const SelectDatasetForm = ({ formik }) => {
     selectedOptionsArray
       .map(item => (currentlySelectedDatasetList
         .push({
-          dataset_description: item.label.slice(0, item.label.length),
-          publication_dataset_description: '',
-          dataset_id: item.value,
-          exp: selectedExperiment,
+          experiment: selectedExperiment.title,
+          experiment_id: selectedExperiment.id,
+          dataset: {
+            id: item.value,
+            description: item.label.slice(0, item.label.length)
+          },
         })));
     currentlySelectedDatasetList = selectedDatasetList.concat(currentlySelectedDatasetList);
     setSelectedDatasetList(currentlySelectedDatasetList);
@@ -149,8 +151,8 @@ const SelectDatasetForm = ({ formik }) => {
                 <tbody>
                   {formik.values.selectedDatasets.map(item => (
                     <tr>
-                      <td>{item.exp.title}</td>
-                      <td>{item.dataset_description}</td>
+                      <td>{item.experiment}</td>
+                      <td>{item.dataset.description}</td>
                       <td>
                         <span style={{ color: 'red' }}>
                           <i className="fa fa-trash" />
