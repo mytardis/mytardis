@@ -53,7 +53,7 @@ class ModelsTestCase(TestCase):
         dataset.save()
         pid = "my_test_pid"
         dataset_key = dataset.id
-        datasetpid = DatasetPID.objects.get(dataset.id=dataset_key)
+        datasetpid = DatasetPID.objects.get(dataset=dataset_key)
         print(datasetpid.id)
         print(dataset.pid.id)
         datasetpid.pid = pid
