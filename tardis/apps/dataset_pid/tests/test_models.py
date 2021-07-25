@@ -53,9 +53,11 @@ class ModelsTestCase(TestCase):
         dataset.experiments.add(experiment)
         dataset.save()
         pid = "my_test_pid"
-        datasetpid = DatasetPID.objects.get(dataset=dataset)
-        datasetpid.pid = pid
-        datasetpid.save()
+        #datasetpid = DatasetPID.objects.get(dataset=dataset)
+        #datasetpid.pid = pid
+        #datasetpid.save()
+        dataset.pid.pid = pid
+        dataset.save()
         print(dataset.pid)
         print(dataset.pid.pid)
         self.assertTrue(dataset.pid.pid == pid)
