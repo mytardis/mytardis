@@ -53,12 +53,11 @@ class ModelsTestCase(TestCase):
         dataset.experiments.add(experiment)
         dataset.save()
         pid = "my_test_pid"
-        #datasetpid = DatasetPID.objects.get(dataset=dataset)
-        #datasetpid.pid = pid
-        #datasetpid.save()
         dataset.pid.pid = pid
         dataset.save()
-        print(dataset.pid)
+        dataset_key = dataset.id
+        dataset = Dataset.objects.get(pk=dataset_key)
+        print(dataset)
         print(dataset.pid.pid)
         self.assertTrue(dataset.pid.pid == pid)
 
@@ -88,11 +87,8 @@ class ModelsTestCase(TestCase):
         dataset2.experiments.add(experiment)
         dataset2.save()
         pid = "my_test_pid"
-        datasetpid1 = DatasetPID.objects.get(dataset=dataset1)
-        datasetpid1.pid = pid
-        datasetpid1.save()
+        dataset1.pid.pid = pid
+        dataset1.save()
         with self.assertRaises(IntegrityError):
-            datasetpid2 = DatasetPID.objects.get(dataset=dataset2)
-            datasetpid2.pid = pid
-            datasetpid2.save()
-
+            dataset2.pid.pid = pid
+            dataset2.save()
