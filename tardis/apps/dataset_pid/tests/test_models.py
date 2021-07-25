@@ -83,6 +83,7 @@ class ModelsTestCase(TestCase):
         dataset2.save()
         dataset2.experiments.add(experiment)
         dataset2.save()
+        pid = "my_test_pid"
         datasetpid1 = DatasetPID.objects.get(dataset=dataset1)
         datasetpid1.pid = pid
         datasetpid1.save()
