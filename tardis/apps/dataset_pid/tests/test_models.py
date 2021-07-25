@@ -7,12 +7,6 @@ from ..models import DatasetPID #noqa
 
 
 class ModelsTestCase(TestCase):
-    def __init__(self):
-
-        self.dataset2 = Dataset(description="test dataset2")
-        self.dataset2.save()
-        self.dataset2.experiments.add(experiment)
-        self.dataset2.save()
 
     def test_dataset_has_pid(self):
         user = "testuser"
