@@ -37,33 +37,5 @@ class ModelsTestCase(TestCase):
         dataset1.save()
         self.assertTrue(hasattr(dataset1, "pid"))
 
-    def test_adding_value_to_pid(self):
-        user = "testuser"
-        pwd = User.objects.make_random_password()
-        user = User.objects.create(
-            username=user,
-            email="testuser@example.test",
-            first_name="Test",
-            last_name="User",
-        )
-        user.set_password(pwd)
-        user.save()
-        experiment = Experiment.objects.create(
-            title="Test Experiment",
-            created_by=user,
-            public_access=Experiment.PUBLIC_ACCESS_FULL,
-        )
-        experiment.save()
-        dataset = Dataset(description="test dataset1")
-        dataset.save()
-        dataset.experiments.add(experiment)
-        dataset.save()
-        pid = "my_test_pid"
-        datasetpid = DatasetPID(dataset=dataset,
-                                pid=pid)
-        datasetpid.save()
-        self.assertTrue(datasetpid.pid == pid)
-        datasetpid(pid=None)
-        datasetpid.save()
 
-    
+
