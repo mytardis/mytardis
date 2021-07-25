@@ -3,11 +3,10 @@ from django.contrib.auth.models import User
 from django.db import IntegrityError
 from tardis.tardis_portal.models.experiment import Experiment
 from tardis.tardis_portal.models.dataset import Dataset
-from tardis.apps.dataset_pid.models import DatasetPID 
+from tardis.apps.dataset_pid.models import DatasetPID
 
 
 class ModelsTestCase(TestCase):
-
     def test_dataset_has_pid(self):
         user = "testuser"
         pwd = User.objects.make_random_password()
@@ -53,11 +52,12 @@ class ModelsTestCase(TestCase):
         dataset.experiments.add(experiment)
         dataset.save()
         pid = "my_test_pid"
-        dataset.pid.pid = pid
-        dataset.save()
         dataset_key = dataset.id
-        dataset = Dataset.objects.get(pk=dataset_key)
-        print(dataset)
+        datasetpid = DatasetPID.objects.get(dataset=dataset_key)
+        print(datasetpid)
+        print(dataset.pid)
+        datasetpid.pid = pid
+        datasetpid.save()
         print(dataset.pid.pid)
         self.assertTrue(dataset.pid.pid == pid)
 
