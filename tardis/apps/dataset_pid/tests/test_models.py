@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from django.db import IntegrityError
 from tardis.tardis_portal.models.experiment import Experiment
 from tardis.tardis_portal.models.dataset import Dataset
+from ..models import DatasetPID #noqa
 
 
 class ModelsTestCase(TestCase):
@@ -53,45 +54,16 @@ class ModelsTestCase(TestCase):
             public_access=Experiment.PUBLIC_ACCESS_FULL,
         )
         experiment.save()
-        dataset1 = Dataset(description="test dataset1")
-        dataset1.save()
-        dataset1.experiments.add(experiment)
-        dataset1.save()
+        dataset = Dataset(description="test dataset1")
+        dataset.save()
+        dataset.experiments.add(experiment)
+        dataset.save()
         pid = "my_test_pid"
-        dataset1(pid=pid)
-        dataset1.save()
-        assertTrue(dataset1.pid == pid)
-        dataset1(pid=None)
-        dataset1.save()
+        datasetpid = DatasetPID(dataset=dataset,
+                                pid=pid)
+        datasetpid.save()
+        self.assertTrue(datasetpid.pid == pid)
+        datasetpid(pid=None)
+        datasetpid.save()
 
-    def test_duplicate_pids_raises_error(self):
-        user = "testuser"
-        pwd = User.objects.make_random_password()
-        user = User.objects.create(
-            username=user,
-            email="testuser@example.test",
-            first_name="Test",
-            last_name="User",
-        )
-        user.set_password(pwd)
-        user.save()
-        experiment = Experiment.objects.create(
-            title="Test Experiment",
-            created_by=user,
-            public_access=Experiment.PUBLIC_ACCESS_FULL,
-        )
-        experiment.save()
-        dataset1 = Dataset(description="test dataset1")
-        dataset1.save()
-        dataset1.experiments.add(experiment)
-        dataset1.save()
-        dataset2 = Dataset(description="test dataset2")
-        dataset2.save()
-        dataset2.experiments.add(experiment)
-        dataset2.save()
-        pid = "my_test_pid"
-        dataset1(pid=pid)
-        dataset1.save()
-        dataset2(pid=pid)
-        with self.assertRaises(IntegrityError):
-            dataset2.save()
+    
