@@ -1,7 +1,9 @@
 import React, { Fragment, useState } from 'react';
 import { Form, Formik } from 'formik';
 import 'regenerator-runtime/runtime';
-import { Button } from 'react-bootstrap';
+import {
+  Button, ButtonGroup, Col, Row,
+} from 'react-bootstrap';
 import ProgressBar from './ProgressBar';
 import SelectDatasetForm from '../Forms/SelectDatasetForm';
 import AtrributeAndLicensingForm from '../Forms/AtrributeAndLicensingForm';
@@ -32,9 +34,9 @@ const Stepper = ({
 
   // eslint-disable-next-line consistent-return
   const handleSubmit = async (values, bag) => {
-    /*if (step.props.onSubmit) {
+    /* if (step.props.onSubmit) {
       // await step.props.onSubmit(values, bag);
-    }*/
+    } */
     console.log(values);
     if (isLastStep) {
       return onSubmit(values, bag);
@@ -46,7 +48,7 @@ const Stepper = ({
     bag.setTouched({});
     await bag.validateForm().then((errors) => {
       if (Object.keys(errors).length === 0) {
-        console.log("submitting form");
+        console.log('submitting form');
         step.props.onSubmit(values, bag);
       }
     });
@@ -85,15 +87,36 @@ const Stepper = ({
             </Button>
             )}
             <div>
-              <Button disabled={formik.isSubmitting} type="submit" className="mt-2">
-                {isLastStep ? 'Submit' : 'Next'}
-              </Button>
+              {!isLastStep ? (
+                <Button disabled={formik.isSubmitting} type="submit" className="mt-2">
+                  Next
+                </Button>
+              ) : <></>}
             </div>
           </div>
           <div>
-            <Button disabled={formik.isSubmitting} className="mt-2 float-right" onClick={() => handleSave(formik.values, formik)}>
-              Save and Finish later
-            </Button>
+            {isLastStep
+              ? (
+                <Row>
+                  <Col>
+                    <Button disabled={formik.isSubmitting} type="submit" className="mt-2 mr-2 float-right">
+                      Submit
+                    </Button>
+                    <Button disabled={formik.isSubmitting} className="mt-2 mr-2 float-right" onClick={() => handleSave(formik.values, formik)}>
+                      Save and Finish later
+                    </Button>
+                  </Col>
+
+                </Row>
+              ) : (
+                <>
+                  <Button disabled={formik.isSubmitting} className="mt-2 float-right" onClick={() => handleSave(formik.values, formik)}>
+                    Save and Finish later
+                  </Button>
+                </>
+              )
+
+            }
           </div>
           {/* <Debug /> */}
         </Form>

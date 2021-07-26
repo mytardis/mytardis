@@ -28,13 +28,12 @@ const FormModal = ({
               publicationTitle: ('publicationTitle' in initialData ? initialData.publicationTitle : ''),
               publicationDescription: ('publicationDescription' in initialData ? initialData.publicationDescription : ''),
               selectedDatasets: ('addedDatasets' in initialData ? initialData.addedDatasets : []),
-              extraInfo: ('extraInfo' in initialData ? initialData.extraInfo: {}),
-              authors: [{ AuthorName: '', AuthorInstitution: '', AuthorEmail: '' }],
-              acknowledgment: {},
-              AcknowledgementText: '',
-              license: '',
-              releaseDate: '',
-              consent: false,
+              extraInfo: ('extraInfo' in initialData ? initialData.extraInfo : {}),
+              authors: ('authors' in initialData ? initialData.authors : []),
+              acknowledgements: ('acknowledgements' in initialData ? initialData.acknowledgements : ''),
+              license: ('selectedLicenseId' in initialData ? initialData.selectedLicenseId: ''),
+              releaseDate: ('releaseDate' in initialData ? initialData.releaseDate: ''),
+              consent: ('acknowledge' in initialData ? initialData.acknowledge: false),
             }}
             onSubmit={values => SubmitFormData(values, 'submit').then(() => {
               handleClose();
@@ -74,23 +73,30 @@ const FormModal = ({
               })}
             />
             <Steps
-              onSubmit={async values => sleep(50).then(() => console.log('step 3 submit', values))}
+              onSubmit={(values) => {
+                SubmitFormData(values, 'update-attribution-and-licensing', resumeDraftId)
+                  .then(() => { handleClose(); });
+              }}
               validationSchema={Yup.object().shape({
                 authors: Yup.array().of(
                   Yup.object().shape({
-                    AuthorName: Yup.string().required('Author Name is required'),
-                    AuthorInstitution: Yup.string(),
-                    AuthorEmail: Yup.string().email('Invalid email address').required('Email is required'),
+                    name: Yup.string().required('Author Name is required'),
+                    institution: Yup.string(),
+                    email: Yup.string().email('Invalid email address').required('Email is required'),
                   }),
                 ),
+                acknowledgements: Yup.string(),
               })}
             />
             <Steps
-              onSubmit={() => console.log('Step4 onsubmit')}
+              onSubmit={(values) => {
+                SubmitFormData(values, 'update-attribution-and-licensing', resumeDraftId)
+                  .then(() => { handleClose(); });
+              }}
               validationSchema={Yup.object({
                 license: Yup.number().required('license is required'),
                 releaseDate: Yup.date().required('Select release date'),
-                consent: Yup.bool().oneOf([true], 'Please select checkbox to provide your consent'),
+                consent: Yup.bool().required().oneOf([true], 'Please select checkbox to provide your consent'),
               })}
             />
           </Stepper>

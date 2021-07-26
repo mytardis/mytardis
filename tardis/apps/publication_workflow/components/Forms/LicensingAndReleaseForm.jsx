@@ -3,6 +3,7 @@ import { Card, Form } from 'react-bootstrap';
 import DateTime from 'react-datetime';
 import moment from 'moment';
 import 'react-datetime/css/react-datetime.css';
+import { ErrorMessage, Field } from 'formik';
 
 
 const LicensingAndReleaseForm = ({ formik }) => {
@@ -24,6 +25,9 @@ const LicensingAndReleaseForm = ({ formik }) => {
     setPublicationDate(moment(value, 'DD-MM-YYYY', true).isValid() ? value.toDate() : '');
     formik.setFieldValue('releaseDate', moment(value, 'DD-MM-YYYY', true).isValid() ? value.toDate() : '', true);
   };
+  const handlePublicationDateBlur = () => {
+    formik.setFieldTouched('releaseDate', true);
+  };
   useEffect(() => {
     fetchLicenses().then((data) => {
       const licenseArray = [];
@@ -41,10 +45,18 @@ const LicensingAndReleaseForm = ({ formik }) => {
             <Card.Body>
               <h4>Select a license</h4>
               <Form.Group className="mb-3" controlId="formGroupExperiment">
-                <Form.Control as="select" onChange={handleLicenseChange}>
+                <Form.Control
+                  as="select"
+                  onChange={handleLicenseChange}
+                  isValid={formik.touched.license && !formik.errors.license}
+                  isInvalid={!!formik.errors.license}
+                >
                   {licenses
                     .map(value => <option id={value.id} value={value.id}>{value.name}</option>)}
                 </Form.Control>
+                <Form.Control.Feedback type="invalid">
+                  {formik.errors.license}
+                </Form.Control.Feedback>
               </Form.Group>
               <div>
                 <h6>{selectedLicense.name}</h6>
@@ -61,25 +73,30 @@ const LicensingAndReleaseForm = ({ formik }) => {
           </Card>
           <Card className="mb-2">
             <Card.Body>
-              <h4>Release date</h4>
-              <p>
-                What is the earliest date that this publication may be released,
-                subject to any additional restrictions?
-              </p>
-              <DateTime
-                id="select-release-date"
-                inputProps={{ placeholder: 'Select release date' }}
-                timeFormat={false}
-                dateFormat="DD-MM-YYYY"
-                isValidDate={validDate}
-                value={publicationDate}
-                name="releaseDate"
-                onChange={handlePublicationDateChange}
-                isInvalid={formik.errors.releaseDate}
-              />
-              <Form.Control.Feedback type="invalid">
-                {formik.errors.releaseDate}
-              </Form.Control.Feedback>
+              <Form.Group>
+                <h4>Release date</h4>
+                <p>
+                  What is the earliest date that this publication may be released,
+                  subject to any additional restrictions?
+                </p>
+                <Field
+                  name="releaseDate"
+                >
+                  {() => (
+                    <DateTime
+                      id="select-release-date"
+                      inputProps={{ placeholder: 'Select release date', name: 'releaseDate', onBlur: handlePublicationDateBlur }}
+                      timeFormat={false}
+                      dateFormat="DD-MM-YYYY"
+                      isValidDate={validDate}
+                      value={publicationDate}
+                      onChange={handlePublicationDateChange}
+                    />
+                  )}
+                </Field>
+                <ErrorMessage name="releaseDate" />
+              </Form.Group>
+
             </Card.Body>
           </Card>
           <Card>
@@ -89,6 +106,7 @@ const LicensingAndReleaseForm = ({ formik }) => {
                   required
                   name="consent"
                   onChange={formik.handleChange}
+                  checked={formik.values.consent}
                   isInvalid={!!formik.errors.consent}
                   feedback={formik.errors.consent}
                   className="mr-2"

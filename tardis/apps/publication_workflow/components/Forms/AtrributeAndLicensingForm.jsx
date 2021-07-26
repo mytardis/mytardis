@@ -8,10 +8,14 @@ import {
 const AtrributeAndLicensingForm = ({ formik }) => {
   const [authorRows, setAuthorRows] = useState(
     formik.values.authors ? formik.values.authors
-      : [{ AuthorName: '', AuthorInstitution: '', AuthorEmail: '' }],
+      : [{ name: '', institution: '', email: '' }],
   );
   const [ackValue, setAckValue] = useState(0);
   const exampleAcknowledgements = [
+    {
+      agency: 'Select sample acknowledgement text',
+      text: '',
+    },
     {
       agency: 'Australian Research Council',
       text: 'This research was funded (partially or fully) by the Australian Government through the Australian Research Council.',
@@ -43,8 +47,8 @@ const AtrributeAndLicensingForm = ({ formik }) => {
   };
   const handleAckChange = (e) => {
     setAckValue(e.target.value);
-    formik.setFieldValue('acknowledgment', { agency: exampleAcknowledgements[e.target.value].agency, text: exampleAcknowledgements[e.target.value].text });
-    formik.setFieldValue('AcknowledgementText', exampleAcknowledgements[e.target.value].text);
+    // formik.setFieldValue('acknowledgment', { agency: exampleAcknowledgements[e.target.value].agency, text: exampleAcknowledgements[e.target.value].text });
+    formik.setFieldValue('acknowledgements', exampleAcknowledgements[e.target.value].text);
   };
   return (
     <>
@@ -75,19 +79,19 @@ const AtrributeAndLicensingForm = ({ formik }) => {
                             <Field
                               placeholder="Author name"
                               type="text"
-                              name={`authors.${idx}.AuthorName`}
+                              name={`authors.${idx}.name`}
                               autoComplete="name"
-                              className={`form-control${authorErrors.AuthorName && authorTouched.AuthorName ? ' is-invalid' : ''}`}
+                              className={`form-control${authorErrors.name && authorTouched.name ? ' is-invalid' : ''}`}
                             />
-                            <ErrorMessage name={`authors.${idx}.AuthorName`} component="div" className="invalid-feedback" />
+                            <ErrorMessage name={`authors.${idx}.name`} component="div" className="invalid-feedback" />
                           </th>
                           <th>
                             <Field
                               placeholder="Institution"
                               type="text"
-                              name={`authors.${idx}.AuthorInstitution`}
+                              name={`authors.${idx}.institution`}
                               autoComplete="institution"
-                              className={`form-control${authorErrors.AuthorInstitution && authorTouched.AuthorInstitution ? ' is-invalid' : ''}`}
+                              className={`form-control${authorErrors.institution && authorTouched.institution ? ' is-invalid' : ''}`}
                             />
                             <ErrorMessage name={`authors.${idx}.AuthorInstitution`} component="div" className="invalid-feedback" />
                           </th>
@@ -95,11 +99,11 @@ const AtrributeAndLicensingForm = ({ formik }) => {
                             <Field
                               placeholder="Email"
                               type="text"
-                              name={`authors.${idx}.AuthorEmail`}
+                              name={`authors.${idx}.email`}
                               autoComplete="email"
-                              className={`form-control${authorErrors.AuthorEmail && authorTouched.AuthorEmail ? ' is-invalid' : ''}`}
+                              className={`form-control${authorErrors.email && authorTouched.email ? ' is-invalid' : ''}`}
                             />
-                            <ErrorMessage name={`authors.${idx}.AuthorEmail`} component="div" className="invalid-feedback" />
+                            <ErrorMessage name={`authors.${idx}.email`} component="div" className="invalid-feedback" />
                           </th>
                           <th>
                             <span style={{ color: 'red' }} onClick={handleAuthorDelete(idx)}>
@@ -145,9 +149,9 @@ const AtrributeAndLicensingForm = ({ formik }) => {
                   as="textarea"
                   rows={5}
                   placeholder="Acknowledge funding agencies, facilities and other contributors here."
-                  name="AcknowledgementText"
+                  name="acknowledgements"
                   onChange={formik.handleChange}
-                  value={formik.values.AcknowledgementText}
+                  value={formik.values.acknowledgements}
                 />
               </Form.Group>
             </Card.Body>

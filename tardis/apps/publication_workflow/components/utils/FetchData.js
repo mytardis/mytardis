@@ -10,10 +10,12 @@ const SubmitFormData = async (data, action, publicationId) => {
       publicationDescription: ('publicationDescription' in data ? data.publicationDescription : ''),
       publicationTitle: ('publicationTitle' in data ? data.publicationTitle : ''),
       addedDatasets: ('selectedDatasets' in data ? data.selectedDatasets : []),
-      authors: ('authors' in data.authors ? data.authors.map(item => (
-        { email: item.AuthorEmail, name: item.AuthorName, institution: item.AuthorInstitution }
+      authors: ('authors' in data ? data.authors.map(item => (
+        { email: item.email, name: item.name, institution: item.institution }
       )) : []),
+      acknowledgements: ('acknowledgements' in data ? data.acknowledgements : ''),
       acknowledge: ('consent' in data ? data.consent : false),
+      selectedLicenseId: ('license' in data ? data.license : ''),
       action,
     };
   } else {
