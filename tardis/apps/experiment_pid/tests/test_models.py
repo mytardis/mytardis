@@ -5,7 +5,7 @@ from tardis.tardis_portal.models.experiment import Experiment
 
 
 class ModelsTestCase(TestCase):
-    def test_experiment_has_pid(self):
+    def test_model_has_pid(self):
         user = "testuser"
         pwd = User.objects.make_random_password()
         user = User.objects.create(

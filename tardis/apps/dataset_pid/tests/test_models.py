@@ -6,7 +6,7 @@ from tardis.tardis_portal.models.dataset import Dataset
 
 
 class ModelsTestCase(TestCase):
-    def test_dataset_has_pid(self):
+    def test_model_has_pid(self):
         user = "testuser"
         pwd = User.objects.make_random_password()
         user = User.objects.create(
