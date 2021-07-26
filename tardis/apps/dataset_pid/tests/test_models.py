@@ -54,12 +54,8 @@ class ModelsTestCase(TestCase):
         pid = "my_test_pid"
         dataset_key = dataset.id
         datasetpid = DatasetPID.objects.get(dataset=dataset_key)
-        print(datasetpid.id)
-        print(dataset.pid.id)
         datasetpid.pid = pid
-        print(datasetpid.pid)
         datasetpid.save(["pid"])
-        print(dataset.pid.pid)
         self.assertTrue(dataset.pid.pid == pid)
 
     def test_duplicate_pids_raises_error(self):
@@ -87,7 +83,7 @@ class ModelsTestCase(TestCase):
         dataset2.save()
         dataset2.experiments.add(experiment)
         dataset2.save()
-        pid = "my_test_pid"
+        pid = "my_test_pid_2"
         dataset1.pid.pid = pid
         dataset1.save()
         with self.assertRaises(IntegrityError):
