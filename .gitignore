@@ -55,6 +55,8 @@ tardis/apps/*
 !tardis/apps/dataset_pid
 !tardis/apps/facility_pid
 !tardis/apps/instrument_pid
+!tardis/apps/institution
+!tardis/apps/facility_profile
 
 *.old
 
