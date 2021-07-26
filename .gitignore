@@ -53,6 +53,8 @@ tardis/apps/*
 !tardis/apps/eventlog
 !tardis/apps/experiment_pid
 !tardis/apps/dataset_pid
+!tardis/apps/facility_pid
+!tardis/apps/instrument_pid
 
 *.old
 
