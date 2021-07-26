@@ -1,2 +1,2 @@
- pylint: disable=trailing-whitesapce
+# pylint: disable=trailing-whitesapce
 __author__ = "Chris Seal <c.seal@auckland.ac.nz"
