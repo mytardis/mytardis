@@ -57,7 +57,8 @@ class ModelsTestCase(TestCase):
         print(datasetpid.id)
         print(dataset.pid.id)
         datasetpid.pid = pid
-        datasetpid.save()
+        print(datasetpid.pid)
+        datasetpid.save(["pid"])
         print(dataset.pid.pid)
         self.assertTrue(dataset.pid.pid == pid)
 
