@@ -30,22 +30,41 @@ const SelectDatasetForm = ({ formik }) => {
           experiment_id: selectedExperiment.id,
           dataset: {
             id: item.value,
-            description: item.label.slice(0, item.label.length)
+            description: item.label.slice(0, item.label.length),
           },
         })));
     currentlySelectedDatasetList = selectedDatasetList.concat(currentlySelectedDatasetList);
     setSelectedDatasetList(currentlySelectedDatasetList);
-    console.log(selectedDatasetList);
     // run field validation
     formik.validateField('selectedDatasets');
   };
 
   useEffect(() => {
     fetchExperimentList().then((data) => {
-      setExpList(data);
+      const expListArray = [];
+      expListArray.push({ id: '-1', title: 'Select experiment' });
+      data.map(item => expListArray.push(item));
+      setExpList(expListArray);
       formik.setFieldValue('selectedDatasets', selectedDatasetList, false);
     });
   }, [selectedDatasetList]);
+
+  const handleDatasetDelete = (e, item) => {
+    // remove this item from selectedDatasetList
+    const newSelectedDatasetList = selectedDatasetList.filter(it => it !== item);
+    setSelectedDatasetList(newSelectedDatasetList);
+  };
+  const onFilter = ({ target: { value } }) => {
+    const filter = value.trim().toLowerCase();
+    if (!filter) {
+      // GET ORIGINAL LIST
+      fetchDatasetsForExperiment(selectedExperiment.id).then(result => setDatasetList(result));
+    }
+    const filteredData = datasetList
+      .filter(({ description }) => description.toLowerCase().includes(filter));
+    //setMainListData(filteredData);
+    setDatasetList(filteredData);
+  };
   return (
     <>
       <p>
@@ -111,6 +130,19 @@ const SelectDatasetForm = ({ formik }) => {
               </Form.Group>
               <Form.Group className="mb-3" controlId="formGroupDatasets">
                 <Form.Label>Select Datasets</Form.Label>
+                <div className="row">
+                  <div className="form-horizontal col-md-12">
+                    <div className="form-group has-search">
+                      {/* <span className="fa fa-search form-control-feedback"/> */}
+                      <input
+                        type="text"
+                        className="form-control"
+                        placeholder="Just start typing to filter datasets based on description"
+                        onKeyUp={onFilter}
+                      />
+                    </div>
+                  </div>
+                </div>
                 <Form.Control
                   as="select"
                   multiple
@@ -154,7 +186,8 @@ const SelectDatasetForm = ({ formik }) => {
                       <td>{item.experiment}</td>
                       <td>{item.dataset.description}</td>
                       <td>
-                        <span style={{ color: 'red' }}>
+                        {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events */}
+                        <span style={{ color: 'red', cursor: 'pointer' }} onClick={e => handleDatasetDelete(e, item)}>
                           <i className="fa fa-trash" />
                         </span>
                       </td>
