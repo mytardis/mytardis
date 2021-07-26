@@ -24,7 +24,7 @@ class FacilityProfile(models.Model):
     )
     url = models.URLField(max_length=255, null=True, blank=True)
     if apps.is_installed("tardis.apps.institution"):
-        from tardis.apps.instution.models import Institution
+        from tardis.apps.institution.models import Institution
 
         institution = models.ForeignKey(
             Institution, on_delete=models.CASCADE, null=True, blank=True
