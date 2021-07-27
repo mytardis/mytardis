@@ -58,6 +58,10 @@ tardis/apps/*
 !tardis/apps/institution
 !tardis/apps/facility_profile
 
+tardis/settings.py
+*.*~
+*.*#
+
 *.old
 
 *.txt~

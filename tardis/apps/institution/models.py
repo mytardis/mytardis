@@ -1,4 +1,5 @@
 import logging
+
 from django.db import models
 from django.contrib.auth.models import Group
 
@@ -19,7 +20,6 @@ class Institution(models.Model):
         max_length=255,
         null=False,
         blank=False,
-        default="The University of Auckland",
         unique=True,
     )
     pid = models.CharField(max_length=100, null=True, blank=True, unique=True)
@@ -28,12 +28,6 @@ class Institution(models.Model):
     parent_institution = models.ForeignKey(
         "Institution", on_delete=models.CASCADE, blank=True, null=True
     )
-
-    class Meta:
-        app_label = "tardis_portal"
-
-    def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.name
