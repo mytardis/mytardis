@@ -24,6 +24,7 @@ class DatasetPID(models.Model):
 
     class Meta:
         app_label = "tardis_portal"
+        db_table = "tardis_portal_datasetpid"
 
     def __str__(self):
         return self.pid
