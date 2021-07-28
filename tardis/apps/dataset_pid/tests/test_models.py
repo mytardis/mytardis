@@ -55,6 +55,7 @@ class ModelsTestCase(TestCase):
         dataset.pid.save()
         key = dataset.id
         dataset = Dataset.objects.get(pk=key)
+        print(dataset.pid)
         self.assertTrue(dataset.pid.pid == pid)
 
     def test_duplicate_pids_raises_error(self):
