@@ -26,6 +26,9 @@ class FacilityProfile(models.Model):
         blank=True,
     )
 
+    class Meta:
+        app_label = "tardis_portal"
+
 
 @receiver(post_save, sender=Facility, dispatch_uid="create_facility_profile")
 def create_facility_profile(sender, instance, created, **kwargs):
