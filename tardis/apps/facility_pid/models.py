@@ -25,6 +25,9 @@ class FacilityPID(models.Model):
     class Meta:
         app_label = "tardis_portal"
 
+    def __str__(self):
+        return self.pid
+
 
 @receiver(post_save, sender=Facility, dispatch_uid="create_dataset_pid")
 def create_dataset_pid(sender, instance, created, **kwargs):

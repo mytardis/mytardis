@@ -25,6 +25,9 @@ class ExperimentPID(models.Model):
     class Meta:
         app_label = "tardis_portal"
 
+    def __str__(self):
+        return self.pid
+
 
 @receiver(post_save, sender=Experiment, dispatch_uid="create_experiment_pid")
 def create_experiment_pid(sender, instance, created, **kwargs):
