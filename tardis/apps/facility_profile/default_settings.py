@@ -1,1 +1,1 @@
-FACILITY_PROFILE_INSTITUTION = "tardis.apps.facility_profile.DefaultInstitution"
+FACILITY_PROFILE_INSTITUTION = "tardis_portal.facility_profile.DefaultInstitution"
