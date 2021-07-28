@@ -22,6 +22,9 @@ class ExperimentPID(models.Model):
     )
     pid = models.CharField(max_length=400, null=True, blank=True, unique=True)
 
+    class Meta:
+        app_label = "tardis_portal"
+
 
 @receiver(post_save, sender=Experiment, dispatch_uid="create_experiment_pid")
 def create_experiment_pid(sender, instance, created, **kwargs):
