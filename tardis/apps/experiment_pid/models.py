@@ -23,8 +23,7 @@ class ExperimentPID(models.Model):
     pid = models.CharField(max_length=400, null=True, blank=True, unique=True)
 
     class Meta:
-        app_label = "tardis_portal"
-        db_table = "tardis_portal_experimentpid"
+        app_label = "tardis_apps"
 
     def __str__(self):
         return self.pid
