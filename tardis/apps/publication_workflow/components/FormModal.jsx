@@ -1,18 +1,11 @@
-import React, { Fragment, useEffect, useState } from 'react';
-import { Modal, Button, Toast } from 'react-bootstrap';
+import React, { useEffect } from 'react';
+import { Modal } from 'react-bootstrap';
 import * as Yup from 'yup';
-import { ErrorMessage, Field } from 'formik';
-import PublicationButton from './PublicationButton';
+import PropTypes from 'prop-types';
 import Stepper from './Stepper/Stepper';
 import Steps from './Stepper/Steps';
-import SelectDatasetForm from './Forms/SelectDatasetForm';
-import ExtraInformationForm from './Forms/ExtraInformationForm';
-import AtrributeAndLicensingForm from './Forms/AtrributeAndLicensingForm';
-import ProgressBarComponent from './Stepper/ProgressBar';
 import { SubmitFormData } from './utils/FetchData';
-import PublicationToast from './utils/PublicationToast';
 
-const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 const FormModal = ({
   onPubUpdate, resumeDraftId, show, handleClose, initialData,
@@ -29,11 +22,11 @@ const FormModal = ({
               publicationDescription: ('publicationDescription' in initialData ? initialData.publicationDescription : ''),
               selectedDatasets: ('addedDatasets' in initialData ? initialData.addedDatasets : []),
               extraInfo: ('extraInfo' in initialData ? initialData.extraInfo : {}),
-              authors: ('authors' in initialData ? initialData.authors : []),
+              authors: ('authors' in initialData ? initialData.authors : [{ name: '', institution: '', email: '' }]),
               acknowledgements: ('acknowledgements' in initialData ? initialData.acknowledgements : ''),
-              license: ('selectedLicenseId' in initialData ? initialData.selectedLicenseId: ''),
-              releaseDate: ('releaseDate' in initialData ? initialData.releaseDate: ''),
-              consent: ('acknowledge' in initialData ? initialData.acknowledge: false),
+              license: ('selectedLicenseId' in initialData ? initialData.selectedLicenseId : ''),
+              releaseDate: ('releaseDate' in initialData ? initialData.releaseDate : ''),
+              consent: ('acknowledge' in initialData ? initialData.acknowledge : false),
             }}
             onSubmit={values => SubmitFormData(values, 'submit').then(() => {
               handleClose();
@@ -81,7 +74,7 @@ const FormModal = ({
                 authors: Yup.array().of(
                   Yup.object().shape({
                     name: Yup.string().required('Author Name is required'),
-                    institution: Yup.string(),
+                    institution: Yup.string().required('Institution is required'),
                     email: Yup.string().email('Invalid email address').required('Email is required'),
                   }),
                 ),
@@ -106,3 +99,11 @@ const FormModal = ({
   );
 };
 export default FormModal;
+
+FormModal.propTypes = {
+  handleClose: PropTypes.func.isRequired,
+  initialData: PropTypes.object.isRequired,
+  onPubUpdate: PropTypes.func.isRequired,
+  resumeDraftId: PropTypes.string.isRequired,
+  show: PropTypes.bool.isRequired,
+};

@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
+import PropTypes from 'prop-types';
 import { ErrorMessage, Field, FieldArray } from 'formik';
 import {
-  Col, Row, Form, FormGroup, Button, Table, Card,
+  Button, Card, Form, FormGroup, Row, Table,
 } from 'react-bootstrap';
 
 
@@ -33,8 +34,8 @@ const AtrributeAndLicensingForm = ({ formik }) => {
       text: 'This work was supported by the Multi-modal Australian ScienceS Imaging and Visualisation Environment (MASSIVE) (www.massive.org.au).',
     }];
   const handleAddAuthor = () => {
-    const newAuthRow = {};
-    formik.setFieldValue('authors', [...authorRows], true);
+    const newAuthRow = { name: '', institution: '', email: '' };
+    formik.setFieldValue('authors', [...authorRows]);
     setAuthorRows([...authorRows, newAuthRow]);
   };
   const handleAuthorDelete = idx => () => {
@@ -47,7 +48,6 @@ const AtrributeAndLicensingForm = ({ formik }) => {
   };
   const handleAckChange = (e) => {
     setAckValue(e.target.value);
-    // formik.setFieldValue('acknowledgment', { agency: exampleAcknowledgements[e.target.value].agency, text: exampleAcknowledgements[e.target.value].text });
     formik.setFieldValue('acknowledgements', exampleAcknowledgements[e.target.value].text);
   };
   return (
@@ -93,7 +93,7 @@ const AtrributeAndLicensingForm = ({ formik }) => {
                               autoComplete="institution"
                               className={`form-control${authorErrors.institution && authorTouched.institution ? ' is-invalid' : ''}`}
                             />
-                            <ErrorMessage name={`authors.${idx}.AuthorInstitution`} component="div" className="invalid-feedback" />
+                            <ErrorMessage name={`authors.${idx}.institution`} component="div" className="invalid-feedback" />
                           </th>
                           <th>
                             <Field
@@ -163,3 +163,7 @@ const AtrributeAndLicensingForm = ({ formik }) => {
 };
 
 export default AtrributeAndLicensingForm;
+
+AtrributeAndLicensingForm.propTypes = {
+  formik: PropTypes.object.isRequired,
+};

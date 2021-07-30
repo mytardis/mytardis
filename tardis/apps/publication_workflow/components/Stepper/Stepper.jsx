@@ -37,7 +37,6 @@ const Stepper = ({
     /* if (step.props.onSubmit) {
       // await step.props.onSubmit(values, bag);
     } */
-    console.log(values);
     if (isLastStep) {
       return onSubmit(values, bag);
     }
@@ -48,7 +47,6 @@ const Stepper = ({
     bag.setTouched({});
     await bag.validateForm().then((errors) => {
       if (Object.keys(errors).length === 0) {
-        console.log('submitting form');
         step.props.onSubmit(values, bag);
       }
     });
