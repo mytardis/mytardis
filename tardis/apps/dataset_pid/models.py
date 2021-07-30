@@ -23,7 +23,7 @@ class DatasetPID(models.Model):
     pid = models.CharField(max_length=400, null=True, blank=True, unique=True)
 
     class Meta:
-        app_label = "tardis_apps"
+        app_label = "datasetpid"
 
     def __str__(self):
         return self.pid

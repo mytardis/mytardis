@@ -27,7 +27,7 @@ class FacilityProfile(models.Model):
     )
 
     class Meta:
-        app_label = "tardis_apps"
+        app_label = "facilityprofile"
 
 
 @receiver(post_save, sender=Facility, dispatch_uid="create_facility_profile")
