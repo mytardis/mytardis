@@ -28,7 +28,7 @@ RUN apt-get update && apt-get install \
     python3-setuptools \
     libmagic-dev \
     libmagickwand-dev \
-    libmysqlclient20 \
+    libmysqlclient-dev \
     && apt-get clean
 
 RUN curl -sL https://deb.nodesource.com/setup_10.x | bash -
