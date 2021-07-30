@@ -67,7 +67,7 @@ services:
   robot-tests:
     image: ppodgorsek/robot-framework:latest
     volumes:
-      - ../e2e:/opt/robotframework/reports:Z
+      - ../e2e/reports:/opt/robotframework/reports:Z
       - ../e2e:/opt/robotframework/tests:Z
     environment:
       MYTARDIS_URL: http://run:8000/
