@@ -50,6 +50,12 @@ case "$TEST_TYPE" in
         python test.py behave
         (( exit_status = exit_status || $? ))
         ;;
+    robot)
+      npm install && \
+      npm run-script build && \
+      python -m robot e2e/TestSuite/FunctionalTestSuite/002AnonymousAccessToMyTardis.robot
+      (( exit_status = exit_status || $? ))
+      ;;
     templates)
         echo $'Validating templates...\n' && \
         DJANGO_SETTINGS_MODULE=tardis.test_settings python manage.py validate_templates && \

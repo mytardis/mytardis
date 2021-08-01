@@ -142,6 +142,6 @@ jobs:
           path: wheelhouse
       - name: run test
         run: |
-          docker-compose -f docker-ci/docker-test.yml run robot-tests
+          docker-compose -f docker-ci/docker-test.yml run -e TEST_TYPE=robot test
 
 
