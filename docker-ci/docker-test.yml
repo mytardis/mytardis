@@ -23,6 +23,7 @@ services:
       - ../tardis:/home/webapp/tardis
       - ../docs:/home/webapp/docs
       - ../output:/home/webapp/output
+    command: bash -c "ls -ll && ls -ll /home/webapp"
     depends_on:
       run:
         condition: service_started
