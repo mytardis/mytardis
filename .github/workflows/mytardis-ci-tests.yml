@@ -142,7 +142,7 @@ jobs:
           path: wheelhouse
       - name: run test
         run: |
-          docker-compose -f docker-ci/docker-test.yml run -e TEST_TYPE=robot test
+          docker-compose -f docker-ci/docker-test.yml USER=root run -e TEST_TYPE=robot test
       - name: upload test reports
         # uses: actions/upload-artifact@v2
         if: always()
