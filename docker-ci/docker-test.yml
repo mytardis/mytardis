@@ -23,7 +23,6 @@ services:
       - ../tardis:/home/webapp/tardis
       - ../docs:/home/webapp/docs
       - ../output:/home/webapp/output
-    user: $USER
     depends_on:
       run:
         condition: service_started
