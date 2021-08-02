@@ -146,4 +146,10 @@ jobs:
       - name: upload test reports
         # uses: actions/upload-artifact@v2
         if: always()
-        run: pwd && ls -ll && ls -ll output/
+        with:
+          name: result-files
+          path: |
+            output/output.xml
+            output/log.html
+            output/report.html
+            output/*.png

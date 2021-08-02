@@ -1,7 +1,7 @@
 *** Settings ***
 
 Library    SeleniumLibrary
-Resource   /opt/robotframework/tests/Resources/ReusableKeywords.robot
+Resource   ../Resources/ReusableKeywords.robot
 
 *** Keywords ***
 
