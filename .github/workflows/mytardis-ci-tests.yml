@@ -144,6 +144,6 @@ jobs:
         run: |
           docker-compose -f docker-ci/docker-test.yml run -e TEST_TYPE=robot test
       - name: upload test reports
-        uses: actions/upload-artifact@v2
+        # uses: actions/upload-artifact@v2
         if: always()
         run: ls -ll
