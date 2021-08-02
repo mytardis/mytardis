@@ -30,7 +30,7 @@ class Institution(models.Model):
     )
 
     class Meta:
-        app_label = "institution"
+        app_label = "tardis_apps"
 
     def __str__(self):
         return self.name
