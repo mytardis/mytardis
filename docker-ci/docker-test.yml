@@ -1,4 +1,7 @@
 version: "3.9"
+networks:
+  app:
+
 services:
   run:
     build:
@@ -7,6 +10,8 @@ services:
     image: mytardis/mytardis-run
     ports:
     - "8000:8000"
+    networks:
+      - app
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:8000/" ]
       interval: 10s
@@ -24,9 +29,11 @@ services:
       - ../tardis:/home/webapp/tardis
       - ../docs:/home/webapp/docs
       - ../output:/home/webapp/output
+    networks:
+      - app
     depends_on:
       run:
-        condition: service_healthy
+        condition: service_started
       pg:
         condition: service_healthy
       mysql:
@@ -37,6 +44,8 @@ services:
     image: postgres:9.6
     environment:
       POSTGRES_PASSWORD: postgres
+    networks:
+      - app
     healthcheck:
       test: ["CMD", "pg_isready"]
       interval: 10s
@@ -52,6 +61,8 @@ services:
       interval: 1s
       retries: 120
       timeout: 5s
+    networks:
+      - app
   es:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.12.1
     environment:
@@ -66,6 +77,8 @@ services:
       interval: 10s
       timeout: 5s
       retries: 3
+    networks:
+      - app
   robot-tests:
     image: ppodgorsek/robot-framework:latest
     volumes:
