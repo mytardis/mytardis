@@ -3,7 +3,7 @@ from django.contrib.auth.models import AnonymousUser
 from tardis.tardis_portal.api import MyTardisModelResource
 
 from .models import UserStat
-
+from .utils import get_user_last
 
 class StatsAppResource(MyTardisModelResource):
     """
@@ -35,6 +35,8 @@ class StatsAppResource(MyTardisModelResource):
                 },
                 "total": {}
             }
+
+            rsp["last"].update(get_user_last(request.user))
 
             metrics = ["experiments", "datasets", "datafiles", "size"]
             for k in metrics:
