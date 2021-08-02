@@ -20,6 +20,7 @@ class UserStatsTest(MyTardisResourceTestCase):
         self.num_datafiles = 0
         self.total_size = 0
         self.exp_ids = []
+        self.ds_ids = []
         for e in range(3, 10):
             exp = Experiment(
                 title="Test Experiment {}".format(e),
@@ -41,7 +42,8 @@ class UserStatsTest(MyTardisResourceTestCase):
             acl.save()
             for s in range(3, 10):
                 dataset = Dataset(
-                    description="Test Dataset {}-{}".format(e, s))
+                    description="Test Dataset {}-{}".format(e, s),
+                    instrument=self.testinstrument)
                 dataset.save()
                 dataset.experiments.add(exp)
                 dataset.save()
@@ -55,6 +57,7 @@ class UserStatsTest(MyTardisResourceTestCase):
                     datafile.save()
                     self.num_datafiles += 1
                     self.total_size += filesize
+                self.ds_ids.append(dataset.id)
             self.exp_ids.append(exp.id)
 
     def tearDown(self):
@@ -75,3 +78,15 @@ class UserStatsTest(MyTardisResourceTestCase):
         self.assertEqual(totals["datasets"]["value"], self.num_datasets)
         self.assertEqual(totals["datafiles"]["value"], self.num_datafiles)
         self.assertEqual(totals["size"]["value"], self.total_size)
+
+    def test_last_data_results(self):
+        response = self.api_client.get(
+            "/api/v1/stats/",
+            authentication=self.get_credentials())
+        data = json.loads(response.content.decode())
+        last = data["last"]
+        self.assertEqual(len(last["experiments"]), min(self.num_experiments, 5))
+        self.assertEqual(len(last["datasets"]), min(self.num_datasets, 5))
+        self.assertEqual(len(last["instruments"]), 1)  # only 1 used
+        self.assertEqual(last["experiments"][0]["id"], self.exp_ids[-1])
+        self.assertEqual(last["datasets"][0]["id"], self.ds_ids[-1])
