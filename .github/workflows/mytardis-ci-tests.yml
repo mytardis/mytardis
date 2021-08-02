@@ -149,9 +149,9 @@ jobs:
         with:
           name: result-files
           path: |
-            'output.xml'
-            'log.html'
-            'report.html'
-            '*.png'
+            '~/webapp/output.xml'
+            '~/webapp/log.html'
+            '~/webapp/report.html'
+            '~/webapp/*.png'
 
 
