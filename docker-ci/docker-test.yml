@@ -26,7 +26,7 @@ services:
       - ../output:/home/webapp/output
     depends_on:
       run:
-        condition: service_started
+        condition: service_healthy
       pg:
         condition: service_healthy
       mysql:
