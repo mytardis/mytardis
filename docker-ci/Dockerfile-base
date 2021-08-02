@@ -38,6 +38,8 @@ RUN mkdir /appenv
 RUN chown -R webapp:webapp /appenv
 
 RUN chown -R webapp:webapp /home/webapp
+RUN mkdir /home/webapp/output
+RUN chown -R webapp:webapp /home/webapp/output
 USER webapp
 RUN python3 -m venv /appenv
 RUN . /appenv/bin/activate; pip install -U pip wheel
