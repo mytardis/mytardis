@@ -53,6 +53,7 @@ case "$TEST_TYPE" in
     robot)
       npm install && \
       npm run-script build && \
+      python manage.py runserver --settings=tardis.test_settings &&\
       python -m robot --outputdir=output/ e2e/TestSuite/FunctionalTestSuite/002AnonymousAccessToMyTardis.robot
       (( exit_status = exit_status || $? ))
       ;;
