@@ -4,6 +4,7 @@ Library    SeleniumLibrary
 
 *** Variables ***
 ${CHROMEDRIVER_PATH}        /usr/local/bin/chromedriver
+${OUTPUT DIR} e2e/
 #${HOST}           %{MYTARDIS_URL}
 #${BROWSER}        %{BROWSER}
 
