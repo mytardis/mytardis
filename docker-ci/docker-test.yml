@@ -19,7 +19,7 @@ services:
     image: mytardis/mytardis-test
     environment:
       ELASTICSEARCH_URL: 'http://es:9200'
-      MYTARDIS_URL: 'http://run:8000/'
+      MYTARDIS_URL: 'http://127.0.0.1:8000/'
     volumes:
       - ../tardis:/home/webapp/tardis
       - ../docs:/home/webapp/docs

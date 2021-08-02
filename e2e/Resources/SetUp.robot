@@ -7,7 +7,7 @@ ${CHROMEDRIVER_PATH}        /usr/local/bin/chromedriver
 ${HOST}           %{MYTARDIS_URL}
 #${BROWSER}        %{BROWSER}
 
-${HOST}           http://localhost:8000/
+# ${HOST}           http://localhost:8000/
 ${BROWSER}        chrome
 
 *** Keywords ***
