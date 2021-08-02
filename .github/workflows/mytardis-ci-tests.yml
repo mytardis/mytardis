@@ -147,12 +147,3 @@ jobs:
         uses: actions/upload-artifact@v2
         if: always()
         run: ls -ll
-        with:
-          name: result-files
-          path: |
-            /home/webapp/output.xml
-            /home/webapp/log.html
-            /home/webapp/report.html
-            /home/webapp/*.png
-
-
