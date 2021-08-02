@@ -20,8 +20,7 @@ services:
     environment:
       ELASTICSEARCH_URL: 'http://es:9200'
     volumes:
-      - ../tardis:/home/webapp/tardis
-      - ../docs:/home/webapp/docs
+      - ../:/home/webapp/
     depends_on:
       run:
         condition: service_started
