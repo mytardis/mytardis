@@ -29,8 +29,8 @@ class Institution(models.Model):
         "Institution", on_delete=models.CASCADE, blank=True, null=True
     )
 
-    class Meta:
-        app_label = "tardis_apps"
+    # class Meta:
+    #    app_label = "tardis_apps"
 
     def __str__(self):
         return self.name
