@@ -53,7 +53,7 @@ case "$TEST_TYPE" in
     robot)
       npm install && \
       npm run-script build && \
-      python -m robot --outputdir=e2e/ e2e/TestSuite/FunctionalTestSuite/002AnonymousAccessToMyTardis.robot
+      python -m robot --outputdir=output/ e2e/TestSuite/FunctionalTestSuite/002AnonymousAccessToMyTardis.robot
       (( exit_status = exit_status || $? ))
       ;;
     templates)

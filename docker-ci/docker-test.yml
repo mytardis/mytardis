@@ -22,6 +22,7 @@ services:
     volumes:
       - ../tardis:/home/webapp/tardis
       - ../docs:/home/webapp/docs
+      - ../output:/home/webapp/output
     depends_on:
       run:
         condition: service_started
