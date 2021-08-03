@@ -295,7 +295,7 @@ class DatasetView(TemplateView):
                 "push_to_enabled": "tardis.apps.push_to" in settings.INSTALLED_APPS,
                 "carousel_slice": carousel_slice,
                 "hsm_enabled": "tardis.apps.hsm" in settings.INSTALLED_APPS,
-                "pid": "tardis.apps.dataset_pid" in settings.INSTALLED_APPS,
+                "pid": "tardis.apps.datasetpid" in settings.INSTALLED_APPS,
             }
         )
 
@@ -306,7 +306,7 @@ class DatasetView(TemplateView):
                 "tardis.apps.push_to.views.initiate_push_dataset", kwargs=push_to_args
             )
 
-        # Enables UI elements for the dataset_pid app
+        # Enables UI elements for the datasetpid app
         if c["pid"]:
             if dataset.pid.pid:
                 c["pid"] = dataset.pid.pid
@@ -529,8 +529,8 @@ class ExperimentView(TemplateView):
         if "load" in request.GET:
             c["load"] = request.GET["load"]
 
-        # Enables UI elements for the experiment_pid app
-        c["pid"] = "tardis.apps.experiment_pid" in settings.INSTALLED_APPS
+        # Enables UI elements for the experimentpid app
+        c["pid"] = "tardis.apps.experimentpid" in settings.INSTALLED_APPS
         if c["pid"]:
             if experiment.pid.pid:
                 c["pid"] = experiment.pid.pid
@@ -785,9 +785,16 @@ def add_dataset(request, experiment_id):
     if not has_experiment_write(request, experiment_id):
         return HttpResponseForbidden()
 
+    # Add code to override the default form to use the DatasetPIDForm
+    if "tardis.apps.datasetpid" in settings.INSTALLED_APPS:
+        from tardis.apps.datasetpid.forms import DatasetPIDForm
     # Process form or prepopulate it
     if request.method == "POST":
-        form = DatasetForm(request.POST)
+        # Add code to override the default form to use the DatasetPIDForm
+        if "tardis.apps.datasetpid" in settings.INSTALLED_APPS:
+            form = DatasetPIDForm(request.POST)
+        else:
+            form = DatasetForm(request.POST)
         if form.is_valid():
             dataset = Dataset()
             dataset.description = form.cleaned_data["description"]
@@ -796,10 +803,17 @@ def add_dataset(request, experiment_id):
             dataset.save()
             experiment = Experiment.objects.get(id=experiment_id)
             dataset.experiments.add(experiment)
+            # Add code to override the default form to use the DatasetPIDForm
+            if "tardis.apps.datasetpid" in settings.INSTALLED_APPS:
+                dataset.pid.pid = form.cleaned_data["pid"]
             dataset.save()
             return _redirect_303("tardis_portal.view_dataset", dataset.id)
     else:
-        form = DatasetForm()
+        # Add code to override the default form to use the DatasetPIDForm
+        if "tardis.apps.datasetpid" in settings.INSTALLED_APPS:
+            form = DatasetPIDForm()
+        else:
+            form = DatasetForm()
 
     c = {"form": form}
     return render_response_index(request, "tardis_portal/add_or_edit_dataset.html", c)
