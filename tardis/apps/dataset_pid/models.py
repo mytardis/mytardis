@@ -23,7 +23,10 @@ class DatasetPID(models.Model):
     pid = models.CharField(max_length=400, null=True, blank=True, unique=True)
 
     def __str__(self):
-        return self.pid
+        if pid:
+            return self.pid
+        else:
+            return "No Identifier"
 
 
 @receiver(post_save, sender=Dataset, dispatch_uid="create_dataset_pid")
