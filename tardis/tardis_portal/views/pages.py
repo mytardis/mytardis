@@ -311,7 +311,7 @@ class DatasetView(TemplateView):
             if dataset.pid.pid:
                 c["pid"] = dataset.pid.pid
             else:
-                c["pid'} = 'No Identifier'
+                c["pid"] = "No Identifier"
 
         _add_protocols_and_organizations(request, dataset, c)
 
@@ -535,7 +535,7 @@ class ExperimentView(TemplateView):
             if experiment.pid.pid:
                 c["pid"] = experiment.pid.pid
             else:
-                c["pid"] = 'No Identifier'
+                c["pid"] = "No Identifier"
 
         _add_protocols_and_organizations(request, experiment, c)
 
