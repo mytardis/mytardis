@@ -121,8 +121,8 @@
     {% else %}
       <span>Untitled Dataset</span>
     {% endif %}
-    {% if dataset.pid %}<span property="dc:creator">{{ dataset.pid }}</span>{% endif %}  
   </h1>
+  {% if dataset.pid %}<span property="dc:creator">{{ dataset.pid }}</span>{% endif %}  
   {% if from_instrument or from_facility %}
     <div class="row">
       <div class="col-md-9">

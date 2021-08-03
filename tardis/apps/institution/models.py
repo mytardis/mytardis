@@ -36,10 +36,7 @@ class Institution(models.Model):
         return self.name
 
     def is_institution_manager(self, user):
-        return self.manager_group in user_obj.groups.all()
+        return self.manager_group in user_obj.groups.all()  # pylint: disable=E0602
 
     def has_parent(self):
-        if self.parent_institution:
-            return True
-        else:
-            return False
+        return bool(self.parent_institution)

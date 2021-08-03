@@ -1,7 +1,6 @@
 import logging
 
 from django.conf import settings
-from django.apps import apps
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
@@ -13,7 +12,12 @@ logger = logging.getLogger(__name__)
 
 
 class FacilityProfile(models.Model):
-    """ """
+    """An extension to the Facility Model in MyTardis
+
+    :attribute facility: A OneToOneKey relationship to a Facility
+    :attribute url: A URL pointing to the facilities home page
+    :attribute institution: A Institution model, either Institution from the app or DefaultInstitution
+    defined below"""
 
     facility = models.OneToOneField(
         Facility, on_delete=models.CASCADE, related_name="profile"
