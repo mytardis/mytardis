@@ -23,10 +23,9 @@ class ExperimentPID(models.Model):
     pid = models.CharField(max_length=400, null=True, blank=True, unique=True)
 
     def __str__(self):
-        if pid:
+        if self.pid:
             return self.pid
-        else:
-            return "No Identifier"
+        return "No Identifier"
 
 
 @receiver(post_save, sender=Experiment, dispatch_uid="create_experiment_pid")
