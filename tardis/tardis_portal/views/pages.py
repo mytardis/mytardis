@@ -308,7 +308,7 @@ class DatasetView(TemplateView):
         # Enables UI elements for the dataset_pid app
         c["pid"] = "tardis.apps.dataset_pid" in settings.INSTALLED_APPS
         if c["pid"]:
-            c["pid"] = dataset.pid
+            c["pid"] = dataset.pid.pid
 
         _add_protocols_and_organizations(request, dataset, c)
 
@@ -529,7 +529,7 @@ class ExperimentView(TemplateView):
         # Enables UI elements for the experiment_pid app
         c["pid"] = "tardis.apps.experiment_pid" in settings.INSTALLED_APPS
         if c["pid"]:
-            c["pid"] = experiment.pid
+            c["pid"] = experiment.pid.pid
 
         _add_protocols_and_organizations(request, experiment, c)
 
@@ -562,6 +562,8 @@ class ExperimentView(TemplateView):
                 logger.debug("error when loading default exp apps")
 
         c["apps"] = zip(appurls, appnames)
+
+        print(c)
 
         return c
 
