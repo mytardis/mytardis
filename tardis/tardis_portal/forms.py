@@ -271,8 +271,6 @@ class DatasetForm(forms.ModelForm):
             "directory",
             "instrument",
         ]
-        # if "tardis.apps.dataset_pid" in settings.INSTALLED_APPS:
-        #    fields.append("pid")
 
 
 class ExperimentAuthor(forms.ModelForm):
@@ -285,8 +283,6 @@ class ExperimentAuthor(forms.ModelForm):
             "order",
             "url",
         ]
-        # if "tardis.apps.experiment_pid" in settings.INSTALLED_APPS:
-        #    fields.append("pid")
 
 
 class ExperimentForm(forms.ModelForm):

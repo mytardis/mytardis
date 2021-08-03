@@ -295,6 +295,7 @@ class DatasetView(TemplateView):
                 "push_to_enabled": "tardis.apps.push_to" in settings.INSTALLED_APPS,
                 "carousel_slice": carousel_slice,
                 "hsm_enabled": "tardis.apps.hsm" in settings.INSTALLED_APPS,
+                "pid": "tardis.apps.dataset_pid" in settings.INSTALLED_APPS,
             }
         )
 
@@ -306,7 +307,6 @@ class DatasetView(TemplateView):
             )
 
         # Enables UI elements for the dataset_pid app
-        c["pid"] = "tardis.apps.dataset_pid" in settings.INSTALLED_APPS
         if c["pid"]:
             if dataset.pid.pid:
                 c["pid"] = dataset.pid.pid
