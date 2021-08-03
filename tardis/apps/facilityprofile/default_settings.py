@@ -1,1 +1,1 @@
-FACILITY_PROFILE_INSTITUTION = "facility_profile.DefaultInstitution"
+FACILITY_PROFILE_INSTITUTION = "facilityprofile.DefaultInstitution"
