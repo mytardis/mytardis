@@ -1,4 +1,4 @@
-#import logging
+# import logging
 
 from django import forms
 
@@ -7,7 +7,7 @@ from tardis.tardis_portal.models.instrument import Instrument
 
 
 class DatasetPIDForm(forms.Form):
-    description = forms.TextField(required=True)
-    directory = forms.TextField(required=False)
+    description = forms.CharField(max_length=400, required=True)
+    directory = forms.CharField(max_length=400, required=False)
     instrument = forms.ModelChoiceField(queryset=Instrument.objects.all())
-    pid = forms.TextField(required=False)
+    pid = forms.CharField(max_length=400, required=False)
