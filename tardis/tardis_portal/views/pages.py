@@ -828,15 +828,26 @@ def edit_dataset(request, dataset_id):
 
     # Process form or prepopulate it
     if request.method == "POST":
-        form = DatasetForm(request.POST)
+        # Add code to override the default form to use the DatasetPIDForm
+        if "tardis.apps.datasetpid" in settings.INSTALLED_APPS:
+            form = DatasetPIDForm(request.POST)
+        else:
+            form = DatasetForm(request.POST)
         if form.is_valid():
             dataset.description = form.cleaned_data["description"]
             dataset.instrument = form.cleaned_data["instrument"]
             dataset.directory = form.cleaned_data["directory"]
+            # Add code to override the default form to use the DatasetPIDForm
+            if "tardis.apps.datasetpid" in settings.INSTALLED_APPS:
+                dataset.pid.pid = form.cleaned_data["pid"]
             dataset.save()
             return _redirect_303("tardis_portal.view_dataset", dataset.id)
     else:
-        form = DatasetForm(instance=dataset)
+        # Add code to override the default form to use the DatasetPIDForm
+        if "tardis.apps.datasetpid" in settings.INSTALLED_APPS:
+            form = DatasetPIDForm(instance=dataset)
+        else:
+            form = DatasetForm(instance=dataset)
 
     c = {"form": form, "dataset": dataset}
     return render_response_index(request, "tardis_portal/add_or_edit_dataset.html", c)
