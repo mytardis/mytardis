@@ -59,9 +59,8 @@ module.exports = {
             maxAsyncRequests: 5,
             maxInitialRequests: 3,
             automaticNameDelimiter: "~",
-            name: true,
             cacheGroups: {
-                vendors: {
+                defaultVendors: {
                     test: /[\\/]node_modules[\\/]/,
                     priority: -10,
                 },
@@ -87,51 +86,56 @@ module.exports = {
     ],
     module: {
         rules: [
-            {test: /\.jsx?$/, exclude: /node_modules/, loader: "babel-loader"},
             {
+                test: /\.m?js/,
+                resolve: {
+                    fullySpecified: false
+                }
+            }, {
+                test: /\.jsx?$/,
+                exclude: /node_modules/,
+                loader: "babel-loader"
+            }, {
                 test: /\.css$/,
-                use: [
-                    {
-                        loader: MiniCssExtractPlugin.loader,
-                        options: {
-                            publicPath: "../static/bundles/"
-                        }
-                    }, "css-loader"
-                ]
-            },
-            {
+                use: [{
+                    loader: MiniCssExtractPlugin.loader,
+                    options: {
+                        publicPath: "../static/bundles/"
+                    }
+                }, "css-loader"]
+            }, {
                 test: /\.(woff|woff2|)(\?v=[0-9]\.[0-9]\.[0-9])?$/,
-                loader: "url-loader?limit=10000&mimetype=application/font-woff",
+                loader: "url-loader",
                 options: {
                     name: "[name].[ext]",
                     outputPath: "static/bundles/",
-                    publicPath: "../static/bundles/"
+                    publicPath: "../static/bundles/",
+                    limit: 10000,
+                    mimetype: "application/font-woff"
                 }
-            },
-            {
+            }, {
                 test: /\.(ttf|eot|svg)(\?v=[0-9]\.[0-9]\.[0-9])?$/,
                 loader: "file-loader",
                 options: {
                     name: "[name].[ext]",
                     publicPath: "/bundles/"
                 }
-            },
-          {
+            }, {
                 test: /\.(gif|png|jpe?g)$/i,
                 loader: "url-loader",
                 options: {
                     name: "[name].[ext]",
                 }
-            },
-            {
+            }, {
                 test: /\.less$/,
-                use: [
-                    {loader: "style-loader"},
-                    {loader: "css-loader"},
-                    {loader: "less-loader"}
-                ]
+                use: [{
+                    loader: "style-loader"
+                }, {
+                    loader: "css-loader"
+                }, {
+                    loader: "less-loader"
+                }]
             },
-
         ]
     },
     resolve: {
