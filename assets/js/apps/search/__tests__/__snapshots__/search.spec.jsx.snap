@@ -436,113 +436,79 @@ exports[`Result Component Test Render Simple Search Form 1`] = `
                         <label htmlFor=\\"contain\\">
                           Search In
                         </label>
-                        <TypeaheadComponent id=\\"modelType\\" multiple={true} onChange={[Function: onChange]} options={{...}} placeholder=\\"Search in Experiments, Datasets or Datafiles\\" defaultSelected={{...}} clearButton={false} inputProps={{...}} isInvalid={false} isLoading={false} isValid={false} renderMenu={[Function: renderMenu]} renderToken={[Function: renderToken]}>
-                          <Typeahead id=\\"modelType\\" multiple={true} onChange={[Function: onChange]} options={{...}} placeholder=\\"Search in Experiments, Datasets or Datafiles\\" defaultSelected={{...}} clearButton={false} inputProps={{...}} isInvalid={false} isLoading={false} isValid={false} renderMenu={[Function: renderMenu]} renderToken={[Function: renderToken]} allowNew={false} autoFocus={false} caseSensitive={false} defaultInputValue=\\"\\" defaultOpen={false} filterBy={{...}} highlightOnlyResult={false} ignoreDiacritics={true} labelKey=\\"label\\" maxResults={100} minLength={0} onBlur={[Function: noop]} onFocus={[Function: noop]} onInputChange={[Function: noop]} onKeyDown={[Function: noop]} onMenuToggle={[Function: noop]} onPaginate={[Function: noop]} paginate={true} selectHintOnEnter={false}>
-                            <TypeaheadManager id=\\"modelType\\" multiple={true} options={{...}} placeholder=\\"Search in Experiments, Datasets or Datafiles\\" defaultSelected={{...}} clearButton={false} inputProps={{...}} isInvalid={false} isLoading={false} isValid={false} renderMenu={[Function: renderMenu]} renderToken={[Function: renderToken]} allowNew={false} autoFocus={false} caseSensitive={false} defaultInputValue=\\"\\" defaultOpen={false} filterBy={{...}} highlightOnlyResult={false} ignoreDiacritics={true} labelKey=\\"label\\" maxResults={100} minLength={0} onBlur={[Function]} onFocus={[Function]} onInputChange={[Function: noop]} onKeyDown={[Function]} onMenuToggle={[Function: noop]} onPaginate={[Function: noop]} paginate={true} selectHintOnEnter={false} activeIndex={-1} activeItem={{...}} initialItem={{...}} isFocused={false} selected={{...}} showMenu={false} shownResults={100} text=\\"\\" inputNode={[undefined]} inputRef={[Function]} isMenuShown={false} items={{...}} onActiveItemChange={[Function]} onAdd={[Function]} onChange={[Function]} onClear={[Function]} onHide={[Function]} onInitialItemChange={[Function]} onMenuItemClick={[Function]} onRemove={[Function]} results={{...}}>
-                              <RootCloseWrapper disabled={true} onRootClose={[Function]} event=\\"click\\">
-                                <div className=\\"rbt\\" style={{...}} tabIndex={-1}>
-                                  <withClassNames(TypeaheadInputMulti) autoComplete=\\"off\\" placeholder=\\"Search in Experiments, Datasets or Datafiles\\" type=\\"text\\" inputRef={[Function]} onBlur={[Function]} onChange={[Function]} onKeyDown={[Function]} value=\\"\\" aria-activedescendant={[undefined]} aria-autocomplete=\\"list\\" aria-expanded={[undefined]} aria-haspopup=\\"listbox\\" aria-owns={[undefined]} className=\\"\\" onClick={[Function]} onFocus={[Function]} role={[undefined]} inputClassName={[undefined]} bsSize={[undefined]} isInvalid={false} isValid={false} selected={{...}}>
-                                    <TypeaheadInputMulti autoComplete=\\"off\\" placeholder=\\"Search in Experiments, Datasets or Datafiles\\" type=\\"text\\" inputRef={[Function]} onBlur={[Function]} onChange={[Function]} onKeyDown={[Function]} value=\\"\\" aria-activedescendant={[undefined]} aria-autocomplete=\\"list\\" aria-expanded={[undefined]} aria-haspopup=\\"listbox\\" aria-owns={[undefined]} onClick={[Function]} onFocus={[Function]} role={[undefined]} inputClassName={[undefined]} selected={{...}} className=\\"form-control rbt-input\\">
-                                      <div className=\\"rbt-input-multi form-control rbt-input\\" disabled={[undefined]} onClick={[Function]} onFocus={[Function]} tabIndex={-1}>
-                                        <div className=\\"rbt-input-wrapper\\">
-                                          <tokenContainer(Token) disabled={[undefined]} onRemove={[Function]} option=\\"Dataset\\" tabIndex={[undefined]} onBlur={[Function: noop]} onClick={[Function: noop]} onFocus={[Function: noop]}>
-                                            <RootCloseWrapper disabled={true} onRootClose={[Function]} event=\\"click\\">
-                                              <Token disabled={false} onRemove={[Function]} option=\\"Dataset\\" tabIndex={0} onBlur={[Function]} onClick={[Function]} onFocus={[Function]} active={false} onKeyDown={[Function]}>
-                                                <div disabled={false} option=\\"Dataset\\" tabIndex={0} onBlur={[Function]} onClick={[Function]} onFocus={[Function]} onKeyDown={[Function]} className=\\"rbt-token rbt-token-removeable\\">
-                                                  Dataset
-                                                  <ClearButton className=\\"rbt-token-remove-button\\" label=\\"Remove\\" onClick={[Function]} tabIndex={-1}>
-                                                    <button tabIndex={-1} aria-label=\\"Remove\\" className=\\"close rbt-close rbt-token-remove-button\\" onClick={[Function: onClick]} type=\\"button\\">
-                                                      <span aria-hidden=\\"true\\">
-                                                        ×
-                                                      </span>
-                                                      <span className=\\"sr-only\\">
-                                                        Remove
-                                                      </span>
-                                                    </button>
-                                                  </ClearButton>
-                                                </div>
-                                              </Token>
-                                            </RootCloseWrapper>
-                                          </tokenContainer(Token)>
-                                          <tokenContainer(Token) disabled={[undefined]} onRemove={[Function]} option=\\"Experiment\\" tabIndex={[undefined]} onBlur={[Function: noop]} onClick={[Function: noop]} onFocus={[Function: noop]}>
-                                            <RootCloseWrapper disabled={true} onRootClose={[Function]} event=\\"click\\">
-                                              <Token disabled={false} onRemove={[Function]} option=\\"Experiment\\" tabIndex={0} onBlur={[Function]} onClick={[Function]} onFocus={[Function]} active={false} onKeyDown={[Function]}>
-                                                <div disabled={false} option=\\"Experiment\\" tabIndex={0} onBlur={[Function]} onClick={[Function]} onFocus={[Function]} onKeyDown={[Function]} className=\\"rbt-token rbt-token-removeable\\">
-                                                  Experiment
-                                                  <ClearButton className=\\"rbt-token-remove-button\\" label=\\"Remove\\" onClick={[Function]} tabIndex={-1}>
-                                                    <button tabIndex={-1} aria-label=\\"Remove\\" className=\\"close rbt-close rbt-token-remove-button\\" onClick={[Function: onClick]} type=\\"button\\">
-                                                      <span aria-hidden=\\"true\\">
-                                                        ×
-                                                      </span>
-                                                      <span className=\\"sr-only\\">
-                                                        Remove
-                                                      </span>
-                                                    </button>
-                                                  </ClearButton>
-                                                </div>
-                                              </Token>
-                                            </RootCloseWrapper>
-                                          </tokenContainer(Token)>
-                                          <tokenContainer(Token) disabled={[undefined]} onRemove={[Function]} option=\\"Datafile\\" tabIndex={[undefined]} onBlur={[Function: noop]} onClick={[Function: noop]} onFocus={[Function: noop]}>
-                                            <RootCloseWrapper disabled={true} onRootClose={[Function]} event=\\"click\\">
-                                              <Token disabled={false} onRemove={[Function]} option=\\"Datafile\\" tabIndex={0} onBlur={[Function]} onClick={[Function]} onFocus={[Function]} active={false} onKeyDown={[Function]}>
-                                                <div disabled={false} option=\\"Datafile\\" tabIndex={0} onBlur={[Function]} onClick={[Function]} onFocus={[Function]} onKeyDown={[Function]} className=\\"rbt-token rbt-token-removeable\\">
-                                                  Datafile
-                                                  <ClearButton className=\\"rbt-token-remove-button\\" label=\\"Remove\\" onClick={[Function]} tabIndex={-1}>
-                                                    <button tabIndex={-1} aria-label=\\"Remove\\" className=\\"close rbt-close rbt-token-remove-button\\" onClick={[Function: onClick]} type=\\"button\\">
-                                                      <span aria-hidden=\\"true\\">
-                                                        ×
-                                                      </span>
-                                                      <span className=\\"sr-only\\">
-                                                        Remove
-                                                      </span>
-                                                    </button>
-                                                  </ClearButton>
-                                                </div>
-                                              </Token>
-                                            </RootCloseWrapper>
-                                          </tokenContainer(Token)>
-                                          <ForwardRef autoComplete=\\"off\\" type=\\"text\\" onBlur={[Function]} onChange={[Function]} onKeyDown={[Function]} value=\\"\\" aria-activedescendant={[undefined]} aria-autocomplete=\\"list\\" aria-expanded={[undefined]} aria-haspopup=\\"listbox\\" aria-owns={[undefined]} onClick={[Function]} onFocus={[Function]} role={[undefined]} className={[undefined]} placeholder=\\"\\" style={{...}}>
-                                            <_class autoComplete=\\"off\\" type=\\"text\\" onBlur={[Function]} onChange={[Function]} onKeyDown={[Function]} value=\\"\\" aria-activedescendant={[undefined]} aria-autocomplete=\\"list\\" aria-expanded={[undefined]} aria-haspopup=\\"listbox\\" aria-owns={[undefined]} onClick={[Function]} onFocus={[Function]} role={[undefined]} className={[undefined]} placeholder=\\"\\" style={{...}} forwardedRef={[Function]}>
-                                              <hintContainer(Component) autoComplete=\\"off\\" type=\\"text\\" onBlur={[Function]} onChange={[Function]} onKeyDown={[Function]} value=\\"\\" aria-activedescendant={[undefined]} aria-autocomplete=\\"list\\" aria-expanded={[undefined]} aria-haspopup=\\"listbox\\" aria-owns={[undefined]} onClick={[Function]} onFocus={[Function]} role={[undefined]} className={[undefined]} placeholder=\\"\\" style={{...}} forwardedRef={[Function]} hintText=\\"\\" initialItem={{...}} inputNode={[undefined]} onAdd={[Function]} selectHintOnEnter={false}>
-                                                <div style={{...}}>
-                                                  <ForwardRef autoComplete=\\"off\\" type=\\"text\\" onBlur={[Function]} onChange={[Function]} onKeyDown={[Function]} value=\\"\\" aria-activedescendant={[undefined]} aria-autocomplete=\\"list\\" aria-expanded={[undefined]} aria-haspopup=\\"listbox\\" aria-owns={[undefined]} onClick={[Function]} onFocus={[Function]} role={[undefined]} className={[undefined]} placeholder=\\"\\" style={{...}}>
-                                                    <input autoComplete=\\"off\\" type=\\"text\\" onBlur={[Function]} onChange={[Function]} onKeyDown={[Function]} value=\\"\\" aria-activedescendant={[undefined]} aria-autocomplete=\\"list\\" aria-expanded={[undefined]} aria-haspopup=\\"listbox\\" aria-owns={[undefined]} onClick={[Function]} onFocus={[Function]} role={[undefined]} className=\\"rbt-input-main\\" placeholder=\\"\\" style={{...}} />
-                                                  </ForwardRef>
-                                                  <input aria-hidden={true} className=\\"rbt-input-hint\\" readOnly={true} style={{...}} tabIndex={-1} value=\\"\\" />
-                                                </div>
-                                              </hintContainer(Component)>
-                                            </_class>
-                                          </ForwardRef>
-                                        </div>
-                                      </div>
-                                    </TypeaheadInputMulti>
-                                  </withClassNames(TypeaheadInputMulti)>
-                                  <Overlay isMenuShown={false} referenceElement={[undefined]} align=\\"justify\\" dropup={false} flip={false} positionFixed={false} />
-                                </div>
-                              </RootCloseWrapper>
-                            </TypeaheadManager>
-                          </Typeahead>
-                        </TypeaheadComponent>
-                        <div style={{...}}>
-                          <label htmlFor=\\"contain\\">
-                            Filter by Instrument
-                          </label>
-                          <TypeaheadComponent id=\\"instrumentList\\" multiple={true} labelKey=\\"name\\" onChange={[Function: onChange]} placeholder=\\"Start typing to select instruments\\" options={{...}} clearButton={false} inputProps={{...}} isInvalid={false} isLoading={false} isValid={false} renderMenu={[Function: renderMenu]} renderToken={[Function: renderToken]}>
-                            <Typeahead id=\\"instrumentList\\" multiple={true} labelKey=\\"name\\" onChange={[Function: onChange]} placeholder=\\"Start typing to select instruments\\" options={{...}} clearButton={false} inputProps={{...}} isInvalid={false} isLoading={false} isValid={false} renderMenu={[Function: renderMenu]} renderToken={[Function: renderToken]} allowNew={false} autoFocus={false} caseSensitive={false} defaultInputValue=\\"\\" defaultOpen={false} defaultSelected={{...}} filterBy={{...}} highlightOnlyResult={false} ignoreDiacritics={true} maxResults={100} minLength={0} onBlur={[Function: noop]} onFocus={[Function: noop]} onInputChange={[Function: noop]} onKeyDown={[Function: noop]} onMenuToggle={[Function: noop]} onPaginate={[Function: noop]} paginate={true} selectHintOnEnter={false}>
-                              <TypeaheadManager id=\\"instrumentList\\" multiple={true} labelKey=\\"name\\" placeholder=\\"Start typing to select instruments\\" options={{...}} clearButton={false} inputProps={{...}} isInvalid={false} isLoading={false} isValid={false} renderMenu={[Function: renderMenu]} renderToken={[Function: renderToken]} allowNew={false} autoFocus={false} caseSensitive={false} defaultInputValue=\\"\\" defaultOpen={false} defaultSelected={{...}} filterBy={{...}} highlightOnlyResult={false} ignoreDiacritics={true} maxResults={100} minLength={0} onBlur={[Function]} onFocus={[Function]} onInputChange={[Function: noop]} onKeyDown={[Function]} onMenuToggle={[Function: noop]} onPaginate={[Function: noop]} paginate={true} selectHintOnEnter={false} activeIndex={-1} activeItem={{...}} initialItem={{...}} isFocused={false} selected={{...}} showMenu={false} shownResults={100} text=\\"\\" inputNode={[undefined]} inputRef={[Function]} isMenuShown={false} items={{...}} onActiveItemChange={[Function]} onAdd={[Function]} onChange={[Function]} onClear={[Function]} onHide={[Function]} onInitialItemChange={[Function]} onMenuItemClick={[Function]} onRemove={[Function]} results={{...}}>
+                        <ForwardRef id=\\"modelType\\" multiple={true} onChange={[Function: onChange]} options={{...}} placeholder=\\"Search in Experiments, Datasets or Datafiles\\" defaultSelected={{...}}>
+                          <TypeaheadComponent id=\\"modelType\\" multiple={true} onChange={[Function: onChange]} options={{...}} placeholder=\\"Search in Experiments, Datasets or Datafiles\\" defaultSelected={{...}} instanceRef={{...}} clearButton={false} inputProps={{...}} isInvalid={false} isLoading={false} isValid={false} renderMenu={[Function: renderMenu]} renderToken={[Function: renderToken]}>
+                            <Typeahead id=\\"modelType\\" multiple={true} onChange={[Function: onChange]} options={{...}} placeholder=\\"Search in Experiments, Datasets or Datafiles\\" defaultSelected={{...}} instanceRef={{...}} clearButton={false} inputProps={{...}} isInvalid={false} isLoading={false} isValid={false} renderMenu={[Function: renderMenu]} renderToken={[Function: renderToken]} allowNew={false} autoFocus={false} caseSensitive={false} defaultInputValue=\\"\\" defaultOpen={false} filterBy={{...}} highlightOnlyResult={false} ignoreDiacritics={true} labelKey=\\"label\\" maxResults={100} minLength={0} onBlur={[Function: noop]} onFocus={[Function: noop]} onInputChange={[Function: noop]} onKeyDown={[Function: noop]} onMenuToggle={[Function: noop]} onPaginate={[Function: noop]} paginate={true} selectHintOnEnter={false}>
+                              <TypeaheadManager id=\\"modelType\\" multiple={true} options={{...}} placeholder=\\"Search in Experiments, Datasets or Datafiles\\" defaultSelected={{...}} instanceRef={{...}} clearButton={false} inputProps={{...}} isInvalid={false} isLoading={false} isValid={false} renderMenu={[Function: renderMenu]} renderToken={[Function: renderToken]} allowNew={false} autoFocus={false} caseSensitive={false} defaultInputValue=\\"\\" defaultOpen={false} filterBy={{...}} highlightOnlyResult={false} ignoreDiacritics={true} labelKey=\\"label\\" maxResults={100} minLength={0} onBlur={[Function]} onFocus={[Function]} onInputChange={[Function: noop]} onKeyDown={[Function]} onMenuToggle={[Function: noop]} onPaginate={[Function: noop]} paginate={true} selectHintOnEnter={false} activeIndex={-1} activeItem={{...}} initialItem={{...}} isFocused={false} selected={{...}} showMenu={false} shownResults={100} text=\\"\\" hideMenu={[Function]} inputNode={[undefined]} inputRef={[Function]} isMenuShown={false} onActiveItemChange={[Function]} onAdd={[Function]} onChange={[Function]} onClear={[Function]} onHide={[Function]} onInitialItemChange={[Function]} onMenuItemClick={[Function]} onRemove={[Function]} results={{...}} setItem={[Function]} toggleMenu={[Function]}>
                                 <RootCloseWrapper disabled={true} onRootClose={[Function]} event=\\"click\\">
                                   <div className=\\"rbt\\" style={{...}} tabIndex={-1}>
-                                    <withClassNames(TypeaheadInputMulti) autoComplete=\\"off\\" placeholder=\\"Start typing to select instruments\\" type=\\"text\\" inputRef={[Function]} onBlur={[Function]} onChange={[Function]} onKeyDown={[Function]} value=\\"\\" aria-activedescendant={[undefined]} aria-autocomplete=\\"list\\" aria-expanded={[undefined]} aria-haspopup=\\"listbox\\" aria-owns={[undefined]} className=\\"\\" onClick={[Function]} onFocus={[Function]} role={[undefined]} inputClassName={[undefined]} bsSize={[undefined]} isInvalid={false} isValid={false} selected={{...}}>
-                                      <TypeaheadInputMulti autoComplete=\\"off\\" placeholder=\\"Start typing to select instruments\\" type=\\"text\\" inputRef={[Function]} onBlur={[Function]} onChange={[Function]} onKeyDown={[Function]} value=\\"\\" aria-activedescendant={[undefined]} aria-autocomplete=\\"list\\" aria-expanded={[undefined]} aria-haspopup=\\"listbox\\" aria-owns={[undefined]} onClick={[Function]} onFocus={[Function]} role={[undefined]} inputClassName={[undefined]} selected={{...}} className=\\"form-control rbt-input\\">
+                                    <withClassNames(TypeaheadInputMulti) autoComplete=\\"off\\" placeholder=\\"Search in Experiments, Datasets or Datafiles\\" type=\\"text\\" inputRef={[Function]} onBlur={[Function]} onChange={[Function]} onKeyDown={[Function]} value=\\"\\" aria-activedescendant={[undefined]} aria-autocomplete=\\"list\\" aria-expanded={[undefined]} aria-haspopup=\\"listbox\\" aria-owns={[undefined]} className=\\"\\" onClick={[Function]} onFocus={[Function]} role={[undefined]} inputClassName={[undefined]} isInvalid={false} isValid={false} size={[undefined]} selected={{...}}>
+                                      <TypeaheadInputMulti autoComplete=\\"off\\" placeholder=\\"Search in Experiments, Datasets or Datafiles\\" type=\\"text\\" inputRef={[Function]} onBlur={[Function]} onChange={[Function]} onKeyDown={[Function]} value=\\"\\" aria-activedescendant={[undefined]} aria-autocomplete=\\"list\\" aria-expanded={[undefined]} aria-haspopup=\\"listbox\\" aria-owns={[undefined]} onClick={[Function]} onFocus={[Function]} role={[undefined]} inputClassName={[undefined]} selected={{...}} className=\\"form-control rbt-input\\">
                                         <div className=\\"rbt-input-multi form-control rbt-input\\" disabled={[undefined]} onClick={[Function]} onFocus={[Function]} tabIndex={-1}>
                                           <div className=\\"rbt-input-wrapper\\">
-                                            <ForwardRef autoComplete=\\"off\\" type=\\"text\\" onBlur={[Function]} onChange={[Function]} onKeyDown={[Function]} value=\\"\\" aria-activedescendant={[undefined]} aria-autocomplete=\\"list\\" aria-expanded={[undefined]} aria-haspopup=\\"listbox\\" aria-owns={[undefined]} onClick={[Function]} onFocus={[Function]} role={[undefined]} className={[undefined]} placeholder=\\"Start typing to select instruments\\" style={{...}}>
-                                              <_class autoComplete=\\"off\\" type=\\"text\\" onBlur={[Function]} onChange={[Function]} onKeyDown={[Function]} value=\\"\\" aria-activedescendant={[undefined]} aria-autocomplete=\\"list\\" aria-expanded={[undefined]} aria-haspopup=\\"listbox\\" aria-owns={[undefined]} onClick={[Function]} onFocus={[Function]} role={[undefined]} className={[undefined]} placeholder=\\"Start typing to select instruments\\" style={{...}} forwardedRef={[Function]}>
-                                                <hintContainer(Component) autoComplete=\\"off\\" type=\\"text\\" onBlur={[Function]} onChange={[Function]} onKeyDown={[Function]} value=\\"\\" aria-activedescendant={[undefined]} aria-autocomplete=\\"list\\" aria-expanded={[undefined]} aria-haspopup=\\"listbox\\" aria-owns={[undefined]} onClick={[Function]} onFocus={[Function]} role={[undefined]} className={[undefined]} placeholder=\\"Start typing to select instruments\\" style={{...}} forwardedRef={[Function]} hintText=\\"\\" initialItem={{...}} inputNode={[undefined]} onAdd={[Function]} selectHintOnEnter={false}>
+                                            <tokenContainer(Token) disabled={[undefined]} onRemove={[Function]} option=\\"Dataset\\" tabIndex={[undefined]} onBlur={[Function: noop]} onClick={[Function: noop]} onFocus={[Function: noop]}>
+                                              <RootCloseWrapper disabled={true} onRootClose={[Function]} event=\\"click\\">
+                                                <Token disabled={false} onRemove={[Function]} option=\\"Dataset\\" tabIndex={0} onBlur={[Function]} onClick={[Function]} onFocus={[Function]} active={false} onKeyDown={[Function]}>
+                                                  <div disabled={false} option=\\"Dataset\\" tabIndex={0} onBlur={[Function]} onClick={[Function]} onFocus={[Function]} onKeyDown={[Function]} className=\\"rbt-token rbt-token-removeable\\">
+                                                    Dataset
+                                                    <ClearButton className=\\"rbt-token-remove-button\\" label=\\"Remove\\" onClick={[Function]} tabIndex={-1}>
+                                                      <button tabIndex={-1} aria-label=\\"Remove\\" className=\\"close rbt-close rbt-token-remove-button\\" onClick={[Function: onClick]} type=\\"button\\">
+                                                        <span aria-hidden=\\"true\\">
+                                                          ×
+                                                        </span>
+                                                        <span className=\\"sr-only\\">
+                                                          Remove
+                                                        </span>
+                                                      </button>
+                                                    </ClearButton>
+                                                  </div>
+                                                </Token>
+                                              </RootCloseWrapper>
+                                            </tokenContainer(Token)>
+                                            <tokenContainer(Token) disabled={[undefined]} onRemove={[Function]} option=\\"Experiment\\" tabIndex={[undefined]} onBlur={[Function: noop]} onClick={[Function: noop]} onFocus={[Function: noop]}>
+                                              <RootCloseWrapper disabled={true} onRootClose={[Function]} event=\\"click\\">
+                                                <Token disabled={false} onRemove={[Function]} option=\\"Experiment\\" tabIndex={0} onBlur={[Function]} onClick={[Function]} onFocus={[Function]} active={false} onKeyDown={[Function]}>
+                                                  <div disabled={false} option=\\"Experiment\\" tabIndex={0} onBlur={[Function]} onClick={[Function]} onFocus={[Function]} onKeyDown={[Function]} className=\\"rbt-token rbt-token-removeable\\">
+                                                    Experiment
+                                                    <ClearButton className=\\"rbt-token-remove-button\\" label=\\"Remove\\" onClick={[Function]} tabIndex={-1}>
+                                                      <button tabIndex={-1} aria-label=\\"Remove\\" className=\\"close rbt-close rbt-token-remove-button\\" onClick={[Function: onClick]} type=\\"button\\">
+                                                        <span aria-hidden=\\"true\\">
+                                                          ×
+                                                        </span>
+                                                        <span className=\\"sr-only\\">
+                                                          Remove
+                                                        </span>
+                                                      </button>
+                                                    </ClearButton>
+                                                  </div>
+                                                </Token>
+                                              </RootCloseWrapper>
+                                            </tokenContainer(Token)>
+                                            <tokenContainer(Token) disabled={[undefined]} onRemove={[Function]} option=\\"Datafile\\" tabIndex={[undefined]} onBlur={[Function: noop]} onClick={[Function: noop]} onFocus={[Function: noop]}>
+                                              <RootCloseWrapper disabled={true} onRootClose={[Function]} event=\\"click\\">
+                                                <Token disabled={false} onRemove={[Function]} option=\\"Datafile\\" tabIndex={0} onBlur={[Function]} onClick={[Function]} onFocus={[Function]} active={false} onKeyDown={[Function]}>
+                                                  <div disabled={false} option=\\"Datafile\\" tabIndex={0} onBlur={[Function]} onClick={[Function]} onFocus={[Function]} onKeyDown={[Function]} className=\\"rbt-token rbt-token-removeable\\">
+                                                    Datafile
+                                                    <ClearButton className=\\"rbt-token-remove-button\\" label=\\"Remove\\" onClick={[Function]} tabIndex={-1}>
+                                                      <button tabIndex={-1} aria-label=\\"Remove\\" className=\\"close rbt-close rbt-token-remove-button\\" onClick={[Function: onClick]} type=\\"button\\">
+                                                        <span aria-hidden=\\"true\\">
+                                                          ×
+                                                        </span>
+                                                        <span className=\\"sr-only\\">
+                                                          Remove
+                                                        </span>
+                                                      </button>
+                                                    </ClearButton>
+                                                  </div>
+                                                </Token>
+                                              </RootCloseWrapper>
+                                            </tokenContainer(Token)>
+                                            <ForwardRef autoComplete=\\"off\\" type=\\"text\\" onBlur={[Function]} onChange={[Function]} onKeyDown={[Function]} value=\\"\\" aria-activedescendant={[undefined]} aria-autocomplete=\\"list\\" aria-expanded={[undefined]} aria-haspopup=\\"listbox\\" aria-owns={[undefined]} onClick={[Function]} onFocus={[Function]} role={[undefined]} className={[undefined]} placeholder=\\"\\" style={{...}}>
+                                              <_class autoComplete=\\"off\\" type=\\"text\\" onBlur={[Function]} onChange={[Function]} onKeyDown={[Function]} value=\\"\\" aria-activedescendant={[undefined]} aria-autocomplete=\\"list\\" aria-expanded={[undefined]} aria-haspopup=\\"listbox\\" aria-owns={[undefined]} onClick={[Function]} onFocus={[Function]} role={[undefined]} className={[undefined]} placeholder=\\"\\" style={{...}} forwardedRef={[Function]}>
+                                                <hintContainer(Component) autoComplete=\\"off\\" type=\\"text\\" onBlur={[Function]} onChange={[Function]} onKeyDown={[Function]} value=\\"\\" aria-activedescendant={[undefined]} aria-autocomplete=\\"list\\" aria-expanded={[undefined]} aria-haspopup=\\"listbox\\" aria-owns={[undefined]} onClick={[Function]} onFocus={[Function]} role={[undefined]} className={[undefined]} placeholder=\\"\\" style={{...}} forwardedRef={[Function]} hintText=\\"\\" initialItem={{...}} inputNode={[undefined]} onAdd={[Function]} selectHintOnEnter={false}>
                                                   <div style={{...}}>
-                                                    <ForwardRef autoComplete=\\"off\\" type=\\"text\\" onBlur={[Function]} onChange={[Function]} onKeyDown={[Function]} value=\\"\\" aria-activedescendant={[undefined]} aria-autocomplete=\\"list\\" aria-expanded={[undefined]} aria-haspopup=\\"listbox\\" aria-owns={[undefined]} onClick={[Function]} onFocus={[Function]} role={[undefined]} className={[undefined]} placeholder=\\"Start typing to select instruments\\" style={{...}}>
-                                                      <input autoComplete=\\"off\\" type=\\"text\\" onBlur={[Function]} onChange={[Function]} onKeyDown={[Function]} value=\\"\\" aria-activedescendant={[undefined]} aria-autocomplete=\\"list\\" aria-expanded={[undefined]} aria-haspopup=\\"listbox\\" aria-owns={[undefined]} onClick={[Function]} onFocus={[Function]} role={[undefined]} className=\\"rbt-input-main\\" placeholder=\\"Start typing to select instruments\\" style={{...}} />
+                                                    <ForwardRef autoComplete=\\"off\\" type=\\"text\\" onBlur={[Function]} onChange={[Function]} onKeyDown={[Function]} value=\\"\\" aria-activedescendant={[undefined]} aria-autocomplete=\\"list\\" aria-expanded={[undefined]} aria-haspopup=\\"listbox\\" aria-owns={[undefined]} onClick={[Function]} onFocus={[Function]} role={[undefined]} className={[undefined]} placeholder=\\"\\" style={{...}}>
+                                                      <input autoComplete=\\"off\\" type=\\"text\\" onBlur={[Function]} onChange={[Function]} onKeyDown={[Function]} value=\\"\\" aria-activedescendant={[undefined]} aria-autocomplete=\\"list\\" aria-expanded={[undefined]} aria-haspopup=\\"listbox\\" aria-owns={[undefined]} onClick={[Function]} onFocus={[Function]} role={[undefined]} className=\\"rbt-input-main\\" placeholder=\\"\\" style={{...}} />
                                                     </ForwardRef>
                                                     <input aria-hidden={true} className=\\"rbt-input-hint\\" readOnly={true} style={{...}} tabIndex={-1} value=\\"\\" />
                                                   </div>
@@ -559,6 +525,44 @@ exports[`Result Component Test Render Simple Search Form 1`] = `
                               </TypeaheadManager>
                             </Typeahead>
                           </TypeaheadComponent>
+                        </ForwardRef>
+                        <div style={{...}}>
+                          <label htmlFor=\\"contain\\">
+                            Filter by Instrument
+                          </label>
+                          <ForwardRef id=\\"instrumentList\\" multiple={true} labelKey=\\"name\\" onChange={[Function: onChange]} placeholder=\\"Start typing to select instruments\\" options={{...}}>
+                            <TypeaheadComponent id=\\"instrumentList\\" multiple={true} labelKey=\\"name\\" onChange={[Function: onChange]} placeholder=\\"Start typing to select instruments\\" options={{...}} instanceRef={{...}} clearButton={false} inputProps={{...}} isInvalid={false} isLoading={false} isValid={false} renderMenu={[Function: renderMenu]} renderToken={[Function: renderToken]}>
+                              <Typeahead id=\\"instrumentList\\" multiple={true} labelKey=\\"name\\" onChange={[Function: onChange]} placeholder=\\"Start typing to select instruments\\" options={{...}} instanceRef={{...}} clearButton={false} inputProps={{...}} isInvalid={false} isLoading={false} isValid={false} renderMenu={[Function: renderMenu]} renderToken={[Function: renderToken]} allowNew={false} autoFocus={false} caseSensitive={false} defaultInputValue=\\"\\" defaultOpen={false} defaultSelected={{...}} filterBy={{...}} highlightOnlyResult={false} ignoreDiacritics={true} maxResults={100} minLength={0} onBlur={[Function: noop]} onFocus={[Function: noop]} onInputChange={[Function: noop]} onKeyDown={[Function: noop]} onMenuToggle={[Function: noop]} onPaginate={[Function: noop]} paginate={true} selectHintOnEnter={false}>
+                                <TypeaheadManager id=\\"instrumentList\\" multiple={true} labelKey=\\"name\\" placeholder=\\"Start typing to select instruments\\" options={{...}} instanceRef={{...}} clearButton={false} inputProps={{...}} isInvalid={false} isLoading={false} isValid={false} renderMenu={[Function: renderMenu]} renderToken={[Function: renderToken]} allowNew={false} autoFocus={false} caseSensitive={false} defaultInputValue=\\"\\" defaultOpen={false} defaultSelected={{...}} filterBy={{...}} highlightOnlyResult={false} ignoreDiacritics={true} maxResults={100} minLength={0} onBlur={[Function]} onFocus={[Function]} onInputChange={[Function: noop]} onKeyDown={[Function]} onMenuToggle={[Function: noop]} onPaginate={[Function: noop]} paginate={true} selectHintOnEnter={false} activeIndex={-1} activeItem={{...}} initialItem={{...}} isFocused={false} selected={{...}} showMenu={false} shownResults={100} text=\\"\\" hideMenu={[Function]} inputNode={[undefined]} inputRef={[Function]} isMenuShown={false} onActiveItemChange={[Function]} onAdd={[Function]} onChange={[Function]} onClear={[Function]} onHide={[Function]} onInitialItemChange={[Function]} onMenuItemClick={[Function]} onRemove={[Function]} results={{...}} setItem={[Function]} toggleMenu={[Function]}>
+                                  <RootCloseWrapper disabled={true} onRootClose={[Function]} event=\\"click\\">
+                                    <div className=\\"rbt\\" style={{...}} tabIndex={-1}>
+                                      <withClassNames(TypeaheadInputMulti) autoComplete=\\"off\\" placeholder=\\"Start typing to select instruments\\" type=\\"text\\" inputRef={[Function]} onBlur={[Function]} onChange={[Function]} onKeyDown={[Function]} value=\\"\\" aria-activedescendant={[undefined]} aria-autocomplete=\\"list\\" aria-expanded={[undefined]} aria-haspopup=\\"listbox\\" aria-owns={[undefined]} className=\\"\\" onClick={[Function]} onFocus={[Function]} role={[undefined]} inputClassName={[undefined]} isInvalid={false} isValid={false} size={[undefined]} selected={{...}}>
+                                        <TypeaheadInputMulti autoComplete=\\"off\\" placeholder=\\"Start typing to select instruments\\" type=\\"text\\" inputRef={[Function]} onBlur={[Function]} onChange={[Function]} onKeyDown={[Function]} value=\\"\\" aria-activedescendant={[undefined]} aria-autocomplete=\\"list\\" aria-expanded={[undefined]} aria-haspopup=\\"listbox\\" aria-owns={[undefined]} onClick={[Function]} onFocus={[Function]} role={[undefined]} inputClassName={[undefined]} selected={{...}} className=\\"form-control rbt-input\\">
+                                          <div className=\\"rbt-input-multi form-control rbt-input\\" disabled={[undefined]} onClick={[Function]} onFocus={[Function]} tabIndex={-1}>
+                                            <div className=\\"rbt-input-wrapper\\">
+                                              <ForwardRef autoComplete=\\"off\\" type=\\"text\\" onBlur={[Function]} onChange={[Function]} onKeyDown={[Function]} value=\\"\\" aria-activedescendant={[undefined]} aria-autocomplete=\\"list\\" aria-expanded={[undefined]} aria-haspopup=\\"listbox\\" aria-owns={[undefined]} onClick={[Function]} onFocus={[Function]} role={[undefined]} className={[undefined]} placeholder=\\"Start typing to select instruments\\" style={{...}}>
+                                                <_class autoComplete=\\"off\\" type=\\"text\\" onBlur={[Function]} onChange={[Function]} onKeyDown={[Function]} value=\\"\\" aria-activedescendant={[undefined]} aria-autocomplete=\\"list\\" aria-expanded={[undefined]} aria-haspopup=\\"listbox\\" aria-owns={[undefined]} onClick={[Function]} onFocus={[Function]} role={[undefined]} className={[undefined]} placeholder=\\"Start typing to select instruments\\" style={{...}} forwardedRef={[Function]}>
+                                                  <hintContainer(Component) autoComplete=\\"off\\" type=\\"text\\" onBlur={[Function]} onChange={[Function]} onKeyDown={[Function]} value=\\"\\" aria-activedescendant={[undefined]} aria-autocomplete=\\"list\\" aria-expanded={[undefined]} aria-haspopup=\\"listbox\\" aria-owns={[undefined]} onClick={[Function]} onFocus={[Function]} role={[undefined]} className={[undefined]} placeholder=\\"Start typing to select instruments\\" style={{...}} forwardedRef={[Function]} hintText=\\"\\" initialItem={{...}} inputNode={[undefined]} onAdd={[Function]} selectHintOnEnter={false}>
+                                                    <div style={{...}}>
+                                                      <ForwardRef autoComplete=\\"off\\" type=\\"text\\" onBlur={[Function]} onChange={[Function]} onKeyDown={[Function]} value=\\"\\" aria-activedescendant={[undefined]} aria-autocomplete=\\"list\\" aria-expanded={[undefined]} aria-haspopup=\\"listbox\\" aria-owns={[undefined]} onClick={[Function]} onFocus={[Function]} role={[undefined]} className={[undefined]} placeholder=\\"Start typing to select instruments\\" style={{...}}>
+                                                        <input autoComplete=\\"off\\" type=\\"text\\" onBlur={[Function]} onChange={[Function]} onKeyDown={[Function]} value=\\"\\" aria-activedescendant={[undefined]} aria-autocomplete=\\"list\\" aria-expanded={[undefined]} aria-haspopup=\\"listbox\\" aria-owns={[undefined]} onClick={[Function]} onFocus={[Function]} role={[undefined]} className=\\"rbt-input-main\\" placeholder=\\"Start typing to select instruments\\" style={{...}} />
+                                                      </ForwardRef>
+                                                      <input aria-hidden={true} className=\\"rbt-input-hint\\" readOnly={true} style={{...}} tabIndex={-1} value=\\"\\" />
+                                                    </div>
+                                                  </hintContainer(Component)>
+                                                </_class>
+                                              </ForwardRef>
+                                            </div>
+                                          </div>
+                                        </TypeaheadInputMulti>
+                                      </withClassNames(TypeaheadInputMulti)>
+                                      <Overlay isMenuShown={false} referenceElement={[undefined]} align=\\"justify\\" dropup={false} flip={false} positionFixed={false} />
+                                    </div>
+                                  </RootCloseWrapper>
+                                </TypeaheadManager>
+                              </Typeahead>
+                            </TypeaheadComponent>
+                          </ForwardRef>
                         </div>
                         <button type=\\"submit\\" className=\\"btn btn-primary\\" onClick={[Function: handleAdvancedSearchFormSubmit]}>
                           <i className=\\"fa fa-search\\" aria-hidden=\\"true\\" />
