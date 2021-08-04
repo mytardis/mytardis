@@ -1,8 +1,9 @@
-import logging
+#import logging
 
 from django import forms
-from django.db import transaction
-from tardis_portal.models.instrument import Instrument
+
+# from django.db import transaction
+from tardis.tardis_portal.models.instrument import Instrument
 
 
 class DatasetPIDForm(forms.Form):
