@@ -1,5 +1,16 @@
 Releases
 ========
+4.5.0
+-----
+* Support for displaying online/offline files status for file in HSM
+* Support for requesting recall of an offline dataset
+* Support for requesting recall of an offline datafile
+* Updated various Python and JS libraries
+* Bugfixes
+  - Fixed #2901
+  - PushTo related fixes #2910
+  - Fix redirect to next page
+  - Fixes related to tree view #2742
 
 4.6.0
 -----
