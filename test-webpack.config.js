@@ -50,24 +50,9 @@ module.exports = {
                 exclude: "tardis_portal_facility_view"
             })],
         splitChunks: {
-            chunks: "async",
             minSize: 30000,
-            maxSize: 0,
-            minChunks: 1,
             maxAsyncRequests: 5,
-            maxInitialRequests: 3,
-            automaticNameDelimiter: "~",
-            cacheGroups: {
-                defaultVendors: {
-                    test: /[\\/]node_modules[\\/]/,
-                    priority: -10,
-                },
-                default: {
-                    minChunks: 2,
-                    priority: -20,
-                    reuseExistingChunk: true
-                }
-            }
+            maxInitialRequests: 3
         }
     },
     plugins: [
@@ -138,13 +123,10 @@ module.exports = {
         ]
     },
     resolve: {
-        modules: ["node_modules", "bower_components"],
+        modules: ["node_modules"],
         extensions: ["*", ".js", ".jsx"],
         alias: {
-            "jquery": __dirname + "/node_modules/jquery",
-            "main": __dirname + "/assets/js/tardis_portal/main",
-            "experimentabs": __dirname + "/assets/js/tardis_portal/view_experiment/experiment-tabs",
-            "experimentshare": __dirname + "/assets/js/tardis_portal/view_experiment/share",
+            "jquery": __dirname + "/node_modules/jquery"
         },
     }
 };
