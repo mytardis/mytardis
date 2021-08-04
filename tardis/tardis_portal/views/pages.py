@@ -808,6 +808,7 @@ def add_dataset(request, experiment_id):
             if "tardis.apps.datasetpid" in settings.INSTALLED_APPS:
                 dataset.pid.pid = form.cleaned_data["pid"]
             dataset.save()
+            dataset.pid.save()
             return _redirect_303("tardis_portal.view_dataset", dataset.id)
     else:
         # Add code to override the default form to use the DatasetPIDForm
@@ -841,6 +842,7 @@ def edit_dataset(request, dataset_id):
             if "tardis.apps.datasetpid" in settings.INSTALLED_APPS:
                 dataset.pid.pid = form.cleaned_data["pid"]
             dataset.save()
+            dataset.pid.save()
             return _redirect_303("tardis_portal.view_dataset", dataset.id)
     else:
         # Add code to override the default form to use the DatasetPIDForm
