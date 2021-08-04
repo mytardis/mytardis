@@ -845,7 +845,13 @@ def edit_dataset(request, dataset_id):
     else:
         # Add code to override the default form to use the DatasetPIDForm
         if "tardis.apps.datasetpid" in settings.INSTALLED_APPS:
-            form = DatasetPIDForm(instance=dataset)
+            initialisation_dict = {
+                "description": dataset.description,
+                "instrument": dataset.instrument,
+                "directory": dataset.directory,
+                "pid": dataset.pid.pid,
+            }
+            form = DatasetPIDForm(initial=initialisation_dict)
         else:
             form = DatasetForm(instance=dataset)
 
