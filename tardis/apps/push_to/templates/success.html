@@ -1,11 +1,23 @@
+{% load static %}
+{% load render_bundle from webpack_loader %}
 <!DOCTYPE html>
 <html>
 <head lang="en">
     <meta charset="UTF-8">
-    <title>Success</title>
-    <link href="/static/push-to/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <title>Push to - Success</title>
+    {% render_bundle 'push_to_app' %}
 </head>
-    <body style="margin: 5px 5px 5px 5px">
-    <div class="alert alert-success" role="alert">{{ message | safe }}</div>
-    </body>
+
+<body>
+    <div class="container h-100">
+        <div class="d-flex align-items-center justify-content-center h-100">
+            <div class="alert alert-success" role="alert">
+                <h4 class="alert-heading">Success</h4>
+                <hr>
+                {{ message | safe }}
+            </div>
+        </div>
+    </div>
+</body>
+
 </html>

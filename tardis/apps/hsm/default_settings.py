@@ -14,7 +14,7 @@ https://en.wikipedia.org/wiki/Inode#Inlining
 
 HSM_EMAIL_TEMPLATES = {
     'dfo_recall_complete': ('[{site_title}] File recalled from archive',
-                           '''\
+                            '''\
 Dear {first_name} {last_name},
 
 The following file has has been recalled from the archive:
@@ -30,7 +30,7 @@ Regards,
 {site_title} Team.
 '''),
     'dfo_recall_failed': ('[{site_title}] File recall failed',
-                           '''\
+                          '''\
 Dear {first_name} {last_name},
 
 An error occurred when attempting to recall the following file from the archive:
@@ -43,7 +43,7 @@ Regards,
 {site_title} Team.
 '''),
     'dataset_recall_requested': ('[{site_title}] Dataset recall requested',
-                           '''\
+                                 '''\
 Dear RDSM support team,
 
 User {user} has requested to recall dataset {dataset} from HSM vault.
@@ -53,5 +53,20 @@ The path to the dataset is {path}
 
 Regards,
 {site_title} Team.
-''')
+'''),
+    'dfo_recall_requested': ('[{site_title}] Datafile recall requested',
+                             '''\
+Dear {first_name} {last_name},
+
+Your request to recall datafile {file_name} has been received.
+
+We will notify you when recall is complete and file is available for you to download.
+
+Please contact {support_email}, if your file is not available to download in next 24 hrs.
+
+
+Regards,
+{site_title} Team.
+                             '''
+                             )
 }
