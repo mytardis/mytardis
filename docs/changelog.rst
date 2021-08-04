@@ -1,5 +1,14 @@
 Releases
 ========
+
+4.6.0
+-----
+* #3091 Unable approve Google auth user
+* #3089 Events log update (switch to a native JSONField)
+* #3028 and #3029 Security fixes as per CodeQL advice
+* #3014 Track HSM app recalls with events log
+* Dependency updates
+
 4.5.0
 -----
 * Support for displaying online/offline files status for file in HSM
@@ -11,14 +20,6 @@ Releases
   - PushTo related fixes #2910
   - Fix redirect to next page
   - Fixes related to tree view #2742
-
-4.6.0
------
-* #3091 Unable approve Google auth user
-* #3089 Events log update (switch to a native JSONField)
-* #3028 and #3029 Security fixes as per CodeQL advice
-* #3014 Track HSM app recalls with events log
-* Dependency updates
 
 4.4.0
 -----
