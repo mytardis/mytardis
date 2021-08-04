@@ -98,25 +98,26 @@ module.exports = {
                 use: [{
                     loader: MiniCssExtractPlugin.loader,
                     options: {
-                        publicPath: "../static/bundles/"
+                        publicPath: "/bundles/"
                     }
                 }, "css-loader"]
             }, {
-                test: /\.(woff|woff2|)(\?v=[0-9]\.[0-9]\.[0-9])?$/,
-                loader: "url-loader",
-                options: {
-                    name: "[name].[ext]",
-                    outputPath: "static/bundles/",
-                    publicPath: "../static/bundles/",
-                    limit: 10000,
-                    mimetype: "application/font-woff"
-                }
+                test: /\.(woff(2)?)(\?v=[0-9]\.[0-9]\.[0-9])?$/,
+                use: [{
+                    loader: "url-loader",
+                    options: {
+                        limit: 10000,
+                        mimetype: "application/font-woff",
+                        name: "[name].[ext]",
+                        publicPath: "/static/bundles/"
+                    }
+                }]
             }, {
                 test: /\.(ttf|eot|svg)(\?v=[0-9]\.[0-9]\.[0-9])?$/,
                 loader: "file-loader",
                 options: {
                     name: "[name].[ext]",
-                    publicPath: "/bundles/"
+                    publicPath: "/static/bundles/"
                 }
             }, {
                 test: /\.(gif|png|jpe?g)$/i,
