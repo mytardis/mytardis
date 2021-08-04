@@ -23,6 +23,14 @@
             {{ form.description | add_class:"form-control" }}
           </div>
         </div>
+	{% if form.pid %}
+	<div class="form-group row">
+          <label class="col-form-label col-md-2 " for="id_pid">Identifier</label>
+          <div class=" col-md-9 ">
+            {{ form.pid | add_class:"form-control" }}
+          </div>
+        </div>
+	{% endinf %}
         <div class="form-group row">
           <label class="col-form-label col-md-2 " for="id_directory">Directory</label>
           <div class=" col-md-9 ">

@@ -38,6 +38,10 @@ from ..views.utils import (
 )
 from ..util import get_filesystem_safe_dataset_name
 
+# Add code to override the default form to use the DatasetPIDForm
+if "tardis.apps.datasetpid" in settings.INSTALLED_APPS:
+    from tardis.apps.datasetpid.forms import DatasetPIDForm
+
 logger = logging.getLogger(__name__)
 
 
@@ -785,9 +789,6 @@ def add_dataset(request, experiment_id):
     if not has_experiment_write(request, experiment_id):
         return HttpResponseForbidden()
 
-    # Add code to override the default form to use the DatasetPIDForm
-    if "tardis.apps.datasetpid" in settings.INSTALLED_APPS:
-        from tardis.apps.datasetpid.forms import DatasetPIDForm
     # Process form or prepopulate it
     if request.method == "POST":
         # Add code to override the default form to use the DatasetPIDForm
