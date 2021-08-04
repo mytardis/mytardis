@@ -1,4 +1,4 @@
-#
+# pylint: disable=C0303
 from tardis.app_config import AbstractTardisAppConfig
 
 
