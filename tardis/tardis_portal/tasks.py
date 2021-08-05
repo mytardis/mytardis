@@ -226,6 +226,7 @@ def dfo_verify(dfo_id, *args, **kwargs):
         return dfo.verify(*args, **kwargs)
     except DataFileObject.DoesNotExist:
         pass
+    return False
 
 
 @tardis_app.task(name='tardis_portal.clear_sessions', ignore_result=True)
