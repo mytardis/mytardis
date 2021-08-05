@@ -29,7 +29,7 @@ module.exports = {
         tardis_portal_facility_view: "./assets/js/tardis_portal/facility_view/index.js",
         tardis_portal_auth_methods: "./assets/js/tardis_portal/auth_methods/auth_methods.js",
         lib: glob.sync("./assets/js/lib/**/*.js"),
-        push_to_app: "./tardis/apps/push_to/static/index.js",
+        push_to_app: "./assets/js/apps/push_to/index.js",
         search_app : "./assets/js/apps/search/index.jsx",
         test: glob.sync("./js_tests/tardis_portal/**/*.js"),
         tree_view : "./assets/js/apps/tree_view/index.jsx",
