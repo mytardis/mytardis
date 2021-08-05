@@ -779,16 +779,16 @@ def edit_experiment(
         else:
             form = ExperimentForm(request.POST, instance=experiment, extra=0)
         if form.is_valid():
+            # Add code to override the default form to use the DatasetPIDForm
+            if "tardis.apps.experimentpid" in settings.INSTALLED_APPS:
+                experiment.pid.pid = form.cleaned_data["pid"]
+            experiment.pid.save()
+            form.cleaned_data.pop("pid")
             full_experiment = form.save(commit=False)
             experiment = full_experiment["experiment"]
             # a workaround for django-elastic-search issue #155
             experiment.created_by = User.objects.get(id=request.user.id)
             full_experiment.save_m2m()
-
-            # Add code to override the default form to use the DatasetPIDForm
-            if "tardis.apps.experimentpid" in settings.INSTALLED_APPS:
-                experiment.pid.pid = form.cleaned_data["pid"]
-            experiment.pid.save()
 
             request.POST = {"status": "Experiment Saved."}
             return HttpResponseSeeAlso(
