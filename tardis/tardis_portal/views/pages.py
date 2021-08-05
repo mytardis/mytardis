@@ -41,6 +41,9 @@ from ..util import get_filesystem_safe_dataset_name
 # Add code to override the default form to use the DatasetPIDForm
 if "tardis.apps.datasetpid" in settings.INSTALLED_APPS:
     from tardis.apps.datasetpid.forms import DatasetPIDForm
+# Add code to override the default form to use the ExperimentPIDForm
+if "tardis.apps.experimentpid" in settings.INSTALLED_APPS:
+    from tardis.apps.experimentpid.forms import ExperimentPIDForm
 
 logger = logging.getLogger(__name__)
 
@@ -695,7 +698,10 @@ def create_experiment(request, template_name="tardis_portal/create_experiment.ht
     }
 
     if request.method == "POST":
-        form = ExperimentForm(request.POST)
+        if "tardis.apps.experimentpid" in settings.INSTALLED_APPS:
+            form = ExperimentPIDForm(request.POST)
+        else:
+            form = ExperimentForm(request.POST)
         if form.is_valid():
             full_experiment = form.save(commit=False)
 
@@ -719,6 +725,11 @@ def create_experiment(request, template_name="tardis_portal/create_experiment.ht
             )
             acl.save()
 
+            # Add code to override the default form to use the DatasetPIDForm
+            if "tardis.apps.experimentpid" in settings.INSTALLED_APPS:
+                experiment.pid.pid = form.cleaned_data["pid"]
+            experiment.pid.save()
+
             request.POST = {"status": "Experiment Created."}
             return HttpResponseSeeAlso(
                 reverse("tardis_portal.view_experiment", args=[str(experiment.id)])
@@ -728,7 +739,10 @@ def create_experiment(request, template_name="tardis_portal/create_experiment.ht
         c["status"] = "Errors exist in form."
         c["error"] = "true"
     else:
-        form = ExperimentForm(extra=1)
+        if "tardis.apps.experimentpid" in settings.INSTALLED_APPS:
+            form = ExperimentPIDForm(extra=1)
+        else:
+            form = ExperimentForm(extra=1)
 
     c["form"] = form
     c["default_institution"] = settings.DEFAULT_INSTITUTION
@@ -760,13 +774,21 @@ def edit_experiment(
     }
 
     if request.method == "POST":
-        form = ExperimentForm(data=request.POST, instance=experiment, extra=0)
+        if "tardis.apps.experimentpid" in settings.INSTALLED_APPS:
+            form = ExperimentPIDForm(request.POST, instance=experiment, extra=0)
+        else:
+            form = ExperimentForm(request.POST, instance=experiment, extra=0)
         if form.is_valid():
             full_experiment = form.save(commit=False)
             experiment = full_experiment["experiment"]
             # a workaround for django-elastic-search issue #155
             experiment.created_by = User.objects.get(id=request.user.id)
             full_experiment.save_m2m()
+
+            # Add code to override the default form to use the DatasetPIDForm
+            if "tardis.apps.experimentpid" in settings.INSTALLED_APPS:
+                experiment.pid.pid = form.cleaned_data["pid"]
+            experiment.pid.save()
 
             request.POST = {"status": "Experiment Saved."}
             return HttpResponseSeeAlso(
@@ -777,7 +799,10 @@ def edit_experiment(
         c["status"] = "Errors exist in form."
         c["error"] = "true"
     else:
-        form = ExperimentForm(instance=experiment, extra=0)
+        if "tardis.apps.experimentpid" in settings.INSTALLED_APPS:
+            form = ExperimentPIDForm(request.POST, instance=experiment, extra=0)
+        else:
+            form = ExperimentForm(request.POST, instance=experiment, extra=0)
 
     c["form"] = form
 
@@ -847,13 +872,14 @@ def edit_dataset(request, dataset_id):
     else:
         # Add code to override the default form to use the DatasetPIDForm
         if "tardis.apps.datasetpid" in settings.INSTALLED_APPS:
-            initialisation_dict = {
-                "description": dataset.description,
-                "instrument": dataset.instrument,
-                "directory": dataset.directory,
-                "pid": dataset.pid.pid,
-            }
-            form = DatasetPIDForm(initial=initialisation_dict)
+            # initialisation_dict = {
+            #    "description": dataset.description,
+            #    "instrument": dataset.instrument,
+            #    "directory": dataset.directory,
+            #    "pid": dataset.pid.pid,
+            # }
+            # form = DatasetPIDForm(initial=initialisation_dict)
+            form = DatasetPIDForm(instance=dataset)
         else:
             form = DatasetForm(instance=dataset)
 

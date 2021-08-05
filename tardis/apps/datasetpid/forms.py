@@ -2,7 +2,6 @@ import logging
 
 from django import forms
 
-from tardis.tardis_portal.models.instrument import Instrument
 from tardis.tardis_portal.forms import DatasetForm
 
 logger = logging.getLogger(__name__)
