@@ -9,4 +9,4 @@ logger = logging.getLogger(__name__)
 
 class ExperimentPIDForm(ExperimentForm):
 
-    pid = forms.TextField()
+    pid = forms.CharField(required=False)
