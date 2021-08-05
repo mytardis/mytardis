@@ -13,6 +13,8 @@ Releases
 * #3028 and #3029 Security fixes as per CodeQL advice
 * #3014 Track HSM app recalls with events log
 * Dependency updates for Python and JS
+* NodeJS has been switched from 10.x to LTS version (14.x)
+* Dockerfile for tests has been switched to Ubuntu 20.04
 
 4.5.0
 -----
