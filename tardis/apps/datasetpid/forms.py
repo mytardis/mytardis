@@ -1,14 +1,13 @@
-# import logging
+import logging
 
 from django import forms
 
-# from django.db import transaction
 from tardis.tardis_portal.models.instrument import Instrument
+from tardis.tardis_portal.forms import DatasetForm
+
+logger = logging.getLogger(__name__)
 
 
-class DatasetPIDForm(forms.Form):
+class DatasetPIDForm(DatasetForm):
 
-    description = forms.CharField(max_length=400, required=True)
-    directory = forms.CharField(max_length=400, required=False)
-    instrument = forms.ModelChoiceField(queryset=Instrument.objects.all())
     pid = forms.CharField(max_length=400, required=False)
