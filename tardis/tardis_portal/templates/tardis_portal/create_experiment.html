@@ -27,6 +27,12 @@
             </p>
           </div>
         </div>
+        <div class="form-group row">
+          <label class="col-form-label col-md-2 " for="institution_name">Institution name</label>
+          <div class=" col-md-9 ">
+           {{ form.institution_name | add_class:"form-control" }}
+          </div>
+        </div>
 	{% if form.pid %}
 	<div class="form-group row">
           <label class="col-form-label col-md-2 " for="id_pid">Identifier</label>
@@ -35,12 +41,6 @@
           </div>
         </div>
 	{% endif %}
-        <div class="form-group row">
-          <label class="col-form-label col-md-2 " for="institution_name">Institution name</label>
-          <div class=" col-md-9 ">
-           {{ form.institution_name | add_class:"form-control" }}
-          </div>
-        </div>
         <div class="form-group row">
           <label class="col-form-label col-md-2 " for="description">Description</label>
           <div class=" col-md-9 ">
