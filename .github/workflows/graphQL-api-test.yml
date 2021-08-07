@@ -32,7 +32,8 @@ jobs:
     - name: run graphQL tests
       run: |
         mkdir -p var/store
-        python manage.py createsuperuser --settings=tardis.test_settings
+        python manage.py migrate
+        python manage.py createsuperuser --settings=tardis.test_settings --noinput
         python manage.py runserver --settings=tardis.test_settings &
         sleep 2
         newman run tardis/tardis_portal/graphql/tests/Experiments.postman_collection.json -r cli,json --verbose
