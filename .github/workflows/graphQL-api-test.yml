@@ -1,4 +1,4 @@
-ame: Test Mytardis GraphQL API
+name: Test Mytardis GraphQL API
 
 on: [push, pull_request]
 
