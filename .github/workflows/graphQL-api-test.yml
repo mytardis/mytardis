@@ -39,4 +39,6 @@ jobs:
         newman run tardis/tardis_portal/graphql/tests/Experiments.postman_collection.json -r cli,json --verbose
       env:
         DJANGO_SUPERUSER_PASSWORD: admin
+        DJANGO_SUPERUSER_USERNAME: admin
+        DJANGO_SUPERUSER_EMAIL: admin@admin.com
 
