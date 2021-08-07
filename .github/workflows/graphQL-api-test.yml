@@ -27,8 +27,8 @@ jobs:
       uses: actions/setup-node@v1
       with:
         node-version: '10.x'
-      - run: npm install
-      - run: npm run build
+    - run: npm install
+    - run: npm run build
     - name: run graphQL tests
       run: |
         mkdir -p var/store
