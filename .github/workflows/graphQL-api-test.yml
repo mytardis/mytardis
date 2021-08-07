@@ -32,7 +32,7 @@ jobs:
     - name: run graphQL tests
       run: |
         mkdir -p var/store
-        python manage.py migrate
+        python manage.py migrate --settings=tardis.test_settings
         python manage.py createsuperuser --settings=tardis.test_settings --noinput
         python manage.py runserver --settings=tardis.test_settings &
         sleep 2
