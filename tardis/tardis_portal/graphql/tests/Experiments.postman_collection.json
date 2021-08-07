@@ -1,0 +1,253 @@
+{
+	"info": {
+		"_postman_id": "980cbd0c-55cd-4db4-b042-a1e74b060f15",
+		"name": "Experiments",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Get token",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status test\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"var res = pm.response.json()\r",
+							"pm.environment.set('token', res.data.userSignIn.token)\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "mutation {\r\n  userSignIn(input: {\r\n    username: \"admin\",\r\n    password: \"admin\"\r\n  }) {\r\n    token\r\n    user {\r\n      firstName\r\n      lastName\r\n      email\r\n    }\r\n  }\r\n}",
+						"variables": ""
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}",
+					"host": [
+						"{{base_url}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Experiments",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"const arr = new Array(10)\r",
+							"// Get the length of the array\r",
+							"var idArrayLength = arr.length;\r",
+							"\r",
+							"// Store the array length in the environment\r",
+							"pm.environment.set('idArrayLength',idArrayLength);\r",
+							"if(!pm.environment.has('counter'))\r",
+							"{\r",
+							"    pm.environment.set('counter',0);\r",
+							"}\r",
+							"\r",
+							"//get the counter value\r",
+							"var counter = pm.environment.get('counter');\r",
+							"\r",
+							"\r",
+							"//get the value of the idArray at the current iteration (counter)\r",
+							"//var exp = expArray[counter];\r",
+							"pm.environment.set('exp',`test_experiment_${counter}`);\r",
+							"\r",
+							"//incremement the counter, and store it in the environment\r",
+							"counter++;\r",
+							"pm.environment.set('counter',counter);"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Response time is less than limit\", function() {\r",
+							"    pm.expect(pm.response.responseTime).to.be.below(200)\r",
+							"})\r",
+							"pm.test(\"Successful POST request\", function () {\r",
+							"    pm.expect(pm.response.code).to.be.equals(200);\r",
+							"});\r",
+							"//get the counter value and array length\r",
+							"var counter = pm.environment.get('counter');\r",
+							"var arrayLength = pm.environment.get(\"idArrayLength\");\r",
+							"\r",
+							"//check to see if there are more indexes in the array to go through, and if so \r",
+							"if (counter < arrayLength)\r",
+							"{\r",
+							"    postman.setNextRequest('Create Experiments');\r",
+							"    // NOTE: since this the only request being looped, you can use also: pm.info.requestName in place of the literal request name. This allows the request name to be changed without a code update.\r",
+							"    // Example:\r",
+							"    // postman.setNextRequest(pm.info.requestName);\r",
+							"}\r",
+							"else\r",
+							"{\r",
+							"    postman.setNextRequest('Get Experiments');\r",
+							"    //unset variable\r",
+							"    pm.environment.unset('counter');\r",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "oauth2",
+					"oauth2": [
+						{
+							"key": "grant_type",
+							"value": "authorization_code",
+							"type": "string"
+						},
+						{
+							"key": "headerPrefix",
+							"value": "JWT",
+							"type": "string"
+						},
+						{
+							"key": "addTokenTo",
+							"value": "header",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "mutation{\r\n  createExperiment(input: {\r\n\ttitle: \"{{exp}}\",\r\n    institutionName: \"Test_ins\",\r\n    description: \"desc\"\r\n  }) {\r\n    experiment{\r\n      id\r\n      title\r\n    }\r\n  }\r\n}",
+						"variables": ""
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}",
+					"host": [
+						"{{base_url}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Experiments",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"\r",
+							"pm.test(\"Body matches string\", function () {\r",
+							"    pm.expect(pm.response.text()).to.include(\"data\");\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "oauth2",
+					"oauth2": [
+						{
+							"key": "grant_type",
+							"value": "authorization_code",
+							"type": "string"
+						},
+						{
+							"key": "headerPrefix",
+							"value": "JWT",
+							"type": "string"
+						},
+						{
+							"key": "addTokenTo",
+							"value": "header",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "{experiments {\r\n  edges {\r\n    node {\r\n      id\r\n      title\r\n      description\r\n    }\r\n  }\r\n}}\r\n",
+						"variables": ""
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}",
+					"host": [
+						"{{base_url}}"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"auth": {
+		"type": "oauth2",
+		"oauth2": [
+			{
+				"key": "addTokenTo",
+				"value": "header",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"pm.test(\"status test\", function () {",
+					"    pm.response.to.have.status(200);",
+					"})"
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": " http://127.0.0.1:8000/graphql/ "
+		}
+	]
+}
