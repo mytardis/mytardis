@@ -30,16 +30,24 @@ jobs:
     - run: npm install
     - run: npm run build
     - run: mkdir -p var/store
+    - name: create settings file
+      run |
+      echo "from .default_settings import *\n\
+      DEBUG = True\n\
+      DATABASES['default']['ENGINE'] = 'django.db.backends.sqlite3'\n\
+      DATABASES['default']['NAME'] = 'tardis_db'\n\
+      GRAPHQL = True\n" >> tardis/settings.py
+      python -c "import os; from random import choice; key_line = '%sSECRET_KEY=\"%s\"\n' % ('from .default_settings import * \n\n' if not os.path.isfile('tardis/settings.py') else '', ''.join([choice('abcdefghijklmnopqrstuvwxyz0123456789@#%^&*(-_=+)') for i in range(50)])); f=open('tardis/settings.py', 'a+'); f.write(key_line); f.close()"
+      cat tardis/settings.py
     - name: run migration
       run: python manage.py migrate
       env:
-        DJANGO_SETTINGS_MODULE: tardis.test_settings
+        DJANGO_SETTINGS_MODULE: tardis.settings
     - name: create superuser
       run: |
-        python manage.py migrate &&
         python manage.py createsuperuser --noinput
       env:
-        DJANGO_SETTINGS_MODULE: tardis.test_settings
+        DJANGO_SETTINGS_MODULE: tardis.settings
         DJANGO_SUPERUSER_PASSWORD: admin
         DJANGO_SUPERUSER_USERNAME: admin
         DJANGO_SUPERUSER_EMAIL: admin@admin.com
@@ -49,4 +57,4 @@ jobs:
         sleep 2
         newman run tardis/tardis_portal/graphql/tests/Experiments.postman_collection.json -r cli,json --verbose
       env:
-        DJANGO_SETTINGS_MODULE: tardis.test_settings
+        DJANGO_SETTINGS_MODULE: settings
