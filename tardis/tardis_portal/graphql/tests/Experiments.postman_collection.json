@@ -15,8 +15,13 @@
 							"pm.test(\"Status test\", function () {\r",
 							"    pm.response.to.have.status(200);\r",
 							"});\r",
+							"\r",
 							"var res = pm.response.json()\r",
-							"pm.environment.set('token', res.data.userSignIn.token)\r",
+							"console.log(res)\r",
+							"pm.test(\"response contains token\", function () {\r",
+							"    pm.expect(pm.response.text()).to.include(\"token\");\r",
+							"});\r",
+							"pm.collectionVariables.set('token', res.data.userSignIn.token)\r",
 							""
 						],
 						"type": "text/javascript"
@@ -49,6 +54,12 @@
 					"listen": "prerequest",
 					"script": {
 						"exec": [
+							"//add header\r",
+							"pm.request.headers.add({\r",
+							"  key: \"Authorization\",\r",
+							"    value: \"JWT \" +\r",
+							"        pm.collectionVariables.get(\"token\")\r",
+							"});\r",
 							"const arr = new Array(10)\r",
 							"// Get the length of the array\r",
 							"var idArrayLength = arr.length;\r",
@@ -85,6 +96,10 @@
 							"pm.test(\"Successful POST request\", function () {\r",
 							"    pm.expect(pm.response.code).to.be.equals(200);\r",
 							"});\r",
+							"console.log(pm.response.json())\r",
+							"pm.test(\"contains id\", function() {\r",
+							"    pm.expect(pm.response.text()).to.include(\"id\");\r",
+							"})\r",
 							"//get the counter value and array length\r",
 							"var counter = pm.environment.get('counter');\r",
 							"var arrayLength = pm.environment.get(\"idArrayLength\");\r",
@@ -248,6 +263,18 @@
 		{
 			"key": "base_url",
 			"value": " http://127.0.0.1:8000/graphql/ "
+		},
+		{
+			"value": "",
+			"disabled": true
+		},
+		{
+			"value": "",
+			"disabled": true
+		},
+		{
+			"key": "token",
+			"value": ""
 		}
 	]
 }
