@@ -8,7 +8,7 @@ from django.contrib.auth.models import User, Permission
 from django.contrib import messages
 from django.urls import reverse
 
-from celery.task import task
+from celery import shared_task
 
 from tardis.tardis_portal.models import UserAuthentication
 from tardis.tardis_portal.auth.utils import configure_user
@@ -163,7 +163,7 @@ def send_admin_email(**kwargs):
     return kwargs
 
 
-@task(name="social_auth_account_approved", ignore_result=True)
+@shared_task(name="social_auth_account_approved", ignore_result=True)
 def send_account_approved_email(user_id, authMethod):
     """Sends user email once account is approved by admin"""
     user = User.objects.get(id=user_id)

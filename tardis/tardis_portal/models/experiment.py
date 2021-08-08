@@ -8,7 +8,6 @@ from django.contrib.contenttypes.models import ContentType
 from django.urls import reverse
 from django.db import models
 from django.utils.safestring import SafeText
-from django.utils.encoding import python_2_unicode_compatible
 
 from ..managers import OracleSafeManager, ExperimentManager
 from .access_control import ObjectACL
@@ -18,7 +17,6 @@ from .license import License
 logger = logging.getLogger(__name__)
 
 
-@python_2_unicode_compatible
 class Experiment(models.Model):
     """An ``Experiment`` is a collection of
     :class:`~tardis.tardis_portal.models.dataset.Dataset` records.
@@ -260,7 +258,6 @@ class Experiment(models.Model):
         return None
 
 
-@python_2_unicode_compatible
 class ExperimentAuthor(models.Model):
 
     experiment = models.ForeignKey(Experiment, on_delete=models.CASCADE)

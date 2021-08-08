@@ -1,11 +1,9 @@
 from django.db import models
 from django.utils import timezone
-from django.utils.encoding import python_2_unicode_compatible
 
 from .facility import Facility
 
 
-@python_2_unicode_compatible
 class Instrument(models.Model):
     '''
     Represents an instrument belonging to a facility that produces data

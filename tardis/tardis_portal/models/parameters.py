@@ -11,7 +11,6 @@ from django.conf import settings
 from django.db import models
 from django.utils.safestring import mark_safe
 from django.utils.timezone import is_aware, is_naive, make_aware, make_naive
-from django.utils.encoding import python_2_unicode_compatible
 
 import dateutil.parser
 import pytz
@@ -37,7 +36,6 @@ class ParameterSetManagerMixin(ParameterSetManager):
     '''
 
 
-@python_2_unicode_compatible
 class Schema(models.Model):
 
     EXPERIMENT = 1
@@ -98,7 +96,6 @@ class Schema(models.Model):
             Exception.__init__(self, msg)
 
 
-@python_2_unicode_compatible
 class ParameterName(models.Model):
 
     EXACT_VALUE_COMPARISON = 1
@@ -283,7 +280,6 @@ def _get_parameter(parameter):
     return None
 
 
-@python_2_unicode_compatible
 class ParameterSet(models.Model, ParameterSetManagerMixin):
     schema = models.ForeignKey(Schema, on_delete=models.CASCADE)
     storage_box = models.ManyToManyField(
@@ -339,7 +335,6 @@ class ParameterSet(models.Model, ParameterSetManagerMixin):
         return self._has_any_perm(user_obj)
 
 
-@python_2_unicode_compatible
 class Parameter(models.Model):
     name = models.ForeignKey(ParameterName, on_delete=models.CASCADE)
     # string_value has a custom index created via migrations (for Postgresql)
@@ -533,7 +528,6 @@ class ExperimentParameterSet(ParameterSet):
         return ('experiment.title', 'Experiment')
 
 
-@python_2_unicode_compatible
 class FreeTextSearchField(models.Model):
 
     parameter_name = models.ForeignKey(ParameterName, on_delete=models.CASCADE)

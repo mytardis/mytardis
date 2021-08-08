@@ -3,12 +3,16 @@ import { Draggable } from 'react-beautiful-dnd';
 import PropTypes from 'prop-types';
 import DatasetSizeBadge from '../../badges/components/DatasetSizeBadge';
 import HSMDataFileCountBadge from '../../badges/components/HSMDataFileCountBadge';
+import DatafileCountBadge from '../../badges/components/DatafileCountBadge';
 
 const DatasetTile = ({
-  data, listName, index, onDownloadSelect, showDownloadCheckbox,
+  data, listName, index, onDownloadSelect, showDownloadCheckbox, hsmEnabled,
 }) => {
   const datasetData = {
     dataset_size: data.size,
+  };
+  const experimentData = {
+    datafile_count: data.file_count,
   };
   const onCheckBoxSelect = (id, event) => {
     onDownloadSelect(id, event);
@@ -51,7 +55,8 @@ const DatasetTile = ({
               <div className="float-left" style={{ marginRight: '10px' }} />
               <div className="float-right" style={{ textAlign: 'right' }}>
                 <p>
-                  <HSMDataFileCountBadge datasetId={data.id} />
+                  {hsmEnabled ? <HSMDataFileCountBadge datasetId={data.id} />
+                    : <DatafileCountBadge experimentData={experimentData} />}
                 </p>
                 <p>
                   <DatasetSizeBadge datasetData={datasetData} />
@@ -96,6 +101,7 @@ DatasetTile.propTypes = {
   index: PropTypes.number.isRequired,
   onDownloadSelect: PropTypes.func.isRequired,
   showDownloadCheckbox: PropTypes.bool,
+  hsmEnabled: PropTypes.bool.isRequired,
 };
 
 export default DatasetTile;

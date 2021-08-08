@@ -3,7 +3,7 @@ import logging
 from django.conf import settings
 from django.contrib.auth.models import User
 
-from celery.task import task
+from celery import shared_task
 
 from tardis import default_settings
 
@@ -13,7 +13,7 @@ from .email_text import email_migration_success
 logger = logging.getLogger(__name__)
 
 
-@task
+@shared_task
 def notify_migration_status(user_id, new_username, new_authmethod):
 
     user = User.objects.get(id=user_id)

@@ -318,13 +318,11 @@ def _initiate_push(request, callback_view, remote_host_id, obj_type, push_obj_id
             },
             request=request
         )
-
-    success_message = ('The requested item will be pushed to %s. <strong>You '
-                       'will be notified by email once this has been '
-                       'completed.</strong>'
-                       '<br/>'
-                       'Data will be pushed to '
-                       '<pre>%s</pre>')
+    success_message = """
+        <p>The requested item will be pushed to <span class="text-monospace">%s</span>.</p>
+        <p class='font-weight-bold'>You will be notified by email once this has been completed.</p>
+        <p>Data will be pushed to <span class="text-monospace">%s</span>.</p>
+    """
     success_message %= (remote_host.nickname, destination)
     return render_success_message(
         request,
@@ -374,6 +372,14 @@ def oauth_callback_url(request):
     :rtype: basestring
     """
     return request.build_absolute_uri(reverse(oauth_callback))
+
+
+def verify_redirect(request, redirect_url):
+    if redirect_url[:1] != "/":
+        root_url = "{0}://{1}/".format(request.scheme, request.get_host())
+        if redirect_url.find(root_url) != 0:
+            return root_url
+    return redirect_url
 
 
 @login_required
@@ -440,7 +446,9 @@ def authorize_remote_access(request, remote_host_id, service_id=None):
                      )
     if signing_result:
         return redirect(
-            next_redirect + '?credential_id=%i' % credential.pk)
+            verify_redirect(
+                request,
+                next_redirect + '?credential_id=%i' % credential.pk))
     # If key signing failed, delete the credential
     credential.delete()
     return render_error_message(
@@ -492,4 +500,7 @@ def oauth_callback(request):
     token = json.loads(r.text)
     set_token(request, oauth_service, token)
 
-    return redirect(next_redirect)
+    return redirect(
+        verify_redirect(
+            request,
+            next_redirect))

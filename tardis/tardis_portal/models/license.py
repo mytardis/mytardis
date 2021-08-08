@@ -2,12 +2,10 @@ from itertools import chain
 import logging
 
 from django.db import models
-from django.utils.encoding import python_2_unicode_compatible
 
 logger = logging.getLogger(__name__)
 
 
-@python_2_unicode_compatible
 class License(models.Model):
     '''
     Represents a licence for experiment content.

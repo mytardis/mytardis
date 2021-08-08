@@ -7,11 +7,13 @@ import Spinner from './utils/Spinner';
 import DatasetSizeBadge from './DatasetSizeBadge';
 import DatasetExperimentCountBadge from './DatasetExperimentCountBadge';
 import HSMDataFileCountBadge from './HSMDataFileCountBadge';
+import DatafileCountBadge from './DatafileCountBadge';
 
 
-const DatasetViewPageBadges = ({ datasetID }) => {
+const DatasetViewPageBadges = ({ datasetID, hsmEnabled }) => {
   const [datasetData, setDatasetData] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const [experimentData, setExperimentData] = useState({});
   const spinnerCss = css`
     margin: auto;
     width: 20%;
@@ -22,6 +24,7 @@ const DatasetViewPageBadges = ({ datasetID }) => {
     fetchDatasetData(datasetID).then((data) => {
       setDatasetData(data);
       setIsLoading(false);
+      setExperimentData({ datafile_count: data.dataset_datafile_count });
     });
   }, []);
 
@@ -33,9 +36,9 @@ const DatasetViewPageBadges = ({ datasetID }) => {
             <DatasetExperimentCountBadge datasetData={datasetData} />
           </span>
           <span className="mr-2">
-            {/* if HSM enabled */}
-            <HSMDataFileCountBadge datasetId={datasetID} />
-            {/* else DataFileCountBadge */}
+            {hsmEnabled ? <HSMDataFileCountBadge datasetId={parseInt(datasetID, 10)} />
+              : <DatafileCountBadge experimentData={experimentData} />
+            }
           </span>
           <span className="mr-2">
             <DatasetSizeBadge datasetData={datasetData} />
@@ -47,14 +50,20 @@ const DatasetViewPageBadges = ({ datasetID }) => {
 
 DatasetViewPageBadges.propTypes = {
   datasetID: PropTypes.string.isRequired,
+  hsmEnabled: PropTypes.bool.isRequired,
 };
 
+const hsmElem = document.querySelector('#hsm-enabled');
+let hsmEnabled = false;
+if (hsmElem) {
+  hsmEnabled = hsmElem.value === 'True';
+}
 const elem = document.querySelector('.badges');
 let datasetID = null;
 if (elem) {
   [, datasetID] = elem.id.split('-');
   ReactDOM.render(
-    <DatasetViewPageBadges datasetID={datasetID} />, elem,
+    <DatasetViewPageBadges datasetID={datasetID} hsmEnabled={hsmEnabled} />, elem,
   );
 }
 

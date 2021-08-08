@@ -3,7 +3,6 @@ import logging
 from django.conf import settings
 from django.db import models
 from django.contrib.auth.models import User
-from django.utils.encoding import python_2_unicode_compatible
 
 from ..managers import OracleSafeManager
 
@@ -17,7 +16,6 @@ def _token_expiry():
             datetime.timedelta(settings.TOKEN_EXPIRY_DAYS))
 
 
-@python_2_unicode_compatible
 class Token(models.Model):
 
     token = models.CharField(max_length=30, unique=True)

@@ -1,10 +1,8 @@
 from django.db import models
 from django.utils import timezone
 from django.contrib.auth.models import Group
-from django.utils.encoding import python_2_unicode_compatible
 
 
-@python_2_unicode_compatible
 class Facility(models.Model):
     """
     Represents a facility that produces data.

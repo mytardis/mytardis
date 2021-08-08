@@ -2,7 +2,9 @@ import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import DatasetTile from './DatasetTile';
 
-const DatasetTiles = ({ data, listName, onDownloadSelect }) => {
+const DatasetTiles = ({
+  data, listName, onDownloadSelect, hsmEnabled,
+}) => {
   const onCheckboxSelected = (id, event) => {
     onDownloadSelect(id, event);
   };
@@ -19,6 +21,7 @@ const DatasetTiles = ({ data, listName, onDownloadSelect }) => {
                   index={index}
                   listName={listName}
                   showDownloadCheckbox={false}
+                  hsmEnabled={hsmEnabled}
                 />
               ),
             )}
@@ -35,6 +38,7 @@ const DatasetTiles = ({ data, listName, onDownloadSelect }) => {
                   listName={listName}
                   onDownloadSelect={onCheckboxSelected}
                   showDownloadCheckbox
+                  hsmEnabled={hsmEnabled}
                 />
               ),
             )}
@@ -54,5 +58,6 @@ DatasetTiles.propTypes = {
   data: PropTypes.array.isRequired,
   listName: PropTypes.string.isRequired,
   onDownloadSelect: PropTypes.func,
+  hsmEnabled: PropTypes.bool.isRequired,
 };
 export default DatasetTiles;

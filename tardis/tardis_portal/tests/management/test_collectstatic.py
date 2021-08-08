@@ -26,7 +26,7 @@ class CollectstaticTest(TestCase):
     def test_collectstatic(self):
         with self.settings(
                 STATIC_ROOT=self.STATIC_ROOT,
-                STATICFILES_STORAGE='django.contrib.staticfiles.storage.CachedStaticFilesStorage',
+                STATICFILES_STORAGE='django.contrib.staticfiles.storage.StaticFilesStorage',
                 NPM_ROOT_PATH=self.NPM_ROOT_PATH):
             opts = {'interactive': False,
                     'verbosity': 0,
@@ -35,5 +35,6 @@ class CollectstaticTest(TestCase):
                     'dry_run': False,
                     'ignore_patterns': [],
                     'use_default_ignore_patterns': True,
-                    'post_process': True}
+                    'post_process': True,
+                    'skip_checks': True}
             self.cmd.handle(**opts)

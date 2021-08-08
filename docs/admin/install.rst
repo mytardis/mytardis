@@ -3,7 +3,7 @@ Installation
 ============
 
 The sections through to Extended Configuration below provide a Quick Start
-guide for getting a basic MyTardis installation up and running.  The following
+guide for getting a basic MyTardis installation up and running. The following
 section provides additional information on advanced configuration and add-on
 capabilities of MyTardis.
 
@@ -13,6 +13,8 @@ Prerequisites
 
 Ubuntu (18.04 LTS is recommended)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Login as ``ubuntu`` user, not root.
 
 Run this script for Python 3::
 
@@ -56,13 +58,26 @@ For Ubuntu 18.04 with Python 3 (using pip3 installed virtualenvwrapper)::
 
   source /usr/local/bin/virtualenvwrapper.sh
 
-Then create the ``mytardis`` virtual environment ::
+Then create the ``mytardis`` virtual environment::
 
   mkvirtualenv mytardis
-  pip install -U pip
 
 Note: the next time you want to work with this virtualenv, run the appropriate
 ``source`` command and then use the command: ``workon mytardis``
+
+Make sure you are running Python 3.x::
+
+  $ python -V
+  Python 3.6.9
+
+Now upgrade pip and setup tools::
+
+  pip install -U pip setuptools
+
+Check pip version::
+
+  $ pip -V
+  pip 21.0.1 from /home/ubuntu/mytardis/mytardis/lib/python3.6/site-packages/pip (python 3.6)
 
 MyTardis dependencies are then installed with pip::
 
@@ -75,6 +90,10 @@ To install minimal Javascript dependencies for production::
 To install Javascript dependencies for production and for testing::
 
   npm install && npm test
+
+To compile Webpack assets::
+
+  npm run-script build
 
 Configuring MyTardis is done through a standard Django *settings.py*
 file. MyTardis comes with a set of default settings in its
@@ -134,6 +153,30 @@ MyTardis can now be executed in its simplest form using::
 
 This will start the Django web server at http://localhost:8000/.
 
+
+Running in a Docker Container
+-----------------------------
+
+Installation steps from above can be summarised as a following `Dockerfile`:
+
+.. literalinclude:: ../../Dockerfile
+   :language: text
+
+**This is a minimum configuration for MyTardis, which is not suitable for running
+in production.**
+
+To build and run Docker container locally you will need to run following commands::
+
+  docker build . --tag mytardis
+  docker run --name mytardis -p 8000:8000 mytardis
+
+Alternatively you can use pre-built Docker image from DockerHub::
+
+  docker run --name mytardis -p 8000:8000 mytardis/mytardis:develop
+
+If you are keep in MyTardis development, we recommended you to
+visit https://github.com/mytardis/mytardis-dev for a full stack
+development environment, which runs using Docker.
 
 Extended configuration
 ----------------------
@@ -551,7 +594,7 @@ combined with NGINX).  Gunicorn is typically run from a Systemd service
     [Unit]
     Description=gunicorn daemon
     After=network.target
-    
+
     [Service]
     User=mytardis
     Group=mytardis
@@ -561,7 +604,7 @@ combined with NGINX).  Gunicorn is typically run from a Systemd service
       -b 127.0.0.1:8000 \
       --log-syslog \
       wsgi:application
-    
+
     [Install]
     WantedBy=multi-user.target
 
@@ -630,7 +673,7 @@ For tasks scheduled by Celerybeat, the Systemd service configuration
     [Unit]
     Description=celerybeat daemon
     After=network.target
-    
+
     [Service]
     User=mytardis
     Group=mytardis
@@ -638,7 +681,7 @@ For tasks scheduled by Celerybeat, the Systemd service configuration
     Environment=DJANGO_SETTINGS_MODULE=tardis.settings
     ExecStart=/home/mytardis/.virtualenvs/mytardis/bin/celery beat \
       -A tardis.celery.tardis_app --loglevel INFO
-    
+
     [Install]
     WantedBy=multi-user.target
 

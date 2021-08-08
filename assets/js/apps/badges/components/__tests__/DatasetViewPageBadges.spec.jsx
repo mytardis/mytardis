@@ -33,6 +33,10 @@ beforeEach(async () => {
   container = document.createElement('div');
   container.setAttribute('id', 'experiment-1234');
   container.setAttribute('class', 'badges');
+  const hsmContainer = document.createElement('div');
+  hsmContainer.setAttribute('id', 'hsm-enabled');
+  hsmContainer.setAttribute('value', 'True');
+  document.body.appendChild(hsmContainer);
   document.body.appendChild(container);
 });
 afterEach(() => {
@@ -44,7 +48,7 @@ afterEach(() => {
 describe('renders badges on experiment view page', () => {
   it('should render all badges', async () => {
     await act(async () => {
-      ReactDOM.render(<DatasetViewPageBadges datasetID="123" />, container);
+      ReactDOM.render(<DatasetViewPageBadges datasetID="123" hsmEnabled />, container);
     });
     expect(container).toMatchSnapshot();
     expect(container.querySelectorAll('span').length)
@@ -52,21 +56,21 @@ describe('renders badges on experiment view page', () => {
   });
   it('should render experiment count badge', async () => {
     await act(async () => {
-      ReactDOM.render(<DatasetViewPageBadges datasetID="123" />, container);
+      ReactDOM.render(<DatasetViewPageBadges datasetID="123" hsmEnabled />, container);
     });
     expect(container.querySelectorAll('span')[0].textContent.trim())
       .toEqual('3');
   });
   it('should render datafile count badge', async () => {
     await act(async () => {
-      ReactDOM.render(<DatasetViewPageBadges datasetID="123" />, container);
+      ReactDOM.render(<DatasetViewPageBadges datasetID="123" hsmEnabled />, container);
     });
     expect(container.querySelectorAll('span')[2].textContent.trim())
       .toEqual('4');
   });
   it('should render last updated badge', async () => {
     await act(async () => {
-      ReactDOM.render(<DatasetViewPageBadges datasetID="123" />, container);
+      ReactDOM.render(<DatasetViewPageBadges datasetID="123" hsmEnabled />, container);
     });
     expect(container.querySelectorAll('span')[4].textContent.trim())
       .toEqual('13.56 MB');

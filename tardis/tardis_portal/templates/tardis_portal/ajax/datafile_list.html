@@ -1,5 +1,5 @@
 {% load pagination %}
-{% load static from staticfiles %}
+{% load static %}
 
 {% if datafiles.paginator.num_pages > 1 %}
   {% block top-pagination %}{% pagination datafiles paginator page_num query_string %}{% endblock %}

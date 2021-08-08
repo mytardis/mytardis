@@ -25,7 +25,7 @@ const DatasetExperimentCountBadge = ({ datasetData }) => {
 };
 
 DatasetExperimentCountBadge.propTypes = {
-  datasetData: PropTypes.string.isRequired,
+  datasetData: PropTypes.object.isRequired,
 };
 
 export default DatasetExperimentCountBadge;

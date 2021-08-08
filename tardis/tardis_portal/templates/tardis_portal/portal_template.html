@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-{% load static from staticfiles %}
+{% load static %}
 {% load render_bundle from webpack_loader %}
 {% load facility_tags %}
 {% load approved_user_tags %}
@@ -201,7 +201,7 @@
                     '<div class="alert ' +
                         this.type +
                         '"><a class="close" data-dismiss="alert">×</a><span>' +
-                        text +
+                        he.encode(text) +
                         '</span></div>');
             },
             success: function(text) {

@@ -20,7 +20,6 @@ from django.db.models.signals import pre_delete
 from django.dispatch import receiver
 from django.forms.models import model_to_dict
 from django.utils import timezone
-from django.utils.encoding import python_2_unicode_compatible
 from django.utils.functional import cached_property
 
 import magic
@@ -36,7 +35,6 @@ IMAGE_FILTER = (Q(mimetype__startswith='image/') &
     (Q(datafileparameterset__datafileparameter__name__units__startswith="image"))  # noqa
 
 
-@python_2_unicode_compatible
 class DataFile(models.Model):
     """A ``DataFile`` is a record of a file which includes its filename,
     its size in bytes, its relative directory, and various other meta-data.
@@ -343,14 +341,14 @@ class DataFile(models.Model):
         :return: the temporary file object
         :rtype: NamedTemporaryFile
         """
-        temp_file = NamedTemporaryFile(delete=True, dir=directory)
-        try:
-            temp_file.write(self.file_object.read())
-            temp_file.flush()
-            temp_file.seek(0, 0)
-            yield temp_file
-        finally:
-            temp_file.close()
+        with NamedTemporaryFile(delete=True, dir=directory) as temp_file:
+            try:
+                temp_file.write(self.file_object.read())
+                temp_file.flush()
+                temp_file.seek(0, 0)
+                yield temp_file
+            finally:
+                temp_file.close()
 
     def is_local(self):
         return self.file_objects.all()[0].is_local()
@@ -409,8 +407,8 @@ class DataFile(models.Model):
                                                preview_image_par.string_value))
 
             if path.exists(file_path):
-                preview_image_file = open(file_path, 'rb')
-                return preview_image_file
+                with open(file_path, 'rb') as preview_image_file:
+                    return preview_image_file
 
         render_image_size_limit = getattr(settings, 'RENDER_IMAGE_SIZE_LIMIT',
                                           0)
@@ -475,7 +473,6 @@ class DataFile(models.Model):
         return all(dfos)
 
 
-@python_2_unicode_compatible
 class DataFileObject(models.Model):
     """The physical copy (or copies) of a
     :class:`~tardis.tardis_portal.models.datafile.DataFile`
