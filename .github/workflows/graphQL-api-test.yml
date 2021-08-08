@@ -30,16 +30,16 @@ jobs:
     - run: npm install
     - run: npm run build
     - run: mkdir -p var/store
-    - run: python manage.py migrate
+    - run: python manage.py migrate --settings=tardis.test_settings
     - name: create superuser
       run: |
-        python manage.py createsuperuser --noinput
+        python manage.py createsuperuser --noinput --settings=tardis.test_settings
       env:
         DJANGO_SUPERUSER_PASSWORD: admin
         DJANGO_SUPERUSER_USERNAME: admin
         DJANGO_SUPERUSER_EMAIL: admin@admin.com
     - name: run graphQL tests
       run: |
-        python manage.py runserver &
+        python manage.py runserver --settings=tardis.test_settings &
         sleep 2
         newman run tardis/tardis_portal/graphql/tests/Experiments.postman_collection.json -r cli,json --verbose
