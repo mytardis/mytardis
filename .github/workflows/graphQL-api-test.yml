@@ -36,6 +36,7 @@ jobs:
         DJANGO_SETTINGS_MODULE: tardis.test_settings
     - name: create superuser
       run: |
+        python manage.py migrate &&
         python manage.py createsuperuser --noinput
       env:
         DJANGO_SETTINGS_MODULE: tardis.test_settings
