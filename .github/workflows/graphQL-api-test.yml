@@ -32,7 +32,11 @@ jobs:
     - run: mkdir -p var/store
     - name: create settings file
       run: |
-        echo "from .default_settings import *\n\DEBUG = True\n\DATABASES['default']['ENGINE'] = 'django.db.backends.sqlite3'\n\DATABASES['default']['NAME'] = 'tardis_db'\n\GRAPHQL = True\n" >> tardis/settings.py
+        echo "from .default_settings import *" >> tardis/settings.py
+        echo "DEBUG = True" >> tardis/settings.py
+        echo "DATABASES['default']['ENGINE'] = 'django.db.backends.sqlite3'" >> tardis/settings.py
+        echo "DATABASES['default']['NAME'] = 'tardis_db'" >> tardis/settings.py
+        echo "GRAPHQL = True" >> tardis/settings.py
         python -c "import os; from random import choice; key_line = '%sSECRET_KEY=\"%s\"\n' % ('from .default_settings import * \n\n' if not os.path.isfile('tardis/settings.py') else '', ''.join([choice('abcdefghijklmnopqrstuvwxyz0123456789@#%^&*(-_=+)') for i in range(50)])); f=open('tardis/settings.py', 'a+'); f.write(key_line); f.close()"
         cat tardis/settings.py
     - name: run migration
