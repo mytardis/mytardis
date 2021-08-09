@@ -4,36 +4,48 @@
 <html ng-app="push-to">
 <head lang="en">
     <meta charset="UTF-8">
-    <title>Push to</title>
-    {# The tardis_portal_facility_view bundle provides AngularJS #}
-    {% render_bundle 'tardis_portal_facility_view' %}
-    <link href="{% static 'push-to/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
+    <title>Push to - Select host</title>
+    {% render_bundle 'push_to_app' %}
+    <script type="text/javascript" src="{% static 'push-to.js' %}"></script>
     <script type="text/javascript">
         var accessible_hosts_url = '{{ accessible_hosts_url }}';
         var cert_signing_services_url = '{{ cert_signing_services_url }}';
     </script>
 </head>
 {% verbatim %}
-    <body ng-controller="HostSelectCtrl" style="margin: 5px 5px 5px 5px">
-    <div ng-if="loading" class="alert alert-info" role="alert">
-        <span><img src="/static/push-to/ajax-loader.gif"> Checking available push locations...</span>
-    </div>
-    <div ng-if="!loading">
-        <div class="panel panel-success">
-            <div class="panel-heading"><strong>Push data to:</strong></div>
-            <div class="panel-body">
-                <ul style="list-style-type: none">
-                    <li ng-repeat="host in accessibleHosts"><a href="{{ host.push_url }}"><img ng-if="host.logo_img" ng-src="{{ host.logo_img }}"><br/>{{ host.name }}</a></li>
-                </ul>
-                <ul style="list-style-type: none">
-                    <li ng-repeat="host in certHosts"><a href="{{ host.push_url }}"><img ng-if="host.logo_img" ng-src="{{ host.logo_img }}"><br/>{{ host.name }}</a></li>
-                </ul>
-                <span ng-if="accessibleHosts.length + certHosts.length == 0">No locations found</span>
+    <body ng-controller="HostSelectCtrl">
+    <div class="container h-100" ng-if="loading">
+        <div class="d-flex align-items-center justify-content-center h-100">
+            <div class="text-center">
+                <div class="spinner-border text-primary" role="status"></div>
+                <p class="mt-2">Checking available locations...</p>
             </div>
+        </div>
+    </div>
+    <div class="container py-5" ng-if="!loading">
+        <div class="card">
+            <div class="card-header">
+                Push data to:
+            </div>
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item" ng-repeat="host in accessibleHosts">
+                    <a href="{{ host.push_url }}">
+                        <img ng-if="host.logo_img" ng-src="{{ host.logo_img }}">
+                        {{ host.name }}
+                    </a>
+                </li>
+                <li class="list-group-item" ng-repeat="host in certHosts">
+                    <a href="{{ host.push_url }}">
+                        <img ng-if="host.logo_img" ng-src="{{ host.logo_img }}">
+                        {{ host.name }}
+                    </a>
+                </li>
+                <li class="list-group-item" ng-if="accessibleHosts.length + certHosts.length == 0">
+                    No locations found
+                </li>
+            </ul>
         </div>
     </div>
     </body>
 {% endverbatim %}
-<script type="application/javascript" src="{% static 'push-to/angular-typeahead.js' %}"></script>
-<script type="application/javascript" src="{% static 'push-to/push-to.js' %}"></script>
 </html>

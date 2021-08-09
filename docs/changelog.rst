@@ -1,6 +1,33 @@
 Releases
 ========
 
+4.6.0
+-----
+* #3153 Move static libs from PushTo app to Webpack
+* #3115 Download single file via Nginx
+* #3114 Update HSM app docs
+* #3113 Update Celery settings to a new format
+* #3111 Send datafile recall acknowledgement email
+* #3091 Google auth user approval fix
+* #3089 Events log update (switch to a native JSONField)
+* #3028 and #3029 Security fixes as per CodeQL advice
+* #3014 Track HSM app recalls with events log
+* Dependency updates for Python and JS
+* NodeJS has been switched from 10.x to LTS version (14.x)
+* Dockerfile for tests has been switched to Ubuntu 20.04
+
+4.5.0
+-----
+* Support for displaying online/offline files status for file in HSM
+* Support for requesting recall of an offline dataset
+* Support for requesting recall of an offline datafile
+* Updated various Python and JS libraries
+* Bugfixes
+  - Fixed #2901
+  - PushTo related fixes #2910
+  - Fix redirect to next page
+  - Fixes related to tree view #2742
+
 4.4.0
 -----
 * User activity logging app
