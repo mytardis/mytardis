@@ -56,5 +56,6 @@ jobs:
         python manage.py runserver &
         sleep 2
         newman run tardis/tardis_portal/graphql/tests/Experiments.postman_collection.json -r cli,json --verbose
+        newman run tardis/tardis_portal/graphql/tests/Datasets.postman_collection.json -r cli,json --verbose
       env:
         DJANGO_SETTINGS_MODULE: tardis.settings
