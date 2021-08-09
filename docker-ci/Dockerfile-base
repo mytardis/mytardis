@@ -1,4 +1,4 @@
-FROM ubuntu:18.04
+FROM ubuntu:20.04
 
 RUN mkdir -p /home/webapp
 RUN groupadd -r webapp && useradd -r -g webapp webapp
@@ -28,10 +28,10 @@ RUN apt-get update && apt-get install \
     python3-setuptools \
     libmagic-dev \
     libmagickwand-dev \
-    libmysqlclient20 \
+    libmysqlclient-dev \
     && apt-get clean
 
-RUN curl -sL https://deb.nodesource.com/setup_10.x | bash -
+RUN curl -fsSL https://deb.nodesource.com/setup_lts.x | bash -
 RUN apt-get install -y nodejs
 
 RUN mkdir /appenv
