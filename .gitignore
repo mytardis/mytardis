@@ -52,3 +52,4 @@ tardis/apps/*
 !tardis/apps/search
 !tardis/apps/eventlog
 !tardis/apps/stats
+venv/
