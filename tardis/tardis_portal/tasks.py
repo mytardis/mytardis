@@ -216,10 +216,17 @@ def dfo_verify(dfo_id, *args, **kwargs):
     # Get dfo locked for write (to prevent concurrent actions)
     if kwargs.pop('transaction_lock', False):
         with transaction.atomic():
-            dfo = DataFileObject.objects.select_for_update().get(id=dfo_id)
-            return dfo.verify(*args, **kwargs)
-    dfo = DataFileObject.objects.get(id=dfo_id)
-    return dfo.verify(*args, **kwargs)
+            try:
+                dfo = DataFileObject.objects.select_for_update().get(id=dfo_id)
+                return dfo.verify(*args, **kwargs)
+            except DataFileObject.DoesNotExist:
+                pass
+    try:
+        dfo = DataFileObject.objects.get(id=dfo_id)
+        return dfo.verify(*args, **kwargs)
+    except DataFileObject.DoesNotExist:
+        pass
+    return False
 
 
 @tardis_app.task(name='tardis_portal.clear_sessions', ignore_result=True)
