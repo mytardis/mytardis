@@ -53,7 +53,7 @@
     "react-datetime": "^2.16.3",
     "react-dom": "^16.14.0",
     "react-spinners": "^0.11.0",
-    "react-tag-autocomplete": "^6.1.0",
+    "react-tag-autocomplete": "^6.2.0",
     "react-treebeard": "v4.2.4-beta.0",
     "regenerator-runtime": "^0.13.7",
     "sprintf-js": "^1.1.2",
