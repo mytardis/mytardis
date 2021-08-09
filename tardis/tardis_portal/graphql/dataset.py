@@ -27,6 +27,7 @@ class DatasetTypeFilter(FilterSet):
     class Meta:
         model = DatasetModel
         fields = {
+            'id': ['exact'],
             'description': ['exact', 'contains'],
             'created_time': ['lte', 'gte']
         }

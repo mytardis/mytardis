@@ -25,6 +25,7 @@ class FacilityTypeFilter(FilterSet):
     class Meta:
         model = FacilityModel
         fields = {
+            'id': ['exact'],
             'name': ['exact', 'contains'],
             'created_time': ['lte', 'gte']
         }

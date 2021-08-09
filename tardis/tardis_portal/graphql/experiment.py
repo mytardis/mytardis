@@ -31,6 +31,7 @@ class ExperimentTypeFilter(FilterSet):
     class Meta:
         model = ExperimentModel
         fields = {
+            'id': ['exact'],
             'title': ['exact', 'contains'],
             'created_time': ['lte', 'gte']
         }
@@ -101,6 +102,7 @@ class ExperimentAuthorTypeFilter(FilterSet):
     class Meta:
         model = ExperimentAuthorModel
         fields = {
+            'id': ['exact'],
             'author': ['exact', 'contains']
         }
 

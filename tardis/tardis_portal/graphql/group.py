@@ -27,6 +27,7 @@ class GroupTypeFilter(FilterSet):
     class Meta:
         model = GroupModel
         fields = {
+            'id': ['exact'],
             'name': ['exact', 'contains']
         }
 

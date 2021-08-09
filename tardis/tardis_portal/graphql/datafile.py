@@ -33,6 +33,7 @@ class DataFileTypeFilter(FilterSet):
     class Meta:
         model = DataFileModel
         fields = {
+            'id': ['exact'],
             'filename': ['exact', 'contains'],
             'directory': ['exact', 'contains'],
             'created_time': ['lte', 'gte']

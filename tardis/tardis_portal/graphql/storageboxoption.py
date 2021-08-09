@@ -27,6 +27,7 @@ class StorageBoxOptionTypeFilter(FilterSet):
     class Meta:
         model = StorageBoxOptionModel
         fields = {
+            'id': ['exact'],
             'key': ['exact', 'contains'],
             'value': ['exact', 'contains']
         }

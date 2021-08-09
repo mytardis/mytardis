@@ -27,6 +27,7 @@ class DataFileObjectTypeFilter(FilterSet):
     class Meta:
         model = DataFileObjectModel
         fields = {
+            'id': ['exact'],
             'verified': ['exact'],
             'created_time': ['lte', 'gte']
         }

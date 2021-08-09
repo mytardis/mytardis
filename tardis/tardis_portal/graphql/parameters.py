@@ -36,6 +36,7 @@ class TardisSchemaTypeFilter(FilterSet):
     class Meta:
         model = SchemaModel
         fields = {
+            'id': ['exact'],
             'name': ['exact', 'contains'],
             'namespace': ['exact', 'contains']
         }
@@ -75,6 +76,7 @@ class ParameterNameTypeFilter(FilterSet):
     class Meta:
         model = ParameterNameModel
         fields = {
+            'id': ['exact'],
             'name': ['exact', 'contains'],
             'schema': ['exact']
         }

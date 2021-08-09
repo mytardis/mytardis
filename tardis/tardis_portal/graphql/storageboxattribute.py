@@ -27,6 +27,7 @@ class StorageBoxAttributeTypeFilter(FilterSet):
     class Meta:
         model = StorageBoxAttributeModel
         fields = {
+            'id': ['exact'],
             'key': ['exact', 'contains'],
             'value': ['exact', 'contains']
         }

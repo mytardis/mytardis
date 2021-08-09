@@ -26,6 +26,7 @@ class InstrumentTypeFilter(FilterSet):
     class Meta:
         model = InstrumentModel
         fields = {
+            'id': ['exact'],
             'name': ['exact', 'contains'],
             'created_time': ['lte', 'gte']
         }
