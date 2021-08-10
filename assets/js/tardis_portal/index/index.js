@@ -1,17 +1,18 @@
-import {attachExpAccordionClickHandlers, expandFirstExperiments, loadRecentDatasetsSummary} from "../experiment-accordion";
+import {
+    attachExpAccordionClickHandlers,
+    expandFirstExperiments,
+    loadRecentDatasetsSummary,
+    handleExpAccordionLink
+} from "../experiment-accordion";
 
 $(document).ready(function() {
     $("#private-experiments .accordion-body").collapse({parent: "#private-experiments", toggle: false});
     $("#public-experiments .accordion-body").collapse({parent: "#public-experiments", toggle: false});
-    $(".explink").on("click", function(e) {
-        e.stopPropagation();
-    });
+    $(".explink").on("click", handleExpAccordionLink);
     $(".dllink").on("click", function(e) {
         e.stopPropagation();
     });
-
-    // var attachExpAccordionClickHandlers = function(accordionToggleClass, accordionToggleIdPrefix, accordionBodyIdPrefix, divIdPrefix, loadDatasetsSummary)
     attachExpAccordionClickHandlers("private-experiment", "private-toggle-", "collapse-", "private-recent-datasets-", loadRecentDatasetsSummary);
     attachExpAccordionClickHandlers("public-experiment", "public-toggle-", "collapsepub-", "public-recent-datasets-", loadRecentDatasetsSummary);
-    expandFirstExperiments();
+    setTimeout(expandFirstExperiments, 100);
 });
