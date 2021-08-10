@@ -31,3 +31,7 @@ Verify Mytardis page contains text
      wait until element is enabled      ${Page}
      click element                      ${Page}
      page should contain                ${Text}
+
+Logout
+     wait until element is enabled      xpath://*[@class='dropdown-item' and @href='/logout/']
+     click element                      xpath://*[@class='dropdown-item' and @href='/logout/']
