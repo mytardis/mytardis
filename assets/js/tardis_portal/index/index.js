@@ -1,7 +1,7 @@
 import {
     attachExpAccordionClickHandlers,
+    loadLatestDatasetSummary,
     expandFirstExperiments,
-    loadRecentDatasetsSummary,
     handleExpAccordionLink
 } from "../experiment-accordion";
 

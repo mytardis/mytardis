@@ -8,13 +8,8 @@
 {% block content %}
 
 <div id="content" class="container-fluid">
-  <div class="row">
-    <div class="col-md-12">
-      <h3 class="d-block d-sm-none">Experiments</h3>
-      <div class="float-start">
-          <h3 class="d-none d-sm-block" style="text-align: center">Experiments</h3>
-      </div>
-    </div>
+  <div class="page-header">
+    <h1 class="mb-1">Experiments</h1>
   </div>
   <div class="row">
     <div class="col-md-12">
@@ -135,16 +130,6 @@
     </div>
   </div>
 </div>
-<script type="text/javascript">
-$(function() {
-    $("#experiments .accordion-body").collapse({parent:"#experiments", toggle: true});
-    $(".explink").on("click", function(e) {
-        e.stopPropagation();
-    });
-    $(".dllink").on("click", function(e) {
-        e.stopPropagation();
-    });
-});
-</script>
 {% render_bundle 'index_page_badges' %}
+{% render_bundle 'tardis_portal_public_data' %}
 {% endblock %}
