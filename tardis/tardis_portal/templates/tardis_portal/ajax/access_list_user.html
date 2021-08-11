@@ -20,6 +20,7 @@
                     <div class="col-12">
                         <label class="form-label" for="{{ field.name }}">{{ field.label }}</label>
                         <input type="text" name="entered_user" maxlength="100" id="id_entered_user" class="form-control">
+                        <input type="hidden" name="autocomp_user" maxlength="100" id="id_autocomp_user">
                     </div>
                 </div>
             {% elif field.label == "Authentication Method" %}
