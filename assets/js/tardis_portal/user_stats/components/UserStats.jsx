@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import "regenerator-runtime/runtime";
 import Cookies from "js-cookie";
 
 function humanNumber(value) {
