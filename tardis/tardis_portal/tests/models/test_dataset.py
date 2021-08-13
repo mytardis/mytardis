@@ -58,7 +58,24 @@ class DatasetTestCase(ModelTestCase):
             dataset.get_absolute_url() + ' != /dataset/%d' % target_id)
 
     def test_get_dir_tuples(self):
+
+        exp = Experiment(title='test exp1',
+                         institution_name='monash',
+                         created_by=self.user)
+        exp.save()
+        acl = ExperimentACL(
+            experiment=exp,
+            user=self.user,
+            canRead=True,
+            canWrite=True,
+            canDelete=True,
+            isOwner=True,
+            aclOwnershipType=ExperimentACL.OWNER_OWNED)
+        acl.save()
+
         dataset = Dataset.objects.create(description='test dataset1')
+        dataset.experiments.add(exp)
+
         basedir = ''
         dir_tuples = dataset.get_dir_tuples(self.user, basedir)
         self.assertEqual(dir_tuples, [])
