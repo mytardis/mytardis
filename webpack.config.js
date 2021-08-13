@@ -131,5 +131,10 @@ module.exports = {
         alias: {
             "jquery": __dirname + "/node_modules/jquery"
         },
+    },
+    watchOptions: {
+        ignored: /node_modules/,
+        aggregateTimeout: 300,
+        poll: 500
     }
 };

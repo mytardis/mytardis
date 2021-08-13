@@ -1,0 +1,28 @@
+{% load bleach_tag %}
+
+<div class="card mb-4 bg-light">
+    <div class="card-body">
+        <h5 class="card-title mb-3">
+            <a href="{% url 'tardis_portal.view_experiment' exp.id %}">
+                {{ exp.title }}
+            </a>
+        </h5>
+        <h6 class="card-subtitle mb-2 text-muted">
+            {% for author in exp.experimentauthor_set.all %}
+                <span property="dc:author">{{ author.author }}{% if not forloop.last %}, {% endif %}</span>
+            {% endfor %}
+        </h6>
+        <p class="card-text">
+            {{ exp.description|default:"No description"|bleach }}
+        </p>
+        {% if exp.public_download_allowed %}
+            {% for dltype, dlurl in exp.get_download_urls.items %}
+                {% if forloop.first %}
+                    <a href="{{ dlurl }}" class="float-end btn btn-sm btn-outline-primary">
+                        <i class="fa fa-download"></i> Download
+                    </a>
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+    </div>
+</div>

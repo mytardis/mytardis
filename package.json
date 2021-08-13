@@ -52,6 +52,7 @@
     "react-bootstrap-typeahead": "^4.0.0-alpha.10",
     "react-datetime": "^2.16.3",
     "react-dom": "^16.14.0",
+    "react-loader-spinner": "^4.0.0",
     "react-spinners": "^0.11.0",
     "react-tag-autocomplete": "^6.2.0",
     "react-treebeard": "v4.2.4-beta.0",
@@ -99,7 +100,7 @@
     "pretest": "npm run eslint.jquery && npm run eslint.angular && npm run eslint.react && npm run test-build",
     "test-react": "jest --collectCoverage=true --testMatch=\"<rootDir>/assets/js/apps/**/__tests__/*.spec.jsx\" --config jest.config.js",
     "test": "grunt test --verbose && npm run test-react",
-    "dev": "webpack --config webpack.config.js --progress --color --watch --display-error-details --mode development",
+    "dev": "webpack --config webpack.config.js --progress --color --watch --mode development",
     "build": "webpack --config webpack.config.js --progress --color --mode production"
   }
 }
