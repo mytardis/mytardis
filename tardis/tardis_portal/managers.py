@@ -68,6 +68,17 @@ class SafeManager(models.Manager):
     users/groups/tokens/acls pertaining to a given experiment/dataset/datafile.
     """
 
+    # To ensure compatability with Oracle backends, while avoiding an additional
+    # level of manager subclassing
+    def get_queryset(self):
+        from django.db import connection
+        if connection.settings_dict['ENGINE'] == 'django.db.backends.oracle':
+            fields = [a.attname for a in self.model._meta.fields
+                      if a.db_type(connection=connection) == 'NCLOB']
+            return super().get_queryset().defer(*fields)
+        return super().get_queryset()
+
+
     def get(self, user, obj_id):
         """
         Returns an experiment/dataset/datafile under the consideration of the
