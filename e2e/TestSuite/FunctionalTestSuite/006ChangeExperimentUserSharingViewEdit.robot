@@ -8,7 +8,7 @@ Resource   ../../Resources/Actions.robot
 Resource   ../../Resources/ReusableKeywords.robot
 Resource   ../../Resources/ReusablePaths.robot
 
-Documentation    This file is to test experiement creation, adding metadata to experiment, adding datasets to experiment, adding metadata to experiment
+Documentation    This file is to test experiement user sharing
 
 Suite Setup         Open Home page
 #Suite Teardown      close all browsers
