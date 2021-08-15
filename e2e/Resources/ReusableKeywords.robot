@@ -18,6 +18,19 @@ Login
     wait until element is enabled    id:login-button
     click button                     id:login-button
 
+Logout
+
+     wait until element is enabled      xpath://*[@href='#user-menu']
+     click element                      xpath://*[@href='#user-menu']
+     wait until element is enabled      xpath://*[@class='dropdown-item' and @href='/logout/']
+     click element                      xpath://*[@class='dropdown-item' and @href='/logout/']
+
+Open page
+    [Arguments]                         ${Page}
+     go to                              http://localhost:8000
+     wait until element is enabled      ${Page}
+     click element                      ${Page}
+
 Verify page contains item
     [Arguments]         ${Item}         ${Page}
     #Open page and verify item is displayed
@@ -33,18 +46,32 @@ Verify page contains text
      page should contain                ${Text}
 
 Verify page does Not contain item
-     [Arguments]                        ${Page}         ${item}         ${Text}
-     go to                              http://localhost:8000
-     wait until element is enabled      ${Page}
-     click element                      ${Page}
-     Run keyword if                     '${item}'=='text'         page should not contain            ${Text}
-     Run keyword if                     '${item}'=='button'       page should not contain button     ${Text}
-     Run keyword if                     '${item}'=='element'      page should not contain element        ${Text}
+     [Arguments]                         ${item}          ${Text}
+     Run keyword if                     '${item}'=='text'         page should not contain             ${Text}
+     Run keyword if                     '${item}'=='button'       page should not contain button      ${Text}
+     Run keyword if                     '${item}'=='element'      page should not contain element     ${Text}
 
 
-Logout
+Add new user to Sharing
+    [Arguments]                         ${Username}         ${Permissions}
+    wait until element is enabled       ${Sharing}
+    click element                       ${Sharing}
 
-     wait until element is enabled      xpath://*[@href='#user-menu']
-     click element                      xpath://*[@href='#user-menu']
-     wait until element is enabled      xpath://*[@class='dropdown-item' and @href='/logout/']
-     click element                      xpath://*[@class='dropdown-item' and @href='/logout/']
+    wait until element is enabled       ${ChngUserSharing}
+    click element                       ${ChngUserSharing}
+
+    wait until element is enabled       ${User}
+    input text                          ${User}                       ${Username}
+
+    wait until element is enabled       ${PermissionsList}
+    select from list by label           ${PermissionsList}            ${Permissions}
+
+    wait until element is enabled       ${AddUser}
+    click element                       ${AddUser}
+
+    press keys    None      ESC
+
+Verify user permissions are displayed
+    [Arguments]                         ${Username}             ${Permissions}
+    wait until element is enabled       xpath://table//tr/td[contains(text(), '${Username}')]/ancestor::tr/td[3]//*[contains(text(),'${Permissions}')]
+    element should contain              xpath://table//tr/td[contains(text(), '${Username}')]/ancestor::tr/td[3]//*[contains(text(),'${Permissions}')]      ${Permissions}
