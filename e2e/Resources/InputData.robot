@@ -14,3 +14,4 @@ ${User2}                    ann
 ${User2PSWD}                12345
 ${User3}                    mona
 ${User3PSWD}                12345
+${GroupName1}               TestGroup

@@ -80,7 +80,22 @@ Verify user permissions are displayed
 
 Add new group to Sharing
     [Arguments]                         ${GroupName}         ${Permissions}
+    wait until element is enabled       ${Sharing}
+    click element                       ${Sharing}
 
+    wait until element is enabled       ${ChngGroupSharing}
+    click element                       ${ChngGroupSharing}
+
+    wait until element is enabled       ${Group}
+    input text                          ${Group}            ${GroupName}
+
+    wait until element is enabled       ${GroupPermissionsList}
+    select from list by label           ${GroupPermissionsList}         ${Permissions}
+
+    wait until element is enabled       ${AddGroupbtn}
+    click button                        ${AddGroupbtn}
+
+    press keys    None      ESC
 
 
 
