@@ -40,7 +40,7 @@ TEST CASE 5.5:Login as user
 
     Login       ann     12345
 
-TEST CASE 5.6: Verify user can and open experiment under Home page
+TEST CASE 5.6: Verify user can view and open experiment under Home page
 
     Verify page contains item           ${SharedExperimentName}       xpath://*[@class='nav-link' and @href='/']
 

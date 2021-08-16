@@ -50,7 +50,9 @@ Verify page does Not contain item
      Run keyword if                     '${item}'=='text'         page should not contain             ${Text}
      Run keyword if                     '${item}'=='button'       page should not contain button      ${Text}
      Run keyword if                     '${item}'=='element'      page should not contain element     ${Text}
-
+#--------------------------------------------------------------------------------------------------------------------------------------------------------
+#Change Experiment User Sharing settings
+#--------------------------------------------------------------------------------------------------------------------------------------------------------
 
 Add new user to Sharing
     [Arguments]                         ${Username}         ${Permissions}
@@ -75,3 +77,40 @@ Verify user permissions are displayed
     [Arguments]                         ${Username}             ${Permissions}
     wait until element is enabled       xpath://table//tr/td[contains(text(), '${Username}')]/ancestor::tr/td[3]//*[contains(text(),'${Permissions}')]
     element should contain              xpath://table//tr/td[contains(text(), '${Username}')]/ancestor::tr/td[3]//*[contains(text(),'${Permissions}')]      ${Permissions}
+
+Add new group to Sharing
+    [Arguments]                         ${GroupName}         ${Permissions}
+
+
+
+
+
+
+#-------------------------------------------------------------------------------------------------------------------------------------
+#Change Experiment Public Access settings
+#-------------------------------------------------------------------------------------------------------------------------------------
+Change Experiment Publlic Access
+    [Arguments]                         ${AccessLevel}      ${License}
+
+    wait until element is enabled       ${Sharing}
+    click element                       ${Sharing}
+
+    wait until element is enabled       ${ChngPublicAccess}
+    click button                        ${ChngPublicAccess}
+
+    wait until element is enabled       ${PublicAccess}
+    select from list by label           ${PublicAccess}           ${AccessLevel}
+
+    wait until element is enabled       xpath://*[@type='button' and @value='${License}']
+    click button                        xpath://*[@type='button' and @value='${License}']
+
+    wait until element is enabled       id:publishing-consent
+    click element                       id:publishing-consent
+
+    wait until element is enabled       xpath://*[@class='submit-button btn btn-primary' and @type='submit']
+    click button                        xpath://*[@class='submit-button btn btn-primary' and @type='submit']
+
+    press keys    None      ESC
+
+    page should contain element         ${AccessLevel}
+
