@@ -29,6 +29,7 @@ module.exports = {
         tardis_portal_facility_view: "./assets/js/tardis_portal/facility_view/index.js",
         tardis_portal_auth_methods: "./assets/js/tardis_portal/auth_methods/auth_methods.js",
         lib: glob.sync("./assets/js/lib/**/*.js"),
+        push_to_app: "./assets/js/apps/push_to/index.js",
         search_app : "./assets/js/apps/search/index.jsx",
         test: glob.sync("./js_tests/tardis_portal/**/*.js"),
         tree_view : "./assets/js/apps/tree_view/index.jsx",
@@ -49,25 +50,9 @@ module.exports = {
                 exclude: "tardis_portal_facility_view"
             })],
         splitChunks: {
-            chunks: "async",
             minSize: 30000,
-            maxSize: 0,
-            minChunks: 1,
             maxAsyncRequests: 5,
-            maxInitialRequests: 3,
-            automaticNameDelimiter: "~",
-            name: true,
-            cacheGroups: {
-                vendors: {
-                    test: /[\\/]node_modules[\\/]/,
-                    priority: -10,
-                },
-                default: {
-                    minChunks: 2,
-                    priority: -20,
-                    reuseExistingChunk: true
-                }
-            }
+            maxInitialRequests: 3
         }
     },
     plugins: [
@@ -84,61 +69,64 @@ module.exports = {
     ],
     module: {
         rules: [
-            {test: /\.jsx?$/, exclude: /node_modules/, loader: "babel-loader"},
             {
-                test: /\.css$/,
-                use: [
-                    {
-                        loader: MiniCssExtractPlugin.loader,
-                        options: {
-                            publicPath: "../static/bundles/"
-                        }
-                    }, "css-loader"
-                ]
-            },
-            {
-                test: /\.(woff|woff2|)(\?v=[0-9]\.[0-9]\.[0-9])?$/,
-                loader: "url-loader?limit=10000&mimetype=application/font-woff",
-                options: {
-                    name: "[name].[ext]",
-                    outputPath: "static/bundles/",
-                    publicPath: "../static/bundles/"
+                test: /\.m?js/,
+                resolve: {
+                    fullySpecified: false
                 }
-            },
-            {
+            }, {
+                test: /\.jsx?$/,
+                exclude: /node_modules/,
+                loader: "babel-loader"
+            }, {
+                test: /\.css$/,
+                use: [{
+                    loader: MiniCssExtractPlugin.loader,
+                    options: {
+                        publicPath: "/bundles/"
+                    }
+                }, "css-loader"]
+            }, {
+                test: /\.(woff(2)?)(\?v=[0-9]\.[0-9]\.[0-9])?$/,
+                use: [{
+                    loader: "url-loader",
+                    options: {
+                        limit: 10000,
+                        mimetype: "application/font-woff",
+                        name: "[name].[ext]",
+                        publicPath: "/static/bundles/"
+                    }
+                }]
+            }, {
                 test: /\.(ttf|eot|svg)(\?v=[0-9]\.[0-9]\.[0-9])?$/,
                 loader: "file-loader",
                 options: {
                     name: "[name].[ext]",
-                    publicPath: "/bundles/"
+                    publicPath: "/static/bundles/"
                 }
-            },
-          {
+            }, {
                 test: /\.(gif|png|jpe?g)$/i,
                 loader: "url-loader",
                 options: {
                     name: "[name].[ext]",
                 }
-            },
-            {
+            }, {
                 test: /\.less$/,
-                use: [
-                    {loader: "style-loader"},
-                    {loader: "css-loader"},
-                    {loader: "less-loader"}
-                ]
+                use: [{
+                    loader: "style-loader"
+                }, {
+                    loader: "css-loader"
+                }, {
+                    loader: "less-loader"
+                }]
             },
-
         ]
     },
     resolve: {
-        modules: ["node_modules", "bower_components"],
+        modules: ["node_modules"],
         extensions: ["*", ".js", ".jsx"],
         alias: {
-            "jquery": __dirname + "/node_modules/jquery",
-            "main": __dirname + "/assets/js/tardis_portal/main",
-            "experimentabs": __dirname + "/assets/js/tardis_portal/view_experiment/experiment-tabs",
-            "experimentshare": __dirname + "/assets/js/tardis_portal/view_experiment/share",
+            "jquery": __dirname + "/node_modules/jquery"
         },
     }
 };

@@ -66,12 +66,14 @@ pushToApp.controller('DestinationSelectorCtrl', function ($scope, $resource) {
             },
             transform: function (data) {
                 var transformedData = [];
-                var queryResult = data[currentQueryBase];
-                var children = queryResult['valid_children'];
-                for (var i = 0; i < children.length; i++) {
-                    var result = currentQueryBase + children[i];
-                    if (result.startsWith(currentQuery)) {
-                        transformedData.push(result)
+                if(data.hasOwnProperty(currentQueryBase)) {
+                    var queryResult = data[currentQueryBase];
+                    var children = queryResult['valid_children'];
+                    for (var i = 0; i < children.length; i++) {
+                        var result = currentQueryBase + children[i];
+                        if (result.startsWith(currentQuery)) {
+                            transformedData.push(result)
+                        }
                     }
                 }
                 return transformedData;
@@ -81,10 +83,16 @@ pushToApp.controller('DestinationSelectorCtrl', function ($scope, $resource) {
     });
 
     $scope.pathOptions = {
-    highlight: true
+        highlight: true,
+		classNames: {
+			wrapper: 'bootstrap-typeahead',
+			menu: 'dropdown-menu',
+			suggestion: 'dropdown-item',
+			cursor: 'active'
+		}
     };
 
-    $scope.pushUrl = "Fdsa";
+    $scope.pushUrl = "";
 
     validPaths.initialize().then(function () {
         return PathValidationService.get({}).$promise.then(function (info) {
@@ -101,6 +109,7 @@ pushToApp.controller('DestinationSelectorCtrl', function ($scope, $resource) {
     $(document).ajaxStart(function() {
         $scope.ajaxRunning = true;
     })
+
     $(document).ajaxStop(function() {
         $scope.ajaxRunning = false;
     })
