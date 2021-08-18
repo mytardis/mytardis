@@ -83,7 +83,7 @@ jobs:
     needs: pylint
     runs-on: ubuntu-20.04
     steps:
-    - uses: checkout@v2
+    - uses: actions/checkout@v2
       with:
         fetch-depth: ‘2’
 
