@@ -1,5 +1,5 @@
 Django==3.2.6
-Wand==0.6.6
+Wand==0.6.7
 boto3==1.18.22
 bleach==4.0.0
 boto3==1.18.22
@@ -22,7 +22,6 @@ gevent==21.8.0
 html2text==2020.1.16
 html5lib==1.1
 isodate==0.6.0
-pyjwt==2.1.0
 lxml==4.6.3
 paramiko==2.7.2
 pillow==8.3.1
@@ -34,4 +33,12 @@ git+https://github.com/mytardis/python-magic.git#egg=python-magic
 pytz==2021.1
 requests==2.26.0
 uritemplate==3.0.1
+# GraphQL
+pyjwt==2.1.0
 django-graphql-jwt==0.3.4
+graphene-django==2.15.0
+graphene-django-plus==2.3.2
+django-filter==2.4.0
+django-crispy-forms==1.11.2
+django-graphiql==0.4.4
+django-cors-headers==3.7.0
