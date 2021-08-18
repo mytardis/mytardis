@@ -83,17 +83,17 @@ jobs:
     needs: pylint
     runs-on: ubuntu-20.04
     steps:
-      - uses: checkout@v2
-        with:
-          fetch-depth: ‘2’
+    - uses: checkout@v2
+      with:
+        fetch-depth: ‘2’
 
-      - name: Setup Python
-        uses: actions/setup-python@v1
-        with:
-          python-version: 3.8
-      - name: Generate Report
-        run: |
-          pip install coverage
-          coverage run test.py
-      - name: Upload Coverage to Codecov
-        uses: codecov/codecov-action@v1
+    - name: Setup Python
+      uses: actions/setup-python@v1
+      with:
+        python-version: 3.8
+    - name: Generate Report
+      run: |
+        pip install coverage
+        coverage run test.py
+    - name: Upload Coverage to Codecov
+      uses: codecov/codecov-action@v1
