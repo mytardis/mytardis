@@ -2,11 +2,15 @@ FROM mytardis/mytardis-base
 
 # prebuilt wheels from django-build.yml
 ADD wheelhouse /wheelhouse
+WORKDIR /home/webapp
+RUN npm install --production
+RUN npm run-script build
 
 USER webapp
-
 WORKDIR /home/webapp
-
 ENV DOCKER_BUILD true
 RUN . /appenv/bin/activate; \
     pip install --no-index -f /wheelhouse -r requirements.txt
+
+EXPOSE 8000
+CMD ["python3","manage.py","runserver","0.0.0.0:8000"]

@@ -35,6 +35,7 @@ RUN . /appenv/bin/activate; \
     pip install coveralls codacy-coverage
 VOLUME /home/webapp/tardis
 VOLUME /home/webapp/docs
+VOLUME /home/webapp/output
 
 RUN mkdir -p var/store
 

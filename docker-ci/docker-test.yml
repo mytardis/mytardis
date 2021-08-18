@@ -1,10 +1,22 @@
-version: "2"
+version: "3.9"
+networks:
+  app:
+
 services:
   run:
     build:
       context: ..
       dockerfile: docker-ci/Dockerfile-run
     image: mytardis/mytardis-run
+    ports:
+    - "8000:8000"
+    networks:
+      - app
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8000/" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
   test:
     build:
       context: ..
@@ -12,27 +24,45 @@ services:
     image: mytardis/mytardis-test
     environment:
       ELASTICSEARCH_URL: 'http://es:9200'
+      MYTARDIS_URL: 'http://run:8000/'
     volumes:
       - ../tardis:/home/webapp/tardis
       - ../docs:/home/webapp/docs
+      - ../output:/home/webapp/output
+    networks:
+      - app
     depends_on:
-      - run
-      - pg
-      - mysql
-      - es
-    links:
-      - pg
-      - mysql
-      - es
+      run:
+        condition: service_started
+      pg:
+        condition: service_healthy
+      mysql:
+        condition: service_healthy
+      es:
+        condition: service_healthy
   pg:
     image: postgres:9.6
     environment:
       POSTGRES_PASSWORD: postgres
+    networks:
+      - app
+    healthcheck:
+      test: ["CMD", "pg_isready"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
   mysql:
     image: mysql
     environment:
       MYSQL_ROOT_PASSWORD: mysql
     command: --default-authentication-plugin=mysql_native_password
+    healthcheck:
+      test: [ "CMD", "mysqladmin" ,"ping", "-h", "localhost" ]
+      interval: 1s
+      retries: 120
+      timeout: 5s
+    networks:
+      - app
   es:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.12.1
     environment:
@@ -42,3 +72,21 @@ services:
     ports:
       - "9300:9300"
       - "9200:9200"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://es:9200/_cluster/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - app
+  robot-tests:
+    image: ppodgorsek/robot-framework:latest
+    volumes:
+      - ../e2e/reports:/opt/robotframework/reports:Z
+      - ../e2e:/opt/robotframework/tests:Z
+    environment:
+      MYTARDIS_URL: http://run:8000/
+      BROWSER: chrome
+    depends_on:
+      run:
+        condition: service_started
