@@ -45,12 +45,7 @@ jobs:
           path: wheelhouse
       - name: run test
         run: |
-          docker-compose -f docker-ci/docker-test.yml run -e TEST_TYPE=memory \
-              -e CODACY_PROJECT_TOKEN=$CODACY_PROJECT_TOKEN \
-              -e COVERALLS_REPO_TOKEN=$COVERALLS_REPO_TOKEN \
-              -e CI_NAME=SemaphoreCI -e CI_BUILD_NUMBER=$SEMAPHORE_BUILD_NUMBER \
-              -e CI_BRANCH=$BRANCH_NAME -e PULL_REQUEST_NUMBER=$PULL_REQUEST_NUMBER \
-              test
+          docker-compose -f docker-ci/docker-test.yml run -e TEST_TYPE=memory test
   test-on-postgres:
     runs-on: ubuntu-20.04
     needs: build-docker
