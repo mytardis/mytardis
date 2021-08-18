@@ -9,6 +9,9 @@ from django.conf import settings
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.views.static import serve
 
+from django.views.decorators.csrf import csrf_exempt
+from graphene_django.views import GraphQLView
+
 from tardis.app_config import get_tardis_apps
 from tardis.app_config import format_app_name_for_url
 from tardis.tardis_portal.views import IndexView
@@ -122,6 +125,13 @@ urlpatterns = [
     # Class-based views that may be overriden by apps
     url(r'', include(overridable_urls)),
 ]
+
+# GraphQL
+if getattr(settings, "GRAPHQL", False):
+    urlpatterns += [
+        url(r"^graphql/", csrf_exempt(GraphQLView.as_view(
+            graphiql=getattr(settings, "GRAPHIQL", False)))),
+    ]
 
 # Handle static files from /static
 urlpatterns += staticfiles_urlpatterns()
