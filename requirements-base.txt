@@ -1,7 +1,8 @@
-Django==3.2.5
+Django==3.2.6
 Wand==0.6.6
-bleach==3.3.0
-boto3==1.17.104
+boto3==1.18.21
+bleach==4.0.0
+boto3==1.18.21
 celery==5.1.2
 kombu==5.1.0
 django-extensions==3.1.3
@@ -17,20 +18,27 @@ django-webpack-loader==1.1.0
 django-widget-tweaks==1.4.8
 django-storages==1.11.1
 gunicorn==20.1.0
-gevent==21.1.2
+gevent==21.8.0
 html2text==2020.1.16
 html5lib==1.1
 isodate==0.6.0
-pyjwt==2.1.0
 lxml==4.6.3
 paramiko==2.7.2
-pillow==8.3.0
+pillow==8.3.1
 pyoai==2.5.0
 pystache==0.5.4
-python-dateutil==2.8.1
+python-dateutil==2.8.2
 # python-magic
 git+https://github.com/mytardis/python-magic.git#egg=python-magic
 pytz==2021.1
-requests==2.25.1
+requests==2.26.0
 uritemplate==3.0.1
-django-graphql-jwt==0.3.2
+# GraphQL
+pyjwt==2.1.0
+django-graphql-jwt==0.3.4
+graphene-django==2.15.0
+graphene-django-plus==2.3.2
+django-filter==2.4.0
+django-crispy-forms==1.11.2
+django-graphiql==0.4.4
+django-cors-headers==3.7.0
