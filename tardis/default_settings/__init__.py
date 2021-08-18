@@ -28,6 +28,7 @@ from .storage import *
 from .templates import *
 from .uploads import *
 from .urls import *
+from .graphql import *
 
 
 # Get version from git to be displayed on About page.
