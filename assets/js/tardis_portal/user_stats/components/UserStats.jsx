@@ -44,31 +44,31 @@ async function getData() {
         "instruments": data.last.instruments,
         "login": humanDateTime(data.last.login)
     };
-    if(data.total.size.value > 0) {
+    if(data.total.hasOwnProperty("size") && data.total.size.value > 0) {
         rsp.total.push({
             id: "user-stats-datafiles-size",
             text: humanFileSize(data.total.size.value) + " of data"
         });
     }
-    if(data.total.datafiles.value > 0) {
+    if(data.total.hasOwnProperty("datafiles") && data.total.datafiles.value > 0) {
         rsp.total.push({
             id: "user-stats-datafiles",
             text: humanNumber(data.total.datafiles.value) + " files"
         });
     }
-    if(data.total.datasets.value > 0) {
+    if(data.total.hasOwnProperty("datasets") && data.total.datasets.value > 0) {
         rsp.total.push({
             id: "user-stats-datasets",
             text: humanNumber(data.total.datasets.value) + " datasets"
         });
     }
-    if(data.total.experiments.value > 0) {
+    if(data.total.hasOwnProperty("experiments") && data.total.experiments.value > 0) {
         rsp.total.push({
             id: "user-stats-experiments",
             text: humanNumber(data.total.experiments.value) + " experiments"
         });
     }
-    if(rsp.length === 0) {
+    if(rsp.total.length === 0) {
         rsp.total.push({
             id: "user-stats-totals",
             text: "You have no data in the system"
