@@ -58,7 +58,7 @@
     "react-treebeard": "v4.2.4-beta.0",
     "regenerator-runtime": "^0.13.7",
     "sprintf-js": "^1.1.2",
-    "style-loader": "^2.0.0",
+    "style-loader": "^3.2.1",
     "terser-webpack-plugin": "^5.1.4",
     "underscore": "^1.13.1",
     "underscore.string": "^3.3.5",
