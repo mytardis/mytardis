@@ -23,6 +23,7 @@ from django.http import HttpResponse, HttpResponseForbidden, \
 from django.shortcuts import redirect
 
 from tastypie import fields
+from tastypie.exceptions import BadRequest
 from tastypie.authentication import BasicAuthentication
 from tastypie.authentication import SessionAuthentication
 from tastypie.authentication import ApiKeyAuthentication
@@ -459,9 +460,28 @@ class UserResource(ModelResource):
         fields = ['username', 'first_name', 'last_name', 'email']
         serializer = default_serializer
         filtering = {
-            'username': ('exact', ),
-            'email': ('iexact', ),
+            'username': ('exact', 'iexact', ),
+            'email': ('exact', 'iexact', ),
         }
+
+    def obj_get_list(self, bundle, **kwargs):
+        filters = {}
+
+        if hasattr(bundle.request, "GET"):
+            filters = bundle.request.GET.copy()
+            username = filters.get("username", None)
+            if username is not None:
+                filters["username__iexact"] = username
+                del filters["username"]
+
+        filters.update(kwargs)
+        applicable_filters = self.build_filters(filters=filters)
+
+        try:
+            objects = self.apply_filters(bundle.request, applicable_filters)
+            return self.authorized_read_list(objects, bundle)
+        except ValueError:
+            raise BadRequest("Invalid resource lookup data provided (mismatched type).")
 
     def dehydrate(self, bundle):
         '''
