@@ -2,7 +2,7 @@ import React, { Fragment, useEffect, useState } from 'react';
 import { Modal, Button, Toast } from 'react-bootstrap';
 import * as PropTypes from 'prop-types';
 import PublicationCard from './PublicationCard';
-import {deletePub, retractPub} from "./utils/FetchData";
+import { deletePub, retractPub } from './utils/FetchData';
 import PublicationToast from './utils/PublicationToast';
 
 
@@ -44,7 +44,7 @@ const PublicationsList = ({
     setDeleteModalOpen(true);
     setPubTodelete(id);
   };
-  const ConfirmRetract = (e , id) => {
+  const ConfirmRetract = (e, id) => {
     setRetractModalOpen(true);
     setPubToRetract(id);
   };
@@ -86,39 +86,37 @@ const PublicationsList = ({
         toastMessage={toastMessage}
       />
       <div className="row">
-        <div className="row row-cols-1 row-cols-md-3 row-cols-lg-4 row-cols-xl-5">
-          {draftPubsList.length > 0 ? draftPubsList.map(item => (
-            <PublicationCard
-              key={item.id}
-              publicationType="draft"
-              data={item}
-              handleDelete={confirmDelete}
-              handleResume={onResumeDraft}
-            />
-          )) : <></>}
-          {scheduledPubsList.length > 0 ? scheduledPubsList.map(item => (
-            <PublicationCard
-              key={item.id}
-              publicationType="scheduled"
-              data={item}
-            />
-          )) : <></>}
-          {retractedPubsList.length > 0 ? retractedPubsList.map(item => (
-            <PublicationCard
-              key={item.id}
-              publicationType="retracted"
-              data={item}
-            />
-          )) : <></>}
-          {releasedPubsList.length > 0 ? releasedPubsList.map(item => (
-            <PublicationCard
-              key={item.id}
-              publicationType="released"
-              data={item}
-              handleRetract={ConfirmRetract}
-            />
-          )) : <></>}
-        </div>
+        {draftPubsList.length > 0 ? draftPubsList.map(item => (
+          <PublicationCard
+            key={item.id}
+            publicationType="draft"
+            data={item}
+            handleDelete={confirmDelete}
+            handleResume={onResumeDraft}
+          />
+        )) : <></>}
+        {scheduledPubsList.length > 0 ? scheduledPubsList.map(item => (
+          <PublicationCard
+            key={item.id}
+            publicationType="scheduled"
+            data={item}
+          />
+        )) : <></>}
+        {retractedPubsList.length > 0 ? retractedPubsList.map(item => (
+          <PublicationCard
+            key={item.id}
+            publicationType="retracted"
+            data={item}
+          />
+        )) : <></>}
+        {releasedPubsList.length > 0 ? releasedPubsList.map(item => (
+          <PublicationCard
+            key={item.id}
+            publicationType="released"
+            data={item}
+            handleRetract={ConfirmRetract}
+          />
+        )) : <></>}
       </div>
     </Fragment>
   );
