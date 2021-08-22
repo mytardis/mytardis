@@ -9,7 +9,7 @@ contributors, some basic coding standards need to be maintained.
 If you're submitting a pull request, please run through this check-list first:
 
 1. Is your code PEP-8 compliant? Please run pep8.py or equivalent to check.
-2. Does your code lint cleanly? Install ``pylint`` and check with ``pylint --rcfile=.pylintrc.travis tardis``
+2. Does your code lint cleanly? Install ``pylint`` and check with ``pylint --rcfile=.pylintrc tardis``
 3. Have you merged or rebased your change against the current master?
 4. Have you run the full suite of Python and JavaScript tests in a clean environment?
 
