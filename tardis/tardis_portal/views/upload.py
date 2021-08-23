@@ -4,6 +4,7 @@ views for uploading files via HTTP
 
 import logging
 
+from django.conf import settings
 from django.http import HttpResponse
 from django.shortcuts import render
 
