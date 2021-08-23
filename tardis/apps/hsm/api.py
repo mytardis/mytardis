@@ -159,7 +159,7 @@ class DatasetAppResource(tardis.tardis_portal.api.DatasetResource):
 
         dataset = Dataset.objects.get(id=kwargs['pk'])
         try:
-            online_files = dataset.online_files_count()
+            online_files = dataset.online_files_count
             total_files = dataset.datafile_set.count()
             return JsonResponse({
                 'online_files': online_files,
