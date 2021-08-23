@@ -365,7 +365,7 @@ class ACLTestCase(TestCase):
 
         # add user3 to experiment1
         response = self.client1.get('/experiment/control_panel/%i/access_list'
-                                    '/add/user/%s/?authMethod=%s'
+                                    '/add/user/%s/?authMethod=%s&canRead=true'
                                     % (self.experiment1.id,
                                        self.user3.username,
                                        localdb_auth_key))
