@@ -370,10 +370,19 @@ class ACLTestCase(TestCase):
                                        self.user3.username,
                                        localdb_auth_key))
         for acl in self.experiment1.experimentacl_set.all():
-            logger.debug(str(acl.user.username) +" "+ str(acl.experiment.title) +" "+
+            if acl.user is not None:
+                logger.debug(str(acl.user.username) +" "+ str(acl.experiment.title) +" "+
+                         str(acl.canRead) +" "+str(acl.canWrite) +" "+str(acl.canDelete) +" "+
+                         str(acl.isOwner) +" "+str(acl.aclOwnershipType))
+            if acl.group is not None:
+                logger.debug(str(acl.group.id) +" "+ str(acl.experiment.title) +" "+
                          str(acl.canRead) +" "+str(acl.canWrite) +" "+str(acl.canDelete) +" "+
                          str(acl.isOwner) +" "+str(acl.aclOwnershipType))
 
+            if acl.token is not None:
+                logger.debug(str(acl.token.token) +" "+ str(acl.experiment.title) +" "+
+                         str(acl.canRead) +" "+str(acl.canWrite) +" "+str(acl.canDelete) +" "+
+                         str(acl.isOwner) +" "+str(acl.aclOwnershipType))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, '<div class="access_list_user')
 
