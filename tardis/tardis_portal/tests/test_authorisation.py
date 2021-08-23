@@ -369,7 +369,7 @@ class ACLTestCase(TestCase):
                                     % (self.experiment1.id,
                                        self.user3.username,
                                        localdb_auth_key))
-        for acl in self.experiment1.experimentacl_set:
+        for acl in self.experiment1.experimentacl_set.all():
             logger.debug(str(acl.user.username) +" "+ str(acl.experiment.title) +" "+
                          str(acl.canRead) +" "+str(acl.canWrite) +" "+str(acl.canDelete) +" "+
                          str(acl.isOwner) +" "+str(acl.aclOwnershipType))
