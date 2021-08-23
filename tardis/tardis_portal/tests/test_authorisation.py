@@ -376,8 +376,8 @@ class ACLTestCase(TestCase):
         response = self.client1.get('/experiment/control_panel/%i/access_list'
                                     '/remove/user/%s/'
                                     % (self.experiment1.id, self.user3.username))
-        self.assertEqual(response.status_code, 200)
         self.assertEqual(response.content, b'OK')
+        self.assertEqual(response.status_code, 200)
 
         # try again, see if it falls over
         response = self.client1.get('/experiment/control_panel/%i/access_list'
