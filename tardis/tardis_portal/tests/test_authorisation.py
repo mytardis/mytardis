@@ -369,7 +369,9 @@ class ACLTestCase(TestCase):
                                     % (self.experiment1.id,
                                        self.user3.username,
                                        localdb_auth_key))
-        self.assertEqual(response.status_code, 200)
+        #self.assertEqual(response.status_code, 200) #self.experiment1
+        self.assertEqual(self.experiment1.experimentacl_set, 200) #
+
         self.assertContains(response, '<div class="access_list_user')
 
         # remove user3 from experiment1 again
