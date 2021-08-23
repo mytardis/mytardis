@@ -349,7 +349,9 @@ def remove_user_from_group(request, group_id, username):
 @authz.experiment_ownership_required
 def add_experiment_access_user(request, experiment_id, username):
 
-    canRead = False
+    # CanRead should default to True when creating an ACL, otherwise the ACL
+    # makes no sense and will be automatically deleted
+    canRead = True
     canWrite = False
     canDelete = False
     isOwner = False
