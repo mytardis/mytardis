@@ -369,9 +369,12 @@ class ACLTestCase(TestCase):
                                     % (self.experiment1.id,
                                        self.user3.username,
                                        localdb_auth_key))
-        #self.assertEqual(response.status_code, 200) #self.experiment1
-        self.assertEqual(self.experiment1.experimentacl_set, 200) #
+        for acl in self.experiment1.experimentacl_set:
+            logger.debug(str(acl.user.username) +" "+ str(acl.experiment.title) +" "+
+                         str(acl.canRead) +" "+str(acl.canWrite) +" "+str(acl.canDelete) +" "+
+                         str(acl.isOwner) +" "+str(acl.aclOwnershipType))
 
+        self.assertEqual(response.status_code, 200)
         self.assertContains(response, '<div class="access_list_user')
 
         # remove user3 from experiment1 again
