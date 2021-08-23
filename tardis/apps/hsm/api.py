@@ -4,6 +4,7 @@ Additions to MyTardis's REST API
 import logging
 from django.conf import settings
 from django.conf.urls import url
+from django.contrib.auth.models import User
 from django.core.mail import get_connection, EmailMessage
 from django.http import (HttpResponseForbidden,
                          HttpResponseServerError,
@@ -157,9 +158,9 @@ class DatasetAppResource(tardis.tardis_portal.api.DatasetResource):
         self.throttle_check(request)
 
         dataset = Dataset.objects.get(id=kwargs['pk'])
-
+        user = User.objects.get(request.user.id)
         try:
-            online_files = dataset.online_files_count(request.user)
+            online_files = dataset.online_files_count(user)
             total_files = dataset.datafile_set.count()
             return JsonResponse({
                 'online_files': online_files,
