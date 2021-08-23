@@ -158,9 +158,8 @@ class DatasetAppResource(tardis.tardis_portal.api.DatasetResource):
         self.throttle_check(request)
 
         dataset = Dataset.objects.get(id=kwargs['pk'])
-        user = User.objects.get(request.user.id)
         try:
-            online_files = dataset.online_files_count(user)
+            online_files = dataset.online_files_count()
             total_files = dataset.datafile_set.count()
             return JsonResponse({
                 'online_files': online_files,
