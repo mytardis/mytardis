@@ -151,7 +151,7 @@ class Experiment(models.Model):
         from .datafile import DataFile
         if settings.ONLY_EXPERIMENT_ACLS:
             return DataFile.objects.filter(dataset__experiments=self)
-        else
+        else:
             return DataFile.safe.all(user).filter(dataset__experiments=self)
 
     def get_download_urls(self):
