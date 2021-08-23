@@ -149,7 +149,10 @@ class Experiment(models.Model):
 
     def get_datafiles(self, user):
         from .datafile import DataFile
-        return DataFile.safe.all(user).filter(dataset__experiments=self)
+        if settings.ONLY_EXPERIMENT_ACLS:
+            return DataFile.objects.filter(dataset__experiments=self)
+        else
+            return DataFile.safe.all(user).filter(dataset__experiments=self)
 
     def get_download_urls(self):
         urls = {}

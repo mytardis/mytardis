@@ -62,14 +62,14 @@ class Dataset(models.Model):
 
     @property
     def is_online(self):
-        return all(df.is_online for df in self.datafile_set.all())
+        return all(df.is_online for df in self.get_datafiles(user).all())
 
     @property
     def online_files_count(self):
         if 'tardis.apps.hsm' in settings.INSTALLED_APPS:
             from tardis.apps.hsm.check import dataset_online_count
             return dataset_online_count(self)
-        return self.datafile_set.count()
+        return self.get_datafiles(user).count()
 
     def getParameterSets(self, schemaType=None):
         """Return the dataset parametersets associated with this
@@ -92,7 +92,10 @@ class Dataset(models.Model):
 
     def get_datafiles(self, user):
         from .datafile import DataFile
-        return DataFile.safe.all(user).filter(dataset=self)
+        if settings.ONLY_EXPERIMENT_ACLS:
+             return DataFile.objects.filter(dataset__id=self.id)
+        else
+            return DataFile.safe.all(user).filter(dataset__id=self.id)
 
     def get_absolute_url(self):
         """Return the absolute url to the current ``Dataset``"""
@@ -126,9 +129,9 @@ class Dataset(models.Model):
         render_image_ds_size_limit = getattr(
             settings, 'RENDER_IMAGE_DATASET_SIZE_LIMIT', 0)
         if render_image_ds_size_limit and \
-                self.datafile_set.count() > render_image_ds_size_limit:
+                self.get_datafiles(user).count() > render_image_ds_size_limit:
             return DataFile.objects.none()
-        return self.datafile_set.order_by('filename').filter(IMAGE_FILTER)\
+        return self.get_datafiles(user).order_by('filename').filter(IMAGE_FILTER)\
             .filter(file_objects__verified=True).distinct()
 
     def _get_image(self):
@@ -152,8 +155,7 @@ class Dataset(models.Model):
 
     def get_size(self, user):
         from .datafile import DataFile
-        datafiles = DataFile.safe.all(user).filter(dataset__id=self.id)
-        return DataFile.sum_sizes(datafiles)
+        return DataFile.sum_sizes(self.get_datafiles(user))
 
     def _has_any_perm(self, user_obj):
         if not hasattr(self, 'id'):
