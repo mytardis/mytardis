@@ -61,11 +61,11 @@ class Dataset(models.Model):
         super().save(*args, **kwargs)
 
     @property
-    def is_online(self):
+    def is_online(self, user):
         return all(df.is_online for df in self.get_datafiles(user).all())
 
     @property
-    def online_files_count(self):
+    def online_files_count(self, user):
         if 'tardis.apps.hsm' in settings.INSTALLED_APPS:
             from tardis.apps.hsm.check import dataset_online_count
             return dataset_online_count(self)
@@ -129,9 +129,9 @@ class Dataset(models.Model):
         render_image_ds_size_limit = getattr(
             settings, 'RENDER_IMAGE_DATASET_SIZE_LIMIT', 0)
         if render_image_ds_size_limit and \
-                self.get_datafiles(user).count() > render_image_ds_size_limit:
+                self.datafile_set.count() > render_image_ds_size_limit:
             return DataFile.objects.none()
-        return self.get_datafiles(user).order_by('filename').filter(IMAGE_FILTER)\
+        return self.datafile_set.order_by('filename').filter(IMAGE_FILTER)\
             .filter(file_objects__verified=True).distinct()
 
     def _get_image(self):
@@ -228,7 +228,7 @@ class Dataset(models.Model):
         dir_tuples = []
         if basedir:
             dir_tuples.append(('..', basedir))
-        dirs_query = DataFile.safe.all(user).filter(dataset=self)
+        dirs_query = self.get_datafiles(user)
         if basedir:
             dirs_query = dirs_query.filter(directory__startswith='%s/' % basedir)
         dir_paths = set(dirs_query.values_list('directory', flat=True))
