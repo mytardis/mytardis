@@ -37,8 +37,10 @@ def create_new_acl_objects(apps, schema_editor):
                 print("ERROR finding user for new_ACL copy: old_acl_id="+str(acl.id)+', userid='+str(acl.entityId))
 
             EXPERIMENTACL.objects.create(canRead = acl.canRead,
+                                         canDownload = acl.canDownload,
                                          canWrite = acl.canWrite,
                                          canDelete = acl.canDelete,
+                                         canSensitive = acl.isOwner,
                                          isOwner = acl.isOwner,
                                          effectiveDate = acl.effectiveDate,
                                          expiryDate = acl.expiryDate,
@@ -54,8 +56,10 @@ def create_new_acl_objects(apps, schema_editor):
                 print("ERROR finding group for new_ACL copy: old_acl_id="+str(acl.id)+', groupid='+str(acl.entityId))
 
             EXPERIMENTACL.objects.create(canRead = acl.canRead,
+                                         canDownload = acl.canDownload,
                                          canWrite = acl.canWrite,
                                          canDelete = acl.canDelete,
+                                         canSensitive = acl.isOwner,
                                          isOwner = acl.isOwner,
                                          effectiveDate = acl.effectiveDate,
                                          expiryDate = acl.expiryDate,
@@ -89,8 +93,10 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('canRead', models.BooleanField(default=False)),
+                ('canDownload', models.BooleanField(default=False)),
                 ('canWrite', models.BooleanField(default=False)),
                 ('canDelete', models.BooleanField(default=False)),
+                ('canSensitive', models.BooleanField(default=False)),
                 ('isOwner', models.BooleanField(default=False)),
                 ('effectiveDate', models.DateField(blank=True, null=True)),
                 ('expiryDate', models.DateField(blank=True, null=True)),
@@ -110,8 +116,10 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('canRead', models.BooleanField(default=False)),
+                ('canDownload', models.BooleanField(default=False)),
                 ('canWrite', models.BooleanField(default=False)),
                 ('canDelete', models.BooleanField(default=False)),
+                ('canSensitive', models.BooleanField(default=False)),
                 ('isOwner', models.BooleanField(default=False)),
                 ('effectiveDate', models.DateField(blank=True, null=True)),
                 ('expiryDate', models.DateField(blank=True, null=True)),
@@ -131,8 +139,10 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('canRead', models.BooleanField(default=False)),
+                ('canDownload', models.BooleanField(default=False)),
                 ('canWrite', models.BooleanField(default=False)),
                 ('canDelete', models.BooleanField(default=False)),
+                ('canSensitive', models.BooleanField(default=False)),
                 ('isOwner', models.BooleanField(default=False)),
                 ('effectiveDate', models.DateField(blank=True, null=True)),
                 ('expiryDate', models.DateField(blank=True, null=True)),

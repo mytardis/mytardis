@@ -170,8 +170,10 @@ class ACL(models.Model):
     :attribute object_type: a foreign key to ContentType
     :attribute object_id: the primary key/id of the object_type
     :attribute canRead: gives the user read access
+    :attribute canDownload: gives the user download access
     :attribute canWrite: gives the user write access
     :attribute canDelete: gives the user delete permission
+    :attribute canSensitive: gives the user sensitive info access
     :attribute isOwner: the experiment owner flag.
     :attribute effectiveDate: the date when access takes into effect
     :attribute expiryDate: the date when access ceases
@@ -198,8 +200,10 @@ class ACL(models.Model):
     token = models.ForeignKey(Token, on_delete=models.CASCADE, null=True,
                               blank=True, related_name='%(class)ss')
     canRead = models.BooleanField(default=False)
+    canDownload = models.BooleanField(default=False)
     canWrite = models.BooleanField(default=False)
     canDelete = models.BooleanField(default=False)
+    canSensitive = models.BooleanField(default=False)
     isOwner = models.BooleanField(default=False)
     effectiveDate = models.DateField(null=True, blank=True)
     expiryDate = models.DateField(null=True, blank=True)
@@ -287,8 +291,8 @@ if getattr(settings, 'AUTOGENERATE_API_KEY', False):
 
 
 def delete_if_all_false(instance, **kwargs):
-    if not any([instance.canRead, instance.canWrite,
-                instance.canDelete, instance.isOwner]):
+    if not any([instance.canRead, instance.canDownload, instance.canWrite,
+                instance.canDelete, instance.canSensitive, instance.isOwner]):
         instance.delete()
 
 
