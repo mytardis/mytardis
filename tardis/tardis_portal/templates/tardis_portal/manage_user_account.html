@@ -1,45 +1,44 @@
 {% extends "tardis_portal/portal_template.html" %}
 
 {% block content %}
-<br/>
 <div class="container">
- <div class="row">
-  <div class="col-md-10">
-    <form class="form-horizontal" method="post" action="">{% csrf_token %}
-      <div class="form-group row">
-        <label class="col-form-label col-md-2 " for="id_first_name">First name</label>
-        <div class=" col-md-10 ">
-            <input type="text" name="first_name"
-                   value="{{ form.first_name.value }}"
-                   maxlength="30" class="form-control" id="id_first_name">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <form method="post" action="" class="mt-3 p-5 bg-light">
+                {% csrf_token %}
+                <div class="row mb-3">
+                    <div class="col-md-2">
+                        <label class="form-label" for="id_first_name">First name</label>
+                    </div>
+                    <div class="col-md-10">
+                        <input type="text" name="first_name" value="{{ form.first_name.value }}" maxlength="30" class="form-control" id="id_first_name">
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-2">
+                        <label class="form-label" for="id_last_name">Last name</label>
+                    </div>
+                    <div class="col-md-10">
+                        <input type="text" name="last_name" value="{{ form.last_name.value }}" maxlength="150" class="form-control" id="id_last_name">
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-2">
+                        <label class="form-label" for="id_email">Email address</label>
+                    </div>
+                    <div class="col-md-10">
+                        <input type="email" name="email" value="{{ form.email.value }}" maxlength="254" class="form-control" id="id_email">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="offset-md-2 col-md-10">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fa fa-check"></i> Save
+                        </button>
+                    </div>
+                </div>
+            </form>
         </div>
-      </div>
-      <div class="form-group row">
-        <label class="col-form-label col-md-2 " for="id_last_name">Last name</label>
-        <div class=" col-md-10 ">
-            <input type="text" name="last_name"
-                   value="{{ form.last_name.value }}"
-                   maxlength="150" class="form-control" id="id_last_name">
-        </div>
-      </div>
-      <div class="form-group row">
-        <label class="col-form-label col-md-2 " for="id_email">Email address</label>
-        <div class=" col-md-10 ">
-            <input type="email" name="email"
-                   value="{{ form.email.value }}"
-                   maxlength="254" class="form-control" id="id_email">
-        </div>
-      </div>
-      <div class="form-group row">
-        <div class="offset-md-2 col-md-10 text-right">
-          <button type="submit" class="btn btn-primary mr-0">
-            <i class="fa fa-check"></i>
-            Save
-          </button>
-        </div>
-      </div>
-    </form>
-  </div>
- </div>
+    </div>
 </div>
 {% endblock %}

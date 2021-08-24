@@ -360,8 +360,6 @@ def choose_rights(request, experiment_id):
 
     c = {'form': form.data, 'experiment': model_to_dict(experiment)}
     return JsonResponse(form.data, safe=False)
-    #return render_response_index(
-    #    request, 'tardis_portal/ajax/choose_rights.html', c)
 
 
 @never_cache

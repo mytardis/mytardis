@@ -111,9 +111,9 @@ const TreeDownloadButton = ({ count, onClick }) => (
         value="submit"
         disabled={!(count > 0)}
       >
-        <i className="fa fa-download fa-sm mr-1 " />
+        <i className="fa fa-download fa-sm me-1 " />
         {count > 0 ? 'Download Selected' : 'Select Files...'}
-        {count > 0 ? <span className="badge badge-light ml-1">{count}</span> : ''}
+        {count > 0 ? <span className="badge bg-light ms-1">{count}</span> : ''}
       </button>
     </form>
 

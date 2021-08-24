@@ -32,15 +32,15 @@ const DatasetViewPageBadges = ({ datasetID, hsmEnabled }) => {
     isLoading ? <Spinner override={spinnerCss} />
       : (
         <Fragment>
-          <span className="mr-2">
+          <span className="me-2">
             <DatasetExperimentCountBadge datasetData={datasetData} />
           </span>
-          <span className="mr-2">
+          <span className="me-2">
             {hsmEnabled ? <HSMDataFileCountBadge datasetId={parseInt(datasetID, 10)} />
               : <DatafileCountBadge experimentData={experimentData} />
             }
           </span>
-          <span className="mr-2">
+          <span className="me-2">
             <DatasetSizeBadge datasetData={datasetData} />
           </span>
         </Fragment>

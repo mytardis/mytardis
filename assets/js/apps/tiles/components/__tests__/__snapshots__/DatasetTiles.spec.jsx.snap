@@ -15,7 +15,7 @@ exports[`render dataset tiles on page load should match snapshot 1`] = `
       Datasets
     </h3>
     <a
-      class="add-dataset btn btn-primary btn-sm pull-right"
+      class="add-dataset btn btn-primary btn-sm float-end"
       href="/experiment/1234/add-dataset"
       id="add-dataset"
     >
@@ -60,169 +60,167 @@ exports[`render dataset tiles on page load should match snapshot 1`] = `
         Download Selected
       </button>
     </form>
-    <p>
+    <div
+      class="row mb-3"
+    >
       <div
-        class="row"
+        class="col-md-8"
       >
         <div
-          class="form-horizontal col-md-8"
+          class="has-search"
         >
-          <div
-            class="form-group has-search"
-          >
-            <input
-              class="form-control"
-              placeholder="Just start typing to filter datasets based on description"
-              type="text"
-            />
-          </div>
+          <input
+            class="form-control"
+            placeholder="Start typing to filter datasets based on description"
+            type="text"
+          />
         </div>
+      </div>
+      <div
+        class="col-md-4"
+      >
         <div
-          class="form-horizontal col-md-4"
+          class="btn-group"
         >
-          <div
-            class="btn-group"
+          <button
+            class="btn btn-outline-secondary float-end"
+            type="button"
           >
-            <button
-              class="btn btn-outline-secondary float-right"
-              type="button"
+            Sort by
+          </button>
+          <button
+            aria-expanded="false"
+            aria-haspopup="true"
+            class="btn btn-outline-secondary dropdown-toggle dropdown-toggle-split"
+            data-bs-toggle="dropdown"
+            type="button"
+          >
+            <span
+              class="sr-only"
             >
-              Sort by
-            </button>
-            <button
-              aria-expanded="false"
-              aria-haspopup="true"
-              class="btn btn-outline-secondary dropdown-toggle dropdown-toggle-split"
-              data-toggle="dropdown"
-              type="button"
-            >
-              <span
-                class="sr-only"
-              >
-                Toggle Dropdown
-              </span>
-            </button>
+              Toggle Dropdown
+            </span>
+          </button>
+          <div
+            class="dropdown-menu"
+            style="min-width: max-content; transform: translate3d(0px 38px 0px);"
+          >
             <div
-              class="dropdown-menu"
-              style="min-width: max-content; transform: translate3d(0px 38px 0px);"
+              class="row"
             >
               <div
-                class="row"
+                class="col col-md-8"
               >
-                <div
-                  class="col col-md-8"
+                <span
+                  class="dropdown-item"
+                  href="#"
                 >
-                  <span
-                    class="dropdown-item"
-                    href="#"
-                  >
-                    Description
-                  </span>
-                </div>
-                <div
-                  class="col col-md-4"
-                >
-                  <button
-                    class="fa fa-sort-alpha-asc mr-2 mt-2"
-                    style="background-color: transparent; cursor: pointer; text-decoration: underline; display: inline; margin: 0px; padding: 0px; color: blue;"
-                    type="button"
-                  />
-                  <button
-                    class="fa fa-sort-alpha-desc mt-2"
-                    style="background-color: transparent; cursor: pointer; text-decoration: underline; display: inline; margin: 0px; padding: 0px; color: blue;"
-                    type="button"
-                  />
-                </div>
+                  Description
+                </span>
               </div>
               <div
-                class="row"
+                class="col col-md-4"
               >
-                <div
-                  class="col col-md-8"
+                <button
+                  class="fa fa-sort-alpha-asc me-2 mt-2"
+                  style="background-color: transparent; cursor: pointer; text-decoration: underline; display: inline; margin: 0px; padding: 0px; color: blue;"
+                  type="button"
+                />
+                <button
+                  class="fa fa-sort-alpha-desc mt-2"
+                  style="background-color: transparent; cursor: pointer; text-decoration: underline; display: inline; margin: 0px; padding: 0px; color: blue;"
+                  type="button"
+                />
+              </div>
+            </div>
+            <div
+              class="row"
+            >
+              <div
+                class="col col-md-8"
+              >
+                <span
+                  class="dropdown-item"
+                  href="#"
                 >
-                  <span
-                    class="dropdown-item"
-                    href="#"
-                  >
-                    DataFile count
-                  </span>
-                </div>
-                <div
-                  class="col col-md-4"
-                >
-                  <button
-                    class="fa fa-sort-numeric-asc mr-2 mt-2"
-                    style="background-color: transparent; cursor: pointer; text-decoration: underline; display: inline; margin: 0px; padding: 0px; color: blue;"
-                    type="button"
-                  />
-                  <button
-                    class="fa fa-sort-numeric-desc mt-2"
-                    style="background-color: transparent; cursor: pointer; text-decoration: underline; display: inline; margin: 0px; padding: 0px; color: blue;"
-                    type="button"
-                  />
-                </div>
+                  Files count
+                </span>
               </div>
               <div
-                class="row"
+                class="col col-md-4"
               >
-                <div
-                  class="col col-md-8"
+                <button
+                  class="fa fa-sort-numeric-asc me-2 mt-2"
+                  style="background-color: transparent; cursor: pointer; text-decoration: underline; display: inline; margin: 0px; padding: 0px; color: blue;"
+                  type="button"
+                />
+                <button
+                  class="fa fa-sort-numeric-desc mt-2"
+                  style="background-color: transparent; cursor: pointer; text-decoration: underline; display: inline; margin: 0px; padding: 0px; color: blue;"
+                  type="button"
+                />
+              </div>
+            </div>
+            <div
+              class="row"
+            >
+              <div
+                class="col col-md-8"
+              >
+                <span
+                  class="dropdown-item"
+                  href="#"
                 >
-                  <span
-                    class="dropdown-item"
-                    href="#"
-                  >
-                    Dataset size
-                  </span>
-                </div>
-                <div
-                  class="col col-md-4"
-                >
-                  <button
-                    class="fa fa-sort-numeric-asc mr-2 mt-2"
-                    style="background-color: transparent; cursor: pointer; text-decoration: underline; display: inline; margin: 0px; padding: 0px; color: blue;"
-                    type="button"
-                  />
-                  <button
-                    class="fa fa-sort-numeric-desc mt-2"
-                    style="background-color: transparent; cursor: pointer; text-decoration: underline; display: inline; margin: 0px; padding: 0px; color: blue;"
-                    type="button"
-                  />
-                </div>
+                  Size
+                </span>
               </div>
               <div
-                class="row"
+                class="col col-md-4"
               >
-                <div
-                  class="col col-md-8"
+                <button
+                  class="fa fa-sort-numeric-asc me-2 mt-2"
+                  style="background-color: transparent; cursor: pointer; text-decoration: underline; display: inline; margin: 0px; padding: 0px; color: blue;"
+                  type="button"
+                />
+                <button
+                  class="fa fa-sort-numeric-desc mt-2"
+                  style="background-color: transparent; cursor: pointer; text-decoration: underline; display: inline; margin: 0px; padding: 0px; color: blue;"
+                  type="button"
+                />
+              </div>
+            </div>
+            <div
+              class="row"
+            >
+              <div
+                class="col col-md-8"
+              >
+                <span
+                  class="dropdown-item"
+                  href="#"
                 >
-                  <span
-                    class="dropdown-item"
-                    href="#"
-                  >
-                    Dataset modified time
-                  </span>
-                </div>
-                <div
-                  class="col col-md-4"
-                >
-                  <button
-                    class="fa fa-sort-numeric-asc mr-2 mt-2"
-                    style="background-color: transparent; cursor: pointer; text-decoration: underline; display: inline; margin: 0px; padding: 0px; color: blue;"
-                    type="button"
-                  />
-                  <button
-                    class="fa fa-sort-numeric-desc mt-2"
-                    style="background-color: transparent; cursor: pointer; text-decoration: underline; display: inline; margin: 0px; padding: 0px; color: blue;"
-                    type="button"
-                  />
-                </div>
+                  Last modified
+                </span>
+              </div>
+              <div
+                class="col col-md-4"
+              >
+                <button
+                  class="fa fa-sort-numeric-asc me-2 mt-2"
+                  style="background-color: transparent; cursor: pointer; text-decoration: underline; display: inline; margin: 0px; padding: 0px; color: blue;"
+                  type="button"
+                />
+                <button
+                  class="fa fa-sort-numeric-desc mt-2"
+                  style="background-color: transparent; cursor: pointer; text-decoration: underline; display: inline; margin: 0px; padding: 0px; color: blue;"
+                  type="button"
+                />
               </div>
             </div>
           </div>
         </div>
       </div>
-    </p>
+    </div>
     <div
       data-rbd-droppable-context-id="0"
       data-rbd-droppable-id="main-list"
@@ -247,7 +245,7 @@ exports[`render dataset tiles on page load should match snapshot 1`] = `
               class="card-body"
             >
               <div
-                class="float-left"
+                class="float-start"
                 style="margin-right: 10px;"
               >
                 <div
@@ -259,7 +257,7 @@ exports[`render dataset tiles on page load should match snapshot 1`] = `
                 </div>
                 <br />
                 <label
-                  class="label label-info"
+                  class="badge bg-info"
                   for="dataset-checkbox-26"
                   title="Mark dataset for download"
                 >
@@ -267,7 +265,7 @@ exports[`render dataset tiles on page load should match snapshot 1`] = `
                     class="fa fa-download"
                   />
                   <input
-                    class="dataset_checkbox ml-2"
+                    class="dataset_checkbox ms-2"
                     id="dataset-checkbox-26"
                     name="dataset"
                     style="display: inline;"
@@ -277,16 +275,16 @@ exports[`render dataset tiles on page load should match snapshot 1`] = `
                 </label>
               </div>
               <div
-                class="float-left"
+                class="float-start"
                 style="margin-right: 10px;"
               />
               <div
-                class="float-right"
+                class="float-end"
                 style="text-align: right;"
               >
                 <p>
                   <span
-                    class="badge badge-info"
+                    class="badge bg-info"
                     title="4 of 4 Files online"
                   >
                     <i
@@ -298,7 +296,7 @@ exports[`render dataset tiles on page load should match snapshot 1`] = `
                 </p>
                 <p>
                   <span
-                    class="badge badge-info"
+                    class="badge bg-info"
                     title="Dataset size is"
                   >
                     160.64 KB
@@ -306,7 +304,7 @@ exports[`render dataset tiles on page load should match snapshot 1`] = `
                 </p>
               </div>
               <div
-                class="float-left ds-thumb"
+                class="float-start ds-thumb"
                 style="margin-right: 10px;"
               >
                 <canvas
@@ -314,7 +312,7 @@ exports[`render dataset tiles on page load should match snapshot 1`] = `
                 />
               </div>
               <div
-                class="float-left"
+                class="float-start"
               >
                 <p
                   class="mb-2"
@@ -351,7 +349,7 @@ exports[`render dataset tiles on page load should match snapshot 1`] = `
               class="card-body"
             >
               <div
-                class="float-left"
+                class="float-start"
                 style="margin-right: 10px;"
               >
                 <div
@@ -363,7 +361,7 @@ exports[`render dataset tiles on page load should match snapshot 1`] = `
                 </div>
                 <br />
                 <label
-                  class="label label-info"
+                  class="badge bg-info"
                   for="dataset-checkbox-30"
                   title="Mark dataset for download"
                 >
@@ -371,7 +369,7 @@ exports[`render dataset tiles on page load should match snapshot 1`] = `
                     class="fa fa-download"
                   />
                   <input
-                    class="dataset_checkbox ml-2"
+                    class="dataset_checkbox ms-2"
                     id="dataset-checkbox-30"
                     name="dataset"
                     style="display: inline;"
@@ -381,16 +379,16 @@ exports[`render dataset tiles on page load should match snapshot 1`] = `
                 </label>
               </div>
               <div
-                class="float-left"
+                class="float-start"
                 style="margin-right: 10px;"
               />
               <div
-                class="float-right"
+                class="float-end"
                 style="text-align: right;"
               >
                 <p>
                   <span
-                    class="badge badge-info"
+                    class="badge bg-info"
                     title="4 of 4 Files online"
                   >
                     <i
@@ -402,7 +400,7 @@ exports[`render dataset tiles on page load should match snapshot 1`] = `
                 </p>
                 <p>
                   <span
-                    class="badge badge-info"
+                    class="badge bg-info"
                     title="Dataset size is"
                   >
                     342.35 KB
@@ -410,7 +408,7 @@ exports[`render dataset tiles on page load should match snapshot 1`] = `
                 </p>
               </div>
               <div
-                class="float-left ds-thumb"
+                class="float-start ds-thumb"
                 style="margin-right: 10px;"
               >
                 <canvas
@@ -418,7 +416,7 @@ exports[`render dataset tiles on page load should match snapshot 1`] = `
                 />
               </div>
               <div
-                class="float-left"
+                class="float-start"
               >
                 <p
                   class="mb-2"
@@ -449,49 +447,49 @@ exports[`render dataset tiles on page load should match snapshot 1`] = `
       data-rbd-droppable-id="share-list"
     >
       <form
-        class="form-horizontal"
         id="other-experiment-selection"
       >
-        <fieldset>
+        <div
+          class="row"
+        >
           <div
-            class="form-group"
+            class="col-md-2"
           >
             <label
-              class="col-md-2 col-form-label"
-              for="input01"
+              class="form-label"
+              for="experiment_id"
             >
               Experiment
             </label>
-            <div
-              class="col-md-10"
-            >
-              <select
-                class="form-control"
-                name="experiment_id"
-              >
-                <option
-                  value="34"
-                >
-                  My Test Exp
-                </option>
-                <option
-                  value="38"
-                >
-                  My Test Exp 2
-                </option>
-              </select>
-            </div>
           </div>
-        </fieldset>
+          <div
+            class="col-md-10"
+          >
+            <select
+              class="form-select"
+              name="experiment_id"
+            >
+              <option
+                value="34"
+              >
+                My Test Exp
+              </option>
+              <option
+                value="38"
+              >
+                My Test Exp 2
+              </option>
+            </select>
+          </div>
+        </div>
       </form>
       <p
-        class="help-text"
+        class="mt-3"
       >
         <strong>
           Instructons:
         </strong>
-         
-        Using the above list, select an experiment to copy from, then drag datasets to the right to associate them with the current experiment.
+          Using the above list, select an experiment to copy from, then drag datasets to the right to associate them with the current experiment.
       </p>
       <ul
         class="datasets thumbnails"
@@ -513,7 +511,7 @@ exports[`render dataset tiles on page load should match snapshot 1`] = `
               class="card-body"
             >
               <div
-                class="float-left"
+                class="float-start"
                 style="margin-right: 10px;"
               >
                 <div
@@ -527,16 +525,16 @@ exports[`render dataset tiles on page load should match snapshot 1`] = `
                 
               </div>
               <div
-                class="float-left"
+                class="float-start"
                 style="margin-right: 10px;"
               />
               <div
-                class="float-right"
+                class="float-end"
                 style="text-align: right;"
               >
                 <p>
                   <span
-                    class="badge badge-info"
+                    class="badge bg-info"
                     title="4 of 4 Files online"
                   >
                     <i
@@ -548,7 +546,7 @@ exports[`render dataset tiles on page load should match snapshot 1`] = `
                 </p>
                 <p>
                   <span
-                    class="badge badge-info"
+                    class="badge bg-info"
                     title="Dataset size is"
                   >
                     160.64 KB
@@ -556,7 +554,7 @@ exports[`render dataset tiles on page load should match snapshot 1`] = `
                 </p>
               </div>
               <div
-                class="float-left ds-thumb"
+                class="float-start ds-thumb"
                 style="margin-right: 10px;"
               >
                 <canvas
@@ -564,7 +562,7 @@ exports[`render dataset tiles on page load should match snapshot 1`] = `
                 />
               </div>
               <div
-                class="float-left"
+                class="float-start"
               >
                 <p
                   class="mb-2"
@@ -601,7 +599,7 @@ exports[`render dataset tiles on page load should match snapshot 1`] = `
               class="card-body"
             >
               <div
-                class="float-left"
+                class="float-start"
                 style="margin-right: 10px;"
               >
                 <div
@@ -615,16 +613,16 @@ exports[`render dataset tiles on page load should match snapshot 1`] = `
                 
               </div>
               <div
-                class="float-left"
+                class="float-start"
                 style="margin-right: 10px;"
               />
               <div
-                class="float-right"
+                class="float-end"
                 style="text-align: right;"
               >
                 <p>
                   <span
-                    class="badge badge-info"
+                    class="badge bg-info"
                     title="4 of 4 Files online"
                   >
                     <i
@@ -636,7 +634,7 @@ exports[`render dataset tiles on page load should match snapshot 1`] = `
                 </p>
                 <p>
                   <span
-                    class="badge badge-info"
+                    class="badge bg-info"
                     title="Dataset size is"
                   >
                     342.35 KB
@@ -644,7 +642,7 @@ exports[`render dataset tiles on page load should match snapshot 1`] = `
                 </p>
               </div>
               <div
-                class="float-left ds-thumb"
+                class="float-start ds-thumb"
                 style="margin-right: 10px;"
               >
                 <canvas
@@ -652,7 +650,7 @@ exports[`render dataset tiles on page load should match snapshot 1`] = `
                 />
               </div>
               <div
-                class="float-left"
+                class="float-start"
               >
                 <p
                   class="mb-2"

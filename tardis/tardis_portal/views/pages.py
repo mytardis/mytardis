@@ -524,17 +524,19 @@ class ExperimentView(TemplateView):
 
         _add_protocols_and_organizations(request, experiment, c)
 
-        default_apps = [
-            {'name': 'Description',
-             'viewfn': 'tardis.tardis_portal.views.experiment_description'},
-            {'name': 'Metadata',
-             'viewfn':
-             'tardis.tardis_portal.views.retrieve_experiment_metadata'},
-            {'name': 'Sharing', 'viewfn': 'tardis.tardis_portal.views.share'},
-            {'name': 'Transfer Datasets',
-             'viewfn':
-             'tardis.tardis_portal.views.experiment_dataset_transfer'},
-        ]
+        default_apps = [{
+            'name': 'Description',
+            'viewfn': 'tardis.tardis_portal.views.experiment_description'
+        }, {
+            'name': 'Metadata',
+            'viewfn': 'tardis.tardis_portal.views.retrieve_experiment_metadata'
+        }, {
+            'name': 'Sharing',
+            'viewfn': 'tardis.tardis_portal.views.share'
+        }, {
+            'name': 'Transfer Datasets',
+            'viewfn': 'tardis.tardis_portal.views.experiment_dataset_transfer'
+        }]
         appnames = []
         appurls = []
 

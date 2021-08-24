@@ -27,6 +27,8 @@ eggs/
 node_modules/
 assets/bundles/
 parts/
+venv/
+wheelhouse/
 tardis/settings.py
 tardis/tardis_portal/tests/rifcs/MyTARDIS-1.xml
 var/

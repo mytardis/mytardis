@@ -5,54 +5,46 @@
   Parameters saved successfully.
 {% else %}
   <form id="add_metadata_form"
-        action='/ajax/add_{{type}}_parameters/{{parentObject.id}}/{{schema.id}}/'
-        method='post' data-type="{{type}}" data-parent_object_id="{{parentObject.id}}">
+        action="/ajax/add_{{type}}_parameters/{{parentObject.id}}/{{schema.id}}/"
+        method="post"
+        data-type="{{type}}"
+        data-parent_object_id="{{parentObject.id}}">
     {% csrf_token %}
-    <div class="form-horizontal">
-      <div class="form-group">
-        <div class="row">
-          <div class="col-md-2">
-             <label class="col-form-label" for="schemaselect">
-               <strong>Schema</strong>
-             </label>
-          </div>
-          <div class="col-md-9 ml-4 mr-0">
-            <select id="schemaselect" class="form-control" data-type="{{type}}" data-parent_object_id="{{parentObject.id}}">
-            {% for schema in all_schema %}
-              <option value="{{schema.id}}" {% if schema.id == schema_id %}selected{% endif %}>{{schema.name}}</option>
-            {% endfor %}
-            </select>
-          </div>
-        </div>
+    <div class="row mb-3">
+      <div class="col-md-2">
+         <label class="form-label" for="schemaselect">Schema</label>
+      </div>
+      <div class="col-md-10">
+        <select id="schemaselect" class="form-select" data-type="{{type}}"
+                data-parent_object_id="{{parentObject.id}}">
+        {% for schema in all_schema %}
+          <option value="{{schema.id}}" {% if schema.id == schema_id %}selected{% endif %}>{{schema.name}}</option>
+        {% endfor %}
+        </select>
       </div>
     </div>
     {{ form.non_field_errors }}
-      {% for field in form %}
-        <div class="form-group">
-          <label class="col-form-label-sm py-0" for="{{field.name}}">{{field.label}}</label>
-          <div class="col-md-12 pl-0">
-            {{ field | add_class:"form-control form-control-sm" }}
-          </div>
+    {% for field in form %}
+      <div class="row mb-3">
+        <div class="col-md-12">
+          <label class="form-label" for="{{field.name}}">{{field.label}}</label>
+          {{ field | add_class:"form-control" }}
         </div>
-      {% endfor %}
-
-    <p><em>Leave a parameter blank to remove</em></p>
+      </div>
+    {% endfor %}
+    <p class="help-block ms-0">Leave a parameter blank to remove</p>
     {% if not valid %}
-      <p style="color: red"><em>There were errors in the parameter submission. Please fix and resubmit.</em></p>
+      <p style="color:red">There were errors in the parameter submission. Please fix and resubmit.</p>
     {% endif %}
-
-    <div class="form-group">
-      <footer class="col-md-12 text-right">
-        <button type="button" class="cancel-button btn btn-outline-secondary"
-                data-dismiss="modal">
-          <i class="fa fa-close"></i>
-          Cancel
-        </button>
+    <div class="row">
+      <div class="col-md-12">
         <button type="submit" class="submit-button btn btn-primary">
-          <i class="fa fa-check"></i>
-          Save
+          <i class="fa fa-check"></i> Save
         </button>
-      </footer>
+        <button type="button" class="float-end cancel-button btn btn-outline-secondary" data-bs-dismiss="modal">
+          <i class="fa fa-close"></i> Cancel
+        </button>
+      </div>
     </div>
   </form>
 {% endif %}

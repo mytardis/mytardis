@@ -31,57 +31,58 @@
 {% load widget_tweaks %}
 
 {% block content %}
-<div id="container" class="container">
+<div class="container">
+
   <div class="page-header">
     <h1>User Registration</h1>
   </div>
 
   <p>Users must register before creating new experiments in MyTardis.</p>
 
-  <div class="row">
-    <div class="col-md-12">
-      <form action="." method="post" class="form-horizontal">
-        {% csrf_token %}
-        <div class="form-group row">
-          <label class="col-form-label col-md-2 required" for="id_username">Username</label>
-          <div class="col-md-9">
-              {{ form.username | add_class:"form-control" }}
-            <p class="help-block">
-              Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.
-            </p>
-          </div>
-        </div>
-        <div class="form-group row">
-          <label class="col-form-label col-md-2 required" for="id_email">E-mail</label>
-          <div class="col-md-9">
-            {{ form.email | add_class:"form-control" }}
-          </div>
-        </div>
-        <div class="form-group row">
-          <label class="col-form-label col-md-2 required" for="id_password1">Password</label>
-          <div class="col-md-9">
-            {{ form.password1 | add_class:"form-control" }}
-          </div>
-        </div>
-        <div class="form-group row">
-          <label class="col-form-label col-md-2 required" for="id_password2">Password confirmation</label>
-          <div class="col-md-9">
-            {{ form.password2 | add_class:"form-control" }}
-            <p class="help-block">
-                Enter the same password as before, for verification.
-            </p>
-          </div>
-        </div>
-        <div class="form-group row">
-          <div class="offset-md-2 col-md-9 text-right">
-            <button type="submit" class="btn btn-primary btn-sm mr-0">
-              <i class="fa fa-user"></i>
-              Create New Account
-            </button>
-          </div>
-        </div>
-      </form>
+  <form action="." method="post" class="p-5 bg-light">
+    {% csrf_token %}
+    <div class="row mb-3">
+      <div class="col-md-2">
+        <label class="form-label" for="id_username">Username</label>
+      </div>
+      <div class="col-md-4">
+          {{ form.username | add_class:"form-control" }}
+          <p class="help-block ms-0">Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.</p>
+      </div>
     </div>
-  </div>
-</div>  <!-- id=container -->
+    <div class="row mb-3">
+      <div class="col-md-2">
+        <label class="form-label" for="id_email">E-mail</label>
+      </div>
+      <div class="col-md-4">
+        {{ form.email | add_class:"form-control" }}
+      </div>
+    </div>
+    <div class="row mb-3">
+      <div class="col-md-2">
+        <label class="form-label" for="id_password1">Password</label>
+      </div>
+      <div class="col-md-4">
+        {{ form.password1 | add_class:"form-control" }}
+      </div>
+    </div>
+    <div class="row mb-3">
+      <div class="col-md-2">
+        <label class="form-label" for="id_password2">Password confirmation</label>
+      </div>
+      <div class="col-md-4">
+        {{ form.password2 | add_class:"form-control" }}
+        <p class="help-block ms-0">Enter the same password as before, for verification.</p>
+      </div>
+    </div>
+    <div class="row">
+      <div class="offset-md-2 col-md-9">
+        <button type="submit" class="btn btn-primary">
+          <i class="fa fa-user"></i> Create New Account
+        </button>
+      </div>
+    </div>
+  </form>
+
+</div>
 {% endblock %}

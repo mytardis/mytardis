@@ -43,7 +43,8 @@ def fill_in_create_exp_and_save(context):
     authors_input = context.browser.find_element_by_css_selector("input[name='authors']")
     authors_input.send_keys("Test User1")
     save_button = context.browser.find_element_by_css_selector("button[type='submit']")
-    save_button.click()
+    context.browser.execute_script("arguments[0].scrollIntoView();", save_button)
+    context.browser.execute_script("arguments[0].click();", save_button)
 
 
 @then("a new experiment is created")
@@ -120,7 +121,8 @@ def they_click_the_change_public_access_button(context):
     :type context: behave.runner.Context
     """
     public_access_link = context.browser.find_element_by_class_name("public_access_button")
-    public_access_link.click()
+    context.browser.execute_script("arguments[0].scrollIntoView();", public_access_link)
+    context.browser.execute_script("arguments[0].click();", public_access_link)
 
 
 @then("they see the Change Public Access form")
@@ -131,9 +133,7 @@ def they_see_the_change_public_access_form(context):
     wait_for_jquery(context)
     exp_id = Experiment.objects.get(title="test exp1").id
     form = context.browser.find_element_by_css_selector("form.experiment-rights")
-    context.test.assertIn(
-        "post", form.get_attribute("method"))
-    close_link = context.browser.\
-        find_element_by_css_selector("#modal-public-access > div > div > div.modal-header > button > span")
+    context.test.assertIn("post", form.get_attribute("method"))
+    close_link = context.browser.find_element_by_css_selector("#modal-public-access > div.modal-dialog > div.modal-content > div.modal-header > button")
     close_link.click()
     time.sleep(0.5)

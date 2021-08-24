@@ -45,7 +45,7 @@ const Header = ({
         type="button"
         className="btn btn-outline-secondary btn-sm"
         onClick={onSelect}
-        data-toggle="tooltip"
+        data-bs-toggle="tooltip"
         data-placement="right"
         title={node.display_text}
       >

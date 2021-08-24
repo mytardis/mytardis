@@ -48,7 +48,7 @@ var loadRecentDatasetsSummary = function(divIdPrefix, experimentId) {
  */
 // eslint-disable-next-line no-unused-vars
 var attachExpAccordionClickHandlers = function(accordionToggleClass, accordionToggleIdPrefix, accordionBodyIdPrefix, divIdPrefix, loadDatasetsSummary) {
-    $("." + accordionToggleClass).click(function(event) {
+    $("." + accordionToggleClass).on("click", function(event) {
         var experimentId = $(this).attr("id").replace(accordionToggleIdPrefix, "");
         if (!$("#" + accordionBodyIdPrefix + experimentId).hasClass("in")) {
             loadDatasetsSummary(divIdPrefix, experimentId);
@@ -68,4 +68,18 @@ var expandFirstExperiments = function() {
         }
     });
 };
-export {attachExpAccordionClickHandlers, loadLatestDatasetSummary, expandFirstExperiments, loadRecentDatasetsSummary};
+
+var handleExpAccordionLink = function(e) {
+    window.location.href = $(e.target).attr("href");
+    e.preventDefault();
+    e.stopPropagation();
+    return false;
+};
+
+export {
+    attachExpAccordionClickHandlers,
+    loadLatestDatasetSummary,
+    expandFirstExperiments,
+    loadRecentDatasetsSummary,
+    handleExpAccordionLink
+};

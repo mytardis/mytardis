@@ -5,55 +5,56 @@ import Result from './Result';
 
 function Results({ results, counts }) {
   return (
-    <div style={{ marginTop: 15 }}>
-      <div className="container" style={{ marginBottom: 10 }}>
-        <h2>Search Results </h2>
-      </div>
-      <div id="tabbed-pane" className="container">
-        <ul className="nav nav-tabs" style={{ fontWeight: 600 }} id="searchTab" role="tablist">
+    <div className="mt-3">
+      <h3 className="mb-3">Search Results</h3>
+      <div id="tabbed-pane">
+        <ul className="nav nav-tabs" id="searchTab" role="tablist">
           <li className="nav-item">
             <a
               className="nav-link active"
               id="experiments-tab"
-              data-toggle="tab"
+              data-bs-toggle="tab"
               href="#experiments"
               role="tab"
               aria-controls="experiments"
               aria-selected="true"
             >
               <i className="fa fa-flask fa-2x" />
+              &nbsp;
               Experiments
-              <span className="badge badge-secondary count-badge">{counts.experimentsCount}</span>
+              <span className="badge bg-secondary count-badge">{counts.experimentsCount}</span>
             </a>
           </li>
           <li className="nav-item">
             <a
               className="nav-link"
               id="datasets-tab"
-              data-toggle="tab"
+              data-bs-toggle="tab"
               href="#datasets"
               role="tab"
               aria-controls="profile"
               aria-selected="false"
             >
               <i className="fa fa-folder fa-2x" />
+              &nbsp;
               Datasets
-              <span className="badge badge-secondary count-badge">{counts.datasetsCount}</span>
+              <span className="badge bg-secondary count-badge">{counts.datasetsCount}</span>
             </a>
           </li>
           <li className="nav-item">
             <a
               className="nav-link"
               id="datafiles-tab"
-              data-toggle="tab"
+              data-bs-toggle="tab"
               href="#datafiles"
               role="tab"
               aria-controls="contact"
               aria-selected="false"
             >
               <i className="fa fa-file fa-2x" />
+              &nbsp;
               Datafiles
-              <span className="badge badge-secondary count-badge">{counts.datafilesCount}</span>
+              <span className="badge bg-secondary count-badge">{counts.datafilesCount}</span>
             </a>
           </li>
         </ul>

@@ -5,8 +5,13 @@
  * duplicate submissions.
  */
 export function disableDuplicateSubmit() {
-    $("#create_experiment_form").submit(function() {
-        $(this).find(":submit").prop("disabled", true);
+    $("#create_experiment_form").on("submit", function(e) {
+        var $form = $(this);
+        if ($form.data("submitted") === true) {
+            e.preventDefault();
+        } else {
+            $form.data("submitted", true);
+        }
     });
 }
 

@@ -44,10 +44,10 @@ def they_see_the_migrate_my_account_page(context):
     """
     :type context: behave.runner.Context
     """
-    legend = context.browser.find_element_by_css_selector("legend")
+    title = context.browser.find_element_by_css_selector("h3")
 
     context.test.assertIn(
-        "Migrate My Account", legend.get_attribute("innerHTML"))
+        "Migrate My Account", title.get_attribute("innerHTML"))
 
     console_errors = []
     for entry in context.browser.get_log('browser'):
