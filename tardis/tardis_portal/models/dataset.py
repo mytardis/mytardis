@@ -323,21 +323,3 @@ class Dataset(models.Model):
             }
             dir_list.append(child_dict)
         return dir_list
-
-    def getACLsforIndexing(self):
-        """Returns the datasetACLs associated with this
-        dataset, formatted for elasticsearch.
-        """
-        #TODO account for settings.ONLY_EXP setting
-        return_list = []
-        for acl in self.datasetacl_set.all():
-            acl_dict = {}
-            if acl.user is not None:
-                acl_dict["pluginId"] = "django_user"
-                acl_dict["entityId"] = acl.user.id
-                return_list.append(acl_dict)
-            if acl.group is not None:
-                acl_dict["pluginId"] = "django_group"
-                acl_dict["entityId"] = acl.group.id
-                return_list.append(acl_dict)
-        return return_list

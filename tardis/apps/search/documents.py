@@ -61,7 +61,21 @@ class ExperimentDocument(Document):
                               'entityId': fields.KeywordField()})
 
     def prepare_acls(self, instance):
-        return list(instance.getACLsforIndexing())
+        """Returns the ExperimentACLs associated with an
+        experiment, formatted for elasticsearch.
+        """
+        return_list = []
+        for acl in instance.experimentacl_set.all():
+            acl_dict = {}
+            if acl.user is not None:
+                acl_dict["pluginId"] = "django_user"
+                acl_dict["entityId"] = acl.user.id
+                return_list.append(acl_dict)
+            if acl.group is not None:
+                acl_dict["pluginId"] = "django_group"
+                acl_dict["entityId"] = acl.group.id
+                return_list.append(acl_dict)
+        return return_list
 
     class Django:
         model = Experiment
@@ -118,7 +132,33 @@ class DatasetDocument(Document):
                               'entityId': fields.KeywordField()})
 
     def prepare_acls(self, instance):
-        return list(instance.getACLsforIndexing())
+        """Returns the datasetACLs associated with this
+        dataset, formatted for elasticsearch.
+        """
+        return_list = []
+        if settings.ONLY_EXP:
+            for acl in instance.experiments.experimentacl_set.all():
+                acl_dict = {}
+                if acl.user is not None:
+                    acl_dict["pluginId"] = "django_user"
+                    acl_dict["entityId"] = acl.user.id
+                    return_list.append(acl_dict)
+                if acl.group is not None:
+                    acl_dict["pluginId"] = "django_group"
+                    acl_dict["entityId"] = acl.group.id
+                    return_list.append(acl_dict)
+        else:
+            for acl in instance.datasetacl_set.all():
+                acl_dict = {}
+                if acl.user is not None:
+                    acl_dict["pluginId"] = "django_user"
+                    acl_dict["entityId"] = acl.user.id
+                    return_list.append(acl_dict)
+                if acl.group is not None:
+                    acl_dict["pluginId"] = "django_group"
+                    acl_dict["entityId"] = acl.group.id
+                    return_list.append(acl_dict)
+        return return_list
 
     class Django:
         model = Dataset
@@ -167,7 +207,33 @@ class DataFileDocument(Document):
                               'entityId': fields.KeywordField()})
 
     def prepare_acls(self, instance):
-        return list(instance.getACLsforIndexing())
+        """Returns the datafileACLs associated with this
+        datafile, formatted for elasticsearch.
+        """
+        return_list = []
+        if settings.ONLY_EXP:
+            for acl in self.dataset.experiments.experimentacl_set.all():
+                acl_dict = {}
+                if acl.user is not None:
+                    acl_dict["pluginId"] = "django_user"
+                    acl_dict["entityId"] = acl.user.id
+                    return_list.append(acl_dict)
+                if acl.group is not None:
+                    acl_dict["pluginId"] = "django_group"
+                    acl_dict["entityId"] = acl.group.id
+                    return_list.append(acl_dict)
+        else:
+            for acl in self.datafileacl_set.all():
+                acl_dict = {}
+                if acl.user is not None:
+                    acl_dict["pluginId"] = "django_user"
+                    acl_dict["entityId"] = acl.user.id
+                    return_list.append(acl_dict)
+                if acl.group is not None:
+                    acl_dict["pluginId"] = "django_group"
+                    acl_dict["entityId"] = acl.group.id
+                    return_list.append(acl_dict)
+        return return_list
 
     def prepare_experiments(self, instance):
         experiments = []
