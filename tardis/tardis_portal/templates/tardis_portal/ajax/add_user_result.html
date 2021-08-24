@@ -5,13 +5,13 @@
   </div>
   <div class="col-md-4">
     {% if user_acl.canRead %}
-    <span class="badge badge-success">Read</span>
+    <span class="badge bg-success">Read</span>
     {% endif %}
     {% if user_acl.canWrite %}
-    <span class="badge badge-success">Edit</span>
+    <span class="badge bg-success">Edit</span>
     {% endif %}
     {% if user_acl.isOwner %}
-    <span class="badge badge-info">Owner</span>
+    <span class="badge bg-info">Owner</span>
     {% endif %}
   </div>
   <div class="col-md-3">

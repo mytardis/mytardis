@@ -15,9 +15,9 @@ const DatasetExperimentCountBadge = ({ datasetData }) => {
 
   return (
     <Fragment>
-      <Badge variant="info" title={title}>
+      <Badge bg="info" title={title}>
         <i className="fa fa-cogs" />
-&nbsp;
+        &nbsp;
         {count}
       </Badge>
     </Fragment>

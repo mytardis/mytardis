@@ -13,7 +13,8 @@ def they_click_add_new_dataset_btn(context):
     :type context: behave.runner.Context
     """
     add_new_btn = context.browser.find_element_by_id("add-dataset")
-    add_new_btn.click()
+    context.browser.execute_script("arguments[0].scrollIntoView();", add_new_btn)
+    context.browser.execute_script("arguments[0].click();", add_new_btn)
 
 
 @then("they see the dataset creation form")

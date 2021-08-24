@@ -6,10 +6,10 @@ exports[`renders badges on experiment view page should render all badges 1`] = `
   id="experiment-1234"
 >
   <span
-    class="mr-2"
+    class="me-2"
   >
     <span
-      class="badge badge-info"
+      class="badge bg-info"
       title="1 dataset"
     >
       <i
@@ -20,10 +20,10 @@ exports[`renders badges on experiment view page should render all badges 1`] = `
     </span>
   </span>
   <span
-    class="mr-2"
+    class="me-2"
   >
     <span
-      class="badge badge-info"
+      class="badge bg-info"
       title="100 files"
     >
       <i
@@ -34,20 +34,20 @@ exports[`renders badges on experiment view page should render all badges 1`] = `
     </span>
   </span>
   <span
-    class="mr-2"
+    class="me-2"
   >
     <span
-      class="badge badge-info"
+      class="badge bg-info"
       title="Experiment size is ~ 1 KB"
     >
       1 KB
     </span>
   </span>
   <span
-    class="mr-2"
+    class="me-2"
   >
     <span
-      class="badge badge-info"
+      class="badge bg-info"
       title="Last updated: Mon, Jan 13, 2020 2:00 PM"
     >
       <i
@@ -58,10 +58,10 @@ exports[`renders badges on experiment view page should render all badges 1`] = `
     </span>
   </span>
   <span
-    class="mr-2"
+    class="me-2"
   >
     <span
-      class="badge badge-secondary"
+      class="badge bg-secondary"
       content=" No public access"
       title=" No public access"
     >

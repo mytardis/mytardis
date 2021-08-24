@@ -18,12 +18,12 @@
   {% verbatim %}
   <div class="row">
     <div class="col-md-6">
-      <h2 class="float-left" style="color:#999999" ng-cloak>{{facilityCtrl.selectedFacilityName}}</h2>
+      <h2 class="float-start" style="color:#999999" ng-cloak>{{facilityCtrl.selectedFacilityName}}</h2>
     </div>
     <div class="col-md-6">
-      <div class="dropdown show float-right" ng-show="facilityCtrl.showFacilitySelector()" ng-cloak>
+      <div class="dropdown show float-end" ng-show="facilityCtrl.showFacilitySelector()" ng-cloak>
         <button class="btn btn-outline-secondary dropdown-toggle"
-           data-toggle="dropdown">Facility: {{facilityCtrl.selectedFacilityName}}
+           data-bs-toggle="dropdown">Facility: {{facilityCtrl.selectedFacilityName}}
           <span class="caret"></span>
         </button>
         <div class="dropdown-menu dropdown-menu-right">
@@ -34,7 +34,7 @@
                {{facility.name}}
             </a>
         </div>
-      </div>  <!-- div class="btn-group pull-right" -->
+      </div>  <!-- div class="btn-group float-end" -->
     </div>
   </div>
   {% endverbatim %}
@@ -74,14 +74,14 @@
                 </div>
                 <div class="col-md-4">
                   <!-- Auto-refresh button -->
-                  <div class="btn-group pull-right" ng-cloak>
+                  <div class="btn-group float-end" ng-cloak>
                     <button type="button" class="btn btn-outline-secondary btn-sm"
                             ng-click="facilityCtrl.fetchFacilityData(0,facilityCtrl.defaultFetchLimit); facilityCtrl.refreshCountdown = facilityCtrl.refreshInterval">
                       <i class="fa fa-refresh"></i>
                       Refresh
                     </button>
                     <button type="button" class="btn btn-outline-secondary btn-sm dropdown-toggle"
-                            data-toggle="dropdown">
+                            data-bs-toggle="dropdown">
                       Auto refresh
                       <span ng-show="facilityCtrl.refreshInterval === 0">(never)</span>
                       <span ng-hide="facilityCtrl.refreshInterval === 0">({{facilityCtrl.refreshCountdownFmt()}})</span>
@@ -103,7 +103,7 @@
                          ng-click="facilityCtrl.setRefreshInterval(300)">Every
                           5 minutes</a>
                     </div>  <!-- dropdown-menu -->
-                  </div>  <!-- btn-group pull-right Auto-refresh button -->
+                  </div>  <!-- btn-group float-end Auto-refresh button -->
                 </div>  <!-- col-md-4 -->
             </div>  <!-- row -->
             <div class="row">
@@ -130,31 +130,38 @@
                   <div class="col-md-12">
                     <div class="card mb-2" style="border-top: 0">
                       <div class="card-body">
-                        <form class="form-inline">
-                      <div class="form-group mr-2">
-                        <label class="mr-2">Filter by:</label>
-                        <input type="text" class="input-small form-control"
-                               placeholder="user name"
-                               ng-model="facilityCtrl.search_owner.owner">
-                      </div>
-                      <div class="form-group mr-2">
-                        <label class="sr-only">Experiment:</label>
-                        <input type="text" class="input-small form-control"
-                               placeholder="experiment"
-                               ng-model="facilityCtrl.search_experiment.parent_experiment.title">
-                      </div>
-                      <div class="form-group mr-2">
-                        <label class="sr-only">Instrument:</label>
-                        <input type="text" class="input-small form-control"
-                               placeholder="instrument"
-                               ng-model="facilityCtrl.search_instrument.instrument.name">
-                      </div>
-                      <button type="button" class="btn btn-outline-secondary"
-                              ng-click="facilityCtrl.filterFormReset()">
-                          <i class="fa fa-remove"></i>
-                          Clear filters
-                      </button>
-                    </form>
+                        <form>
+                          <div class="row">
+                            <div class="col">
+                              <label class="form-label">Filter by:</label>
+                            </div>
+                            <div class="col">
+                              <input type="text"
+                                     class="form-control"
+                                     placeholder="user name"
+                                     ng-model="facilityCtrl.search_owner.owner">
+                            </div>
+                            <div class="col">
+                              <input type="text"
+                                     class="form-control"
+                                     placeholder="experiment"
+                                     ng-model="facilityCtrl.search_experiment.parent_experiment.title">
+                            </div>
+                            <div class="col">
+                              <input type="text"
+                                     class="form-control"
+                                     placeholder="instrument"
+                                     ng-model="facilityCtrl.search_instrument.instrument.name">
+                            </div>
+                            <div class="col">
+                              <button type="button"
+                                      class="btn btn-outline-secondary"
+                                      ng-click="facilityCtrl.filterFormReset()">
+                                <i class="fa fa-remove"></i> Clear filters
+                              </button>
+                            </div>
+                          </div>
+                        </form>
                       </div>
                     </div>
                   </div>  <!-- col-md-12 -->
@@ -316,7 +323,7 @@
 </script>
 <script type="text/ng-template" id="datafileCount">
   <span class="badge"
-        ng-class="(dataset.verified_datafiles_count<dataset.datafile_count||!dataset.datafile_count)?'badge-danger':'badge-info'">
+        ng-class="(dataset.verified_datafiles_count<dataset.datafile_count||!dataset.datafile_count)?'bg-danger':'bg-info'">
     <ng-pluralize count="dataset.verified_datafiles_count"
                   when="{'0': 'no verified files', 'one': '1 verified file', 'other': '{} verified files'}">
     </ng-pluralize>
