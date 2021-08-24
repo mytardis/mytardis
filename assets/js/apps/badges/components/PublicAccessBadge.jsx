@@ -31,7 +31,7 @@ const PublicAccessBadge = ({ experimentData }) => {
   return (
     <Fragment>
       <Badge
-        variant={variantType}
+        bg={variantType}
         content={title}
         title={title}
       >

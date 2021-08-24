@@ -12,7 +12,7 @@
         {% if datafile.size %}<span style="margin-right: 5px">({{ datafile.size|filesizeformat }})</span>{% endif %}
     </strong>
 
-    <div class="btn-group pull-right">
+    <div class="btn-group float-end">
       {% if has_download_permissions and datafile.is_online %}
       <a  class="btn"
           href="{{ datafile.download_url }}"
@@ -32,7 +32,7 @@
   {% capture as edit_control %}
     {% if not parameterset.schema.immutable %}
     {% if has_write_permissions %}
-      <div class="pull-right">
+      <div class="float-end">
         <a href="{% url 'tardis.tardis_portal.views.edit_datafile_par' parameterset.id %}"
            data-toggle_selector="#datafile_metadata_toggle_{{parameterset.datafile_id}}"
            class="edit-metadata btn btn-sm btn-outline-secondary">

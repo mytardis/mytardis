@@ -45,17 +45,25 @@
 <div id="authForm">
   {% if supportedAuthMethods|length > 0 %}
 
-    <form id="authForm" action="." method="post" class="form-horizontal">{% csrf_token %}
-      <fieldset>
-        <legend>Add a new account</legend>
-        {% for field in authForm %}
-          {{ field }}
-        {% endfor %}
-      </fieldset>
-      <div class="">
-        <button type="submit" id="link" class="btn btn-primary">
-          Link the Accounts
-        </button>
+    <form id="authForm" action="." method="post" class="p-5 bg-light">
+      {% csrf_token %}
+      <h3 class="mb-4">Add a new account</h3>
+      {% for field in authForm %}
+        <div class="row mb-3">
+          <div class="col-md-2">
+            <label class="form-label" for="{{ field.name }}">{{ field.label }}</label>
+          </div>
+          <div class="col-md-10">
+            {{ field }}
+          </div>
+        </div>
+      {% endfor %}
+      <div class="row">
+        <div class="offset-md-2">
+          <button type="submit" id="link" class="btn btn-primary">
+            Link the Accounts
+          </button>
+        </div>
       </div>
     </form>
 
@@ -66,46 +74,45 @@
 
   <!-- alert-password-changed -->
   <p class="alert-password-changed alert alert-success alert-dismissible">
-    <a class="close" data-dismiss="alert">&times;</a>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     Password successfully changed
   </p>
 
   <p class="alert-error-msg alert alert-danger alert-dismissible">
-    <a class="close" data-dismiss="alert">&times;</a>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     <span class="msg"></span>
   </p>
 
   <div class="form-change-password container">
-    <legend>Change Password</legend>
-    <form action="." method="post" class="form-horizontal">{% csrf_token %}
-      <div class="form-group row">
-        <label class="col-md-2 col-form-label" for="id_currentPassword">Current Password</label>
-        <div class="col-md-10">
-          <input id="id_currentPassword" class="form-control" type="password"
-                 name="currentPassword" autocomplete="current-password"
-                 style="max-width: 200px;"/>
+    <h3>Change Password</h3>
+    <form action="." method="post" class="p-5 bg-light">{% csrf_token %}
+      <div class="row mb-3">
+        <div class="col-md-2">
+          <label class="form-label" for="id_currentPassword">Current Password</label>
+        </div>
+        <div class="col-md-4">
+          <input id="id_currentPassword" class="form-control" type="password" name="currentPassword" autocomplete="current-password">
         </div>
       </div>
-      <div class="form-group row">
-        <label class="col-md-2 col-form-label" for="id_newPassword">New Password</label>
-        <div class="col-md-10">
-          <input id="id_newPassword" class="form-control" type="password"
-                 name="password" autocomplete="new-password"
-                 style="max-width: 200px;" />
+      <div class="row mb-3">
+        <div class="col-md-2">
+          <label class="form-label" for="id_newPassword">New Password</label>
+        </div>
+        <div class="col-md-4">
+          <input id="id_newPassword" class="form-control" type="password" name="password" autocomplete="new-password">
         </div>
       </div>
-      <div class="form-group row">
-        <label class="col-md-2 col-form-label" for="id_newPassword1">Confirm Password</label>
-        <div class="col-md-10">
-          <input id="id_newPassword1" class="form-control" type="password"
-                 name="password1" autocomplete="new-password1"
-                 style="max-width: 200px;" />
+      <div class="row mb-3">
+        <div class="col-md-2">
+          <label class="form-label" for="id_newPassword1">Confirm Password</label>
+        </div>
+        <div class="col-md-4">
+          <input id="id_newPassword1" class="form-control" type="password" name="password1" autocomplete="new-password1">
         </div>
       </div>
-      <div class="form-group row">
+      <div class="row">
         <div class="offset-md-2 col-md-10">
-          <button type="submit" id="edit" class="btn btn-primary" style="max-width: 200px;">
-            <i class="fa fa-key"></i>
+          <button type="submit" id="edit" class="btn btn-primary">
             Change Password
           </button>
         </div>

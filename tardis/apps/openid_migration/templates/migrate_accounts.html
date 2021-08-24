@@ -2,150 +2,132 @@
 {% load static %}
 {% load widget_tweaks %}
 
-{% block script %}
-
-{% endblock %}
-
-
 {% block content %}
-    <head>
-        <link href="{% static 'openid_migration/css/default.css' %}" rel="stylesheet">
-    </head>
-<p class="alert alert-info" style="display: none">
-</p>
-<legend> Migrate My Account </legend>
-    <div id="message">
-    <p>
-        This process allows you to migrate your data and settings from one account
-        to another within {{site_title}}.<br>
-        Please note that this process will automatically <b>deactivate your old account.</b>
-        All your data, groups and instrument associations, and settings will be migrated to your
-        current account.
-    </p>
+<h3 class="my-3">Migrate My Account</h3>
+
+<div id="message">
+    <p>This process allows you to migrate your data and settings from one account to another within {{site_title}}.</p>
+    <p>Please note that this process will automatically <b>deactivate your old account.</b> All your data, groups and instrument associations, and settings will be migrated to your current account.</p>
     {% if account_migration_instructions_link %}
-      <p>
-        For more details, please refer to the
-        <a href="{{account_migration_instructions_link}}" target="_blank" rel="noreferrer noopener">{{site_title}} Account Migration Instructions</a>
-      </p>
+      <p>For more details, please refer to the <a href="{{account_migration_instructions_link}}" target="_blank" rel="noreferrer noopener">{{site_title}} Account Migration Instructions</a></p>
     {% endif %}
-    </div>
+</div>
+
 <div id="authForm" class="container-fluid">
-    <div id="step1">
-        <b>Step 1:</b>
-            The account you are going to migrate your settings and data from
-
+    <div id="step1" class="mb-3">
+        <b>Step 1:</b> The account you are going to migrate your settings and data from.
     </div>
-    <div class="row col-wrap">
-        <div class="col-md-4 login-box col">
-            <form class="form-horizontal" style="padding-top: 20px ; ">
-                {% csrf_token %}
-                <div class="form-group row">
-                  <label class="col-form-label col-md-2" for="id_username">Username</label>
-                  <div class="col-md-10 ">
-                    {{ authForm.username | add_class:"form-control" }}
-                  </div>
-                </div>
-                <div class="form-group row">
-                  <label class="col-form-label col-md-2" for="id_password">Password</label>
-                  <div class="col-md-10 ">
-                    {{ authForm.password | add_class:"form-control" }}
-                  </div>
-                </div>
-                <div class="form-group row">
-                  <div class="offset-md-2 col-md-10">
-                    <button type="submit" id="verify-my-account" class="btn btn-info btn-sm">
-                        <i class="fa fa-sign-in"></i> Verify my Account
-                    </button>
-                  </div>
-                </div>
-            </form>
+    <form class="p-5 bg-light">
+        {% csrf_token %}
+        <div class="row mb-3">
+            <div class="col-md-2">
+                <label class="form-label" for="id_username">Username</label>
+            </div>
+            <div class="col-md-4">
+                {{ authForm.username | add_class:"form-control" }}
+            </div>
         </div>
-
+        <div class="row mb-3">
+            <div class="col-md-2">
+                <label class="form-label" for="id_password">Password</label>
+            </div>
+            <div class="col-md-4">
+                {{ authForm.password | add_class:"form-control" }}
+            </div>
         </div>
+        <div class="row">
+          <div class="offset-md-2 col-md-10">
+            <button type="submit" id="verify-my-account" class="btn btn-primary">
+                <i class="fa fa-sign-in"></i> Verify my Account
+            </button>
+          </div>
+        </div>
+    </form>
 </div> <!-- authForm -->
 
 <div id="template-block" style="display: none">
     <p class="alert-error-msg alert alert-danger alert-dismissible">
-        <a class="close" data-dismiss="alert">&times;</a>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         <span class="msg"></span>
     </p>
 </div>
-<div id="confirm-migrate" class="container-fluid" style="display: none">
-    <div id="step2">
-        <b>Step 2: </b>
-            Are you sure you want to migrate all the data,
-        groups and instrument associations, and setting between the following accounts?
 
+<div id="confirm-migrate" class="container-fluid" style="display: none">
+    <div id="step2" class="mb-3">
+        <b>Step 2:</b> Are you sure you want to migrate all the data, groups and instrument associations, and setting between the following accounts?
     </div>
-    <div class="row" style="margin-top: 30px">
-        <div class="col-md-3" style="text-align: center">
-            <h3>Legacy<br>Authentication</h3>
-        </div>
-        <div class="col-md-2"></div>
-        <div class="col-md-3 col-md-offset-2" style="text-align: center">
+    <table class="table">
+    <thead>
+    <tr>
+        <th class="align-middle text-center" style="width:45%">
+            <h3>Legacy Authentication</h3>
+        </th>
+        <th class="align-middle text-center" style="width:10%">
+            <i class="fa fa-angle-double-right fa-3x"></i>
+        </th>
+        <th class="align-middle text-center" style="width:45%">
             <img id="aaf_img" alt="AAF"
                  src="{% static 'openid_migration/images/aaf-logo.png' %}"
-                 class="center-image" style="display: none">
+                 class="mx-auto" style="display: none">
             <img id="google_img" alt="Google"
                  src="{% static 'openid_migration/images/google-logo.png' %}"
                  class="center-image" style="display: none">
-        </div>
-    </div>
-    <div class="row" style="margin-top: 10px">
-        <div class="col-md-3" style="text-align: center">
-            <div id="source" style="font-weight: bold; text-align: center">Old User</div>
-            <div id="old-user-table" style="margin-top: 20px">
-                <table class="table table-bordered" >
-                    <tbody>
-                        <tr id="old_username">
-                            <td>Username</td>
-                        </tr>
-                        <tr id="old_email">
-                            <td>Email</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <div class="col-md-2" style="text-align: center">
+        </th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+        <td class="align-middle text-center"><h4>Old User</h4></td>
+        <td>&nbsp;</td>
+        <td class="align-middle text-center"><h4>New User</h4></td>
+    </tr>
+    <tr>
+        <td>
+            <table class="table table-borderless">
+            <tbody>
+            <tr id="old_username">
+                <td class="align-middle text-center">Username</td>
+            </tr>
+            <tr id="old_email">
+                <td class="align-middle text-center">Email</td>
+            </tr>
+            </tbody>
+            </table>
+        </td>
+        <td class="align-middle text-center">
             <div id="spinner" style="display: none">
-                <i id="mo-spin-icon" class="fa fa-spinner fa-pulse fa-5x"></i>
+                <i id="mo-spin-icon" class="fa fa-spinner fa-pulse fa-3x"></i>
             </div>
-            <i class="fa fa-angle-double-right fa-3x"></i>
-        </div>
-        <div class="col-md-3" style="text-align: center">
-            <div id="current" style="font-weight: bold; text-align: center">New User</div>
-            <div id="new-user-table" style="margin-top: 20px">
-                <table class="table table-bordered" >
-                    <tbody>
-                        <tr id="new_username">
-                            <td>Username</td>
-                        </tr>
-                        <tr id="new_email">
-                            <td>Email</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-    <div class="row">
-        <div id="confirm_button" class="confirm-buttons col-md-8">
-        <button type="button" class="btn btn-success" id="confirm_true">Migrate</button>
-        <button type="button" class="btn btn-danger"  id="confirm_false">Cancel</button>
-    </div>
-    </div>
-
+        </td>
+        <td>
+            <table class="table table-borderless">
+            <tbody>
+            <tr id="new_username">
+                <td class="align-middle text-center">Username</td>
+            </tr>
+            <tr id="new_email">
+                <td class="align-middle text-center">Email</td>
+            </tr>
+            </tbody>
+            </table>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="3" class="align-middle text-center">
+            <button type="button" class="btn btn-success" id="confirm_true">Migrate</button>
+            <button type="button" class="ms-2 btn btn-outline-danger" id="confirm_false">Cancel</button>
+        </td>
+    </tr>
+    </tbody>
+    </table>
 </div>
+
 <div id="migration-failed-message" style="display: none">
     <p class="alert-info-msg alert alert-danger">
-         <span class="msg">Something went wrong. An email has been sent to your {{site_title}} administrator.
-         </span>
+         <span class="msg">Something went wrong. An email has been sent to your {{site_title}} administrator.</span>
     </p>
 </div>
 
 <input type="hidden" id="csrf-token" value="{{ csrf_token }}">
 <script type="text/javascript" src="{% static 'js/openid_migration/migrate_accounts.js' %}"></script>
-
 {% endblock content %}

@@ -30,8 +30,8 @@ const userSharingModalLoaded = function() {
 
     $("#id_entered_user").keypress(function(e) {
         // Reset autocomplete user when typing in the user edit field.
-        $(this).siblings("#id_autocomp_user").val("");
-        $(this).siblings("#id_authMethod").attr("disabled", "");
+        $("#id_autocomp_user").val("");
+        $("#id_authMethod").attr("disabled", "");
 
         if (e.keyCode === 13)
         {
@@ -67,8 +67,8 @@ const userSharingModalLoaded = function() {
     // eslint-disable-next-line complexity
     $("#user.form_submit").click(function(event) {
         event.preventDefault();
-        var enteredUser = $(this).siblings("#id_entered_user").val();
-        var autocompUser = $(this).siblings("#id_autocomp_user").val();
+        var enteredUser = $("#id_entered_user").val();
+        var autocompUser = $("#id_autocomp_user").val();
         var username = null;
         var authMethod = null;
         if (autocompUser !== "") {
@@ -79,11 +79,11 @@ const userSharingModalLoaded = function() {
         } else {
             // Autocomplete failed. Use the entered username as-is.
             username = enteredUser;
-            authMethod = $(this).siblings("#id_authMethod").val();
+            authMethod = $("#id_authMethod").val();
         }
         var usersDiv = $(this).parents(".access_list1").children(".users");
         var userMessagesDiv = $("#user-sharing-messages");
-        var permissions = $(this).siblings("#id_permission").val();
+        var permissions = $("#id_permission").val();
 
         var canRead = false;
         var canWrite = false;

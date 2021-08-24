@@ -1,13 +1,13 @@
 {% for group in groups %}
   <div class="group">
-    <h2>
+    <h4>
       <a href=""><i class="group-icon fa fa-folder o-6"></i></a>
       <a href="{% url 'tardis.tardis_portal.views.retrieve_group_userlist' group.id %}"
          data-group_id="{{group.id}}"
          class="group-link members-hidden member_list_user_toggle">
         {{ group.name }}
       </a>
-    </h2>
+    </h4>
     <div class="access_list" style="display:none;"></div>
   </div>
   {% empty %}

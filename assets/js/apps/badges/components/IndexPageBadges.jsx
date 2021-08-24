@@ -30,17 +30,17 @@ const IndexPageBadges = ({ experimentID }) => {
     isLoading ? <Spinner override={spinnerCss} />
       : (
         <Fragment>
-          <ul className="list-inline float-right list-unstyled">
-            <li className="mr-1 list-inline-item">
+          <ul className="list-inline float-end list-unstyled">
+            <li className="me-1 list-inline-item">
               <ExperimentLastUpdatedBadge experimentData={expData} />
             </li>
-            <li className="mr-1 list-inline-item">
+            <li className="me-1 list-inline-item">
               <DatasetCountBadge experimentData={expData} />
             </li>
-            <li className="mr-1 list-inline-item">
+            <li className="me-1 list-inline-item">
               <DatafileCountBadge experimentData={expData} />
             </li>
-            <li className="mr-1 list-inline-item">
+            <li className="me-1 list-inline-item">
               <PublicAccessBadge experimentData={expData} />
             </li>
           </ul>

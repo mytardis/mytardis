@@ -21,16 +21,16 @@ function getNewParameterName(name)
     return newName + "__" + i;
 }
 
-function getFormInputHtml(labelName, name, useTextArea)
+function getFormInputHtml(label, name, useTextArea)
 {
     var widget;
     if (useTextArea) {
-        widget = "<textarea " + "name=\"" + name + "\" id=\"" + name + "\"/>";
+        widget = "<textarea class='form-control' " + "name=\"" + name + "\" id=\"" + name + "\"/>";
     } else {
-        widget = "<input type=\"text\" name=\"" + name + "\" value=\"\" id=\"" + name + "\" />";
+        widget = "<input class='form-control' type=\"text\" name=\"" + name + "\" value=\"\" id=\"" + name + "\" />";
     }
-    var label = "<label for=\"" + name + "\">" + labelName + "</label>";
-    return "<div class=\"form-group\">" + label + "<br/>" + widget + "</div>";
+    label = "<label class='form-label' for=\"" + name + "\">" + label + "</label>";
+    return "<div class='row mb-3'><div class='col-md-12'>" + label + widget + "</div></div>";
 }
 
 $(document).on("change", "#schemaselect", function(e) {
@@ -56,7 +56,7 @@ $(document).on("click", "#add_new_parameter", function() {
 
     if($selectedOption.text())
     {
-        $("#parameternameselect").before(getFormInputHtml($selectedOption.text(), newElementName, isLong));
+        $("#parameternameselect").parent().parent().before(getFormInputHtml($selectedOption.text(), newElementName, isLong));
         $("#" + newElementName).focus();
     }
     else

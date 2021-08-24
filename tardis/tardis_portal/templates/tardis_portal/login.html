@@ -17,31 +17,29 @@
 <div class="container pt-2">
  <div class="row">
   <div class="col-md-7">
-    <form id="login-form" class="form-horizontal" action method="post">
+    <h3>Please Log In</h3>
+    <form id="login-form" action method="post" class="p-5 bg-light">
       {% csrf_token %}
-      <legend>Please Log In</legend>
       <input name="next_page" type="hidden" value="{{ next_page|default:"/" }}" />
-      <div class="form-group row">
-        <label class="col-form-label col-md-2" for="id_username">Username</label>
+      <div class="row mb-3">
+        <div class="col-md-2">
+            <label class="form-label" for="id_username">Username</label>
+        </div>
         <div class="col-md-5">
-          <input type="text" name="username" autocomplete="username"
-                 class="form-control" id="id_username" required
-                 placeholder="username" style="max-width: 200px;">
+          <input type="text" name="username" class="form-control" id="id_username" required placeholder="username">
         </div>
       </div>
-      <div class="form-group row">
-        <label class="col-form-label col-md-2" for="id_password">Password</label>
+      <div class="row mb-3">
+        <div class="col-md-2">
+            <label class="form-label" for="id_password">Password</label>
+        </div>
         <div class="col-md-5">
-          <input type="password" name="password" autocomplete="current-password"
-                 class="form-control" id="id_password" required placeholder="password"
-                 style="max-width: 200px;">
+          <input type="password" name="password" class="form-control" id="id_password" required placeholder="password">
         </div>
       </div>
-      <div class="form-group">
-        <div class="offset-md-2 col-md-5 pl-1">
-            <button id="login-button"
-                    type="submit" class="btn btn-primary"
-                    style="min-width: 80px; max-width: 200px;">
+      <div class="row mb-3">
+        <div class="offset-md-2 col-md-5">
+          <button id="login-button" type="submit" class="btn btn-primary">
             <i class="fa fa-sign-in"></i> Log In
           </button>
         </div>
