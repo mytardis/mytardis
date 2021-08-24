@@ -8,7 +8,7 @@ const AddDatasetButton = ({ experimentID }) => (
   <Fragment>
     <a
       id="add-dataset"
-      className="add-dataset btn btn-primary btn-sm pull-right"
+      className="add-dataset btn btn-primary btn-sm float-end"
       href={`/experiment/${experimentID}/add-dataset`}
     >
       <i className="fa fa-plus" />

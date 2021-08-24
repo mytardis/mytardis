@@ -72,7 +72,7 @@ def they_see_the_user_menu(context):
     :type context: behave.runner.Context
     """
     try:
-        user_menu = context.browser.find_element_by_id("user-menu")
+        user_menu = context.browser.find_element_by_id("userMenu")
         found_user_menu = True
     except NoSuchElementException:
         found_user_menu = False

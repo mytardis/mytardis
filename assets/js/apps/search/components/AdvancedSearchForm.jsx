@@ -91,50 +91,54 @@ function AdvancedSearchForm({ searchText, showResults }) {
   };
 
   return (
-    <form id="adv-search-form" className="border-top form-horizontal">
-      <div className="form-group" id="adv-search">
-        <div>
-          <label className="font-weight-bold">Advanced Search</label>
-        </div>
-        <label htmlFor="filter">Filter by Date created</label>
-        <div className="form-group row">
-          <div className="col-xs-6" style={{ paddingLeft: 0, paddingRight: 15 }}>
-            <DateTime
-              id="select-start-date"
-              inputProps={{ placeholder: 'Select start date' }}
-              timeFormat={false}
-              dateFormat="DD-MM-YYYY"
-              isValidDate={validStartDate}
-              closeOnSelect
-              value={startDate}
-              onChange={handleStartDateChange}
-
-            />
+    <form id="adv-search-form" className="p-3 bg-light">
+      <h5 className="mb-3">Advanced Search</h5>
+      <div className="row mb-3">
+        <div className="col-12">
+          <label htmlFor="select-start-date">Filter by Date created</label>
+          <div className="row">
+            <div className="col-sm-6">
+              <DateTime
+                id="select-start-date"
+                inputProps={{ placeholder: 'Select start date' }}
+                timeFormat={false}
+                dateFormat="DD-MM-YYYY"
+                isValidDate={validStartDate}
+                closeOnSelect
+                value={startDate}
+                onChange={handleStartDateChange}
+              />
+            </div>
+            <div className="col-sm-6">
+              <DateTime
+                inputProps={{ placeholder: 'Select end date' }}
+                timeFormat={false}
+                dateFormat="DD-MM-YYYY"
+                isValidDate={validEndDate}
+                closeOnSelect
+                value={endDate}
+                onChange={handleEndDateChange}
+              />
+            </div>
           </div>
-          <div className="col-xs-6" style={{ paddingRight: 0 }}>
-            <DateTime
-              inputProps={{ placeholder: 'Select end date' }}
-              timeFormat={false}
-              dateFormat="DD-MM-YYYY"
-              isValidDate={validEndDate}
-              closeOnSelect
-              value={endDate}
-              onChange={handleEndDateChange}
-            />
-          </div>
         </div>
-
-        <label htmlFor="contain">Search In</label>
-        <Typeahead
-          id="modelType"
-          multiple
-          onChange={(selected) => { handleTypeTagChange(selected); }}
-          options={typeOptions}
-          placeholder="Search in Experiments, Datasets or Datafiles"
-          defaultSelected={typeOptions.slice(0, 3)}
-        />
-        <div style={instrumentList.length > 0 ? { display: 'block' } : { display: 'None' }}>
-          <label htmlFor="contain">Filter by Instrument</label>
+      </div>
+      <div className="row mb-3">
+        <div className="col-12">
+          <label htmlFor="modelType">Search In</label>
+          <Typeahead
+            id="modelType"
+            multiple
+            onChange={(selected) => { handleTypeTagChange(selected); }}
+            options={typeOptions}
+            placeholder="Search in Experiments, Datasets or Datafiles"
+            defaultSelected={typeOptions.slice(0, 3)}
+          />
+        </div>
+      </div>
+      <div className="row mb-3 d-{instrumentList.length > 0 ? {'block'} : {'none'}}">
+        <div className="col-12">
+          <label htmlFor="instrumentList">Filter by Instrument</label>
           <Typeahead
             id="instrumentList"
             multiple
@@ -144,22 +148,23 @@ function AdvancedSearchForm({ searchText, showResults }) {
             options={instrumentList}
           />
         </div>
-        <button
-          type="submit"
-          className="btn btn-primary"
-          onClick={handleAdvancedSearchFormSubmit}
-        >
-          <i className="fa fa-search" aria-hidden="true" />
-        </button>
-        {isLoading && (
-          <div className="col-md-6" style={{ textAlign: 'center', position: 'absolute' }}>
-            <div id="spinner" style={{ textAlign: 'center' }}>
-              <i id="mo-spin-icon" className="fa fa-spinner fa-pulse fa-2x" />
-            </div>
-          </div>
-        )
-        }
       </div>
+      {isLoading && (
+        <div className="clearfix float-end mt-1">
+          <div className="spinner-border spinner-border-sm text-primary" role="status">
+            <span className="sr-only">Loading...</span>
+          </div>
+        </div>
+      )}
+      <button
+        type="submit"
+        className="btn btn-primary"
+        onClick={handleAdvancedSearchFormSubmit}
+      >
+        <i className="fa fa-search" />
+        &nbsp;
+        Search
+      </button>
     </form>
   );
 }

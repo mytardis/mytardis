@@ -2,55 +2,53 @@
 {% load widget_tweaks %}
 
 {% if success %}
-  Parameters saved successfully.
-
+  Parameters updated successfully.
 {% else %}
-  <p><strong>Schema: </strong>{{schema.name}}</p>
-  <form id="edit_metadata_form" action='/ajax/edit_{{type}}_parameters/{{parameterset_id}}/' method='post'>{% csrf_token %}
+  <p>Schema: <strong>{{schema.name}}</strong></p>
+  <form id="edit_metadata_form"
+        action="/ajax/edit_{{type}}_parameters/{{parameterset_id}}/"
+        method="post">
+    {% csrf_token %}
     {{ form.non_field_errors }}
-      {% for field in form %}
-        <div class="form-group">
-          <label class="col-form-label-sm py-0" for="{{field.name}}">{{field.label}}</label>
-          <div class="col-md-12 pl-0">
-            {{ field | add_class:"form-control form-control-sm" }}
-          </div>
+    {% for field in form %}
+      <div class="row mb-3">
+        <div class="col-md-12">
+          <label class="form-label" for="{{field.name}}">{{field.label}}</label>
+          {{ field | add_class:"form-control" }}
         </div>
-      {% endfor %}
-
-    <div class="form-group row">
-      <select id="parameternameselect" class="form-control form-control-sm ml-3 col-md-6">
-        {% for pn in parameternames %}
-          {% if not pn.immutable %}
-            <option value="{{pn.name|parametername_form}}"
-                    {% if pn.isLongString %} data-longstring="true" {% endif %}>
-              {{pn.full_name}} {% if pn.units %}({{pn.units}}){% endif %}
-            </option>
-          {% endif %}
-        {% endfor %}
-      </select>
-      <button id="add_new_parameter" type="button" class="btn btn-success btn-sm ml-1 my-0">
-        <i class="fa fa-plus"></i>
-        Add Metadata Parameter
-      </button>
+      </div>
+    {% endfor %}
+    <div class="row mb-3">
+      <div class="col-md-7">
+        <select id="parameternameselect" class="form-select">
+          {% for pn in parameternames %}
+            {% if not pn.immutable %}
+              <option value="{{pn.name|parametername_form}}"{% if pn.isLongString %} data-longstring="true" {% endif %}>
+                {{pn.full_name}} {% if pn.units %}({{pn.units}}){% endif %}
+              </option>
+            {% endif %}
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-5">
+        <button id="add_new_parameter" type="button" class="btn btn-success">
+          <i class="fa fa-plus"></i> Add Parameter
+        </button>
+      </div>
     </div>
-
-    <p style="padding-top: 10px; padding-bottom: 10px;"><em>Leave a parameter blank to remove</em></p>
+    <p class="help-block ms-0">Leave a parameter blank to remove</p>
     {% if not valid %}
-      <p style="color: red"><em>There were errors in the parameter submission. Please fix and resubmit.</em></p>
+      <p style="color:red">There were errors in the parameter submission. Please fix and resubmit.</p>
     {% endif %}
-
-    <div class="form-group">
-      <footer class="col-md-12 text-right">
-        <button type="button" class="cancel-button btn btn-outline-secondary"
-                data-dismiss="modal">
-          <i class="fa fa-close"></i>
-          Cancel
-        </button>
+    <div class="row">
+      <div class="col-md-12">
         <button type="submit" class="submit-button btn btn-primary">
-          <i class="fa fa-check"></i>
-          Save
+          <i class="fa fa-check"></i> Update
         </button>
-      </footer>
+        <button type="button" class="float-end cancel-button btn btn-outline-secondary" data-bs-dismiss="modal">
+          <i class="fa fa-close"></i> Cancel
+        </button>
+      </div>
     </div>
   </form>
 {% endif %}

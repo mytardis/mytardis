@@ -7,31 +7,33 @@ var sftp = (function() {
 
     function addKeyRow(rowData) {
         return "<tr id='keyRow" + rowData.id + "'>\
-          <td style='padding: 16px 20px'>\
-              <div class='pull-left'>\
-                <strong>" + rowData.name + "</strong><br>\
-                <span>Type: " + rowData.key_type.toUpperCase() + "</span><br>\
-                <span style='word-break: break-all;'>Fingerprint: " + rowData.fingerprint + "</span><br>\
-                <span>Date added: " + rowData.added + "</span>\
-              </div>\
-            <div class='text-right pull-right'>\
-              <button id='delete-btn' class='btn btn-danger' \
-                      onclick='sftp.handleKeyDelete(" + rowData.id + ")'>\
-                <i class='fa fa-trash'></i>\
-                Delete\
+          <td>\
+            <h3>" + rowData.name + "</h3>\
+            <span>Type: " + rowData.key_type.toUpperCase() + "</span><br>\
+            <span style='word-break: break-all;'>Fingerprint: " + rowData.fingerprint + "</span><br>\
+            <span>Date added: " + rowData.added + "</span>\
+          </td><td>\
+              <button id='delete-btn' class='float-end btn btn-danger' onclick='sftp.handleKeyDelete(" + rowData.id + ")'>\
+                <i class='fa fa-trash'></i> Delete\
               </button>\
           </td></tr>";
     }
 
     function createKeyTable(keyData) {
         var table = $(document.createElement("table"))
-            .addClass("table table-bordered")
-            .attr("id", "keyTable")
-            .append($("<thead><tr><th><strong>Keys</strong></th></tr></thead>"));
+            .addClass("table")
+            .attr("id", "keyTable");
 
-        return keyData.reduce(function(acc, key) {
+        var head = $("<thead><tr><th colspan='2'>Keys</th></tr></thead>");
+        table.append(head);
+
+        var body = $("<tbody/>");
+        keyData.reduce(function(acc, key) {
             return acc.append(addKeyRow(key));
-        }, table);
+        }, body);
+        table.append(body);
+
+        return table;
     }
 
     function loadKeyTable(clear) {
@@ -130,18 +132,21 @@ var sftp = (function() {
             $("#keyAddAlertMessage").text(e);
             $("#keyAddAlert").show();
         }
+        return false;
     }
 
     function clearKeyAddForm() {
         $("#keyAddAlertMessage").empty();
         $("#keyAddAlert").hide();
         document.getElementById("keyAddForm").reset();
+        return false;
     }
 
     function clearKeyGenerateForm() {
         $("#keyGenerateAlertMessage").empty();
         $("#keyGenerateAlert").hide();
         document.getElementById("keyGenerateForm").reset();
+        return false;
     }
 
     /* eslint-disable object-shorthand */

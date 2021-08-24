@@ -29,7 +29,7 @@ exports[`should match snapshot should render folder tree correctly 1`] = `
           value="submit"
         >
           <i
-            class="fa fa-download fa-sm mr-1 "
+            class="fa fa-download fa-sm me-1 "
           />
           Select Files...
           

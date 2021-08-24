@@ -1,49 +1,44 @@
 <div class="access_list2">
-<div class="groups">
-{% for group_acl in group_acls_system_owned %}
-  {% with group=group_acl.get_related_object_group %}
-  {% include "tardis_portal/ajax/add_group_result.html" with system="true" %}
-  {% endwith %}
-{% endfor %}
-{% for group_acl in group_acls_user_owned %}
-  {% with group=group_acl.get_related_object_group %}
-  {% include "tardis_portal/ajax/add_group_result.html" %}
-  {% endwith %}
-{% endfor %}
-</div> <!-- groups -->
-<div id="group-sharing-messages">
-</div>
-<form>
-  <div class="form-group">
-    <label class="col-form-label" for="id_group">Add group to experiment:</label>
-    <input type="text" name="group" autocomplete="group"
-           class="form-control groupsuggest" id="id_group" required
-           placeholder="group" style="max-width: 200px;">
-  </div>
 
-  <div class="form-group">
-    <label class="col-form-label" for="id_permissions">Permissions</label>
-    <select id="id_permission_group" class="form-control" style="max-width: 200px;">
-      <option value="read">View Only</option>
-      <option value="edit">View and Edit</option>
-      <option value="owner">Full Owner</option>
-    </select>
-  </div>
+  <div class="groups">
+    {% for group_acl in group_acls_system_owned %}
+      {% with group=group_acl.get_related_object_group %}
+        {% include "tardis_portal/ajax/add_group_result.html" with system="true" %}
+      {% endwith %}
+    {% endfor %}
+    {% for group_acl in group_acls_user_owned %}
+      {% with group=group_acl.get_related_object_group %}
+        {% include "tardis_portal/ajax/add_group_result.html" %}
+      {% endwith %}
+    {% endfor %}
+  </div> <!-- groups -->
 
-  <div class="form-group">
-    <p class="col-form-label"><em>Owner Groups have the ability to change access controls and share experiments with others.</em></p>
-  </div>
+  <div id="group-sharing-messages"></div>
 
-  <button type="button" class="form_submit btn btn-primary" id="group" href="">
-    <i class="fa fa-plus"></i>
-    Add Group
-  </button>
+  <form>
+    <div class="row mb-3">
+      <div class="col-12">
+        <label class="form-label" for="group">Add group to experiment:</label>
+        <input type="text" name="group" autocomplete="group" class="form-control groupsuggest" id="id_group" required placeholder="group">
+      </div>
+    </div>
+    <div class="row mb-3">
+      <div class="col-6">
+        <label class="form-label" for="permission_group">Permissions</label>
+        <select id="permission_group" class="form-select">
+          <option value="read">View Only</option>
+          <option value="edit">View and Edit</option>
+          <option value="owner">Full Owner</option>
+        </select>
+      </div>
+    </div>
+    <p class="mb-3"><em>Owner Groups have the ability to change access controls and share experiments with others.</em></p>
+    <button type="button" class="form_submit btn btn-primary" id="group" href="">
+      <i class="fa fa-plus"></i> Add Group
+    </button>
+    <input type="hidden" name="experiment_id" class="experiment_id" value="{{experiment_id}}">
+  </form>
 
-  <input type="hidden" name="experiment_id" class="experiment_id" value="{{experiment_id}}">
-</form>
+  <p class="mt-3">Go to <a href="{% url 'tardis.tardis_portal.views.manage_groups' %}">Group Management</a></p>
 
-<p style="padding-top: 20px;">Go to <a href="{% url 'tardis.tardis_portal.views.manage_groups' %}">
-  <i class="fa fa-user" style="text-shadow: 2px -2px #666666"></i>
-  Group Management
-</a></p>
 </div>
