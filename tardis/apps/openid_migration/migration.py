@@ -162,7 +162,9 @@ def acl_migration(userIdToBeReplaced, replacementUserId, user_migration_record):
             logger.info("found existing entry in the ACL "
                         "for the given experiment and replacementUserId")
             acl.canRead = acl.canRead or experimentACL.canRead
+            acl.canDownload = acl.canDownload or experimentACL.canDownload
             acl.canWrite = acl.canWrite or experimentACL.canWrite
+            acl.canSensitive = acl.canSensitive or experimentACL.canSensitive
             acl.canDelete = acl.canDelete or acl.canDelete
             acl.save()
             experimentACL.delete()

@@ -184,20 +184,20 @@ class ParameterNameAdmin(admin.ModelAdmin):
 
 class ExperimentACLAdmin(admin.ModelAdmin):
     list_display = [
-        '__str__', 'pluginId', 'entityId', 'canRead',
-        'canWrite', 'canDelete', 'isOwner'
+        '__str__', 'pluginId', 'entityId', 'canRead', 'canDownload',
+        'canWrite', 'canSensitive', 'canDelete', 'isOwner'
     ]
 
 class DatasetACLAdmin(admin.ModelAdmin):
     list_display = [
-        '__str__', 'pluginId', 'entityId', 'canRead',
-        'canWrite', 'canDelete', 'isOwner'
+        '__str__', 'pluginId', 'entityId', 'canRead', 'canDownload',
+        'canWrite', 'canSensitive', 'canDelete', 'isOwner'
     ]
 
 class DatafileACLAdmin(admin.ModelAdmin):
     list_display = [
-        '__str__', 'pluginId', 'entityId', 'canRead',
-        'canWrite', 'canDelete', 'isOwner'
+        '__str__', 'pluginId', 'entityId', 'canRead', 'canDownload',
+        'canWrite', 'canSensitive', 'canDelete', 'isOwner'
     ]
 
 

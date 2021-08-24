@@ -34,7 +34,9 @@ def _create_test_data():
                     user=user,
                     isOwner=True,
                     canRead=True,
+                    canDownload=True,
                     canWrite=True,
+                    canSensitive=True,
                     canDelete=True,
                     aclOwnershipType=ExperimentACL.OWNER_OWNED)
     acl.save()

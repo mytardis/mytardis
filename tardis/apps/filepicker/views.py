@@ -71,8 +71,10 @@ def fpupload(request, dataset_id):
                         # add default ACL for DataFile
                         acl = DatafileACL(user=request.user,
                                           canRead=True,
+                                          canDownload=True,
                                           canWrite=True,
                                           canDelete=True,
+                                          canSensitive=True,
                                           isOwner=True,
                                           aclOwnershipType=DatafileACL.OWNER_OWNED)
                         acl.save()
