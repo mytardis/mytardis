@@ -8,13 +8,8 @@
 {% block content %}
 
 <div id="content" class="container-fluid">
-  <div class="row">
-    <div class="col-md-12">
-      <h3 class="d-block d-sm-none">Experiments</h3>
-      <div class="pull-left">
-          <h3 class="d-none d-sm-block" style="text-align: center">Experiments</h3>
-      </div>
-    </div>
+  <div class="page-header">
+    <h1 class="mb-1">Experiments</h1>
   </div>
   <div class="row">
     <div class="col-md-12">
@@ -23,12 +18,12 @@
         No experiments have been published yet.
       </p>
       {% else %}
-      <div class="pull-left">
+      <div class="float-start">
         <h4><strong>{{ public_experiments.count }}</strong>
         Public Experiment{{ public_experiments.count|pluralize}}
         </h4>
       </div>
-      <div class="pull-right mb-1">
+      <div class="float-end mb-1">
         <button type="button" class="btn btn-outline-secondary btn-sm"
                 onclick="$('#public-experiments .collapse').collapse('hide');" >
         Collapse all</button>
@@ -41,7 +36,7 @@
         {% for exp in public_experiments %}
           <div class="card mb-2">
               <div class="card-header accordion-toggle" data-parent="#public-experiments"
-                   data-toggle="collapse" onclick="$('#collapse{{exp.id}}').collapse('toggle');">
+                   data-bs-toggle="collapse" onclick="$('#collapse{{exp.id}}').collapse('toggle');">
                 <div class="row">
                   <div class="col-md-8 px-1 pb-1">
                     <a class="card-title explink"
@@ -61,7 +56,7 @@
                       &nbsp;
                   </div>
                   <div class="col">
-                    <span class="float-right">
+                    <span class="float-end">
                       {% if exp.public_download_allowed %}
                         {% for dltype, dlurl in exp.get_download_urls.items %}
                           {% if forloop.first %}
@@ -135,16 +130,6 @@
     </div>
   </div>
 </div>
-<script type="text/javascript">
-$(function() {
-    $("#experiments .accordion-body").collapse({parent:"#experiments", toggle: true});
-    $(".explink").on("click", function(e) {
-        e.stopPropagation();
-    });
-    $(".dllink").on("click", function(e) {
-        e.stopPropagation();
-    });
-});
-</script>
 {% render_bundle 'index_page_badges' %}
+{% render_bundle 'tardis_portal_public_data' %}
 {% endblock %}

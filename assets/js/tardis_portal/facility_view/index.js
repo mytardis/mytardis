@@ -1,5 +1,4 @@
-const angular = require("angular");
-require("expose-loader?exposes=angular!angular");
+var angular = require("angular");
 require("angular-resource");
 
 var app = angular.module("facilityOverview", ["ngResource"]);

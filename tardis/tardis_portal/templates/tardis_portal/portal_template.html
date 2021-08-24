@@ -1,8 +1,8 @@
-<!DOCTYPE html>
 {% load static %}
 {% load render_bundle from webpack_loader %}
 {% load facility_tags %}
 {% load approved_user_tags %}
+<!doctype html>
 <html lang="en"
       xmlns="http://www.w3.org/1999/xhtml"
       prefix="xsd: http://www.w3.org/2001/XMLSchema#
@@ -13,14 +13,15 @@
     For more information, see:
     http://www.w3.org/TR/rdfa-core/#scoping-of-prefix-mappings
    -->
+
   <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta http-equiv="content-type" content="text/html; charset=UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     {% block title %}
     <title>{{ site_title|default:'MyTardis' }} {% if subtitle %}- {{ subtitle }} {% endif %}</title>
     {% endblock title %}
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="">
     <meta name="author" content="">
     <meta name="keywords" content="">
@@ -71,120 +72,116 @@
     <link rel="apple-touch-icon" sizes="114x114" href="{% static 'images/apple-touch-icon-iphone4.png' %}">
     <link rel="apple-touch-icon" sizes="144x144" href="{% static 'images/apple-touch-icon-ipad3.png' %}">
 
-
     {% block style %}
     {% endblock style %}
-
 
     {% block analytics_js %}
     {# You should override this block if you want to use Google Analytics #}
     {# or another Javascript-based analytics tool. #}
     {% endblock %}
   </head>
+
   <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
-      {% block site_brand %}
-        <a class="navbar-brand" href="{% url 'tardis.tardis_portal.views.index' %}">
-          {{ site_title|default:'MyTardis' }}
-        </a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target=".navbar-collapse"
-                aria-controls="navbar-collapse" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="container-fluid">
+        {% block site_brand %}
+          <a class="navbar-brand" href="{% url 'tardis.tardis_portal.views.index' %}">
+            {{ site_title|default:'MyTardis' }}
+          </a>
+        {% endblock %}
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
         </button>
-      {% endblock %}
-      <div class="collapse navbar-collapse">
-        <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
-          <li class="nav-item">
-            <a class="nav-link" href="{% url 'tardis.tardis_portal.views.index' %}">Home</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="{% url 'tardis.tardis_portal.views.about' %}">About</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="{% url 'tardis.tardis_portal.views.my_data' %}">My Data</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="{% url 'tardis.tardis_portal.views.shared' %}">Shared</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="{% url 'tardis.tardis_portal.views.public_data' %}">Public Data</a>
-          </li>
-          {% if request.user.is_superuser %}
-          <li class="nav-item">
-            <a class="nav-link" href="{% url 'tardis.tardis_portal.views.stats' %}">Stats</a>
-          </li>
-          {% endif %}
-          {% with request|check_if_facility_manager as facility_manager %}
-          {% if facility_manager %}
-          <li class="nav-item">
-            <a class="nav-link" href="{% url 'tardis.tardis_portal.views.facility_overview' %}">Facility Overview</a>
-          </li>
-          {% endif %}{% endwith %}
-          <li class="nav-item">
-            <a class="nav-link" href="http://mytardis.readthedocs.io/en/{{ version.tag|lower }}/userguide.html"
-               target="_blank"><b>Help</b>
-            </a>
-          </li>
-        </ul>
-        <ul class="navbar-nav ml-auto">
-          {% if search_form %}
-            <form id="searchbox" method="get"
-                class="form-inline my-2 my-lg-0"
-                action="{% url 'search' %}">
-                <div class="form-group">
-                  <input id="id_q" autocomplete="off" name="q"
-                       type="text" class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search"
-                       {% if query %} value="{{ query }}" {% endif %}/>
-                </div>
-            </form>
-          {% endif %}
-          {% if is_authenticated %}
-            <li id="user-menu" class="nav-item dropdown">
-              <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#user-menu">
-                {{ username }}
-              </a>
-              <div class="dropdown-menu dropdown-menu-right">
-                {% for menu_item in user_menu %}
-                  {% if not menu_item.divider %}
-                    <a class="dropdown-item" href="{{ menu_item.url }}">
-                      <i class="{{menu_item.icon}}"
-                         {% if menu_item.style %}
-                           style="{{menu_item.style}}"
-                         {% endif %}
-                      >
-                      </i>
-                      {{menu_item.label}}
-                    </a>
-                  {% else %}
-                    <div class="dropdown-divider"></div>
-                  {% endif %}
-                {% endfor %}
-              </div>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'tardis.tardis_portal.views.index' %}">Home</a>
             </li>
-          {% else %}
-            {% if registration_enabled %}
-            <li>
-              <a class="btn btn-link"
-                 href="{% url 'tardis.tardis_portal.views.register' %}">
-                Register
-              </a>
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'tardis.tardis_portal.views.about' %}">About</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'tardis.tardis_portal.views.my_data' %}">My Data</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'tardis.tardis_portal.views.shared' %}">Shared</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'tardis.tardis_portal.views.public_data' %}">Public Data</a>
+            </li>
+            {% if request.user.is_superuser %}
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'tardis.tardis_portal.views.stats' %}">Stats</a>
             </li>
             {% endif %}
-            <li>
-            {% if RAPID_CONNECT_ENABLED %}
-                <a class="btn btn-outline-light" id="login-button" href={{ RAPID_CONNECT_LOGIN_URL }}>
-                  <i class="fa fa-sign-in"></i>
-                  Log In
+            {% with request|check_if_facility_manager as facility_manager %}
+            {% if facility_manager %}
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'tardis.tardis_portal.views.facility_overview' %}">Facility Overview</a>
+            </li>
+            {% endif %}{% endwith %}
+            <li class="nav-item">
+              <a class="nav-link" href="http://mytardis.readthedocs.io/en/{{ version.tag|lower }}/userguide.html"
+                 target="_blank"><b>Help</b>
+              </a>
+            </li>
+          </ul>
+          <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+            {% if search_form %}
+              <li class="nav-item me-4">
+                <form id="searchbox" action="{% url 'search' %}" method="get">
+                  <div class="input-group">
+                    <input id="id_q" autocomplete="off" name="q" type="text" class="form-control" type="search" placeholder="Search" aria-label="Search"{% if query %} value="{{ query }}" {% endif %}>
+                    <button class="btn btn-outline-light" type="submit">
+                      <i class="fa fa-search"></i>
+                    </button>
+                  </div>
+                </form>
+              </li>
+            {% endif %}
+            {% if is_authenticated %}
+              <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown"
+                   href="#" id="userMenu" role="button"
+                   data-bs-toggle="dropdown" aria-expanded="false">
+                  {{ username }}
                 </a>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenu">
+                  {% for menu_item in user_menu %}
+                    <li>
+                    {% if not menu_item.divider %}
+                        <a class="dropdown-item" href="{{ menu_item.url }}">
+                          <i class="{{menu_item.icon}}"{% if menu_item.style %} style="{{menu_item.style}}"{% endif %}></i> {{menu_item.label}}
+                        </a>
+                    {% else %}
+                      <hr class="dropdown-divider">
+                    {% endif %}
+                    </li>
+                  {% endfor %}
+                </ul>
+              </li>
             {% else %}
-              <a class="btn btn-outline-light" id="login-button" href="{% url 'tardis.tardis_portal.views.login' %}">
-                <i class="fa fa-sign-in"></i>
-                Log In
-              </a>
+              {% if registration_enabled %}
+                <li class="nav-item">
+                  <a class="btn btn-outline-light" href="{% url 'tardis.tardis_portal.views.register' %}">
+                    Register
+                  </a>
+                </li>
+              {% endif %}
+              <li class="nav-item ms-2">
+                {% if RAPID_CONNECT_ENABLED %}
+                  <a class="btn btn-primary" id="login-button" href={{ RAPID_CONNECT_LOGIN_URL }}>
+                    <i class="fa fa-sign-in"></i> Log In
+                  </a>
+                {% else %}
+                <a class="btn btn-primary" id="login-button" href="{% url 'tardis.tardis_portal.views.login' %}">
+                  <i class="fa fa-sign-in"></i> Log In
+                </a>
+              {% endif %}
+              </li>
             {% endif %}
-            </li>
-          {% endif %}
-        </ul>
+          </ul>
+        </div>
       </div>
     </nav>
 
@@ -197,12 +194,7 @@
         var showMsg = {
             type: "",
             showAlert: function(text) {
-                $('#message-container').html(
-                    '<div class="alert ' +
-                        this.type +
-                        '"><a class="close" data-dismiss="alert">×</a><span>' +
-                        he.encode(text) +
-                        '</span></div>');
+                $('#message-container').html('<div class="alert alert-dismissible fade show ' + this.type + '" role="alert">' + he.encode(text) + '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>');
             },
             success: function(text) {
                 this.type = "alert-success";
@@ -237,23 +229,21 @@
         {% endcomment %}
         <div id="django-message-container" >
           {% for message in messages %}
-            <p{% if message.level_tag %} class="alert alert-block alert-{{ message.level_tag }} alert-dismissible"{% endif %}>
-              <a class="close" data-dismiss="alert">&times;</a>
+            <div{% if message.level_tag %} class="alert alert-{{ message.level_tag }} alert-dismissible fade show"{% endif %}>
               {% if 'safe' in message.tags %}
                 {{ message|safe }}
               {% else %}
                 {{ message }}
               {% endif %}
-            </p>
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
           {% endfor %}
         </div>
       {% endif %}
 
-      <div id="status-alert"
-           class="alert alert-block {% if error %}alert-danger{% else %}alert-info{% endif %} alert-dismissible"
-           style="display: none">
-        <a class="close" data-dismiss="alert">&times;</a>
+      <div id="status-alert" class="alert {% if error %}alert-danger{% else %}alert-info{% endif %} alert-dismissible fase show" style="display:none">
         <span class="message">{{status}}</span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         <script type="text/javascript">
         $(function() {
           if(window.location.hash == '#created') {
@@ -291,7 +281,6 @@
         {% endif %}
       </div>
 
-
       <div class="row">
         <div class="col-md-12">
         {% block bottom %}{% endblock bottom %}
@@ -299,16 +288,16 @@
       </div>
 
       {% block footer %}
-      <div class="row" id="footer">
+      <footer class="row mt-5 p-3 bg-light">
         <div class="col-md-6">
           {{sponsored_by|default:""|safe}}
         </div>
         <div class="col-md-6">
-          <div class="pull-right">
-          Powered by <a href="https://github.com/mytardis/mytardis">MyTardis</a>
+          <div class="float-end">
+            Powered by <a href="https://github.com/mytardis/mytardis">MyTardis</a>
           </div>
         </div>
-      </div>
+      </footer>
       {% endblock footer %}
 
     </div>
@@ -342,4 +331,5 @@
     {% endif %}
     {% endwith %}
   </body>
+
 </html>

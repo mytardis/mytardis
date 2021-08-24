@@ -1,31 +1,29 @@
 <div class="group_create">
   <form id="create-group-form" role="form" novalidate>
-    <div class="form-group">
-      <label class="col-form-label" for="id_addgroup">Name:</label>
-      <input type="text" name="addgroup" id="id_addgroup" required
-             class="form-control groupsuggest" maxlength="100">
-      <div class="invalid-feedback"></div>
+    <div class="row mb-3">
+      <div class="col-12">
+        <label class="form-label" for="id_addgroup">Name:</label>
+        <input type="text" name="addgroup" id="id_addgroup" required class="form-control groupsuggest" maxlength="100">
+        <div class="invalid-feedback"></div>
+      </div>
     </div>
-
-    <div class="form-group">
-      <label class="col-form-label" for="id_groupadmin">
-          Group admin (enter username exactly - you will automatically be added as an admin):
-      </label>
-      <input type="text" name="groupadmin" id="id_groupadmin"
-             class="form-control usersuggest" maxlength="100">
-      <div class="invalid-feedback"></div>
+    <div class="row mb-3">
+      <div class="col-12">
+        <label class="form-label" for="id_groupadmin">Group Admin:</label>
+        <input type="text" name="groupadmin" id="id_groupadmin" class="form-control usersuggest" maxlength="100">
+        <p class="help-block ms-0">enter username exactly - you will automatically be added as an admin</p>
+        <div class="invalid-feedback"></div>
+      </div>
     </div>
-
-    <div class="form-group text-right pt-2">
-      <button type="button" class="cancel-button btn btn-outline-secondary"
-              data-dismiss="modal">
-        <i class="fa fa-close"></i>
-        Cancel
-      </button>
-      <button type="submit" class="form_submit btn btn-primary" id="group">
-        <i class="fa fa-plus"></i>
-        Create Group
-      </button>
+    <div class="row">
+      <div class="col-12">
+        <button type="submit" class="form_submit btn btn-primary" id="group">
+          Create Group
+        </button>
+        <button type="button" class="cancel-button float-end btn btn-outline-secondary" data-bs-dismiss="modal">
+          <i class="fa fa-close"></i> Cancel
+        </button>
+      </div>
     </div>
   </form>
 </div>

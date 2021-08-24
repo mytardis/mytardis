@@ -36,9 +36,7 @@
     <div class="modal-content">
       <div class="modal-header">
         <h1 class="title"></h1>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
 
       <div class="loading-placeholder" style="display: none">
@@ -56,9 +54,7 @@
     <div class="modal-content">
       <div class="modal-header">
         <h1 class="title">Request sent</h1>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
 
       <div class="loading-placeholder" style="display: none">
@@ -83,9 +79,7 @@
     <div class="modal-content">
       <div class="modal-header">
         <h1 class="title">Import Files</h1>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
 
       <div class="loading-placeholder" style="display: none">
@@ -99,7 +93,7 @@
 <div class="row">
   <div class="page-header col-md-12">
   <h5 class="mb-1">Dataset</h5>
-    <div class="float-right">
+    <div class="float-end">
   {% if push_to_enabled and is_authenticated %}
     <a class="btn btn-sm btn-outline-secondary push-to" title="Push to..."
        href="{{ push_to_url }}" target="_blank" rel="noreferrer noopener">
@@ -290,7 +284,7 @@
     </div>
     <div class="col-md-4">
 {% if has_write_permissions and perms.tardis_portal.add_datafile and not experiment.public and not immutable %}
-    <span class="btn btn-sm btn-primary fileinput-button mb-1 pull-right">
+    <span class="btn btn-sm btn-primary fileinput-button mb-1 float-end">
         <i class="fa fa-plus"></i>
         <span>Add files...</span>
         <input id="fileupload" type="file" name="attached_file"
@@ -351,11 +345,11 @@
       </div>
       <ul id="datafile-nav" class="nav nav-tabs" role="tablist">
         <li class="nav-item">
-          <a class="nav-link active" href="#tree-view" id="datafile-tree" role="tab" data-toggle="tab"
+          <a class="nav-link active" href="#tree-view" id="datafile-tree" role="tab" data-bs-toggle="tab"
              aria-controls="tree-view" aria-expanded="true">Tree View</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="#legacy-view" role="tab" id="datafile-list" data-toggle="tab"
+          <a class="nav-link" href="#legacy-view" role="tab" id="datafile-list" data-bs-toggle="tab"
              aria-controls="legacy-view">List View</a>
         </li>
       </ul>

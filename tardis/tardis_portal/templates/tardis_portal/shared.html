@@ -9,24 +9,18 @@
 
 {% block content %}
 <div id="content" class="container-fluid">
-  <div class="row">
-    <div class="col-md-12">
-      <h3 class="d-block d-sm-none">Experiments</h3>
-      <div class="pull-right pb-1">
-        {% if perms.tardis_portal.add_experiment %}
-        <a class="btn btn-primary"
+  <div class="page-header">
+    <h1 class="mb-1">
+      Experiments
+      {% if perms.tardis_portal.add_experiment %}
+        <a class="float-end btn btn-primary"
            href="{% url 'tardis.tardis_portal.views.create_experiment' %}">
           <i class="fa fa-plus"></i>
           Create
         </a>
-        {% endif %}
-      </div>  <!-- class="pull-right" -->
-      <div class="pull-left">
-        <h3 class="d-none d-sm-block" style="text-align: center">Experiments</h3>
-      </div>
-    </div>  <!-- class="col-md-12" -->
-  </div>  <!-- class="row" -->
-
+      {% endif %}
+    </h1>
+  </div>
   <div class="row">
     <div class="col-md-12">
       {% if not shared_experiments %}
@@ -36,11 +30,11 @@
       {% endif %}
 
       {% if shared_experiments %}
-      <div class="pull-left">
+      <div class="float-start">
         <h4><strong>{{ shared_experiments.count }}</strong>
         Shared Experiment{{ shared_experiments.count|pluralize }}</h4>
       </div>
-      <div class="pull-right mb-1">
+      <div class="float-end mb-1">
         <button type="button" class="btn btn-outline-secondary btn-sm"
                 onclick="$('#myshared .collapse').collapse('hide');" >
         Collapse all</button>

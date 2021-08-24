@@ -1,4 +1,10 @@
-import {attachExpAccordionClickHandlers, loadLatestDatasetSummary, expandFirstExperiments} from "../experiment-accordion";
+import {
+    attachExpAccordionClickHandlers,
+    loadLatestDatasetSummary,
+    expandFirstExperiments,
+    handleExpAccordionLink
+} from "../experiment-accordion";
+
 $(document).ready(function() {
     // Load owned exps on page load
     var loadingHTML = "<img src=\"/static/images/ajax-loader.gif\"/><br />";
@@ -8,10 +14,7 @@ $(document).ready(function() {
         function() {
             attachExpAccordionClickHandlers("accordion-toggle", "toggle-", "collapse-", "latest-dataset-", loadLatestDatasetSummary);
             expandFirstExperiments();
-
-            $(".explink").on("click", function(evt) {
-                evt.stopPropagation();
-            });
+            $(".explink").on("click", handleExpAccordionLink);
             $(".dllink").on("click", function(evt) {
                 evt.stopPropagation();
             });
@@ -25,17 +28,12 @@ $(document).ready(function() {
             function() {
                 attachExpAccordionClickHandlers("accordion-toggle", "toggle-", "collapse-", "latest-dataset-", loadLatestDatasetSummary);
                 expandFirstExperiments();
-
-                $(".explink").on("click", function(evt) {
-                    evt.stopPropagation();
-                });
+                $(".explink").on("click", handleExpAccordionLink);
                 $(".dllink").on("click", function(evt) {
                     evt.stopPropagation();
                 });
             });
     });
-
-    // var attachExpAccordionClickHandlers = function(accordionToggleClass, accordionToggleIdPrefix, accordionBodyIdPrefix, divIdPrefix, loadDatasetsSummary)
     attachExpAccordionClickHandlers("accordion-toggle", "toggle-", "collapse-", "latest-dataset-", loadLatestDatasetSummary);
     expandFirstExperiments();
 });

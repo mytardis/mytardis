@@ -26,7 +26,7 @@
             <tr id="datafile-selectors" class="js-required">
                 <td colspan="3">
                     Select: <a class="dataset_selector_all btn btn-outline-secondary btn-sm">All</a> / <a class="dataset_selector_none btn btn-outline-secondary btn-sm">None</a>
-                    <div class="pull-right">
+                    <div class="float-end">
                         <button type="submit" class="btn btn-outline-secondary btn-sm download-selected">
                             <i class="fa fa-download"></i>
                             Download Selected Files
@@ -52,7 +52,7 @@
                     {% endif %}
                 </td>
                 <td style="width: 130px;">
-                  <div id="datafile-buttons-{{datafile.id}}" class="btn-group pull-right">
+                  <div id="datafile-buttons-{{datafile.id}}" class="btn-group float-end">
                     {% if has_write_permissions and not immutable %}
                         <a title="Add Metadata"
                            href="{% url 'tardis.tardis_portal.views.add_datafile_par' datafile.id %}"

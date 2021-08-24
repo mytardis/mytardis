@@ -1,40 +1,42 @@
 <div class="users w-66">
   <div class="alert alert-danger alert-dismissible" style="display: none;">
-    <button type="button" class="close" data-hide="alert">×</button>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     <span class="message">You cannot remove yourself from this group.</span>
   </div>
 {% for user in users %}
   {% include "tardis_portal/ajax/add_user_to_group_result.html" %}
 {% endfor %}
 </div> <!-- users -->
-<form class="add-user-form form-horizontal" novalidate>
-  <legend>Add User</legend>
-  <div class="form-group row">
-    <label class="col-form-label col-md-2 " for="id_adduser">User</label>
-      <div class="col-md-4" style="max-width: 250px;">
-        <input type="text" name="adduser" id="id_adduser-{{group_id}}" required
-               class="usersuggest form-control"
-               maxlength="100" autocomplete="off">
-        <div class="invalid-feedback"></div>
-      </div>
+<form class="add-user-form p-5 bg-light" novalidate>
+  <div class="row mb-3">
+    <div class="offset-md-2 col-md-10">
+      <h4>Add User</h4>
+    </div>
   </div>
-
-  <div class="form-group row">
+  <div class="row mb-3">
+    <div class="col-md-2">
+      <label class="form-label" for="id_adduser-{{group_id}}">User</label>
+    </div>
+    <div class="col-md-4">
+      <input type="text" name="adduser" id="id_adduser-{{group_id}}" required class="usersuggest form-control" maxlength="100" autocomplete="off">
+      <div class="invalid-feedback"></div>
+    </div>
+  </div>
+  <div class="row mb-3">
     <div class=" offset-md-2 col-md-4">
-      <div class="checkbox">
-        <label>
-          <input type="checkbox" name="admin" class="isAdmin" id="id_admin-{{group_id}}"> <span>Group Admin</span>
+      <div className="form-check">
+        <input name="admin" id="id_admin-{{group_id}}" class="form-check-input" type="checkbox" />
+        <label class="form-check-label" for="id_admin-{{group_id}}">
+          Group Admin
         </label>
       </div>
     </div>
   </div>
-
-  <div class="form-group row">
+  <div class="row">
     <div class="offset-md-2 col-md-4">
       <input type="hidden" name="group_id" class="group_id" value="{{group_id}}">
       <button type="submit" class="btn btn-primary">
-        <i class="fa fa-plus"></i>
-        Add User to Group
+        <i class="fa fa-plus"></i> Add User to Group
       </button>
     </div>
   </div>
