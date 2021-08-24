@@ -8,7 +8,6 @@ managers.py
 from datetime import datetime
 
 from django.db import models
-from django.db.models import Q
 from django.core.exceptions import PermissionDenied
 from django.contrib.auth.models import User, Group
 from django.db.models import Prefetch
@@ -85,7 +84,7 @@ class SafeManager(models.Manager):
         ACL rules. Raises PermissionDenied if the user does not have access.
 
         :param User user: a User instance
-        :param int experiment_id: the ID of the exp/set/file to be edited
+        :param int obj_id: the ID of the exp/set/file to be edited
         :returns: Experiment/Dataset/DataFile
         :rtype: Experiment/Dataset/DataFile
         :raises PermissionDenied:
@@ -141,7 +140,6 @@ class SafeManager(models.Manager):
     def public(self):
         """
         Return all experiments/datasets/datafiles which are publicly available.
-        :param User user: a User instance
         :returns: QuerySet of exp/set/files that are publicly available
         :rtype: QuerySet
         """
@@ -260,13 +258,14 @@ class SafeManager(models.Manager):
             query |= Experiment.objects.filter(public_access=Experiment.PUBLIC_ACCESS_EMBARGO)
             return query
         # Dataset does not have a "public" functionality on a Micro-level yet
-        elif self.model.get_ct(self.model).model == "dataset":
+        if self.model.get_ct(self.model).model == "dataset":
             from .models import Dataset
             return Dataset.objects.none()
         # DataFile does not have a "public" functionality on a Micro-level yet
-        elif self.model.get_ct(self.model).model == "datafile":
+        if self.model.get_ct(self.model).model == "datafile":
             from .models import DataFile
             return DataFile.objects.none()
+        return super().get_queryset().none()
 
 
     def owned_by_user(self, user):
@@ -330,7 +329,7 @@ class SafeManager(models.Manager):
         Returns a list of users who have ACL rules associated with this
         exp/set/file.
 
-        :param int experiment_id: the ID of the exp/set/file
+        :param int obj_id: the ID of the exp/set/file
         :returns: QuerySet of Users with exp/set/file access
         :rtype: QuerySet
         """
@@ -365,7 +364,7 @@ class SafeManager(models.Manager):
         Returns a list of groups who have ACL rules associated with this
         exp/set/file.
 
-        :param int experiment_id: the ID of the exp/set/file
+        :param int obj_id: the ID of the exp/set/file
         :returns: QuerySet of Groups with exp/set/file access
         :rtype: QuerySet
         """
@@ -485,7 +484,7 @@ class SafeManager(models.Manager):
         result = []
         for a in acl:
             group = authService.searchGroups(plugin=u'token_group',
-                                             name=acl.experiment.id)
+                                             name=a.experiment.id)
             if group:
                 result += group
         return result

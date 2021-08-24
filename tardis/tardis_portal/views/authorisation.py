@@ -20,7 +20,6 @@ from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_POST
 
 from ..auth import decorators as authz
-from ..auth.localdb_auth import django_user
 from ..models import UserAuthentication, UserProfile, Experiment, \
     Token, GroupAdmin, ExperimentACL
 from ..shortcuts import render_response_index

@@ -61,8 +61,8 @@ class Dataset(models.Model):
         super().save(*args, **kwargs)
 
     @property
-    def is_online(self, user):
-        return all(df.is_online for df in self.get_datafiles(user).all())
+    def is_online(self):
+        return all(df.is_online for df in self.datafile_set.all())
 
     @property
     def online_files_count(self):
@@ -93,9 +93,8 @@ class Dataset(models.Model):
     def get_datafiles(self, user):
         from .datafile import DataFile
         if settings.ONLY_EXPERIMENT_ACLS:
-             return DataFile.objects.filter(dataset__id=self.id)
-        else:
-            return DataFile.safe.all(user).filter(dataset__id=self.id)
+            return DataFile.objects.filter(dataset__id=self.id)
+        return DataFile.safe.all(user).filter(dataset__id=self.id)
 
     def get_absolute_url(self):
         """Return the absolute url to the current ``Dataset``"""
@@ -223,7 +222,7 @@ class Dataset(models.Model):
         >>> ds.get_dir_tuples(user, "test files/subdir3/subdir4")
         [('..', 'test files/subdir3/subdir4')]
         """
-        from .datafile import DataFile
+        #from .datafile import DataFile
 
         dir_tuples = []
         if basedir:

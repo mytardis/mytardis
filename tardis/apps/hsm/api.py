@@ -4,7 +4,6 @@ Additions to MyTardis's REST API
 import logging
 from django.conf import settings
 from django.conf.urls import url
-from django.contrib.auth.models import User
 from django.core.mail import get_connection, EmailMessage
 from django.http import (HttpResponseForbidden,
                          HttpResponseServerError,

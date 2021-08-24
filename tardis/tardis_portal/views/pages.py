@@ -24,7 +24,6 @@ from django.views.generic.base import TemplateView, View
 
 from ..auth import decorators as authz
 from ..auth.decorators import has_write
-from ..auth.localdb_auth import django_user
 from ..forms import ExperimentForm, DatasetForm
 from ..models import Experiment, Dataset, DataFile, ExperimentACL, DatasetACL
 from ..shortcuts import render_response_index, \
@@ -326,7 +325,7 @@ class DatasetView(TemplateView):
                 return return_response_error(request)
             dataset = Dataset.objects.get(id=dataset_id)
         except PermissionDenied:
-                return return_response_error(request)
+            return return_response_error(request)
         except Dataset.DoesNotExist:
             return return_response_not_found(request)
 
@@ -773,6 +772,7 @@ def add_dataset(request, experiment_id):
                                  canDelete=True,
                                  isOwner=True,
                                  aclOwnershipType=DatasetACL.OWNER_OWNED)
+                acl.save()
             return _redirect_303('tardis_portal.view_dataset',
                                  dataset.id)
     else:

@@ -479,23 +479,23 @@ class DataFile(models.Model):
         return all(dfos)
 
     def getACLsforIndexing(self):
-            """Returns the datafileACLs associated with this
-            datafile, formatted for elasticsearch.
-            """
+        """Returns the datafileACLs associated with this
+        datafile, formatted for elasticsearch.
+        """
 
-            #TODO embed parent ACLs if settings EXP_ONLY
-            return_list = []
-            for acl in self.datafileacl_set.all():
-                acl_dict = {}
-                if acl.user is not None:
-                    acl_dict["pluginId"] = "django_user"
-                    acl_dict["entityId"] = acl.user.id
-                    return_list.append(acl_dict)
-                if acl.group is not None:
-                    acl_dict["pluginId"] = "django_group"
-                    acl_dict["entityId"] = acl.group.id
-                    return_list.append(acl_dict)
-            return return_list
+        #TODO embed parent ACLs if settings EXP_ONLY
+        return_list = []
+        for acl in self.datafileacl_set.all():
+            acl_dict = {}
+            if acl.user is not None:
+                acl_dict["pluginId"] = "django_user"
+                acl_dict["entityId"] = acl.user.id
+                return_list.append(acl_dict)
+            if acl.group is not None:
+                acl_dict["pluginId"] = "django_group"
+                acl_dict["entityId"] = acl.group.id
+                return_list.append(acl_dict)
+        return return_list
 
 
 class DataFileObject(models.Model):

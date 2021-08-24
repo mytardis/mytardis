@@ -245,7 +245,7 @@ def merge_auth_method(request):
 
         # now let's check if there's already an existing entry in the ACL
         # for the given experiment/dataset/datafile and replacementUserId
-        for experimentACL in experimentACLs:
+        for experiment_ACL in experiment_ACLs:
             try:
                 acl = ExperimentACL.objects.get(
                     user=replacementUserId,

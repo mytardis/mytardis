@@ -35,8 +35,7 @@ class OpenidACLMigration(models.Model):
     def __str__(self):
         if self.acl_id:
             return '%s | %s' % (self.user_migration, self.acl_id)
-        else:
-            return '%s | %s' % (self.user_migration, "old ACL no longer exists")
+        return '%s | %s' % (self.user_migration, "old ACL no longer exists")
 
 
 class OpenidACLMigrationAdmin(admin.ModelAdmin):

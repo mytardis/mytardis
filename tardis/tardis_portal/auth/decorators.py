@@ -92,6 +92,7 @@ def has_ownership(request, obj_id, ct_type):
         if ct_type == 'datafile':
             return DataFile.safe.owned(request.user).filter(
                 pk=obj_id).exists()
+    return False
 
 
 def has_access(request, obj_id, ct_type):

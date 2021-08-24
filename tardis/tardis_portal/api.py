@@ -34,19 +34,16 @@ from tastypie.http import HttpUnauthorized
 from tastypie.resources import ModelResource
 from tastypie.serializers import Serializer
 from tastypie.utils import trailing_slash
-from tastypie.contrib.contenttypes.fields import GenericForeignKeyField
 
 from uritemplate import URITemplate
 
 from tardis.analytics.tracker import IteratorTracker
 from . import tasks
 from .auth.decorators import (
-    get_accessible_datafiles_for_user,
     has_access,
     has_download_access,
     has_write,
     has_delete_permissions)
-from .auth.localdb_auth import django_user
 from .models.access_control import ExperimentACL, DatasetACL, DatafileACL
 from .models.datafile import DataFile, DataFileObject, compute_checksums
 from .models.dataset import Dataset
@@ -174,7 +171,7 @@ class ACLAuthorization(Authorization):
                     if has_access(bundle.request,
                                   dp.parameterset.dataset.id, "dataset")]
         if isinstance(bundle.obj, DataFile):
-            datafile_ids = [df.id for fd in object_list
+            datafile_ids = [df.id for df in object_list
                            if has_access(bundle.request, df.id, "datafile")]
             return DataFile.objects.filter(id__in=datafile_ids)
         if isinstance(bundle.obj, DatafileParameterSet):
