@@ -46,12 +46,14 @@ class MyPublicationsTestCase(TestCase):
                 "id": self.draft_pub1.id,
                 "title": self.draft_pub1.title,
                 "release_date": None,
+                "description": self.draft_pub1.description,
                 "doi": None
             },
 	    {
                 "id": self.draft_pub2.id,
                 "title": self.draft_pub2.title,
                 "release_date": None,
+                "description": self.draft_pub2.description,
                 "doi": None
             }
         ]
