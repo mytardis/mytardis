@@ -1,6 +1,6 @@
+import PropTypes from 'prop-types';
 import React, { Fragment, useEffect, useState } from 'react';
-import { Modal, Button, Toast } from 'react-bootstrap';
-import * as PropTypes from 'prop-types';
+import { Modal, Button } from 'react-bootstrap';
 import PublicationCard from './PublicationCard';
 import { deletePub, retractPub } from './utils/FetchData';
 import PublicationToast from './utils/PublicationToast';
@@ -22,7 +22,7 @@ const PublicationsList = ({
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('Publication deleted Successfully');
 
-  const handleDelete = (e, id) => {
+  const handleDelete = () => {
     deletePub(pubToDelete).then(() => {
       setDeleteModalOpen(false);
       setToastMessage('Publication deleted Successfully');
@@ -30,7 +30,7 @@ const PublicationsList = ({
       onPubUpdate('draft');
     });
   };
-  const handleRetract = (e, id) => {
+  const handleRetract = () => {
     retractPub(pubToRetract).then(() => {
       setRetractModalOpen(false);
       setToastMessage('Publication retracted Successfully');
@@ -128,3 +128,21 @@ const PublicationsList = ({
 };
 
 export default PublicationsList;
+PublicationsList.defaultProps = {
+  draftPubsList: [],
+  listViewType: [],
+  onResumeDraft: () => {},
+  releasedPubsList: [],
+  retractedPubsList: [],
+  scheduledPubsList: [],
+};
+
+PublicationsList.propTypes = {
+  draftPubsList: PropTypes.array,
+  listViewType: PropTypes.string,
+  onPubUpdate: PropTypes.func.isRequired,
+  onResumeDraft: PropTypes.func,
+  releasedPubsList: PropTypes.array,
+  retractedPubsList: PropTypes.array,
+  scheduledPubsList: PropTypes.array,
+};

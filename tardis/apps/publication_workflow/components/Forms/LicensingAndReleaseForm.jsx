@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React, { useEffect, useState } from 'react';
 import { Card, Form } from 'react-bootstrap';
 import DateTime from 'react-datetime';
@@ -126,3 +127,7 @@ const LicensingAndReleaseForm = ({ formik }) => {
 };
 
 export default LicensingAndReleaseForm;
+
+LicensingAndReleaseForm.propTypes = {
+  formik: PropTypes.any.isRequired,
+};

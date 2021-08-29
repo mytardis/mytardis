@@ -8,7 +8,7 @@ import { SubmitFormData } from './utils/FetchData';
 
 
 const FormModal = ({
-  onPubUpdate, resumeDraftId, show, handleClose, initialData,
+  resumeDraftId, show, handleClose, initialData,
 }) => {
   useEffect(() => {
   }, [resumeDraftId]);
@@ -103,7 +103,6 @@ export default FormModal;
 FormModal.propTypes = {
   handleClose: PropTypes.func.isRequired,
   initialData: PropTypes.object.isRequired,
-  onPubUpdate: PropTypes.func.isRequired,
   resumeDraftId: PropTypes.string.isRequired,
   show: PropTypes.bool.isRequired,
 };

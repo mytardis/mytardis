@@ -11,7 +11,7 @@ const AtrributeAndLicensingForm = ({ formik }) => {
     formik.values.authors ? formik.values.authors
       : [{ name: '', institution: '', email: '' }],
   );
-  const [ackValue, setAckValue] = useState(0);
+  const [, setAckValue] = useState(0);
   const exampleAcknowledgements = [
     {
       agency: 'Select sample acknowledgement text',
@@ -70,11 +70,13 @@ const AtrributeAndLicensingForm = ({ formik }) => {
                   <FieldArray name="authors">
                     {() => authorRows.map((item, idx) => {
                       const authorErrors = formik.errors.authors?.length
+                        // eslint-disable-next-line no-mixed-operators
                   && formik.errors.authors[idx] || {};
                       const authorTouched = formik.touched.authors?.length
+                        // eslint-disable-next-line no-mixed-operators
                   && formik.touched.authors[idx] || {};
                       return (
-                        <tr key={idx}>
+                        <tr>
                           <th>
                             <Field
                               placeholder="Author name"
@@ -106,7 +108,7 @@ const AtrributeAndLicensingForm = ({ formik }) => {
                             <ErrorMessage name={`authors.${idx}.email`} component="div" className="invalid-feedback" />
                           </th>
                           <th>
-                            <span style={{ color: 'red' }} onClick={handleAuthorDelete(idx)}>
+                            <span style={{ color: 'red' }} onClick={handleAuthorDelete(idx)} onKeyDown={handleAuthorDelete(idx)} role="button" tabIndex={0}>
                               <i className="fa fa-trash" />
                             </span>
                           </th>

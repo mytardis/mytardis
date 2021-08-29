@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React, { Fragment } from 'react';
 import styled from '@emotion/styled';
 import { Button } from 'react-bootstrap';
@@ -11,7 +12,7 @@ const Hover = styled.card({
 });
 
 const PublicationCard = ({
-  publicationType, data, handleDelete, handleRetract, handleResume, colNum
+  publicationType, data, handleDelete, handleRetract, handleResume, colNum,
 }) => (
   <Fragment>
     <div className={`col-md-${colNum} col-xs-12 pb-3`}>
@@ -139,3 +140,18 @@ const PublicationCard = ({
   </Fragment>
 );
 export default PublicationCard;
+
+PublicationCard.defaultProps = {
+  handleDelete: () => {},
+  handleRetract: () => {},
+  handleResume: () => {},
+};
+
+PublicationCard.propTypes = {
+  colNum: PropTypes.number.isRequired,
+  data: PropTypes.object.isRequired,
+  handleDelete: PropTypes.func,
+  handleResume: PropTypes.func,
+  handleRetract: PropTypes.func,
+  publicationType: PropTypes.string.isRequired,
+};

@@ -1,18 +1,11 @@
 import React from 'react';
 import { Card, Form } from 'react-bootstrap';
+import PropTypes from 'prop-types';
 
 const ExtraInformationForm = ({ formik }) => {
   const handleDatasetDescriptionChange = (i, event) => {
     // if extraInfo
     if (Object.keys(formik.values.extraInfo).length > 0) {
-      // update change
-      /* const updatedExtraInfo = Object.keys(formik.values.extraInfo).map((elem) => {
-        const temp = Object.assign({}, formik.values.extraInfo[elem]);
-        if (elem === i) {
-          temp.description = event.target.value;
-        }
-        return temp;
-      }); */
       const updatedExtraInfo = {
         ...formik.values.extraInfo,
         [`${i}`]: { ...formik.values.extraInfo[`${i}`], description: event.target.value },
@@ -29,7 +22,6 @@ const ExtraInformationForm = ({ formik }) => {
       const res = selectedDatasets
         .map(obj => updatedDatasetDescription.find(o => o.dataset.id === obj.dataset.id) || obj);
       formik.setFieldValue('selectedDatasets', res, false);
-      console.log(selectedDatasets);
     }
   };
   return (
@@ -85,4 +77,9 @@ const ExtraInformationForm = ({ formik }) => {
     </>
   );
 };
+
 export default ExtraInformationForm;
+
+ExtraInformationForm.propTypes = {
+  formik: PropTypes.any.isRequired,
+};

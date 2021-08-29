@@ -23,7 +23,6 @@ const PublicationsHome = () => {
     // fetch  data
     SubmitFormData({}, 'resume', id).then((data) => {
       setInitialData(data);
-      console.log(data);
       setShow(true);
     });
   };
@@ -56,7 +55,6 @@ const PublicationsHome = () => {
     setInitialData({});
   };
   const setViewType = (e) => {
-    console.log(e.target.id)
     setListViewType(e.target.id);
   };
 

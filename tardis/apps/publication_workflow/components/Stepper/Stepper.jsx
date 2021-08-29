@@ -1,8 +1,9 @@
+import PropTypes from 'prop-types';
 import React, { Fragment, useState } from 'react';
 import { Form, Formik } from 'formik';
 import 'regenerator-runtime/runtime';
 import {
-  Button, ButtonGroup, Col, Row,
+  Button, Col, Row,
 } from 'react-bootstrap';
 import ProgressBar from './ProgressBar';
 import SelectDatasetForm from '../Forms/SelectDatasetForm';
@@ -12,7 +13,7 @@ import LicensingAndReleaseForm from '../Forms/LicensingAndReleaseForm';
 
 
 const Stepper = ({
-  children, initialValues, onSubmit, onSave,
+  children, initialValues, onSubmit,
 }) => {
   const [stepNumber, setStepNumber] = useState(0);
   const steps = React.Children.toArray(children);
@@ -34,9 +35,6 @@ const Stepper = ({
 
   // eslint-disable-next-line consistent-return
   const handleSubmit = async (values, bag) => {
-    /* if (step.props.onSubmit) {
-      // await step.props.onSubmit(values, bag);
-    } */
     if (isLastStep) {
       return onSubmit(values, bag);
     }
@@ -50,7 +48,6 @@ const Stepper = ({
         step.props.onSubmit(values, bag);
       }
     });
-    // await step.props.onSubmit(values, bag);
   };
 
   const renderStepContent = (formik, activeStep) => {
@@ -124,3 +121,9 @@ const Stepper = ({
 };
 
 export default Stepper;
+
+Stepper.propTypes = {
+  children: PropTypes.element.isRequired,
+  initialValues: PropTypes.object.isRequired,
+  onSubmit: PropTypes.func.isRequired,
+};

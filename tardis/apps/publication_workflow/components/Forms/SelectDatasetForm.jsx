@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React, { useEffect, useState } from 'react';
 import {
   Card,
@@ -62,7 +63,6 @@ const SelectDatasetForm = ({ formik }) => {
     }
     const filteredData = datasetList
       .filter(({ description }) => description.toLowerCase().includes(filter));
-    //setMainListData(filteredData);
     setDatasetList(filteredData);
   };
   return (
@@ -187,7 +187,7 @@ const SelectDatasetForm = ({ formik }) => {
                       <td>{item.dataset.description}</td>
                       <td>
                         {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events */}
-                        <span style={{ color: 'red', cursor: 'pointer' }} onClick={e => handleDatasetDelete(e, item)}>
+                        <span style={{ color: 'red', cursor: 'pointer' }} onClick={e => handleDatasetDelete(e, item)} role="button" tabIndex={0}>
                           <i className="fa fa-trash" />
                         </span>
                       </td>
@@ -209,3 +209,7 @@ const SelectDatasetForm = ({ formik }) => {
   );
 };
 export default SelectDatasetForm;
+
+SelectDatasetForm.propTypes = {
+  formik: PropTypes.any.isRequired,
+};

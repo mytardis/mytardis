@@ -1,6 +1,6 @@
-import {Toast} from "react-bootstrap";
-import * as PropTypes from "prop-types";
-import React from "react";
+import { Toast } from 'react-bootstrap';
+import * as PropTypes from 'prop-types';
+import React from 'react';
 
 const PublicationToast = ({ onClose, show, toastMessage }) => (
   <Toast

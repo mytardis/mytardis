@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React from 'react';
 import styled from '@emotion/styled';
 
@@ -66,3 +67,7 @@ const ProgressBar = ({ activeStep }) => {
   );
 };
 export default ProgressBar;
+
+ProgressBar.propTypes = {
+  activeStep: PropTypes.number.isRequired,
+};

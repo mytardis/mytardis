@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React, { Fragment } from 'react';
 
 const PublicationButton = ({ onclick, setViewType }) => (
@@ -23,3 +24,8 @@ const PublicationButton = ({ onclick, setViewType }) => (
   </Fragment>
 );
 export default PublicationButton;
+
+PublicationButton.propTypes = {
+  onclick: PropTypes.func.isRequired,
+  setViewType: PropTypes.string.isRequired,
+};
