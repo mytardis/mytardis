@@ -13,6 +13,7 @@ const PublicationsList = ({
   draftPubsList,
   onPubUpdate,
   onResumeDraft,
+  listViewType,
 }) => {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [retractModalOpen, setRetractModalOpen] = useState(false);
@@ -93,6 +94,7 @@ const PublicationsList = ({
             data={item}
             handleDelete={confirmDelete}
             handleResume={onResumeDraft}
+            colNum={listViewType === 'list' ? 12 : 4}
           />
         )) : <></>}
         {scheduledPubsList.length > 0 ? scheduledPubsList.map(item => (
@@ -100,6 +102,7 @@ const PublicationsList = ({
             key={item.id}
             publicationType="scheduled"
             data={item}
+            colNum={listViewType === 'list' ? 12 : 4}
           />
         )) : <></>}
         {retractedPubsList.length > 0 ? retractedPubsList.map(item => (
@@ -107,6 +110,7 @@ const PublicationsList = ({
             key={item.id}
             publicationType="retracted"
             data={item}
+            colNum={listViewType === 'list' ? 12 : 4}
           />
         )) : <></>}
         {releasedPubsList.length > 0 ? releasedPubsList.map(item => (
@@ -115,6 +119,7 @@ const PublicationsList = ({
             publicationType="released"
             data={item}
             handleRetract={ConfirmRetract}
+            colNum={listViewType === 'list' ? 12 : 4}
           />
         )) : <></>}
       </div>

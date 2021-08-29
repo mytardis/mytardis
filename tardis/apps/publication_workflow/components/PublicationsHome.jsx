@@ -17,6 +17,7 @@ const PublicationsHome = () => {
   const [initialData, setInitialData] = useState({});
   const [toastShow, setToastShow] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
+  const [listViewType, setListViewType] = useState('grid');
   const onResumeDraft = (e, id) => {
     setResumeDraftId(id);
     // fetch  data
@@ -54,6 +55,10 @@ const PublicationsHome = () => {
     setResumeDraftId(0);
     setInitialData({});
   };
+  const setViewType = (e) => {
+    console.log(e.target.id)
+    setListViewType(e.target.id);
+  };
 
   useEffect(() => {
     fetchPubs('draft').then((data) => {
@@ -76,7 +81,7 @@ const PublicationsHome = () => {
         toastMessage={toastMessage}
         onClose={() => setToastShow(false)}
       />
-      <PublicationButton onclick={handleShow} />
+      <PublicationButton onclick={handleShow} setViewType={setViewType} />
       <FormModal
         onPubUpdate={onPubUpdate}
         resumeDraftId={resumeDraftId}
@@ -92,6 +97,7 @@ const PublicationsHome = () => {
         retractedPubsList={retractedPubsList}
         onPubUpdate={onPubUpdate}
         onResumeDraft={onResumeDraft}
+        listViewType={listViewType}
       />
     </Fragment>
   );

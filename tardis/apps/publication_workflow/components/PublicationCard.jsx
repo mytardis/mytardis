@@ -3,19 +3,19 @@ import styled from '@emotion/styled';
 import { Button } from 'react-bootstrap';
 import moment from 'moment';
 
-const Hover = styled.div({
+const Hover = styled.card({
   ':hover': {
-    transform: 'scale(1.05)',
+    transform: 'scale(1.01)',
     boxShadow: '0 10px 20px rgba(0,0,0,.12), 0 4px 8px rgba(0,0,0,.06)',
   },
 });
 
 const PublicationCard = ({
-  publicationType, data, handleDelete, handleRetract, handleResume,
+  publicationType, data, handleDelete, handleRetract, handleResume, colNum
 }) => (
   <Fragment>
-    <div className="col-md-4 col-xs-12 pb-3">
-      <div className="card h-100">
+    <div className={`col-md-${colNum} col-xs-12 pb-3`}>
+      <Hover className="card h-100">
         <div className="card-body">
           {/* eslint-disable-next-line consistent-return */}
           {(() => {
@@ -134,7 +134,7 @@ const PublicationCard = ({
             }
           })()}
         </div>
-      </div>
+      </Hover>
     </div>
   </Fragment>
 );

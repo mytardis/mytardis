@@ -411,7 +411,7 @@ def finalize_publication(request, publication, send_email=True):
                 send_mail_to_authors(publication, subject, email_message)
 
         # Trigger publication update
-        tasks.update_publication_records.delay()
+        tasks.update_publication_records.apply_async()
 
         return True
 
@@ -540,7 +540,8 @@ def retrieve_scheduled_pubs_list(request):
                 'id': scheduled_pub.id,
                 'title': scheduled_pub.title,
                 'doi': doi,
-                'release_date': tasks.get_release_date(scheduled_pub).strftime('%Y-%m-%d')
+                'release_date': tasks.get_release_date(scheduled_pub).strftime('%Y-%m-%d'),
+                'description': scheduled_pub.description
             })
 
     return JsonResponse(scheduled_pubs_data, safe=False)
@@ -566,7 +567,8 @@ def retrieve_released_pubs_list(request):
                 'id': released_pub.id,
                 'title': released_pub.title,
                 'doi': doi,
-                'release_date': tasks.get_release_date(released_pub).strftime('%Y-%m-%d')
+                'release_date': tasks.get_release_date(released_pub).strftime('%Y-%m-%d'),
+                'description': released_pub.description
             })
 
     return JsonResponse(released_pubs_data, safe=False)
