@@ -1,8 +1,5 @@
 from django.conf.urls import url
 
-from . import views
-app_name = "tardis.apps.publication_workflow"
-
 from .views import (
     form_view,
     fetch_experiments_and_datasets,
@@ -20,6 +17,8 @@ from .views import (
     mint_doi_and_deactivate,
     get_licenses,
 )
+
+app_name = "tardis.apps.publication_workflow"
 
 urlpatterns = [
     url(r'^form/$', form_view,

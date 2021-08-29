@@ -185,19 +185,18 @@ def update_extra_info(request, form_state, publication):
              'email': request.user.email}]
 
     # No need to return an HttpResponse yet, continue processing form:
-    return None
 
 
 def update_attribution_and_licensing(request, form_state, publication):
 
     set_publication_authors(form_state['authors'], publication)
-
+    # pylint: disable=R1718
     institutions = '; '.join(
         set([author['institution'] for author in form_state['authors']]))
     publication.institution_name = institutions
 
     # Attach the publication details schema
-    pub_details_parameter_set = publication.get_details_schema_pset()
+    # pub_details_parameter_set = publication.get_details_schema_pset()
 
     # Add the acknowledgements
     # Client-side validation requires them for final submission,
@@ -252,7 +251,7 @@ def submit_form(request, form_state, publication):
 
 
 def map_form_to_schemas(extraInfo, publication):
-    for form_id, form in extraInfo.items():
+    for _form_id, form in extraInfo.items():
         try:  # Ignore form if no schema exists with this name
             schema = Schema.objects.get(namespace=form['schema'])
         except Schema.DoesNotExist:
@@ -462,12 +461,11 @@ def mint_doi_and_deactivate(request, experiment_id):
                     "Could not find the DOI parameter name "
                     "(check schema definitions)")
                 raise
-            elif isinstance(err, ExperimentParameterSet.DoesNotExist):
+            if isinstance(err, ExperimentParameterSet.DoesNotExist):
                 logger.error(
                     "Could not find the publication details parameter set")
                 raise
-            else:
-                raise
+            return JsonResponse(dict(doi=None, url=url))
     else:
         msg = "Can't mint DOI, because MODC_DOI_ENABLED is False."
         logger.error(msg)
