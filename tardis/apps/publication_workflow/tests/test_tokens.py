@@ -15,8 +15,7 @@ from tardis.tardis_portal.views.authorisation import (
 
 from ..models import Publication
 from ..views import (
-    retrieve_access_list_tokens_json,
-    tokens)
+    retrieve_access_list_tokens_json)
 
 
 class PublicationTokensTestCase(TestCase):
