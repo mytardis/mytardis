@@ -59,12 +59,6 @@ class PublicationFormTestCase(TestCase):
         request.user = self.user
         response = form_view(request)
         self.assertEqual(response.status_code, 200)
-        self.assertIn(
-            'PublicationFormController as pubFormCtrl',
-            response.content.decode())
-        self.assertIn(
-            'pubFormCtrl.currentPage.title',
-            response.content.decode())
 
     def test_create_draft_publication(self):
         '''

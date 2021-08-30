@@ -104,6 +104,3 @@ class PublicationTokensTestCase(TestCase):
         request.user = self.user
         response = tokens(request, experiment_id=self.draft_pub1.id)
         self.assertEqual(response.status_code, 200)
-        self.assertIn(
-            'PublicationTokensController as pubTokensCtrl',
-            response.content.decode())
