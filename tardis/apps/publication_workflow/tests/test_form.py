@@ -50,16 +50,6 @@ class PublicationFormTestCase(TestCase):
         self.test_dataset1.experiments.set([self.test_exp1])
         self.test_dataset1.save()
 
-    def test_open_blank_publication_form(self):
-        '''
-        Test opening publication form
-        '''
-        factory = RequestFactory()
-        request = factory.get('/apps/publication-workflow/form/')
-        request.user = self.user
-        response = form_view(request)
-        self.assertEqual(response.status_code, 200)
-
     def test_create_draft_publication(self):
         '''
         Test creating draft publication

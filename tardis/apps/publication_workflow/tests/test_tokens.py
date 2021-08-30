@@ -92,15 +92,3 @@ class PublicationTokensTestCase(TestCase):
         self.assertEqual(
             json.loads(response.content)[1]['experiment_id'],
             self.draft_pub1.id)
-
-    def test_tokens_view(self):
-        '''
-        Test requesting tokens view, which would be displayed in a modal dialog
-        when requested from the My Publications page
-        '''
-        factory = RequestFactory()
-        request = factory.get(
-            '/apps/publication-workflow/tokens/%s/' % self.draft_pub1.id)
-        request.user = self.user
-        response = tokens(request, experiment_id=self.draft_pub1.id)
-        self.assertEqual(response.status_code, 200)
