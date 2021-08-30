@@ -21,10 +21,10 @@ const PublicationCard = ({
           {/* eslint-disable-next-line consistent-return */}
           {(() => {
             switch (publicationType) {
-              case 'draft': return <span className="badge badge-secondary">Draft Publication</span>;
-              default: return <span className="badge badge-success">Publication Released</span>;
-              case 'scheduled': return <span className="badge badge-info">Publication Scheduled</span>;
-              case 'retracted': return <span className="badge badge-danger">Publication Retracted</span>;
+              case 'draft': return <span className="badge bg-secondary">Draft Publication</span>;
+              default: return <span className="badge bg-success">Publication Released</span>;
+              case 'scheduled': return <span className="badge bg-info">Publication Scheduled</span>;
+              case 'retracted': return <span className="badge bg-danger">Publication Retracted</span>;
             }
           })()}
 
@@ -38,7 +38,7 @@ const PublicationCard = ({
               case 'draft': return (
                 <>
                   {data.doi ? (
-                    <span className="badge badge-info mr-2">
+                    <span className="badge bg-info mr-2">
                       <a href="https://dx.doi.org/10.1371/journal.pone.0210842" className="card-link" style={{ color: 'Black' }}>{data.doi}</a>
                     </span>
                   ) : <></>}
@@ -53,7 +53,7 @@ const PublicationCard = ({
                 <>
                   {data.doi
                     ? (
-                      <span className="badge badge-info mr-2">
+                      <span className="badge bg-info mr-2">
                         <a href="https://dx.doi.org/10.1371/journal.pone.0210842" className="card-link" style={{ color: 'Black' }}>{data.doi}</a>
                       </span>
                     ) : <></>
@@ -67,7 +67,7 @@ const PublicationCard = ({
               case 'retracted': return (
                 <>
                   {data.doi ? (
-                    <span className="badge badge-info mr-2">
+                    <span className="badge bg-info mr-2">
                       <a href="https://dx.doi.org/10.1371/journal.pone.0210842" className="card-link" style={{ color: 'Black' }}>{data.doi}</a>
                     </span>
                   ) : <></>}
@@ -87,7 +87,7 @@ const PublicationCard = ({
               default: return (
                 <>
                   {data.doi ? (
-                    <span className="badge badge-info mr-2">
+                    <span className="badge bg-info me-2">
                       <a href="https://dx.doi.org/10.1371/journal.pone.0210842" className="card-link" style={{ color: 'Black' }}>{data.doi}</a>
                     </span>
                   ) : <></>}
@@ -105,27 +105,27 @@ const PublicationCard = ({
             switch (publicationType) {
               case 'draft': return (
                 <Fragment>
-                  <button type="button" onClick={e => handleResume(e, data.id)} className="btn btn-primary btn-sm mr-2 mb-1">
-                    <i className="fa fa-edit mr-1" />
+                  <button type="button" onClick={e => handleResume(e, data.id)} className="btn btn-primary btn-sm me-2 mb-1">
+                    <i className="fa fa-edit me-1" />
                     Resume Draft
                   </button>
-                  <Button onClick={e => handleDelete(e, data.id)} className="btn btn-danger btn-sm mr-2 mb-1">
-                    <i className="fa fa-trash mr-1" />
+                  <Button onClick={e => handleDelete(e, data.id)} className="btn btn-danger btn-sm me-2 mb-1">
+                    <i className="fa fa-trash me-1" />
                     Delete Draft
                   </Button>
-                  <button type="button" className="btn btn-info btn-sm mr-2 mb-1">
+                  <button type="button" className="btn btn-info btn-sm me-2 mb-1">
                     Mint Doi
                   </button>
                   <button type="button" className="btn btn-success btn-sm mb-1">
-                    <i className="fa fa-share-alt mr-1" />
+                    <i className="fa fa-share-alt me-1" />
                     Share
                   </button>
                 </Fragment>
               );
               default: return (
                 <Fragment>
-                  <button onClick={e => handleRetract(e, data.id)} type="button" className="btn btn-danger btn-sm mr-2 mb-1">
-                    <i className="fa fa-exclamation-triangle mr-1" />
+                  <button onClick={e => handleRetract(e, data.id)} type="button" className="btn btn-danger btn-sm me-2 mb-1">
+                    <i className="fa fa-exclamation-triangle me-1" />
                     Retract
                   </button>
                 </Fragment>

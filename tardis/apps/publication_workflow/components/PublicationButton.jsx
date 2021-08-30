@@ -5,17 +5,17 @@ const PublicationButton = ({ onclick, setViewType }) => (
   <Fragment>
     <div className="row">
       <div className="col-md-12 pull-right">
-        <button type="button" className="btn btn-primary btn-lg mb-2 ml-2 pull-right" onClick={onclick}>
-          <i className="fa fa-plus mr-2" />
+        <button type="button" className="btn btn-primary btn-lg mb-2 ms-2 pull-right" onClick={onclick}>
+          <i className="fa fa-plus me-2" />
           Create publication
         </button>
         <div className="pull-right btn-group btn-lg">
           <button type="button" id="list" className="btn btn-secondary" onClick={setViewType}>
-            <i className="fa fa-th-list mr-2" />
+            <i className="fa fa-th-list me-2" />
             List
           </button>
           <button type="button" id="grid" className="btn btn-secondary" onClick={setViewType}>
-            <i className="fa fa-th mr-2" />
+            <i className="fa fa-th me-2" />
             Grid
           </button>
         </div>
