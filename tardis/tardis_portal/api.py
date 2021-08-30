@@ -618,8 +618,10 @@ class ExperimentResource(MyTardisModelResource):
             acl = ExperimentACL(experiment=experiment,
                             user=bundle.request.user,
                             canRead=True,
+                            canDownload=True,
                             canWrite=True,
                             canDelete=True,
+                            canSensitive=True,
                             isOwner=True,
                             aclOwnershipType=ExperimentACL.OWNER_OWNED)
             acl.save()
@@ -1295,10 +1297,10 @@ class ExperimentACLResource(MyTardisModelResource):
         authentication = default_authentication
         authorization = ACLAuthorization()
         queryset = ExperimentACL.objects.all()
-        filtering = {
-            'pluginId': ('exact', ),
-            'entityId': ('exact', ),
-        }
+        #filtering = {
+        #    'pluginId': ('exact', ),
+        #    'entityId': ('exact', ),
+        #}
         ordering = [
             'id'
         ]

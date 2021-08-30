@@ -52,6 +52,30 @@ class ExperimentParameterSetAdmin(admin.ModelAdmin):
     inlines = [ExperimentParameterInline]
 
 
+class DatasetParameterInline(admin.TabularInline):
+    model = models.DatasetParameter
+    extra = 0
+    formfield_overrides = {
+        django.db.models.TextField: {'widget': TextInput},
+    }
+
+
+class DatasetParameterSetAdmin(admin.ModelAdmin):
+    inlines = [DatasetParameterInline]
+
+
+class DatafileParameterInline(admin.TabularInline):
+    model = models.DatafileParameter
+    extra = 0
+    formfield_overrides = {
+        django.db.models.TextField: {'widget': TextInput},
+    }
+
+
+class DatafileParameterSetAdmin(admin.ModelAdmin):
+    inlines = [DatafileParameterInline]
+
+
 class InstrumentParameterInline(admin.TabularInline):
     model = models.InstrumentParameter
     extra = 0
@@ -65,9 +89,11 @@ class ExperimentACLInline(admin.TabularInline):
     model = models.ExperimentACL
     extra = 0
 
+
 class DatasetACLInline(admin.TabularInline):
     model = models.DatasetACL
     extra = 0
+
 
 class DatafileACLInline(admin.TabularInline):
     model = models.DatafileACL
@@ -81,6 +107,7 @@ class ExperimentAdmin(admin.ModelAdmin):
 
 class DatasetAdmin(admin.ModelAdmin):
     search_fields = ['description', 'id']
+    inlines = [DatasetACLInline]
 
 
 class StorageBoxAttributeInlineForm(forms.ModelForm):
@@ -165,7 +192,7 @@ class DatafileAdminForm(forms.ModelForm):
 class DatafileAdmin(admin.ModelAdmin):
     search_fields = ['filename', 'id']
     form = DatafileAdminForm
-    inlines = [DataFileObjectInline, ]
+    inlines = [DataFileObjectInline, DatafileACLInline]
 
 
 class ParameterNameInline(admin.TabularInline):
@@ -184,20 +211,22 @@ class ParameterNameAdmin(admin.ModelAdmin):
 
 class ExperimentACLAdmin(admin.ModelAdmin):
     list_display = [
-        '__str__', 'pluginId', 'entityId', 'canRead', 'canDownload',
-        'canWrite', 'canSensitive', 'canDelete', 'isOwner'
+        '__str__', 'canRead',
+        'canDownload', 'canWrite', 'canDelete', 'canSensitive', 'isOwner'
     ]
+
 
 class DatasetACLAdmin(admin.ModelAdmin):
     list_display = [
-        '__str__', 'pluginId', 'entityId', 'canRead', 'canDownload',
-        'canWrite', 'canSensitive', 'canDelete', 'isOwner'
+        '__str__', 'canRead',
+        'canDownload', 'canWrite', 'canDelete', 'canSensitive', 'isOwner'
     ]
+
 
 class DatafileACLAdmin(admin.ModelAdmin):
     list_display = [
-        '__str__', 'pluginId', 'entityId', 'canRead', 'canDownload',
-        'canWrite', 'canSensitive', 'canDelete', 'isOwner'
+        '__str__', 'canRead',
+        'canDownload', 'canWrite', 'canDelete', 'canSensitive', 'isOwner'
     ]
 
 
@@ -235,8 +264,8 @@ admin.site.register(models.InstrumentParameter)
 admin.site.register(models.ExperimentAuthor)
 admin.site.register(models.UserProfile)
 admin.site.register(models.ExperimentParameter)
-admin.site.register(models.DatafileParameterSet)
-admin.site.register(models.DatasetParameterSet)
+admin.site.register(models.DatafileParameterSet, DatafileParameterSetAdmin)
+admin.site.register(models.DatasetParameterSet, DatasetParameterSetAdmin)
 admin.site.register(models.InstrumentParameterSet, InstrumentParameterSetAdmin)
 admin.site.register(models.Token)
 admin.site.register(models.ExperimentParameterSet, ExperimentParameterSetAdmin)

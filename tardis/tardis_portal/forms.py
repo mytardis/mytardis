@@ -496,12 +496,12 @@ class StaticField(forms.Field):
         return
 
 
-def create_parameterset_edit_form(parameterset, request=None):
+def create_parameterset_edit_form(parameterset, request, post=False, view_sensitive=False):
 
     from .models import ParameterName
 
     # if POST data to save
-    if request:
+    if post:
         fields = OrderedDict()
 
         for key, value in sorted(request.POST.items()):
@@ -540,6 +540,9 @@ def create_parameterset_edit_form(parameterset, request=None):
     psm = ParameterSetManager(parameterset=parameterset)
 
     for dfp in psm.parameters:
+        if dfp.sensitive_metadata:
+            if not view_sensitive:
+                continue
 
         x = 1
         form_id = dfp.name.name + "__" + str(x)
@@ -577,6 +580,11 @@ def create_parameterset_edit_form(parameterset, request=None):
             fields[form_id].label = \
                 fields[form_id].label + " (read only)"
 
+        if dfp.sensitive_metadata:
+            fields[form_id].widget.attrs['readonly'] = True
+            fields[form_id].label = \
+                fields[form_id].label + " (Sensitive: cannot be edited)"
+
     return type('DynamicForm', (forms.BaseForm, ),
                 {'base_fields': fields})
 
@@ -584,14 +592,15 @@ def create_parameterset_edit_form(parameterset, request=None):
 def save_parameter_edit_form(parameterset, request):
 
     psm = ParameterSetManager(parameterset=parameterset)
-    psm.delete_all_params()
+    #psm.delete_all_params()
 
     for key, value in sorted(request.POST.items()):
+        stripped_key = key.replace('_s47_', '/')
+        stripped_key = stripped_key.rpartition('__')[0]
         if value:
-            stripped_key = key.replace('_s47_', '/')
-            stripped_key = stripped_key.rpartition('__')[0]
-
-            psm.new_param(stripped_key, value)
+            psm.set_param(stripped_key, value)
+        else:
+            psm.get_param(stripped_key).delete()
 
     psm = ParameterSetManager(parameterset=parameterset)
     if not psm.parameters.exists():
@@ -630,7 +639,10 @@ def create_parameter_add_form(schema, parentObject, request=None):
                                            initial=value,
                                            )
                 elif parameter_name.isLongString():
-                    fields[key] = forms.CharField(widget=forms.Textarea, label=parameter_name.full_name + units, max_length=255, required=False, initial=value)
+                    fields[key] = forms.CharField(widget=forms.Textarea,
+                                                  label=parameter_name.full_name + units,
+                                                  max_length=255, required=False,
+                                                  initial=value)
                 elif parameter_name.isDateTime():
                     fields[key] = forms.DateTimeField(label=parameter_name.full_name + units,
                                                       required=False,

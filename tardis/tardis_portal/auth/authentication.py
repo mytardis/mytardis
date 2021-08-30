@@ -252,7 +252,9 @@ def merge_auth_method(request):
                     experiment=experiment_ACL.experiment
                 )
                 acl.canRead = acl.canRead or experiment_ACL.canRead
+                acl.canDownload = acl.canDownload or experiment_ACL.canDownload
                 acl.canWrite = acl.canWrite or experiment_ACL.canWrite
+                acl.canSensitive = acl.canSensitive or experiment_ACL.canSensitive
                 acl.canDelete = acl.canDelete or experiment_ACL.canDelete
                 acl.save()
                 experiment_ACL.delete()
@@ -267,7 +269,9 @@ def merge_auth_method(request):
                     dataset=dataset_ACL.dataset
                 )
                 acl.canRead = acl.canRead or dataset_ACL.canRead
+                acl.canDownload = acl.canDownload or dataset_ACL.canDownload
                 acl.canWrite = acl.canWrite or dataset_ACL.canWrite
+                acl.canSensitive = acl.canSensitive or dataset_ACL.canSensitive
                 acl.canDelete = acl.canDelete or dataset_ACL.canDelete
                 acl.save()
                 dataset_ACL.delete()
@@ -282,7 +286,9 @@ def merge_auth_method(request):
                     datafile=datafile_ACL.datafile
                 )
                 acl.canRead = acl.canRead or datafile_ACL.canRead
+                acl.canDownload = acl.canDownload or datafile_ACL.canDownload
                 acl.canWrite = acl.canWrite or datafile_ACL.canWrite
+                acl.canSensitive = acl.canSensitive or datafile_ACL.canSensitive
                 acl.canDelete = acl.canDelete or datafile_ACL.canDelete
                 acl.save()
                 datafile_ACL.delete()

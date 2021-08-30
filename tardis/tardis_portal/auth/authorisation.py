@@ -34,6 +34,10 @@ class ACLAwareBackend(object):
             return Q(canWrite=True) | Q(isOwner=True)
         if verb in ('view'):
             return Q(canRead=True) | Q(isOwner=True)
+        if verb in ('download'):
+            return Q(canDownload=True) | Q(isOwner=True)
+        if verb in ('sensitive'):
+            return Q(canSensitive=True) | Q(isOwner=True)
         if verb in ('delete',):
             return Q(canDelete=True) | Q(isOwner=True)
         if verb in ('owns', 'share'):

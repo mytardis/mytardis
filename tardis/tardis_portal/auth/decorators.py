@@ -95,92 +95,44 @@ def has_ownership(request, obj_id, ct_type):
     return False
 
 
+def has_X_access(request, obj_id, ct_type, perm_type):
+    try:
+        if ct_type == 'experiment':
+            obj = Experiment.objects.get(id=obj_id)
+        if settings.ONLY_EXPERIMENT_ACLS:
+            if ct_type == 'dataset':
+                dataset = Dataset.objects.get(id=obj_id)
+                if (perm_type == "change") & dataset.immutable:
+                    return False
+                return any(has_X_access(request, experiment.id, "experiment", perm_type)
+                           for experiment in dataset.experiments.all())
+            if ct_type == 'datafile':
+                datafile = DataFile.objects.get(id=obj_id)
+                return any(has_X_access(request, experiment.id, "experiment", perm_type)
+                           for experiment in datafile.dataset.experiments.all())
+        else:
+            if ct_type == 'dataset':
+                obj = Dataset.objects.get(id=obj_id)
+                if (perm_type == "change") & obj.immutable:
+                    return False
+            if ct_type == 'datafile':
+                obj = DataFile.objects.get(id=obj_id)
+    except (Experiment.DoesNotExist, Dataset.DoesNotExist, DataFile.DoesNotExist):
+        return False
+    return request.user.has_perm('tardis_acls.'+perm_type+'_'+ct_type, obj)
+
 def has_access(request, obj_id, ct_type):
-    try:
-        if ct_type == 'experiment':
-            obj = Experiment.objects.get(id=obj_id)
-        if settings.ONLY_EXPERIMENT_ACLS:
-            if ct_type == 'dataset':
-                dataset = Dataset.objects.get(id=obj_id)
-                return any(has_access(request, experiment.id, "experiment")
-                           for experiment in dataset.experiments.all())
-            if ct_type == 'datafile':
-                datafile = DataFile.objects.get(id=obj_id)
-                return any(has_access(request, experiment.id, "experiment")
-                           for experiment in datafile.dataset.experiments.all())
-        else:
-            if ct_type == 'dataset':
-                obj = Dataset.objects.get(id=obj_id)
-            if ct_type == 'datafile':
-                obj = DataFile.objects.get(id=obj_id)
-    except (Experiment.DoesNotExist, Dataset.DoesNotExist, DataFile.DoesNotExist):
-        return False
-    return request.user.has_perm('tardis_acls.view_'+ct_type, obj)
-
-
-def has_write(request, obj_id, ct_type):
-    try:
-        if ct_type == 'experiment':
-            obj = Experiment.objects.get(id=obj_id)
-        if settings.ONLY_EXPERIMENT_ACLS:
-            if ct_type == 'dataset':
-                dataset = Dataset.objects.get(id=obj_id)
-                if dataset.immutable:
-                    return False
-                return any(has_write(request, experiment.id, "experiment")
-                           for experiment in dataset.experiments.all())
-            if ct_type == 'datafile':
-                datafile = DataFile.objects.get(id=obj_id)
-                return any(has_write(request, experiment.id, "experiment")
-                           for experiment in datafile.dataset.experiments.all())
-        else:
-            if ct_type == 'dataset':
-                obj = Dataset.objects.get(id=obj_id)
-                if obj.immutable:
-                    return False
-            if ct_type == 'datafile':
-                obj = DataFile.objects.get(id=obj_id)
-    except (Experiment.DoesNotExist, Dataset.DoesNotExist, DataFile.DoesNotExist):
-        return False
-    return request.user.has_perm('tardis_acls.change_'+ct_type, obj)
-
-############################################################
+    has_X_access(request, obj_id, ct_type, 'view')
 
 def has_download_access(request, obj_id, ct_type):
-    try:
-        if ct_type == 'experiment':
-            if Experiment.safe.owned_and_shared(request.user) \
-                              .filter(id=obj_id) \
-                              .exists():
-                return True
-            exp = Experiment.objects.get(id=obj_id)
-            return Experiment.public_access_implies_distribution(exp.public_access)
-        if settings.ONLY_EXPERIMENT_ACLS:
-            if ct_type == 'dataset':
-                dataset = Dataset.objects.get(id=obj_id)
-                return any(has_download_access(request, experiment.id, "experiment")
-                           for experiment in dataset.experiments.all())
-            if ct_type == 'datafile':
-                datafile = DataFile.objects.get(id=obj_id)
-                return any(has_download_access(request, experiment.id, "experiment")
-                           for experiment in datafile.dataset.experiments.all())
-        else:
-            if ct_type == 'dataset':
-                if Dataset.safe.owned_and_shared(request.user) \
-                                  .filter(id=obj_id) \
-                                  .exists():
-                    return True
-            if ct_type == 'datafile':
-                if DataFile.safe.owned_and_shared(request.user) \
-                                  .filter(id=obj_id) \
-                                  .exists():
-                    return True
-    except (Experiment.DoesNotExist, Dataset.DoesNotExist, DataFile.DoesNotExist):
-        return False
-    return False
+    has_X_access(request, obj_id, ct_type, 'download')
 
+def has_write(request, obj_id, ct_type):
+    has_X_access(request, obj_id, ct_type, 'change')
 
-############################################################
+def has_sensitive_access(request, obj_id, ct_type):
+    has_X_access(request, obj_id, ct_type, 'sensitive')
+
 
 def has_read_or_owner_ACL(request, experiment_id):
     """
