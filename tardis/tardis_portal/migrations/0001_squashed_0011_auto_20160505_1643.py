@@ -4,7 +4,7 @@ from __future__ import print_function
 
 from django.db import migrations, models
 from django.conf import settings
-import tardis.tardis_portal.models.parameters
+import tardis.tardis_portal.models.parameters.ParameterSetManagerMixin as PSMM
 import tardis.tardis_portal.models.token
 
 
@@ -95,7 +95,7 @@ class Migration(migrations.Migration):
                 'ordering': ['id'],
                 'abstract': False,
             },
-            bases=(models.Model, tardis.tardis_portal.models.parameters.ParameterSetManagerMixin),
+            bases=(models.Model, PSMM),
         ),
         migrations.CreateModel(
             name='Dataset',
@@ -134,7 +134,7 @@ class Migration(migrations.Migration):
                 'ordering': ['id'],
                 'abstract': False,
             },
-            bases=(models.Model, tardis.tardis_portal.models.parameters.ParameterSetManagerMixin),
+            bases=(models.Model, PSMM),
         ),
         migrations.CreateModel(
             name='Experiment',
@@ -195,7 +195,7 @@ class Migration(migrations.Migration):
                 'ordering': ['id'],
                 'abstract': False,
             },
-            bases=(models.Model, tardis.tardis_portal.models.parameters.ParameterSetManagerMixin),
+            bases=(models.Model, PSMM),
         ),
         migrations.CreateModel(
             name='Facility',
@@ -258,7 +258,7 @@ class Migration(migrations.Migration):
                 'ordering': ['id'],
                 'abstract': False,
             },
-            bases=(models.Model, tardis.tardis_portal.models.parameters.ParameterSetManagerMixin),
+            bases=(models.Model, PSMM),
         ),
         migrations.CreateModel(
             name='JTI',
