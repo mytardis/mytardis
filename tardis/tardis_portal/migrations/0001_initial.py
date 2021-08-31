@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 
 from django.db import models, migrations
 from django.conf import settings
-import tardis.tardis_portal.models.parameters.ParameterSetManagerMixin as PSMM
+from tardis.tardis_portal.models.parameters import ParameterSetManagerMixin as PSMM
 import tardis.tardis_portal.models.token
 
 

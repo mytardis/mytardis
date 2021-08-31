@@ -4,7 +4,7 @@ from __future__ import print_function
 
 from django.db import migrations, models
 from django.conf import settings
-import tardis.tardis_portal.models.parameters.ParameterSetManagerMixin as PSMM
+from tardis.tardis_portal.models.parameters import ParameterSetManagerMixin as PSMM
 import tardis.tardis_portal.models.token
 
 
