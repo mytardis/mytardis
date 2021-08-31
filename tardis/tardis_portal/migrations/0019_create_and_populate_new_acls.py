@@ -9,15 +9,11 @@ def create_new_acl_objects(apps, schema_editor):
 
     OBJECTACL = apps.get_model("tardis_portal", "ObjectACL")
     EXPERIMENTACL = apps.get_model("tardis_portal", "ExperimentACL")
-
     USER = apps.get_model("auth", "User")
     GROUP = apps.get_model("auth", "Group")
-
     EXPERIMENT = apps.get_model("tardis_portal", "Experiment")
 
-
     for acl in OBJECTACL.objects.all().iterator():
-
         # Check that old ACL belongs to an experiment
         if acl.content_type.model == 'experiment':
             try:
@@ -27,7 +23,6 @@ def create_new_acl_objects(apps, schema_editor):
         # something went horribly wrong with Generic foreign keys if not an experiment
         else:
             print("bad ACL content type: id="+str(acl.id)+",!"+str(acl.content_type.model)+"!")
-
 
         # pull out user corresponding to old ACL, ready for new foreignkey relation
         if acl.pluginId == 'django_user':
@@ -156,6 +151,12 @@ class Migration(migrations.Migration):
                 'ordering': ['id'],
                 'abstract': False,
             },
+        ),
+
+        migrations.AddField(
+            model_name='ParameterName',
+            name='sensitive',
+            field=models.BooleanField(default=False),
         ),
 
         migrations.RunPython(create_new_acl_objects
