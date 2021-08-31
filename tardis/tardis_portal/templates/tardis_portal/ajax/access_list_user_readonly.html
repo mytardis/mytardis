@@ -28,7 +28,14 @@
                     </td>
                     <td>
                           {% if user_acl.canRead %}
-                          <span class="badge badge-success">Read</span>
+                              {% if user_acl.canSensitive %}
+                                  <span class="badge badge-success">Read All</span>
+                              {% else %}
+                                  <span class="badge badge-success">Read</span>
+                              {% endif %}
+                          {% endif %}
+                          {% if user_acl.canDownload %}
+                              <span class="badge badge-success">Download</span>
                           {% endif %}
                           {% if user_acl.canWrite %}
                           <span class="badge badge-success">Edit</span>

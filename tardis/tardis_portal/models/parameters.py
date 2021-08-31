@@ -149,6 +149,7 @@ class ParameterName(models.Model):
     is_searchable = models.BooleanField(default=False)
     # TODO: we'll need to rethink the way choices for drop down menus are
     #       represented in the DB. doing it this way is just a bit wasteful.
+    sensitive = models.BooleanField(default=False)
     choices = models.CharField(max_length=500, blank=True)
     order = models.PositiveIntegerField(default=9999, null=True, blank=True)
     objects = ParameterNameManager()

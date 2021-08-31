@@ -13,53 +13,81 @@
         </th>
     </tr>
     {% for parameter in parameters %}
-        {% if parameter.name.is_json %}
-            <tr>
-                <td class="parameter_name">{{ parameter.name.full_name }}</td>
-                <td class="parameter_value">
-            {% if parameter.name.units == 'fcs-table' %}
-                {% with table=parameter.get %}
-                    <table>
-                        <thead>
-                        <tr>
-                            {% for head in table.thead %}
-                                <th>{{ head.values.0 }}</th>
-                            {% endfor %}
-                        </tr>
-                        </thead>
-                        <tbody>
-                        {% for row in table.tbody %}
-                            <tr>
-                                {% for col in table.thead %}
-                                    <td>{{ row|get_item:col.keys.0 }}</td>
-                                {% endfor %}
-                            </tr>
-                        {% endfor %}
-                        </tbody>
-                    </table>
-                {% endwith %}
-            {% endif %}
-                </td>
-            </tr>
-        {% else %}
-            <tr>
-                <td class="parameter_name">{{ parameter.name.full_name }}</td>
-                <td class="parameter_value">
-                    {% if parameter.name.isLongString %}
-                        {{ parameter.get|linebreaks }}
-                    {% elif parameter.name.isLink and parameter.link_url %}
-                        <a href="{{ parameter.link_url }}">
-                          {% if parameter.link_gfk %}
-                            {{ parameter.link_gfk }}
-                          {% elif parameter.link_url %}
-                            {{ parameter.link_url }}
+        {% if not parameter.name.sensitive or can_view_sensitive %}
+          {% if parameter.name.is_json %}
+              <tr>
+                  {% if parameter.name.sensitive %}
+                    <i class="fa fa-unlock-alt o-6" title="This parameter is sensitive and may not be visible to other Users"></i>
+                  {% endif %}
+                  <td class="parameter_name">{{ parameter.name.full_name }}</td>
+                  <td class="parameter_value">
+              {% if parameter.name.units == 'fcs-table' %}
+                  {% with table=parameter.get %}
+                      <table>
+                          <thead>
+                          <tr>
+                              {% for head in table.thead %}
+                                  <th>{{ head.values.0 }}</th>
+                              {% endfor %}
+                          </tr>
+                          </thead>
+                          <tbody>
+                          {% for row in table.tbody %}
+                              <tr>
+                                  {% for col in table.thead %}
+                                      <td>{{ row|get_item:col.keys.0 }}</td>
+                                  {% endfor %}
+                              </tr>
+                          {% endfor %}
+                          </tbody>
+                      </table>
+                  {% endwith %}
+              {% endif %}
+                  </td>
+              </tr>
+          {% else %}
+              <tr>
+                  {% if parameter.name.sensitive %}
+                    <td class="parameter_name" style='background-color:#fcfba2'>
+                    <i class="fa fa-unlock-alt o-6" title="This parameter is sensitive and may not be visible to other Users"></i>
+                  {% else %}
+                    <td class="parameter_name">
+                  {% endif %}
+                  {{ parameter.name.full_name }}
+                  </td>
+                  {% if parameter.name.sensitive %}
+                    <td class="parameter_value" style='background-color:#fcfba2'>
+                  {% else %}
+                    <td class="parameter_value">
+                  {% endif %}
+                      {% if parameter.name.isLongString %}
+                          {% if parameter.name.sensitive %}
+                            <i class="fa fa-unlock-alt o-6" title="This parameter is sensitive and may not be visible to other Users"></i>
                           {% endif %}
-                        </a>
-                    {% else %}
-                        {{ parameter.get }}
-                    {% endif %}
-                </td>
-            </tr>
+                          {{ parameter.get|linebreaks }}
+                      {% elif parameter.name.isLink and parameter.link_url %}
+                          <a href="{{ parameter.link_url }}">
+                            {% if parameter.link_gfk %}
+                              {% if parameter.name.sensitive %}
+                                <i class="fa fa-unlock-alt o-6" title="This parameter is sensitive and may not be visible to other Users"></i>
+                              {% endif %}
+                              {{ parameter.link_gfk }}
+                            {% elif parameter.link_url %}
+                              {% if parameter.name.sensitive %}
+                                <i class="fa fa-unlock-alt o-6" title="This parameter is sensitive and may not be visible to other Users"></i>
+                              {% endif %}
+                              {{ parameter.link_url }}
+                            {% endif %}
+                          </a>
+                      {% else %}
+                          {% if parameter.name.sensitive %}
+                            <i class="fa fa-unlock-alt o-6" title="This parameter is sensitive and may not be visible to other Users"></i>
+                          {% endif %}
+                          {{ parameter.get }}
+                      {% endif %}
+                  </td>
+              </tr>
+          {% endif %}
         {% endif %}
     {% endfor %}
 </table>

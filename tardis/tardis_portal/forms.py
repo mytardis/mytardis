@@ -540,7 +540,7 @@ def create_parameterset_edit_form(parameterset, request, post=False, view_sensit
     psm = ParameterSetManager(parameterset=parameterset)
 
     for dfp in psm.parameters:
-        if dfp.sensitive_metadata:
+        if dfp.name.sensitive:
             if not view_sensitive:
                 continue
 
@@ -580,7 +580,7 @@ def create_parameterset_edit_form(parameterset, request, post=False, view_sensit
             fields[form_id].label = \
                 fields[form_id].label + " (read only)"
 
-        if dfp.sensitive_metadata:
+        if dfp.name.sensitive:
             fields[form_id].widget.attrs['readonly'] = True
             fields[form_id].label = \
                 fields[form_id].label + " (Sensitive: cannot be edited)"

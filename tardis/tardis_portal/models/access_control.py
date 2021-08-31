@@ -234,15 +234,8 @@ class ACL(models.Model):
             return self.user
         if self.group is not None:
             return self.group
-        return None
-
-    def get_related_object_group(self):
-        """
-        If possible, resolve the pluginId/entityId combination to a user or
-        group object.
-        """
-        if self.group is not None:
-            return self.group
+        if self.token is not None:
+            return self.token
         return None
 
     def __str__(self):

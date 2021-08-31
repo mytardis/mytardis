@@ -26,7 +26,7 @@
    {% endif %}
   {% endcapture %}
     <div style="margin-top: 10px">
-        {% include "tardis_portal/ajax/parameter_table.html" with parameters=parameterset.experimentparameter_set.all %}
+      {% include "tardis_portal/ajax/parameter_table.html" with parameters=parameterset.experimentparameter_set.all can_view_sensitive=has_sensitive_permissions %}
     </div>
 {% empty %}
   <div class="alert alert-info mt-3" >

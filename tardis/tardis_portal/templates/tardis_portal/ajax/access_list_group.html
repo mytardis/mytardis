@@ -1,12 +1,12 @@
 <div class="access_list2">
 <div class="groups">
 {% for group_acl in group_acls_system_owned %}
-  {% with group=group_acl.get_related_object_group %}
+  {% with group=group_acl.get_related_object %}
   {% include "tardis_portal/ajax/add_group_result.html" with system="true" %}
   {% endwith %}
 {% endfor %}
 {% for group_acl in group_acls_user_owned %}
-  {% with group=group_acl.get_related_object_group %}
+  {% with group=group_acl.get_related_object %}
   {% include "tardis_portal/ajax/add_group_result.html" %}
   {% endwith %}
 {% endfor %}
@@ -25,7 +25,9 @@
     <label class="col-form-label" for="id_permissions">Permissions</label>
     <select id="id_permission_group" class="form-control" style="max-width: 200px;">
       <option value="read">View Only</option>
-      <option value="edit">View and Edit</option>
+      <option value="download">View and Download</option>
+      <option value="sensitive">View Sensitive and Download</option>
+      <option value="edit">View Sensitive, Download, Edit</option>
       <option value="owner">Full Owner</option>
     </select>
   </div>

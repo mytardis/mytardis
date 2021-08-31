@@ -15,11 +15,13 @@
   {% for field in addUserPermissionsForm %}
       {% if field.label == "Authentication Method" %}
           <br/>
-          <br/>Permissions: 
+          <br/>Permissions:
           <br/>
           <select id="id_permission">
               <option value="read">View Only</option>
-              <option value="edit">View and Edit</option>
+              <option value="download">View and Download</option>
+              <option value="sensitive">View Sensitive and Download</option>
+              <option value="edit">View Sensitive, Download, Edit</option>
               <option value="owner">Full Owner</option>
           </select><br/>
           <br/>
@@ -33,7 +35,7 @@
           {% if not field.label == "Read access" and not field.label == "Edit access" and not field.label == "Authentication Method" %}
               {{ field }} {{ field.label }}
           {% endif %}
-      {% endif %}     
+      {% endif %}
   {% endfor %}
   <br/>
   <a class="form_submit btn btn-primary" id="user" href="">

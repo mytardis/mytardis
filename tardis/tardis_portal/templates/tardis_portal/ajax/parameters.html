@@ -3,6 +3,7 @@
 
 {% is_datafile_downloadable datafile.id request as has_df_download_permissions %}
 {% is_datafile_writable datafile.id request as has_df_write_permissions %}
+{% view_sensitive_datafile datafile.id request as has_df_sensitive_permissions %}
 
 <div class="datafile_parameters">
     <strong><h3 style="display: inline;"><small>For the file:</small></h3>
@@ -49,7 +50,7 @@
     {% endif %}
   {% endcapture %}
   <div style="margin-top: 10px; margin-bottom: 10px;">
-    {% include "tardis_portal/ajax/parameter_table.html" with parameters=parameterset.datafileparameter_set.all%}
+    {% include "tardis_portal/ajax/parameter_table.html" with parameters=parameterset.datafileparameter_set.all can_view_sensitive=has_df_sensitive_permissions %}
   </div>
 {% empty %}
     <br/>
