@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 
 from django.db import models, migrations
 from django.conf import settings
-from tardis.tardis_portal.models.parameters import ParameterSetManagerMixin as PSMM
+import tardis.tardis_portal.models.parameters
 import tardis.tardis_portal.models.token
 
 
@@ -72,7 +72,7 @@ class Migration(migrations.Migration):
                 'ordering': ['id'],
                 'abstract': False,
             },
-            bases=(models.Model, PSMM),
+            bases=(models.Model, tardis.tardis_portal.models.parameters.ParameterSetManagerMixin),
         ),
         migrations.CreateModel(
             name='Dataset',
@@ -111,7 +111,7 @@ class Migration(migrations.Migration):
                 'ordering': ['id'],
                 'abstract': False,
             },
-            bases=(models.Model, PSMM),
+            bases=(models.Model, tardis.tardis_portal.models.parameters.ParameterSetManagerMixin),
         ),
         migrations.CreateModel(
             name='Experiment',
@@ -172,7 +172,7 @@ class Migration(migrations.Migration):
                 'ordering': ['id'],
                 'abstract': False,
             },
-            bases=(models.Model, PSMM),
+            bases=(models.Model, tardis.tardis_portal.models.parameters.ParameterSetManagerMixin),
         ),
         migrations.CreateModel(
             name='Facility',
@@ -235,7 +235,7 @@ class Migration(migrations.Migration):
                 'ordering': ['id'],
                 'abstract': False,
             },
-            bases=(models.Model, PSMM),
+            bases=(models.Model, tardis.tardis_portal.models.parameters.ParameterSetManagerMixin),
         ),
         migrations.CreateModel(
             name='JTI',
