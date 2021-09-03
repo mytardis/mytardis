@@ -18,7 +18,7 @@ def forward_func(apps, schema_editor):
         .using(db_alias)\
         .create(namespace=HSM_DATASET_NAMESPACE,
                 name="Online Status",
-                type=SCHEMA.DATASET,
+                type=2, #DATASET = 2, or someone really changed up Schema!
                 immutable=True)
 
     param_name = PARAMETERNAME.objects\
