@@ -26,7 +26,7 @@ def forward_func(apps, schema_editor):
         .create(
             name="online_files",
             full_name="Online Files",
-            data_type=PARAMETERNAME.STRING,
+            data_type=2, #STRING = 2, or someone really changed up ParameterName!
             immutable=True,
             order=1,
             schema=ds_schema)
@@ -36,7 +36,7 @@ def forward_func(apps, schema_editor):
         .create(
             name="updated",
             full_name="Last Updated",
-            data_type=PARAMETERNAME.DATETIME,
+            data_type=6, #DATETIME = 6, or someone really changed up ParameterName!
             immutable=True,
             order=2,
             schema=ds_schema)
