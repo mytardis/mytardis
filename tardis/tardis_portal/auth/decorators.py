@@ -122,16 +122,16 @@ def has_X_access(request, obj_id, ct_type, perm_type):
     return request.user.has_perm('tardis_acls.'+perm_type+'_'+ct_type, obj)
 
 def has_access(request, obj_id, ct_type):
-    has_X_access(request, obj_id, ct_type, 'view')
+    return has_X_access(request, obj_id, ct_type, 'view')
 
 def has_download_access(request, obj_id, ct_type):
-    has_X_access(request, obj_id, ct_type, 'download')
+    return has_X_access(request, obj_id, ct_type, 'download')
 
 def has_write(request, obj_id, ct_type):
-    has_X_access(request, obj_id, ct_type, 'change')
+    return has_X_access(request, obj_id, ct_type, 'change')
 
 def has_sensitive_access(request, obj_id, ct_type):
-    has_X_access(request, obj_id, ct_type, 'sensitive')
+    return has_X_access(request, obj_id, ct_type, 'sensitive')
 
 
 def has_read_or_owner_ACL(request, experiment_id):
