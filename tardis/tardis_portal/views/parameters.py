@@ -21,7 +21,9 @@ logger = logging.getLogger(__name__)
 def edit_experiment_par(request, parameterset_id):
     parameterset = ExperimentParameterSet.objects.get(id=parameterset_id)
     if authz.has_write(request, parameterset.experiment.id, "experiment"):
-        return edit_parameters(request, parameterset, otype="experiment")
+        view_sensitive = authz.has_sensitive_access(request, parameterset.experiment.id, "experiment")
+        return edit_parameters(request, parameterset, otype="experiment",
+                               view_sensitive=view_sensitive)
     return return_response_error(request)
 
 
@@ -29,22 +31,29 @@ def edit_experiment_par(request, parameterset_id):
 def edit_dataset_par(request, parameterset_id):
     parameterset = DatasetParameterSet.objects.get(id=parameterset_id)
     if authz.has_write(request, parameterset.dataset.id, "dataset"):
-        return edit_parameters(request, parameterset, otype="dataset")
+        view_sensitive = authz.has_sensitive_access(request, parameterset.dataset.id, "dataset")
+        return edit_parameters(request, parameterset, otype="dataset",
+                               view_sensitive=view_sensitive)
     return return_response_error(request)
 
 
 @login_required
 def edit_datafile_par(request, parameterset_id):
     parameterset = DatafileParameterSet.objects.get(id=parameterset_id)
-    if authz.has_write(request, parameterset.datafile.dataset.id, "datafile"):
-        return edit_parameters(request, parameterset, otype="datafile")
+    if authz.has_write(request, parameterset.datafile.id, "datafile"):
+        view_sensitive = authz.has_sensitive_access(request, parameterset.datafile.id, "datafile")
+        return edit_parameters(request, parameterset, otype="datafile",
+                               view_sensitive=view_sensitive)
     return return_response_error(request)
 
 
-def edit_parameters(request, parameterset, otype):
+def edit_parameters(request, parameterset, otype, view_sensitive=False):
 
     parameternames = ParameterName.objects.filter(
         schema__namespace=parameterset.schema.namespace)
+    for parameter in parameterset.parameters:
+        parameternames = parameternames.exclude(id=parameter.name.id)
+
     success = False
     valid = True
 
@@ -52,7 +61,7 @@ def edit_parameters(request, parameterset, otype):
         request = remove_csrf_token(request)
 
         class DynamicForm(create_parameterset_edit_form(
-                parameterset, request=request)):
+                parameterset, request, post=True)):
             pass
 
         form = DynamicForm(request.POST)
@@ -67,7 +76,7 @@ def edit_parameters(request, parameterset, otype):
     else:
 
         class DynamicForm(create_parameterset_edit_form(
-                parameterset)):
+                parameterset, request, view_sensitive=view_sensitive)):
             pass
 
         form = DynamicForm()
@@ -80,6 +89,7 @@ def edit_parameters(request, parameterset, otype):
         'success': success,
         'parameterset_id': parameterset.id,
         'valid': valid,
+        #'can_view_sensitive': view_sensitive,
     }
 
     return render_response_index(
@@ -89,7 +99,7 @@ def edit_parameters(request, parameterset, otype):
 @login_required
 def add_datafile_par(request, datafile_id):
     parentObject = DataFile.objects.get(id=datafile_id)
-    if authz.has_write(request, parentObject.dataset.id, "datafile"):
+    if authz.has_write(request, parentObject.id, "datafile"):
         return add_par(request, parentObject,
                        otype="datafile", stype=Schema.DATAFILE)
     return return_response_error(request)
@@ -115,7 +125,7 @@ def add_experiment_par(request, experiment_id):
 
 def add_par(request, parentObject, otype, stype):
 
-    all_schema = Schema.objects.filter(type=stype, immutable=False)
+    all_schema = Schema.objects.filter(schema_type=stype, immutable=False)
 
     if 'schema_id' in request.GET:
         schema_id = request.GET['schema_id']
