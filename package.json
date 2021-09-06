@@ -40,7 +40,7 @@
     "js-cookie": "^3.0.0",
     "less": "^4.1.1",
     "less-loader": "^10.0.1",
-    "mini-css-extract-plugin": "^2.2.0",
+    "mini-css-extract-plugin": "^2.2.2",
     "minimatch": "^3.0.2",
     "moment": "^2.29.1",
     "newman": "^5.2.4",
@@ -62,7 +62,7 @@
     "underscore": "^1.13.1",
     "underscore.string": "^3.3.5",
     "url-loader": "^4.1.1",
-    "webpack": "^5.49.0",
+    "webpack": "^5.51.2",
     "webpack-bundle-tracker": "^1.1.0",
     "webpack-cli": "^4.8.0"
   },
