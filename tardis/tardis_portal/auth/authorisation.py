@@ -123,7 +123,6 @@ class ACLAwareBackend(object):
                                                        expiryDate__lte=datetime.today())
             return query.exists()
 
-        #TODO need to write the auth method for EXP_ONLY datasets and datafiles
         if not settings.ONLY_EXPERIMENT_ACLS:
             if ct.model == 'dataset':
                 # the only authorisation available for anonymous users is tokenauth

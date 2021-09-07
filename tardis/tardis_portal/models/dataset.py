@@ -164,9 +164,15 @@ class Dataset(models.Model):
     def _has_view_perm(self, user_obj):
         return self._has_any_perm(user_obj)
 
+    def _has_download_perm(self, user_obj):
+        return self._has_any_perm(user_obj)
+
     def _has_change_perm(self, user_obj):
         if self.immutable:
             return False
+        return self._has_any_perm(user_obj)
+
+    def _has_sensitive_perm(self, user_obj):
         return self._has_any_perm(user_obj)
 
     def _has_delete_perm(self, user_obj):

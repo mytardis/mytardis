@@ -238,8 +238,6 @@ class Experiment(models.Model):
 
         return None
 
-
-
     def _has_change_perm(self, user_obj):
         '''
         Called from the ACLAwareBackend class's has_perm method
@@ -253,6 +251,20 @@ class Experiment(models.Model):
             return False
 
         if self.locked:
+            return False
+
+        return None
+
+    def _has_sensitive_perm(self, user_obj):
+        '''
+        Called from the ACLAwareBackend class's has_perm method
+        in tardis/tardis_portal/auth/authorisation.py
+
+        Returning None means we won't override permissions here,
+        i.e. we'll leave it to ACLAwareBackend's has_perm method
+        to determine permissions from ExperimentACLs
+        '''
+        if not hasattr(self, 'id'):
             return False
 
         return None
