@@ -233,7 +233,7 @@ class Experiment(models.Model):
         if not hasattr(self, 'id'):
             return False
 
-        if self.public_download_allowed:
+        if self.public_download_allowed():
             return True
 
         return None
