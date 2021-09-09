@@ -64,9 +64,13 @@ def get_dataset_info(dataset, request, include_thumbnail=False, exclude=None):  
     obj['experiments'] = [exp.id for exp in obj['experiments']]
 
     if exclude is None or 'datafiles' not in exclude or 'file_count' \
-       not in exclude:
-        datafiles = list(
-            DataFile.safe.all(request.user).filter(dataset__id=dataset.id).values_list('id', flat=True))
+        not in exclude:
+        if settings.ONLY_EXPERIMENT_ACLS:
+            datafiles = list(DataFile.objects.select_related("dataset").filter(
+                           dataset__id=dataset.id).values_list('id', flat=True))
+        else:
+            datafiles = list(DataFile.safe.all(request.user).filter(
+                           dataset__id=dataset.id).values_list('id', flat=True))
         if exclude is None or 'datafiles' not in exclude:
             obj['datafiles'] = datafiles
         if exclude is None or 'file_count' not in exclude:
