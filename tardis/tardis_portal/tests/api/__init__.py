@@ -67,7 +67,9 @@ class MyTardisResourceTestCase(ResourceTestCaseMixin, TestCase):
             experiment=self.testexp,
             user=self.user,
             canRead=True,
+            canDownload=True,
             canWrite=True,
+            canSensitive=True,
             canDelete=True,
             isOwner=True,
             aclOwnershipType=ExperimentACL.OWNER_OWNED)

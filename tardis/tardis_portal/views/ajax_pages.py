@@ -133,12 +133,16 @@ def experiment_dataset_transfer(request, experiment_id):
 def retrieve_dataset_metadata(request, dataset_id):
     dataset = Dataset.objects.get(pk=dataset_id)
     has_write_permissions = authz.has_write(request, dataset_id, "dataset")
+    has_sensitive_permissions = \
+        authz.has_sensitive(request, dataset_id, "dataset")
     parametersets = dataset.datasetparameterset_set.exclude(
         schema__hidden=True)
 
     c = {'dataset': dataset,
          'parametersets': parametersets,
-         'has_write_permissions': has_write_permissions}
+         'has_write_permissions': has_write_permissions,
+         'has_sensitive_permissions': has_sensitive_permissions}
+
     return render_response_index(
         request, 'tardis_portal/ajax/dataset_metadata.html', c)
 
@@ -149,12 +153,16 @@ def retrieve_experiment_metadata(request, experiment_id):
     experiment = Experiment.objects.get(pk=experiment_id)
     has_write_permissions = \
         authz.has_write(request, experiment_id, "experiment")
+    has_sensitive_permissions = \
+        authz.has_sensitive(request, experiment_id, "experiment")
     parametersets = experiment.experimentparameterset_set\
                               .exclude(schema__hidden=True)
 
     c = {'experiment': experiment,
          'parametersets': parametersets,
-         'has_write_permissions': has_write_permissions}
+         'has_write_permissions': has_write_permissions,
+         'has_sensitive_permissions': has_sensitive_permissions}
+
     return render_response_index(
         request, 'tardis_portal/ajax/experiment_metadata.html', c)
 
