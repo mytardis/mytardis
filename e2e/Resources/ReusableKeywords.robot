@@ -104,7 +104,7 @@ Add new group to Sharing
 #-------------------------------------------------------------------------------------------------------------------------------------
 #Change Experiment Public Access settings
 #-------------------------------------------------------------------------------------------------------------------------------------
-Change Experiment Publlic Access
+Change Experiment Public Access
     [Arguments]                         ${AccessLevel}      ${License}
 
     wait until element is enabled       ${Sharing}
@@ -113,19 +113,27 @@ Change Experiment Publlic Access
     wait until element is enabled       ${ChngPublicAccess}
     click button                        ${ChngPublicAccess}
 
+    #The purpose of these 3 lines is to overcome a bug in the system that Public has to be selected to refresh the License list
+    wait until element is enabled       ${PublicAccess}
+    select from list by label           ${PublicAccess}           Public
+    click button                        xpath://*[@class='use-button btn btn-info']
+
+
     wait until element is enabled       ${PublicAccess}
     select from list by label           ${PublicAccess}           ${AccessLevel}
 
-    wait until element is enabled       xpath://*[@type='button' and @value='${License}']
-    click button                        xpath://*[@type='button' and @value='${License}']
+
+    click button                        xpath://*[@class='use-button btn btn-info']
+
 
     wait until element is enabled       id:publishing-consent
     click element                       id:publishing-consent
 
+
     wait until element is enabled       xpath://*[@class='submit-button btn btn-primary' and @type='submit']
     click button                        xpath://*[@class='submit-button btn btn-primary' and @type='submit']
 
+    sleep   10
     press keys    None      ESC
 
-    page should contain element         ${AccessLevel}
 

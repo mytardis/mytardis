@@ -39,6 +39,14 @@ RUN npm run-script build
 
 RUN echo "from .default_settings import *\n\
 DEBUG = True\n\
+SINGLE_SEARCH_ENABLED = True\n\
+INSTALLED_APPS += 'django_elasticsearch_dsl',\n\
+INSTALLED_APPS += 'tardis.apps.search',\n\
+ELASTICSEARCH_DSL = {\n\
+    'default': {\n\
+        'hosts': 'host.docker.internal:9200'\n\
+    }\n\
+}\n\
 DATABASES['default']['ENGINE'] = 'django.db.backends.sqlite3'\n\
 DATABASES['default']['NAME'] = 'tardis_db'\n" >> tardis/settings.py
 

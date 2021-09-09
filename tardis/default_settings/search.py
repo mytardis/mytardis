@@ -2,7 +2,7 @@
 Settings for search
 '''
 
-SINGLE_SEARCH_ENABLED = False
+SINGLE_SEARCH_ENABLED = True
 '''
 To enable search:
 

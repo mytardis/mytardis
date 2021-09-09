@@ -20,16 +20,13 @@ TEST CASE 4.1:Login as user
 TEST CASE 4.2: Create new user
 
     Verify Create User
-
+    sleep   5
 TEST CASE 4.3: Create new group
 
     Verify Create Group
-
-TEST CASE 4.4: View Facility Page
-
-    View Facility Page
-
-TEST CASE 4.5: View Stats Page
+    sleep   5
+TEST CASE 4.4: View Stats Page
 
     View Stats Page
+    sleep   5
 

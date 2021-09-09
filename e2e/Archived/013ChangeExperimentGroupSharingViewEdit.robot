@@ -32,7 +32,7 @@ TEST CASE 13.3: Add user to Experiment Sharing as View Only
 
 TEST CASE 13.4: Verify user permissions are displayed under User Sharing
 
-    Verify user permissions are displayed       ${GroupName1}       Read
+    Verify user permissions are displayed       ${G roupName1}       Read
     Verify user permissions are displayed       ${GroupName1}       Edit
 
     Logout

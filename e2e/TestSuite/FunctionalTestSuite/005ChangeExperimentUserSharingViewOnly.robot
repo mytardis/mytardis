@@ -11,7 +11,7 @@ Resource   ../../Resources/ReusablePaths.robot
 Documentation    This file is to test experiement user sharing
 
 Suite Setup         Open Home page
-#Suite Teardown      close all browsers
+Suite Teardown      close all browsers
 
 *** Variables ***
 ${SharedExperimentName}     SharedExp
@@ -25,15 +25,15 @@ TEST CASE 5.1:Login as user
 TEST CASE 5.2: Create Experiment
 
     Create Experiment        ${SharedExperimentName}       Testuser   TestInstitution   Testing description
-
+    sleep   5
 TEST CASE 5.3: Add user to Experiment Sharing as View Only
 
     Add new user to Sharing             ann      View Only
-
+    sleep   5
 TEST CASE 5.4: Verify user permissions are displayed under User Sharing
 
     Verify user permissions are displayed       ann     Read
-
+    sleep   5
     Logout
 
 TEST CASE 5.5:Login as user
@@ -43,15 +43,15 @@ TEST CASE 5.5:Login as user
 TEST CASE 5.6: Verify user can view and open experiment under Home page
 
     Verify page contains item           ${SharedExperimentName}       xpath://*[@class='nav-link' and @href='/']
-
+    sleep   5
 TEST CASE 5.7: Verify user can not edit experiment
 
     Verify page does Not contain item    button      Edit Experiment
-
+    sleep   5
 TEST CASE 5.8: Verify user can not add dataset
 
     Verify page does Not contain item    button      Add New
-
+    sleep   5
 TEST CASE 5.9: Verify user can not add Experiment Metadata
 
     #Open Experiment Metadata section
@@ -59,7 +59,7 @@ TEST CASE 5.9: Verify user can not add Experiment Metadata
     click element                        xpath://*[@title='Metadata']
 
     Verify page does Not contain item    button      Add Experiment Metadata
-
+    sleep   5
 TEST CASE 5.10: Verify user can not change Experiment Sharing settings
 
     #Open Experiment Sharing section
@@ -70,16 +70,16 @@ TEST CASE 5.10: Verify user can not change Experiment Sharing settings
     Verify page does Not contain item    button      Change User Sharing
     Verify page does Not contain item    button      Change Group Sharing
     Verify page does Not contain item    button      Create New Temporary Link
-
+    sleep   5
 TEST CASE 5.11: Verify user can see experiment under Shared page
 
     Verify page contains item       ${SharedExperimentName}       xpath://*[@class='nav-link' and @href='/shared/']
-
+    sleep   5
 TEST CASE 5.12: Verify user can Not see experiment under Mydata page
 
     Open page                             xpath://*[@class='nav-link' and @href='/mydata/']
     Verify page does Not contain item     element      ${SharedExperimentName}
-
+    sleep   5
 
 
 

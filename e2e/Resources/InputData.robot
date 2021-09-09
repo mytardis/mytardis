@@ -4,6 +4,9 @@
 
 ${ExperimentName}           Experiment@#$%
 ${EditExperimentName}       EditExperiment@#$%
+${ExpSchema}                TestSchema
+${ExpSchemaParam1}          Param 1
+${ExpSchemaParam2}          Param 2
 ${DataSetName}              Dataset~!@#
 ${EditDataSetName}          EditDataset~!@#
 ${AdminUser}                joe

@@ -30,7 +30,7 @@ TEST CASE 14.3: Add user to Experiment Sharing as View Only
 
     Add new group to Sharing             ${GroupName1}       Full Owner
 
-TEST CASE 7.4: Verify user permissions are displayed under User Sharing
+TEST CASE 14.4: Verify user permissions are displayed under User Sharing
 
     Verify user permissions are displayed       ${GroupName1}      Read
     Verify user permissions are displayed       ${GroupName1}      Edit
@@ -38,7 +38,7 @@ TEST CASE 7.4: Verify user permissions are displayed under User Sharing
 
     Logout
 
-TEST CASE 7.5:Login as user
+TEST CASE 14.5:Login as user
 
     Login       ${User1}      ${User1PSWD}
 
