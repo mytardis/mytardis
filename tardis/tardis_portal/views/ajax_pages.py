@@ -134,7 +134,7 @@ def retrieve_dataset_metadata(request, dataset_id):
     dataset = Dataset.objects.get(pk=dataset_id)
     has_write_permissions = authz.has_write(request, dataset_id, "dataset")
     has_sensitive_permissions = \
-        authz.has_sensitive(request, dataset_id, "dataset")
+        authz.has_sensitive_access(request, dataset_id, "dataset")
     parametersets = dataset.datasetparameterset_set.exclude(
         schema__hidden=True)
 
@@ -154,7 +154,7 @@ def retrieve_experiment_metadata(request, experiment_id):
     has_write_permissions = \
         authz.has_write(request, experiment_id, "experiment")
     has_sensitive_permissions = \
-        authz.has_sensitive(request, experiment_id, "experiment")
+        authz.has_sensitive_access(request, experiment_id, "experiment")
     parametersets = experiment.experimentparameterset_set\
                               .exclude(schema__hidden=True)
 
