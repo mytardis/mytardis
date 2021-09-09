@@ -277,6 +277,8 @@ class DatasetView(TemplateView):
                  request, dataset_id, "dataset"),
              'has_write_permissions': authz.has_write(request, dataset_id,
                                                        "dataset"),
+             'has_sensitive_permissions': authz.has_sensitive_access(request,
+                                                        dataset_id, "dataset"),
              'from_instrument': instrument_name,
              'from_facility': facility_name,
              'from_experiment': get_experiment_referer(request, dataset_id),
