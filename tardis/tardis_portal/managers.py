@@ -254,8 +254,8 @@ class SafeManager(models.Manager):
     def _query_all_public(self):
         if self.model.get_ct(self.model).model == "experiment":
             from .models import Experiment
-            query = Experiment.objects.filter(public_access=Experiment.PUBLIC_ACCESS_NONE)
-            query |= Experiment.objects.filter(public_access=Experiment.PUBLIC_ACCESS_EMBARGO)
+            query = Experiment.objects.filter(public_access=Experiment.PUBLIC_ACCESS_FULL)
+            query |= Experiment.objects.filter(public_access=Experiment.PUBLIC_ACCESS_METADATA)
             return query
         # Dataset does not have a "public" functionality on a Micro-level yet
         if self.model.get_ct(self.model).model == "dataset":
