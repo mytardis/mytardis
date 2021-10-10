@@ -31,7 +31,7 @@ python-dateutil==2.8.2
 git+https://github.com/mytardis/python-magic.git#egg=python-magic
 pytz==2021.1
 requests==2.26.0
-uritemplate==3.0.1
+uritemplate==4.0.0
 # GraphQL
 pyjwt==2.1.0
 django-graphql-jwt==0.3.4
