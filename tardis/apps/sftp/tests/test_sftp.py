@@ -49,8 +49,10 @@ class SFTPTest(TestCase):
             user=self.user,
             isOwner=True,
             canRead=True,
+            canDownload=True,
             canWrite=True,
             canDelete=True,
+            canSensitive=True,
             aclOwnershipType=ExperimentACL.OWNER_OWNED)
         self.acl.save()
 

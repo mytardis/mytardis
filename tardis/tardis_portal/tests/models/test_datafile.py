@@ -60,6 +60,7 @@ class DataFileTestCase(ModelTestCase):
             user=self.user,
             experiment=exp,
             canRead=True,
+            canDownload=True,
             canWrite=True,
             aclOwnershipType=ExperimentACL.OWNER_OWNED,
         )

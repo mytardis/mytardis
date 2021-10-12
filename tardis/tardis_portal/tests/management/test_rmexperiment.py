@@ -46,8 +46,10 @@ def _create_test_experiment(user, license_):
                     user=user,
                     isOwner=True,
                     canRead=True,
+                    canDownload=True,
                     canWrite=True,
                     canDelete=True,
+                    canSensitive=True,
                     aclOwnershipType=ExperimentACL.OWNER_OWNED)
     acl.save()
     return experiment

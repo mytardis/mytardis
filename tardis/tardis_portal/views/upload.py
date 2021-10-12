@@ -72,8 +72,10 @@ def upload(request, dataset_id):
                 acl = DatafileACL(datafile=datafile,
                                   user=request.user,
                                   canRead=True,
+                                  canDownload=True,
                                   canWrite=True,
                                   canDelete=True,
+                                  canSensitive=True,
                                   isOwner=True,
                                   aclOwnershipType=DatafileACL.OWNER_OWNED)
                 acl.save()

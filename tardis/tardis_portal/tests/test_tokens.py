@@ -220,8 +220,10 @@ class TokenTestCase(TestCase):
         acl = ExperimentACL(user=self.user,
                             experiment=experiment,
                             canRead=True,
+                            canDownload=True,
                             canWrite=True,
                             canDelete=True,
+                            canSensitive=True,
                             isOwner=True)
         acl.save()
 

@@ -349,13 +349,19 @@ def remove_user_from_group(request, group_id, username):
 def add_experiment_access_user(request, experiment_id, username):
 
     canRead = False
+    canDownload = False
     canWrite = False
     canDelete = False
+    canSensitive = False
     isOwner = False
 
     if 'canRead' in request.GET:
         if request.GET['canRead'] == 'true':
             canRead = True
+
+    if 'canDownload' in request.GET:
+        if request.GET['canDownload'] == 'true':
+            canDownload = True
 
     if 'canWrite' in request.GET:
         if request.GET['canWrite'] == 'true':
@@ -364,6 +370,10 @@ def add_experiment_access_user(request, experiment_id, username):
     if 'canDelete' in request.GET:
         if request.GET['canDelete'] == 'true':
             canDelete = True
+
+    if 'canSensitive' in request.GET:
+        if request.GET['canSensitive'] == 'true':
+            canSensitive = True
 
     if 'isOwner' in request.GET:
         if request.GET['isOwner'] == 'true':
@@ -392,8 +402,10 @@ def add_experiment_access_user(request, experiment_id, username):
         acl = ExperimentACL(experiment=experiment,
                             user=user,
                             canRead=canRead,
+                            canDownload=canDownload,
                             canWrite=canWrite,
                             canDelete=canDelete,
+                            canSensitive=canSensitive,
                             isOwner=isOwner,
                             aclOwnershipType=ExperimentACL.OWNER_OWNED)
 
@@ -534,8 +546,10 @@ def create_group(request):
 def add_experiment_access_group(request, experiment_id, groupname):
 
     canRead = request.GET.get('canRead') == 'true'
+    canDownload = request.GET.get('canDownload') == 'true'
     canWrite = request.GET.get('canWrite') == 'true'
     canDelete = request.GET.get('canDelete') == 'true'
+    canSensitive = request.GET.get('canSensitive') == 'true'
     isOwner = request.GET.get('isOwner') == 'true'
 
     try:
@@ -564,8 +578,10 @@ def add_experiment_access_group(request, experiment_id, groupname):
     acl = ExperimentACL(experiment=experiment,
                         group=group,
                         canRead=canRead,
+                        canDownload=canDownload,
                         canWrite=canWrite,
                         canDelete=canDelete,
+                        canSensitive=canSensitive,
                         isOwner=isOwner,
                         aclOwnershipType=ExperimentACL.OWNER_OWNED)
     acl.save()
@@ -614,6 +630,7 @@ def create_token(request, experiment_id):
     experiment = Experiment.objects.get(id=experiment_id)
     token = Token(user=request.user)
     token.save()
+    # For now, tokens are Read only
     acl = ExperimentACL(token=token,
                         experiment=experiment,
                         canRead=True,

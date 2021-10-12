@@ -67,8 +67,10 @@ class DatasetTestCase(ModelTestCase):
             experiment=exp,
             user=self.user,
             canRead=True,
+            canDownload=True,
             canWrite=True,
             canDelete=True,
+            canSensitive=True,
             isOwner=True,
             aclOwnershipType=ExperimentACL.OWNER_OWNED)
         acl.save()

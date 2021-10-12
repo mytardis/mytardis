@@ -40,8 +40,10 @@ class UploadTestCase(TestCase):
         acl = ExperimentACL(user=self.user,
                             experiment=self.exp,
                             canRead=True,
+                            canDownload=True,
                             canWrite=True,
                             canDelete=True,
+                            canSensitive=True,
                             isOwner=True,
                             aclOwnershipType=ExperimentACL.OWNER_OWNED,
         )

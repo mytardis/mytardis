@@ -35,8 +35,10 @@ class TabTestCase(TestCase):
                             user=user,
                             isOwner=False,
                             canRead=True,
+                            canDownload=True,
                             canWrite=False,
                             canDelete=False,
+                            canSensitive=False,
                             aclOwnershipType=ExperimentACL.OWNER_OWNED)
         acl.save()
         self.client = client
@@ -73,8 +75,10 @@ class ListTestCase(TransactionTestCase):
                             user=user,
                             isOwner=False,
                             canRead=True,
+                            canDownload=True,
                             canWrite=False,
                             canDelete=False,
+                            canSensitive=False,
                             aclOwnershipType=ExperimentACL.OWNER_OWNED)
         acl.save()
         self.client = client
@@ -158,8 +162,10 @@ class GetTestCase(TransactionTestCase):
                             user=user,
                             isOwner=False,
                             canRead=True,
+                            canDownload=True,
                             canWrite=False,
                             canDelete=False,
+                            canSensitive=False,
                             aclOwnershipType=ExperimentACL.OWNER_OWNED)
         acl.save()
         self.client = client
@@ -209,8 +215,10 @@ class CreateTestCase(TransactionTestCase):
                             user=user,
                             isOwner=False,
                             canRead=True,
+                            canDownload=True,
                             canWrite=True,
                             canDelete=False,
+                            canSensitive=False,
                             aclOwnershipType=ExperimentACL.OWNER_OWNED)
         acl.save()
         self.acl = acl
@@ -294,8 +302,10 @@ class UpdateTestCase(TransactionTestCase):
                             user=user,
                             isOwner=False,
                             canRead=True,
+                            canDownload=True,
                             canWrite=True,
                             canDelete=False,
+                            canSensitive=False,
                             aclOwnershipType=ExperimentACL.OWNER_OWNED)
         acl.save()
         self.acl = acl
@@ -368,8 +378,10 @@ class DeleteTestCase(TransactionTestCase):
                             user=user,
                             isOwner=False,
                             canRead=True,
+                            canDownload=True,
                             canWrite=True,
                             canDelete=False,
+                            canSensitive=False,
                             aclOwnershipType=ExperimentACL.OWNER_OWNED)
         acl.save()
         self.acl = acl

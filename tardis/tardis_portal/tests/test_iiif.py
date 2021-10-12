@@ -38,8 +38,10 @@ def _create_datafile():
               user=user,
               isOwner=True,
               canRead=True,
+              canDownload=True,
               canWrite=True,
               canDelete=True,
+              canSensitive=True,
               aclOwnershipType=ExperimentACL.OWNER_OWNED).save()
     dataset = Dataset()
     dataset.save()

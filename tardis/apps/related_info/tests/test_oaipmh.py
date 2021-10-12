@@ -45,7 +45,9 @@ class RifCSTestCase(TransactionTestCase):
                             user=user,
                             isOwner=False,
                             canRead=True,
+                            canDownload=True,
                             canWrite=True,
+                            canSensitive=False,
                             canDelete=False,
                             aclOwnershipType=ExperimentACL.OWNER_OWNED)
         acl.save()

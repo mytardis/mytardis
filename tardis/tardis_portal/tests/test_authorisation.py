@@ -594,6 +594,7 @@ class ACLTestCase(TestCase):
             user=self.user3,
             experiment=self.experiment3,
             canRead=True,
+            canDownload=True,
             canWrite=True,
             aclOwnershipType=ExperimentACL.OWNER_OWNED,
         )

@@ -88,8 +88,10 @@ class UserInterfaceTestCase(TestCase):
         acl = ExperimentACL(user=user,
                             experiment=experiment,
                             canRead=True,
+                            canDownload=True,
                             canWrite=True,
                             canDelete=True,
+                            canSensitive=True,
                             isOwner=True)
         acl.save()
         dataset = Dataset(description="test dataset")

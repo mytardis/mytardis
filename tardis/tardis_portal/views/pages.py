@@ -772,8 +772,10 @@ def add_dataset(request, experiment_id):
                 acl = DatasetACL(dataset=dataset,
                                  user=request.user,
                                  canRead=True,
+                                 canDownload=True,
                                  canWrite=True,
                                  canDelete=True,
+                                 canSensitive=True,
                                  isOwner=True,
                                  aclOwnershipType=DatasetACL.OWNER_OWNED)
                 acl.save()
