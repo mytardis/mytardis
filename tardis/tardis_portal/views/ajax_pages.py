@@ -108,7 +108,12 @@ def experiment_latest_dataset(request, experiment_id):
 @never_cache
 @authz.experiment_access_required
 def experiment_recent_datasets(request, experiment_id):
-    context = dict(exp=Experiment.objects.get(id=experiment_id))
+    if settings.ONLY_EXPERIMENT_ACLS:
+        context = dict(datasets=Dataset.objects.prefetch_related(
+                       "experiments").filter(experiments__id=experiment_id))
+    else:
+        context = dict(datasets=Dataset.safe.all(request.user).filter(
+                       experiments__id=experiment_id))
     return render_response_index(
         request,
         'tardis_portal/ajax/experiment_recent_datasets.html',
