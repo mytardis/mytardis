@@ -108,10 +108,16 @@ def experiment_datasets_json(request, experiment_id):
         authz.has_download_access(request, experiment_id, "experiment")
 
     dataset_ordering = getattr(settings, "DATASET_ORDERING", 'description')
+
+    if settings.ONLY_EXPERIMENT_ACLS:
+        datasets = Dataset.objects.prefetch_related("experiment").filter(experiment__id=experiment.id)
+    else:
+        datasets = Dataset.safe.all(request.user).filter(experiment__id=experiment.id)
+
     objects = [
         get_dataset_info(ds, request, include_thumbnail=has_download_permissions,
                          exclude=['datafiles'])
-        for ds in experiment.datasets.all().order_by(dataset_ordering)]
+        for ds in datasets.all().order_by(dataset_ordering)]
 
     return HttpResponse(
         json.dumps(objects, cls=DjangoJSONEncoder, default=str),
