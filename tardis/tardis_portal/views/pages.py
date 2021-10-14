@@ -824,7 +824,7 @@ def _get_dataset_checksums(request, dataset, type='md5'):
     return checksums
 
 
-@authz.dataset_access_required  # too complex # noqa
+@authz.dataset_download_required  # too complex # noqa
 def checksums_download(request, dataset_id, **kwargs):
     dataset = Dataset.objects.get(id=dataset_id)
     if not dataset:

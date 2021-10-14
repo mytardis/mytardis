@@ -34,7 +34,7 @@ def load_image(request, parameter):
 def load_experiment_image(request, parameter_id):
     parameter = ExperimentParameter.objects.get(pk=parameter_id)
     experiment_id = parameter.parameterset.experiment.id
-    if authz.has_access(request, experiment_id, "experiment"):
+    if authz.has_download_access(request, experiment_id, "experiment"):
         return load_image(request, parameter)
     return return_response_error(request)
 
@@ -42,7 +42,7 @@ def load_experiment_image(request, parameter_id):
 def load_dataset_image(request, parameter_id):
     parameter = DatasetParameter.objects.get(pk=parameter_id)
     dataset = parameter.parameterset.dataset
-    if authz.has_access(request, dataset.id, "dataset"):
+    if authz.has_download_access(request, dataset.id, "dataset"):
         return load_image(request, parameter)
     return return_response_error(request)
 
@@ -53,18 +53,18 @@ def load_datafile_image(request, parameter_id):
     except DatafileParameter.DoesNotExist:
         return HttpResponseNotFound()
     datafile = parameter.parameterset.datafile
-    if authz.has_access(request, datafile.id, "datafile"):
+    if authz.has_download_access(request, datafile.id, "datafile"):
         return load_image(request, parameter)
     return return_response_error(request)
 
 
-@authz.experiment_access_required
+@authz.experiment_download_required
 def display_experiment_image(
         request, experiment_id, parameterset_id, parameter_name):
 
     # TODO handle not exist
 
-    if not authz.has_access(request, experiment_id, "experiment"):
+    if not authz.has_download_access(request, experiment_id, "experiment"):
         return return_response_error(request)
 
     image = ExperimentParameter.objects.get(name__name=parameter_name,
@@ -73,13 +73,13 @@ def display_experiment_image(
     return HttpResponse(b64decode(image.string_value), content_type='image/jpeg')
 
 
-@authz.dataset_access_required
+@authz.dataset_download_required
 def display_dataset_image(
         request, dataset_id, parameterset_id, parameter_name):
 
     # TODO handle not exist
 
-    if not authz.has_access(request, dataset_id, "dataset"):
+    if not authz.has_download_access(request, dataset_id, "dataset"):
         return return_response_error(request)
 
     image = DatasetParameter.objects.get(name__name=parameter_name,
@@ -88,13 +88,13 @@ def display_dataset_image(
     return HttpResponse(b64decode(image.string_value), content_type='image/jpeg')
 
 
-@authz.datafile_access_required
+@authz.datafile_download_required
 def display_datafile_image(
         request, datafile_id, parameterset_id, parameter_name):
 
     # TODO handle not exist
 
-    if not authz.hase_access(request, datafile_id, "datafile"):
+    if not authz.has_download_access(request, datafile_id, "datafile"):
         return return_response_error(request)
 
     image = DatafileParameter.objects.get(name__name=parameter_name,
@@ -104,7 +104,7 @@ def display_datafile_image(
 
 
 
-@authz.dataset_access_required
+@authz.dataset_download_required
 def dataset_thumbnail(request, dataset_id):
     dataset = Dataset.objects.get(id=dataset_id)
     tn_url = dataset.get_thumbnail_url()
