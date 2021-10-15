@@ -598,7 +598,7 @@ class ExperimentResource(MyTardisModelResource):
             }
         owners = exp.get_owners()
         bundle.data['owner_ids'] = [o.id for o in owners]
-        dataset_count = Dataset.safe.all(request.user).filter(experiments__id=exp.id).count()
+        dataset_count = Dataset.safe.all(bundle.request.user).filter(experiments__id=exp.id).count()
         bundle.data['dataset_count'] = dataset_count
         datafile_count = exp.get_datafiles(bundle.request.user).count()
         bundle.data['datafile_count'] = datafile_count
@@ -703,7 +703,7 @@ class DatasetResource(MyTardisModelResource):
         bundle.data['dataset_size'] = size
         dataset_experiment_count = dataset.experiments.count()
         bundle.data['dataset_experiment_count'] = dataset_experiment_count
-        dataset_datafile_count = DataFile.safe.all(request.user).filter(dataset__id=dataset.id).count()
+        dataset_datafile_count = DataFile.safe.all(bundle.request.user).filter(dataset__id=dataset.id).count()
         bundle.data['dataset_datafile_count'] = dataset_datafile_count
         return bundle
 
