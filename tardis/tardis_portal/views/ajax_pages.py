@@ -54,8 +54,11 @@ def experiment_description(request, experiment_id):
 
     c['authors'] = experiment.experimentauthor_set.all()
 
-    c['datafiles'] = \
-        DataFile.objects.filter(dataset__experiments=experiment_id)
+    if settings.ONLY_EXPERIMENT_ACLS:
+        c['datafiles'] = DataFile.objects.select_related("dataset").prefetch_related(
+                        "dataset__experiments").filter(dataset_experiments__id=experiment_id)
+    else:
+        c['datafiles'] = DataFile.safe.all(request.user).filter(dataset_experiments__id=experiment_id)
 
     c['owners'] = experiment.get_owners()
 
