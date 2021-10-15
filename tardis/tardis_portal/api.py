@@ -911,7 +911,7 @@ class DatasetResource(MyTardisModelResource):
         ids = [df.id for df in df_list]
         return JsonResponse(ids, status=200, safe=False)
 
-    def _populate_children(self, sub_child_dirs, dir_node, dataset):
+    def _populate_children(self, request, sub_child_dirs, dir_node, dataset):
         '''Populate the children list in a directory node
 
         Example dir_node: {'name': u'child_1', 'children': []}
