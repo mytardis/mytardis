@@ -598,7 +598,7 @@ class ExperimentResource(MyTardisModelResource):
             }
         owners = exp.get_owners()
         bundle.data['owner_ids'] = [o.id for o in owners]
-        dataset_count = exp.datasets.all().count()
+        dataset_count = Dataset.safe.all(request.user).filter(experiments__id=exp.id).count()
         bundle.data['dataset_count'] = dataset_count
         datafile_count = exp.get_datafiles(bundle.request.user).count()
         bundle.data['datafile_count'] = datafile_count
@@ -703,7 +703,7 @@ class DatasetResource(MyTardisModelResource):
         bundle.data['dataset_size'] = size
         dataset_experiment_count = dataset.experiments.count()
         bundle.data['dataset_experiment_count'] = dataset_experiment_count
-        dataset_datafile_count = dataset.datafile_set.count()
+        dataset_datafile_count = DataFile.safe.all(request.user).filter(dataset__id=dataset.id).count()
         bundle.data['dataset_datafile_count'] = dataset_datafile_count
         return bundle
 
@@ -777,8 +777,8 @@ class DatasetResource(MyTardisModelResource):
         # get dirs at root level
         dir_tuples = dataset.get_dir_tuples(request.user, "")
         # get files at root level
-        dfs = (DataFile.objects.filter(dataset=dataset, directory='') |
-               DataFile.objects.filter(dataset=dataset, directory__isnull=True)).distinct()
+        dfs = (DataFile.safe.all(request.user).filter(dataset=dataset, directory='') |
+               DataFile.safe.all(request.user).filter(dataset=dataset, directory__isnull=True)).distinct()
 
         pgresults = 1000
 
@@ -853,7 +853,7 @@ class DatasetResource(MyTardisModelResource):
         # list dir under base_dir
         child_dir_tuples = dataset.get_dir_tuples(request.user, base_dir)
         # list files under base_dir
-        dfs = DataFile.objects.filter(dataset=dataset, directory=base_dir)
+        dfs = DataFile.safe.all(request.user).filter(dataset=dataset, directory=base_dir)
         # walk the directory tree and append files and dirs
         # if there are directories append this to data
         child_list = []
@@ -888,8 +888,8 @@ class DatasetResource(MyTardisModelResource):
         if not dir_path:
             return HttpResponse('Please specify folder path')
 
-        df_list = DataFile.objects.filter(dataset__id=dataset_id, directory=dir_path) | \
-            DataFile.objects.filter(dataset__id=dataset_id, directory__startswith=dir_path+"/")
+        df_list = DataFile.safe.all(request.user).filter(dataset__id=dataset_id, directory=dir_path) | \
+            DataFile.safe.all(request.user).filter(dataset__id=dataset_id, directory__startswith=dir_path+"/")
         ids = [df.id for df in df_list]
         return JsonResponse(ids, status=200, safe=False)
 
@@ -901,7 +901,7 @@ class DatasetResource(MyTardisModelResource):
         for dir in sub_child_dirs:
             part1, part2 = dir
             # get files for this dir
-            dfs = DataFile.objects.filter(dataset=dataset, directory=part2)
+            dfs = DataFile.safe.all(request.user).filter(dataset=dataset, directory=part2)
             filenames = [df.filename for df in dfs]
             if part1 == '..':
                 for file_name in filenames:
