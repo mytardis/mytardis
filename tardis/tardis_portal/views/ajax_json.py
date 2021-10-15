@@ -110,9 +110,9 @@ def experiment_datasets_json(request, experiment_id):
     dataset_ordering = getattr(settings, "DATASET_ORDERING", 'description')
 
     if settings.ONLY_EXPERIMENT_ACLS:
-        datasets = Dataset.objects.prefetch_related("experiment").filter(experiment__id=experiment.id)
+        datasets = Dataset.objects.prefetch_related("experiments").filter(experiments__id=experiment.id)
     else:
-        datasets = Dataset.safe.all(request.user).filter(experiment__id=experiment.id)
+        datasets = Dataset.safe.all(request.user).filter(experiments__id=experiment.id)
 
     objects = [
         get_dataset_info(ds, request, include_thumbnail=has_download_permissions,
