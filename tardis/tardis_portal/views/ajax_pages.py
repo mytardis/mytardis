@@ -340,7 +340,7 @@ def retrieve_datafile_list(
     return render_response_index(request, template_name, c)
 
 
-@authz.experiment_ownership_required
+#@authz.experiment_ownership_required
 def choose_rights(request, experiment_id):
     '''
     Choose access rights and licence.
