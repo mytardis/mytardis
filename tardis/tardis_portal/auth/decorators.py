@@ -134,34 +134,6 @@ def has_sensitive_access(request, obj_id, ct_type):
     return has_X_access(request, obj_id, ct_type, 'sensitive')
 
 
-def has_read_or_owner_ACL(request, experiment_id):
-    """
-    Check whether the user has read access to the experiment -
-    this means either
-    they have been granted read access, or that they are the owner.
-
-    NOTE:
-    This does not check whether the experiment is public or not, which means
-    even when the experiment is public, this method does not automatically
-    returns true.
-
-    As such, this method should NOT be used to check whether the user has
-    general read permission.
-
-    Note: this function does not take into account token access
-    """
-    query = request.user.experimentacls.select_related("experiment"
-                             ).filter(experiment__id=experiment_id
-                             ).exclude(effectiveDate__gte=datetime.today(),
-                                       expiryDate__lte=datetime.today())
-    for group in request.user.groups.all():
-        query |= group.experimentacls.select_related("experiment"
-                                 ).filter(experiment__id=experiment_id, isOwner=True
-                                 ).exclude(effectiveDate__gte=datetime.today(),
-                                           expiryDate__lte=datetime.today())
-    return query.exists()
-
-
 def has_delete_permissions(request, experiment_id):
     experiment = Experiment.safe.get(request.user, experiment_id)
     return request.user.has_perm('tardis_acls.delete_experiment', experiment)
