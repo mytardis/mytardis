@@ -234,7 +234,10 @@ class DatasetView(TemplateView):
             # need to fix.
             pgresults = 100
 
-            paginator = Paginator(dataset.datafile_set.all(), pgresults)
+            if settings.ONLY_EXPERIMENT_ACLS:
+                paginator = Paginator(dataset.datafile_set.all(), pgresults)
+            else:
+                paginator = Paginator(DataFile.safe.all(request.user).filter(dataset=dataset), pgresults)
 
             try:
                 page = int(request.GET.get('page', '1'))
@@ -265,7 +268,11 @@ class DatasetView(TemplateView):
             carousel_slice = ":%s" % max_images_in_carousel
         else:
             carousel_slice = ":"
-        datafile_count = dataset.datafile_set.count()
+        if settings.ONLY_EXPERIMENT_ACLS:
+            datafile_count = dataset.datafile_set.count()
+        else:
+            datafile_count = DataFile.safe.all(request.user).filter(dataset=dataset).count()
+
 
         c.update(
             {'dataset': dataset,
