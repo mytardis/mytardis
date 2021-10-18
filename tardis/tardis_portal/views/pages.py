@@ -270,9 +270,12 @@ class DatasetView(TemplateView):
             carousel_slice = ":"
         if settings.ONLY_EXPERIMENT_ACLS:
             datafile_count = dataset.datafile_set.count()
+            display_preview = True
         else:
             datafile_count = DataFile.safe.all(request.user).filter(dataset=dataset).count()
-
+            # probably too inefficient for lots of Datafiles
+            display_preview = any([authz.has_download_access(request, df.id, "datafile")
+                            for df in DataFile.safe.all(request.user).filter(dataset=dataset)])
 
         c.update(
             {'dataset': dataset,
@@ -296,6 +299,7 @@ class DatasetView(TemplateView):
              'push_to_enabled': 'tardis.apps.push_to' in settings.INSTALLED_APPS,
              'carousel_slice': carousel_slice,
              'hsm_enabled': 'tardis.apps.hsm' in settings.INSTALLED_APPS,
+             'display_preview': display_preview,
              }
         )
 
