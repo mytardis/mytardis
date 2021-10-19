@@ -275,7 +275,7 @@ class DatasetView(TemplateView):
             datafile_count = DataFile.safe.all(request.user).filter(dataset=dataset).count()
             # probably too inefficient for lots of Datafiles
             display_preview = any(authz.has_download_access(request, df.id, "datafile")
-                            for df in DataFile.safe.all(request.user).filter(dataset=dataset))
+                            for df in dataset.get_images())
 
         c.update(
             {'dataset': dataset,
