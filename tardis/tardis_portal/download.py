@@ -457,6 +457,14 @@ def streaming_download_experiment(request, experiment_id, comptype='tgz',
         datafile__dataset__experiments__id=experiment_id, verified=True) \
                 .values('datafile_id').distinct()
     datafiles = DataFile.objects.filter(id__in=df_ids)
+    if not settings.ONLY_EXPERIMENT_ACLS:
+        # Generator to produce datafile from datafile id
+        def get_datafile(datafile):
+            if has_download_access(request=request, obj_id=datafile.id,
+                                   ct_type="datafile"):
+                yield datafile
+        # Take chained generators and turn them into a set of datafiles
+        datafiles = set(chain(chain.from_iterable(map(get_datafile,datafiles))))
     return _streaming_downloader(request, datafiles, rootdir, filename,
                                  comptype, organization)
 
@@ -472,6 +480,14 @@ def streaming_download_dataset(request, dataset_id, comptype='tgz',
         datafile__dataset=dataset, verified=True) \
         .values('datafile_id').distinct()
     datafiles = DataFile.objects.filter(id__in=df_ids)
+    if not settings.ONLY_EXPERIMENT_ACLS:
+        # Generator to produce datafile from datafile id
+        def get_datafile(datafile):
+            if has_download_access(request=request, obj_id=datafile.id,
+                                   ct_type="datafile"):
+                yield datafile
+        # Take chained generators and turn them into a set of datafiles
+        datafiles = set(chain(chain.from_iterable(map(get_datafile,datafiles))))
     return _streaming_downloader(request, datafiles, rootdir, filename,
                                  comptype, organization)
 
