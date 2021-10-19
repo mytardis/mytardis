@@ -270,7 +270,7 @@ class DatasetView(TemplateView):
             carousel_slice = ":"
         if settings.ONLY_EXPERIMENT_ACLS:
             datafile_count = dataset.datafile_set.count()
-            display_preview = True
+            display_preview = authz.has_download_access(request, dataset.id, "dataset")
         else:
             datafile_count = DataFile.safe.all(request.user).filter(dataset=dataset).count()
             # probably too inefficient for lots of Datafiles
