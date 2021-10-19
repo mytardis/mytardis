@@ -842,7 +842,7 @@ def checksums_download(request, dataset_id, **kwargs):
     type = request.GET.get('type', 'md5')
     format = request.GET.get('format', 'text')
 
-    checksums = _get_dataset_checksums(dataset, type)
+    checksums = _get_dataset_checksums(request, dataset, type)
     if format == 'text':
         checksum_doc = ''.join(["%s  %s\n" % c for c in checksums])
         checksum_doc += '\n'
