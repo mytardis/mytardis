@@ -1,6 +1,6 @@
 $(document).ready(function() {
     function getCheckboxHtml(datafile, hasDownloadPermissions) {
-        if (hasDownloadPermissions && datafile.verified && datafile.is_online) {
+        if (datafile.has_download_permissions && datafile.verified && datafile.is_online) {
             return "<input type=\"checkbox\" style=\"\" " +
                 "class=\"datafile_checkbox\" name=\"datafile\" " +
                 "value=\"" + datafile.id + "\"/>";
@@ -70,7 +70,7 @@ $(document).ready(function() {
     // eslint-disable-next-line complexity
     function getAnnotatedFilenameHtml(datafile, hasDownloadPermissions) {
         var filenameHtml = "";
-        if (hasDownloadPermissions && datafile.view_url && datafile.verified && datafile.is_online) {
+        if (datafile.has_download_permissions && datafile.view_url && datafile.verified && datafile.is_online) {
             filenameHtml = getViewHyperlink(datafile);
         }
         else {
@@ -108,7 +108,7 @@ $(document).ready(function() {
     }
 
     function getAddMetadataButtonHtml(datafile, hasWritePermissions, immutable) {
-        if (hasWritePermissions && !immutable) {
+        if (datafile.has_write_permissions && !immutable) {
             return "<a title=\"Add Metadata\" " +
                "href=\"/ajax/add_datafile_parameters/" + datafile.id + "/\" " +
                "data-toggle_selector=\"#datafile_metadata_toggle_" + datafile.id + "\"" +
@@ -130,7 +130,7 @@ $(document).ready(function() {
 
     function getButtonsHtml(datafile, hasDownloadPermissions, hasWritePermissions, immutable) {
         var datafileButtonsHtml = "";
-        if (hasDownloadPermissions && datafile.verified) {
+        if (datafile.has_download_permissions && datafile.verified) {
             if (datafile.is_online) {
                 datafileButtonsHtml += getDownloadButtonHtml(datafile);
             }

@@ -250,10 +250,10 @@ def retrieve_datafile_list(
 
     params = {}
 
-    dataset_results = \
-        DataFile.objects.filter(
-            dataset__pk=dataset_id,
-        ).order_by('filename')
+    if settings.ONLY_EXPERIMENT_ACLS:
+        dataset_results = DataFile.objects.filter(dataset__pk=dataset_id,).order_by('filename')
+    else:
+        dataset_results = DataFile.safe.all(request.user).filter(dataset__pk=dataset_id,).order_by('filename')
 
     filename_search = None
 
@@ -313,7 +313,9 @@ def retrieve_datafile_list(
                 'has_image': datafile.has_image,
                 'download_url': datafile.download_url,
                 'recall_url': datafile.recall_url,
-                'formatted_size': filesizeformat(datafile.size)
+                'formatted_size': filesizeformat(datafile.size),
+                'has_download_permissions': authz.has_download_access(request, datafile.id, "datafile"),
+                'has_write_permissions': authz.has_write(request, datafile.id, "datafile")
             })
         return JsonResponse({
             'datafiles': datafile_properties_list,
