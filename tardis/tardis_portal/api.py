@@ -43,6 +43,7 @@ from . import tasks
 from .auth.decorators import (
     has_access,
     has_download_access,
+    has_sensitive_access,
     has_write,
     has_delete_permissions)
 from .models.access_control import ExperimentACL, DatasetACL, DatafileACL
