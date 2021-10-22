@@ -1406,7 +1406,7 @@ class ExperimentParameterSetResource(ParameterSetResource):
     parameters = fields.ToManyField(
         'tardis.tardis_portal.api.ExperimentParameterResource',
         'experimentparameter_set',
-        related_name='parameterset', full=True, null=True)
+        related_name='parameterset', null=True)
 
     class Meta(MyTardisModelResource.Meta):
         object_class = ExperimentParameterSet
@@ -1427,7 +1427,7 @@ class DatasetParameterSetResource(ParameterSetResource):
     parameters = fields.ToManyField(
         'tardis.tardis_portal.api.DatasetParameterResource',
         'datasetparameter_set',
-        related_name='parameterset', full=True, null=True)
+        related_name='parameterset', null=True)
 
     class Meta(MyTardisModelResource.Meta):
         object_class = DatasetParameterSet
@@ -1451,7 +1451,7 @@ class DatafileParameterSetResource(ParameterSetResource):
     parameters = fields.ToManyField(
         'tardis.tardis_portal.api.DatafileParameterResource',
         'datafileparameter_set',
-        related_name='parameterset', full=True, null=True)
+        related_name='parameterset', null=True)
 
     class Meta(MyTardisModelResource.Meta):
         object_class = DatafileParameterSet
