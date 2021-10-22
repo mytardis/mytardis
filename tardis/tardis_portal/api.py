@@ -155,10 +155,17 @@ class ACLAuthorization(Authorization):
                 experiment__in=experiments, id__in=obj_ids)
         if isinstance(bundle.obj, ExperimentParameter):
             experiments = Experiment.safe.all(bundle.request.user)
-            return ExperimentParameter.objects.filter(
-                parameterset__experiment__in=experiments,
-                id__in=obj_ids
-            )
+            exp_params =  ExperimentParameter.objects.filter(
+                              parameterset__experiment__in=experiments,
+                              id__in=obj_ids)
+            # Generator to filter sensitive exp_parameters when given an exp id
+            def get_exp_param(exp_par):
+                if not exp_par.name.sensitive:
+                    yield exp_par
+                elif has_sensitive_access(bundle.request, exp_par.parameterset.experiment.id, "experiment"):
+                    yield exp_par
+            # Take chained generators and turn them into a set of parameters
+            return list(chain(chain.from_iterable(map(get_exp_param,exp_params))))
         if isinstance(bundle.obj, Dataset):
             dataset_ids = [ds.id for ds in object_list
                            if has_access(bundle.request, ds.id, "dataset")]
@@ -167,9 +174,16 @@ class ACLAuthorization(Authorization):
             return [dps for dps in object_list
                     if has_access(bundle.request, dps.dataset.id, "dataset")]
         if isinstance(bundle.obj, DatasetParameter):
-            return [dp for dp in object_list
-                    if has_access(bundle.request,
-                                  dp.parameterset.dataset.id, "dataset")]
+            dp_list = [dp for dp in object_list if has_access(bundle.request,
+                       dp.parameterset.dataset.id, "dataset")]
+            # Generator to filter sensitive exp_parameters when given an exp id
+            def get_set_param(set_par):
+                if not set_par.name.sensitive:
+                    yield set_par
+                elif has_sensitive_access(bundle.request, set_par.parameterset.dataset.id, "dataset"):
+                    yield set_par
+            # Take chained generators and turn them into a set of parameters
+            return list(chain(chain.from_iterable(map(get_set_param,dp_list))))
         if isinstance(bundle.obj, DataFile):
             datafile_ids = [df.id for df in object_list
                            if has_access(bundle.request, df.id, "datafile")]
@@ -178,9 +192,16 @@ class ACLAuthorization(Authorization):
             return [dps for dps in object_list
                     if has_access(bundle.request, dps.datafile.id, "datafile")]
         if isinstance(bundle.obj, DatafileParameter):
-            return [dp for dp in object_list
-                    if has_access(bundle.request,
-                                  dp.parameterset.fatafile.id, "datafile")]
+            dp_list = [dp for dp in object_list if has_access(bundle.request,
+                       dp.parameterset.datafile.id, "datafile")]
+            # Generator to filter sensitive exp_parameters when given an exp id
+            def get_file_param(file_par):
+                if not file_par.name.sensitive:
+                    yield file_par
+                elif has_sensitive_access(bundle.request, file_par.parameterset.datafile.id, "datafile"):
+                    yield file_par
+            # Take chained generators and turn them into a set of parameters
+            return list(chain(chain.from_iterable(map(get_file_param,dp_list))))
         if isinstance(bundle.obj, Schema):
             return object_list
         if isinstance(bundle.obj, ParameterName):
@@ -1237,28 +1258,6 @@ class ParameterSetResource(MyTardisModelResource):
         return bundle
 
 
-class DatafileParameterSetResource(ParameterSetResource):
-    datafile = fields.ForeignKey(
-        DataFileResource, 'datafile')
-    parameters = fields.ToManyField(
-        'tardis.tardis_portal.api.DatafileParameterResource',
-        'datafileparameter_set',
-        related_name='parameterset', full=True, null=True)
-
-    class Meta(ParameterSetResource.Meta):
-        object_class = DatafileParameterSet
-        queryset = DatafileParameterSet.objects.all()
-
-
-class DatafileParameterResource(ParameterResource):
-    parameterset = fields.ForeignKey(DatafileParameterSetResource,
-                                     'parameterset')
-
-    class Meta(ParameterResource.Meta):
-        object_class = DatafileParameter
-        queryset = DatafileParameter.objects.all()
-
-
 class LocationResource(MyTardisModelResource):
     class Meta(MyTardisModelResource.Meta):
         queryset = StorageBox.objects.all()
@@ -1401,7 +1400,7 @@ class ExperimentParameterSetResource(ParameterSetResource):
         'experimentparameter_set',
         related_name='parameterset', full=True, null=True)
 
-    class Meta(ParameterSetResource.Meta):
+    class Meta(MyTardisModelResource.Meta):
         object_class = ExperimentParameterSet
         queryset = ExperimentParameterSet.objects.all()
 
@@ -1410,7 +1409,7 @@ class ExperimentParameterResource(ParameterResource):
     parameterset = fields.ForeignKey(ExperimentParameterSetResource,
                                      'parameterset')
 
-    class Meta(ParameterResource.Meta):
+    class Meta(MyTardisModelResource.Meta):
         object_class = ExperimentParameter
         queryset = ExperimentParameter.objects.all()
 
@@ -1422,7 +1421,7 @@ class DatasetParameterSetResource(ParameterSetResource):
         'datasetparameter_set',
         related_name='parameterset', full=True, null=True)
 
-    class Meta(ParameterSetResource.Meta):
+    class Meta(MyTardisModelResource.Meta):
         object_class = DatasetParameterSet
         queryset = DatasetParameterSet.objects.all()
 
@@ -1431,9 +1430,36 @@ class DatasetParameterResource(ParameterResource):
     parameterset = fields.ForeignKey(DatasetParameterSetResource,
                                      'parameterset')
 
-    class Meta(ParameterResource.Meta):
+    class Meta(MyTardisModelResource.Meta):
         object_class = DatasetParameter
         queryset = DatasetParameter.objects.all()
+
+    def dehydrate(self, bundle):
+        dsparam = bundle.obj
+        bundle.data['location'] = dfo.storage_box.name
+        return bundle
+
+
+class DatafileParameterSetResource(ParameterSetResource):
+    datafile = fields.ForeignKey(
+        DataFileResource, 'datafile')
+    parameters = fields.ToManyField(
+        'tardis.tardis_portal.api.DatafileParameterResource',
+        'datafileparameter_set',
+        related_name='parameterset', full=True, null=True)
+
+    class Meta(MyTardisModelResource.Meta):
+        object_class = DatafileParameterSet
+        queryset = DatafileParameterSet.objects.all()
+
+
+class DatafileParameterResource(ParameterResource):
+    parameterset = fields.ForeignKey(DatafileParameterSetResource,
+                                     'parameterset')
+
+    class Meta(MyTardisModelResource.Meta):
+        object_class = DatafileParameter
+        queryset = DatafileParameter.objects.all()
 
 
 class StorageBoxResource(MyTardisModelResource):
