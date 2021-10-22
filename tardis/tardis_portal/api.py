@@ -1436,11 +1436,6 @@ class DatasetParameterResource(ParameterResource):
         object_class = DatasetParameter
         queryset = DatasetParameter.objects.all()
 
-    def dehydrate(self, bundle):
-        dsparam = bundle.obj
-        bundle.data['location'] = dfo.storage_box.name
-        return bundle
-
 
 class DatafileParameterSetResource(ParameterSetResource):
     datafile = fields.ForeignKey(
