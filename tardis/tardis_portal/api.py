@@ -9,6 +9,7 @@ Implemented with Tastypie.
 import json
 import re
 from wsgiref.util import FileWrapper
+from itertools import chain
 
 from django.conf import settings
 from django.conf.urls import url
