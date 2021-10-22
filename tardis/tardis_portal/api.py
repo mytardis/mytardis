@@ -269,18 +269,24 @@ class ACLAuthorization(Authorization):
         if isinstance(bundle.obj, ExperimentParameterSet):
             return has_access(bundle.request, bundle.obj.experiment.id, "experiment")
         if isinstance(bundle.obj, ExperimentParameter):
+            if bundle.obj.name.sensitive:
+                return has_sensitive_access(bundle.request, bundle.obj.parameterset.experiment.id, "experiment")
             return has_access(bundle.request, bundle.obj.parameterset.experiment.id, "experiment")
         if isinstance(bundle.obj, Dataset):
             return has_access(bundle.request, bundle.obj.id, "dataset")
         if isinstance(bundle.obj, DatasetParameterSet):
             return has_access(bundle.request, bundle.obj.dataset.id, "dataset")
         if isinstance(bundle.obj, DatasetParameter):
+            if bundle.obj.name.sensitive:
+                return has_sensitive_access(bundle.request, bundle.obj.parameterset.dataset.id, "dataset")
             return has_access(bundle.request, bundle.obj.parameterset.dataset.id, "dataset")
         if isinstance(bundle.obj, DataFile):
             return has_access(bundle.request, bundle.obj.id, "datafile")
         if isinstance(bundle.obj, DatafileParameterSet):
             return has_access(bundle.request, bundle.obj.datafile.id, "datafile")
         if isinstance(bundle.obj, DatafileParameter):
+            if bundle.obj.name.sensitive:
+                return has_sensitive_access(bundle.request, bundle.obj.parameterset.datafile.id, "datafile")
             return has_access(bundle.request, bundle.obj.parameterset.datafile.id, "datafile")
         if isinstance(bundle.obj, User):
             # allow all authenticated users to read public user info
@@ -1426,6 +1432,8 @@ class DatasetParameterSetResource(ParameterSetResource):
     class Meta(MyTardisModelResource.Meta):
         object_class = DatasetParameterSet
         queryset = DatasetParameterSet.objects.all()
+
+
 
 
 class DatasetParameterResource(ParameterResource):
