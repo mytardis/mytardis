@@ -1393,7 +1393,7 @@ class DatafileACLResource(MyTardisModelResource):
                                                 bundle.data['datafile'],
                                                 bundle.request)
         except NotFound:
-            datafile = DataFile.objects.get(namespace=bundle.data['datafile'])
+            datafile = DataFile.objects.get(namespace=bundle.name.data['datafile'])
         bundle.obj.datafile = datafile
         del(bundle.data['datafile'])
         return bundle
@@ -1415,7 +1415,7 @@ class ExperimentParameterSetResource(ParameterSetResource):
     def dehydrate_parameters(self, bundle):
         if has_sensitive_access(bundle.request, bundle.obj.experiment.id, "experiment"):
             return bundle.data["parameters"]
-        return [x for x in bundle.data["parameters"] if x.obj.sensitive is not True]
+        return [x for x in bundle.data["parameters"] if x.obj.name.sensitive is not True]
 
 
 class ExperimentParameterResource(ParameterResource):
@@ -1441,7 +1441,7 @@ class DatasetParameterSetResource(ParameterSetResource):
     def dehydrate_parameters(self, bundle):
         if has_sensitive_access(bundle.request, bundle.obj.dataset.id, "dataset"):
             return bundle.data["parameters"]
-        return [x for x in bundle.data["parameters"] if x.obj.sensitive is not True]
+        return [x for x in bundle.data["parameters"] if x.obj.name.sensitive is not True]
 
 
 class DatasetParameterResource(ParameterResource):
