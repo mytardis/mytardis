@@ -1403,10 +1403,10 @@ class ExperimentParameterSetResource(ParameterSetResource):
     '''API for ExperimentParameterSets
     '''
     experiment = fields.ForeignKey(ExperimentResource, 'experiment')
-    parameters = fields.ToManyField(
-        'tardis.tardis_portal.api.ExperimentParameterResource',
-        'experimentparameter_set',
-        related_name='parameterset', null=True)
+    parameters = fields.ToManyField('tardis.tardis_portal.api.ExperimentParameterResource', related_name='parameterset', full=True, null=True,
+                                     attribute=lambda bundle: ExperimentParameter.objects.filter(parameterset=bundle.obj
+                                     ) if has_sensitive_access(bundle.request, bundle.obj.experiment.id, "experiment"
+                                     ) else ExperimentParameter.objects.filter(parameterset=bundle.obj, name__sensitive=False))
 
     class Meta(MyTardisModelResource.Meta):
         object_class = ExperimentParameterSet
@@ -1424,16 +1424,14 @@ class ExperimentParameterResource(ParameterResource):
 
 class DatasetParameterSetResource(ParameterSetResource):
     dataset = fields.ForeignKey(DatasetResource, 'dataset')
-    parameters = fields.ToManyField(
-        'tardis.tardis_portal.api.DatasetParameterResource',
-        'datasetparameter_set',
-        related_name='parameterset', null=True)
+    parameters = fields.ToManyField('tardis.tardis_portal.api.DatasetParameterResource', related_name='parameterset', full=True, null=True,
+                                     attribute=lambda bundle: DatasetParameter.objects.filter(parameterset=bundle.obj
+                                     ) if has_sensitive_access(bundle.request, bundle.obj.dataset.id, "dataset"
+                                     ) else DatasetParameter.objects.filter(parameterset=bundle.obj, name__sensitive=False))
 
     class Meta(MyTardisModelResource.Meta):
         object_class = DatasetParameterSet
         queryset = DatasetParameterSet.objects.all()
-
-
 
 
 class DatasetParameterResource(ParameterResource):
@@ -1448,10 +1446,10 @@ class DatasetParameterResource(ParameterResource):
 class DatafileParameterSetResource(ParameterSetResource):
     datafile = fields.ForeignKey(
         DataFileResource, 'datafile')
-    parameters = fields.ToManyField(
-        'tardis.tardis_portal.api.DatafileParameterResource',
-        'datafileparameter_set',
-        related_name='parameterset', null=True)
+    parameters = fields.ToManyField('tardis.tardis_portal.api.DatafileParameterResource', related_name='parameterset', full=True, null=True,
+                                     attribute=lambda bundle: DatafileParameter.objects.filter(parameterset=bundle.obj
+                                     ) if has_sensitive_access(bundle.request, bundle.obj.datafile.id, "datafile"
+                                     ) else DatafileParameter.objects.filter(parameterset=bundle.obj, name__sensitive=False))
 
     class Meta(MyTardisModelResource.Meta):
         object_class = DatafileParameterSet
