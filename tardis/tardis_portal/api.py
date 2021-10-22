@@ -1414,8 +1414,8 @@ class ExperimentParameterSetResource(ParameterSetResource):
 
     def dehydrate_parameters(self, bundle):
         if has_sensitive_access(bundle.request, bundle.obj.experiment.id, "experiment"):
-            return bundle.data["parameters"]
-        return [x for x in bundle.data["parameters"] if x["sensitive"]!=True]
+            return bundle.data.parameters
+        return [x for x in bundle.data.parameters if x.sensitive !=True]
 
 
 class ExperimentParameterResource(ParameterResource):
@@ -1440,8 +1440,8 @@ class DatasetParameterSetResource(ParameterSetResource):
 
     def dehydrate_parameters(self, bundle):
         if has_sensitive_access(bundle.request, bundle.obj.dataset.id, "dataset"):
-            return bundle.data["parameters"]
-        return [x for x in bundle.data["parameters"] if x["sensitive"]!=True]
+            return bundle.data.parameters
+        return [x for x in bundle.data.parameters if x.sensitive !=True]
 
 
 class DatasetParameterResource(ParameterResource):
@@ -1467,8 +1467,8 @@ class DatafileParameterSetResource(ParameterSetResource):
 
     def dehydrate_parameters(self, bundle):
         if has_sensitive_access(bundle.request, bundle.obj.datafile.id, "datafile"):
-            return bundle.data["parameters"]
-        return [x for x in bundle.data["parameters"] if x["sensitive"]!=True]
+            return bundle.data.parameters
+        return [x for x in bundle.data.parameters if x.sensitive !=True]
 
 
 class DatafileParameterResource(ParameterResource):
