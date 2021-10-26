@@ -52,6 +52,10 @@ class ExperimentParameterSetAdmin(admin.ModelAdmin):
     inlines = [ExperimentParameterInline]
 
 
+class TokenAdmin(admin.ModelAdmin):
+    inlines = [ExperimentACLInline, DatasetACLInline, DatafileACLInline]
+
+
 class DatasetParameterInline(admin.TabularInline):
     model = models.DatasetParameter
     extra = 0
@@ -98,7 +102,6 @@ class DatasetACLInline(admin.TabularInline):
 class DatafileACLInline(admin.TabularInline):
     model = models.DatafileACL
     extra = 0
-
 
 class ExperimentAdmin(admin.ModelAdmin):
     search_fields = ['title', 'id']
