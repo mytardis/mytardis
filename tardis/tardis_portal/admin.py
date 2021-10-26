@@ -52,10 +52,6 @@ class ExperimentParameterSetAdmin(admin.ModelAdmin):
     inlines = [ExperimentParameterInline]
 
 
-class TokenAdmin(admin.ModelAdmin):
-    inlines = [ExperimentACLInline, DatasetACLInline, DatafileACLInline]
-
-
 class DatasetParameterInline(admin.TabularInline):
     model = models.DatasetParameter
     extra = 0
@@ -251,6 +247,10 @@ class FacilityAdmin(admin.ModelAdmin):
 
 class InstrumentAdmin(admin.ModelAdmin):
     search_fields = ['name']
+
+
+class TokenAdmin(admin.ModelAdmin):
+    inlines = [ExperimentACLInline, DatasetACLInline, DatafileACLInline]
 
 
 admin.site.register(models.Facility, FacilityAdmin)
