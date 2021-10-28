@@ -90,14 +90,6 @@ class GroupAdmin(models.Model):
     def __str__(self):
         return str(self.group.name) + " Admins"
 
-    def save(self, *args, **kwargs):
-        """
-        Only save GroupAdmin if at least one admin_user or admin_group
-        """
-        if sum(x is not None for x in [self.admin_user, self.admin_groups]) < 1:
-            raise AssertionError("GroupAdmin must have one of the following fields: admin_user or an admin_group")
-        super().save(*args, **kwargs)
-
 
 def get_auth_method_choices():
     auth_methods = ()
