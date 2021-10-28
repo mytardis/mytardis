@@ -207,11 +207,17 @@ def retrieve_access_list_tokens(request, experiment_id):
 @authz.group_ownership_required
 def retrieve_group_userlist(request, group_id):
 
+    # TODO: Probably a smarter way to retrieve Users and admin status rather than
+    # iterating over each user and checking, as below
     from ..forms import ManageGroupPermissionsForm
     users = User.objects.filter(groups__id=group_id)
     group_admins = []
     for user in users:
-        if GroupAdmin.objects.filter(user=user, group__id=group_id).exists():
+        query = GroupAdmin.objects.filter(admin_user=user, group__id=group_id)
+        admin_groups = Group.objects.filter(user=user)
+        for admin_group in admin_groups:
+            query |= GroupAdmin.objects.filter(admin_groups=admin_group, group__id=group_id)
+        if query.exists():
             group_admins.append(user)
     c = {'users': users, 'group_id': group_id, 'group_admins': group_admins,
          'manageGroupPermissionsForm': ManageGroupPermissionsForm()}
@@ -221,12 +227,17 @@ def retrieve_group_userlist(request, group_id):
 
 @never_cache
 def retrieve_group_userlist_readonly(request, group_id):
-
+    # TODO: Probably a smarter way to retrieve Users and admin status rather than
+    # iterating over each user and checking, as below
     from ..forms import ManageGroupPermissionsForm
     users = User.objects.filter(groups__id=group_id)
     group_admins = []
     for user in users:
-        if GroupAdmin.objects.filter(user=user, group__id=group_id).exists():
+        query = GroupAdmin.objects.filter(admin_user=user, group__id=group_id)
+        admin_groups = Group.objects.filter(user=user)
+        for admin_group in admin_groups:
+            query |= GroupAdmin.objects.filter(admin_groups=admin_group, group__id=group_id)
+        if query.exists():
             group_admins.append(user)
     c = {'users': users, 'group_id': group_id, 'group_admins': group_admins,
          'manageGroupPermissionsForm': ManageGroupPermissionsForm()}
@@ -236,9 +247,13 @@ def retrieve_group_userlist_readonly(request, group_id):
 
 @never_cache
 def retrieve_group_list_by_user(request):
-
-    groups = Group.objects.filter(groupadmin__user=request.user).order_by('name')
-    c = {'groups': groups}
+    # TODO: Probably a smarter way to retrieve Users and admin status rather than
+    # iterating over each user and checking, as below
+    groups = Group.objects.filter(groupadmin__user=request.user)
+    admin_groups = Group.objects.filter(user=user)
+    for admin_group in admin_groups:
+        groups |= Group.objects.filter(groupadmin__admin_groups=admin_group)
+    c = {'groups': groups.order_by('name')}
     return render_response_index(
         request, 'tardis_portal/ajax/group_list.html', c)
 
@@ -297,12 +312,12 @@ def add_user_to_group(request, group_id, username):
 
     logger.info("isAdmin: %s", str(isAdmin))
     if isAdmin:
-        groupadmin = GroupAdmin(user=user, group=group)
+        groupadmin = GroupAdmin(admin_user=user, group=group)
         groupadmin.save()
     users = User.objects.filter(groups__id=group_id)
     group_admins = []
     for user in users:
-        if GroupAdmin.objects.filter(user=user, group__id=group_id).exists():
+        if GroupAdmin.objects.filter(admin_user=user, group__id=group_id).exists():
             group_admins.append(user)
     c = {'user': user, 'group_id': group_id, 'group_admins': group_admins}
     return render_response_index(
@@ -335,7 +350,7 @@ def remove_user_from_group(request, group_id, username):
     user.save()
 
     try:
-        groupadmin = GroupAdmin.objects.filter(user=user, group=group)
+        groupadmin = GroupAdmin.objects.filter(admin_user=user, group=group)
         groupadmin.delete()
     except GroupAdmin.DoesNotExist:
         pass
@@ -516,7 +531,7 @@ def create_group(request):
                 status=400)
 
         # create admin for this group and add it to the group
-        groupadmin = GroupAdmin(user=adminuser, group=group)
+        groupadmin = GroupAdmin(admin_user=adminuser, group=group)
         groupadmin.save()
 
         adminuser.groups.add(group)
@@ -526,7 +541,7 @@ def create_group(request):
     if request.user != adminuser:
         user = request.user
 
-        groupadmin = GroupAdmin(user=user, group=group)
+        groupadmin = GroupAdmin(admin_user=user, group=group)
         groupadmin.save()
 
         user.groups.add(group)
