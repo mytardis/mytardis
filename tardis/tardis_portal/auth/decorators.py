@@ -31,7 +31,7 @@
 # pylint: disable=R1702
 
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from django.contrib.sessions.models import Session
 from django.http import HttpResponse, HttpRequest
 from django.http import HttpResponseRedirect
