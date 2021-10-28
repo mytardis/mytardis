@@ -249,10 +249,10 @@ def retrieve_group_userlist_readonly(request, group_id):
 def retrieve_group_list_by_user(request):
     # TODO: Probably a smarter way to retrieve Users and admin status rather than
     # iterating over each user and checking, as below
-    groups = Group.objects.filter(groupadmin_set__admin_user=request.user)
+    groups = Group.objects.filter(groupadmin__admin_user=request.user)
     admin_groups = Group.objects.filter(user=request.user)
     for admin_group in admin_groups:
-        groups |= Group.objects.filter(groupadmin_set__admin_groups=admin_group)
+        groups |= Group.objects.filter(groupadmin__admin_groups=admin_group)
     c = {'groups': groups.order_by('name')}
     return render_response_index(
         request, 'tardis_portal/ajax/group_list.html', c)
