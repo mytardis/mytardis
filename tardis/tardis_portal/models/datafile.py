@@ -60,6 +60,19 @@ class DataFile(models.Model):
     :attribute sha512sum: Digest of length 128, containing only hexadecimal
         digits
     """
+
+    PUBLIC_ACCESS_NONE = 1
+    PUBLIC_ACCESS_EMBARGO = 25
+    PUBLIC_ACCESS_METADATA = 50
+    PUBLIC_ACCESS_FULL = 100
+
+    PUBLIC_ACCESS_CHOICES = (
+        (PUBLIC_ACCESS_NONE, 'No public access (hidden)'),
+        (PUBLIC_ACCESS_EMBARGO, 'Ready to be released pending embargo expiry'),
+        (PUBLIC_ACCESS_METADATA, 'Public Metadata only (no data file access)'),
+        (PUBLIC_ACCESS_FULL, 'Public'),
+    )
+
     dataset = models.ForeignKey(Dataset, on_delete=models.CASCADE)
     filename = models.CharField(max_length=400)
     directory = models.CharField(blank=True, null=True, max_length=255)
@@ -72,6 +85,10 @@ class DataFile(models.Model):
     deleted = models.BooleanField(default=False)
     deleted_time = models.DateTimeField(blank=True, null=True)
     version = models.IntegerField(default=1)
+    public_access = \
+        models.PositiveSmallIntegerField(choices=PUBLIC_ACCESS_CHOICES,
+                                         null=False,
+                                         default=PUBLIC_ACCESS_NONE)
     objects = OracleSafeManager()
     safe = SafeManager()  # The acl-aware specific manager.
 
@@ -133,6 +150,22 @@ class DataFile(models.Model):
                 if dfo.storage_type not in StorageBox.offline_types:
                     return True
         return False
+
+    @classmethod
+    def public_access_implies_distribution(cls, public_access_level):
+        '''
+        Determines if a level of public access implies that distribution should
+        be allowed, or alternately if it should not be allowed. Used to
+        prevent free-distribution licences for essentially private data, and
+        overly-restrictive licences for public data.
+        '''
+        return public_access_level > cls.PUBLIC_ACCESS_METADATA
+
+    def public_download_allowed(self):
+        '''
+        instance method version of 'public_access_implies_distribution'
+        '''
+        return self.public_access > DataFile.PUBLIC_ACCESS_METADATA
 
     def cache_file(self):
         if self.is_online:

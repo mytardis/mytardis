@@ -40,6 +40,18 @@ class Dataset(models.Model):
     :attribute immutable: Whether this dataset is read-only
     """
 
+    PUBLIC_ACCESS_NONE = 1
+    PUBLIC_ACCESS_EMBARGO = 25
+    PUBLIC_ACCESS_METADATA = 50
+    PUBLIC_ACCESS_FULL = 100
+
+    PUBLIC_ACCESS_CHOICES = (
+        (PUBLIC_ACCESS_NONE, 'No public access (hidden)'),
+        (PUBLIC_ACCESS_EMBARGO, 'Ready to be released pending embargo expiry'),
+        (PUBLIC_ACCESS_METADATA, 'Public Metadata only (no data file access)'),
+        (PUBLIC_ACCESS_FULL, 'Public'),
+    )
+
     experiments = models.ManyToManyField(Experiment, related_name='datasets')
     description = models.TextField(blank=True)
     directory = models.CharField(blank=True, null=True, max_length=255)
@@ -48,6 +60,10 @@ class Dataset(models.Model):
     immutable = models.BooleanField(default=False)
     instrument = models.ForeignKey(Instrument, null=True, blank=True,
                                    on_delete=models.CASCADE)
+    public_access = \
+        models.PositiveSmallIntegerField(choices=PUBLIC_ACCESS_CHOICES,
+                                         null=False,
+                                         default=PUBLIC_ACCESS_NONE)
     objects = OracleSafeManager()
     safe = SafeManager()  # The acl-aware specific manager.
 
@@ -70,6 +86,22 @@ class Dataset(models.Model):
             from tardis.apps.hsm.check import dataset_online_count
             return dataset_online_count(self)
         return self.datafile_set.count()
+
+    @classmethod
+    def public_access_implies_distribution(cls, public_access_level):
+        '''
+        Determines if a level of public access implies that distribution should
+        be allowed, or alternately if it should not be allowed. Used to
+        prevent free-distribution licences for essentially private data, and
+        overly-restrictive licences for public data.
+        '''
+        return public_access_level > cls.PUBLIC_ACCESS_METADATA
+
+    def public_download_allowed(self):
+        '''
+        instance method version of 'public_access_implies_distribution'
+        '''
+        return self.public_access > Dataset.PUBLIC_ACCESS_METADATA
 
     def getParameterSets(self, schemaType=None):
         """Return the dataset parametersets associated with this
