@@ -20,7 +20,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='groupadmin',
             name='admin_group',
-            field=models.ForeignKey(related_name='admin_group' blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='auth.Group'),
+            field=models.ForeignKey(related_name='admin_group', blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='auth.Group'),
         ),
 
         migrations.RenameField(
