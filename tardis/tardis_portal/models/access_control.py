@@ -81,14 +81,22 @@ class GroupAdmin(models.Model):
     """
 
     group = models.ForeignKey(Group, on_delete=models.CASCADE)
-    admin_user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
-    admin_groups = models.ManyToManyField(Group, related_name="admin_groups")
+    admin_user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+    admin_group = models.ForeignKey(Group, on_delete=models.CASCADE, null=True, blank=True)
 
     class Meta:
         app_label = 'tardis_portal'
 
     def __str__(self):
         return str(self.group.name) + " Admins"
+
+    def save(self, *args, **kwargs):
+        """
+        Only save GroupAdmin if at least one admin_user or admin_group
+        """
+        if sum(x is not None for x in [self.admin_user, self.admin_group]) < 1:
+            raise AssertionError("GroupAdmin must have one of the following fields: admin_user or an admin_group")
+        super().save(*args, **kwargs)
 
 
 def get_auth_method_choices():

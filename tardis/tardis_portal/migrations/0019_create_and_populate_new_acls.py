@@ -159,24 +159,6 @@ class Migration(migrations.Migration):
             field=models.BooleanField(default=False),
         ),
 
-        migrations.AlterField(
-            model_name='groupadmin',
-            name='user',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to=settings.AUTH_USER_MODEL),
-        ),
-
-        migrations.AddField(
-            model_name='groupadmin',
-            name='admin_groups',
-            field=models.ManyToManyField(related_name='admin_groups', to='auth.Group'),
-        ),
-
-        migrations.RenameField(
-            model_name='groupadmin',
-            old_name='user',
-            new_name='admin_user',
-        ),
-
         migrations.RunPython(create_new_acl_objects
         ),
     ]

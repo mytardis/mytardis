@@ -216,7 +216,7 @@ def retrieve_group_userlist(request, group_id):
         query = GroupAdmin.objects.filter(admin_user=user, group__id=group_id)
         admin_groups = Group.objects.filter(user=user)
         for admin_group in admin_groups:
-            query |= GroupAdmin.objects.filter(admin_groups=admin_group, group__id=group_id)
+            query |= GroupAdmin.objects.filter(admin_group=admin_group, group__id=group_id)
         if query.exists():
             group_admins.append(user)
     c = {'users': users, 'group_id': group_id, 'group_admins': group_admins,
@@ -236,7 +236,7 @@ def retrieve_group_userlist_readonly(request, group_id):
         query = GroupAdmin.objects.filter(admin_user=user, group__id=group_id)
         admin_groups = Group.objects.filter(user=user)
         for admin_group in admin_groups:
-            query |= GroupAdmin.objects.filter(admin_groups=admin_group, group__id=group_id)
+            query |= GroupAdmin.objects.filter(admin_group=admin_group, group__id=group_id)
         if query.exists():
             group_admins.append(user)
     c = {'users': users, 'group_id': group_id, 'group_admins': group_admins,
@@ -252,7 +252,7 @@ def retrieve_group_list_by_user(request):
     groups = Group.objects.filter(groupadmin__admin_user=request.user)
     admin_groups = Group.objects.filter(user=request.user)
     for admin_group in admin_groups:
-        groups |= Group.objects.filter(groupadmin__admin_groups=admin_group)
+        groups |= Group.objects.filter(groupadmin__admin_group=admin_group)
     c = {'groups': groups.order_by('name')}
     return render_response_index(
         request, 'tardis_portal/ajax/group_list.html', c)

@@ -143,7 +143,7 @@ def is_group_admin(request, group_id):
     query = GroupAdmin.objects.filter(admin_user=request.user, group__id=group_id)
     admin_groups = Group.objects.filter(user=request.user)
     for admin_group in admin_groups:
-        query |= GroupAdmin.objects.filter(admin_groups=admin_group, group__id=group_id)
+        query |= GroupAdmin.objects.filter(admin_group=admin_group, group__id=group_id)
     return query.exists()
 
 def group_ownership_required(f):
