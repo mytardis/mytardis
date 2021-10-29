@@ -96,6 +96,8 @@ class GroupAdmin(models.Model):
         """
         if sum(x is not None for x in [self.admin_user, self.admin_group]) < 1:
             raise AssertionError("GroupAdmin must have one of the following fields: admin_user or an admin_group")
+        if sum(x is not None for x in [self.admin_user, self.admin_group]) > 1:
+            raise AssertionError("GroupAdmin must not have both an admin_user and an admin_group")
         super().save(*args, **kwargs)
 
 
