@@ -257,14 +257,16 @@ class SafeManager(models.Manager):
             query = Experiment.objects.filter(public_access=Experiment.PUBLIC_ACCESS_FULL)
             query |= Experiment.objects.filter(public_access=Experiment.PUBLIC_ACCESS_METADATA)
             return query
-        # Dataset does not have a "public" functionality on a Micro-level yet
         if self.model.get_ct(self.model).model == "dataset":
             from .models import Dataset
-            return Dataset.objects.none()
-        # DataFile does not have a "public" functionality on a Micro-level yet
+            query = Dataset.objects.filter(public_access=Dataset.PUBLIC_ACCESS_FULL)
+            query |= Dataset.objects.filter(public_access=Dataset.PUBLIC_ACCESS_METADATA)
+            return query
         if self.model.get_ct(self.model).model == "datafile":
             from .models import DataFile
-            return DataFile.objects.none()
+            query = DataFile.objects.filter(public_access=DataFile.PUBLIC_ACCESS_FULL)
+            query |= DataFile.objects.filter(public_access=DataFile.PUBLIC_ACCESS_METADATA)
+            return query
         return super().get_queryset().none()
 
 

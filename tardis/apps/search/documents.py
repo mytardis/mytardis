@@ -131,8 +131,7 @@ class DatasetDocument(Document):
         if settings.ONLY_EXP:
             flags = instance.experiments.all().values_list("experiments__public_access", flat=True)
             return max(list(flags))
-        else:
-            return instance.public_access
+        return instance.public_access
 
     def prepare_acls(self, instance):
         """Returns the datasetACLs associated with this
@@ -213,8 +212,7 @@ class DataFileDocument(Document):
             flags = instance.dataset.experiments.all().values_list(
                             "dataset__experiments__public_access", flat=True)
             return max(list(flags))
-        else:
-            return instance.public_access
+        return instance.public_access
 
     def prepare_acls(self, instance):
         """Returns the datafileACLs associated with this

@@ -457,11 +457,13 @@ class DataFile(models.Model):
     def get_ct(self):
         return ContentType.objects.get_for_model(self)
 
-    def is_public(self):
+    def is_public_dl(self):
+        # Used only by iiif.py currently
         from .experiment import Experiment
-        return Experiment.objects.filter(
-            datasets=self.dataset,
-            public_access=Experiment.PUBLIC_ACCESS_FULL).exists()
+        if settings.ONLY_EXPERIMENT_ACLS:
+            return Experiment.objects.filter(datasets=self.dataset,
+                        public_access=Experiment.PUBLIC_ACCESS_FULL).exists()
+        return self.public_download_allowed()
 
     def _has_any_perm(self, user_obj):
         if not hasattr(self, 'id'):
@@ -469,9 +471,15 @@ class DataFile(models.Model):
         return self.dataset
 
     def _has_view_perm(self, user_obj):
+        if not settings.ONLY_EXPERIMENT_ACLS:
+            if self.public_access >= self.PUBLIC_ACCESS_METADATA:
+                return True
         return self._has_any_perm(user_obj)
 
     def _has_download_perm(self, user_obj):
+        if not settings.ONLY_EXPERIMENT_ACLS:
+            if self.public_download_allowed():
+                return True
         return self._has_any_perm(user_obj)
 
     def _has_change_perm(self, user_obj):

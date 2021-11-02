@@ -194,9 +194,15 @@ class Dataset(models.Model):
         return self.experiments.all()
 
     def _has_view_perm(self, user_obj):
+        if not settings.ONLY_EXPERIMENT_ACLS:
+            if self.public_access >= self.PUBLIC_ACCESS_METADATA:
+                return True
         return self._has_any_perm(user_obj)
 
     def _has_download_perm(self, user_obj):
+        if not settings.ONLY_EXPERIMENT_ACLS:
+            if self.public_download_allowed():
+                return True
         return self._has_any_perm(user_obj)
 
     def _has_change_perm(self, user_obj):

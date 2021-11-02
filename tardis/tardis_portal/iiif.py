@@ -126,7 +126,7 @@ def download_image(request, datafile_id, region, size, rotation,
     except DataFile.DoesNotExist:
         return HttpResponse('')
 
-    is_public = datafile.is_public()
+    is_public = datafile.is_public_dl()
     if not is_public:
         # Check users has access to datafile
         if not has_download_access(request=request, obj_id=datafile.id,
