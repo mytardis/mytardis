@@ -56,9 +56,8 @@ class ExperimentDocument(Document):
     created_by = fields.ObjectField(properties={
         'username': fields.KeywordField()
     })
-    acls = fields.NestedField(attr='getACLsforIndexing', properties={
-                              'pluginId': fields.KeywordField(),
-                              'entityId': fields.KeywordField()})
+    acls = fields.NestedField(properties={'pluginId': fields.KeywordField(),
+                                          'entityId': fields.KeywordField()})
 
     def prepare_acls(self, instance):
         """Returns the ExperimentACLs associated with an
@@ -109,10 +108,8 @@ class DatasetDocument(Document):
     experiments = fields.NestedField(properties={
         'id': fields.IntegerField(),
         'title': fields.TextField(
-            fields={'raw': fields.KeywordField()
-                    }
-        ),
-        'public_access': fields.IntegerField()
+            fields={'raw': fields.KeywordField()}
+        )
     }
     )
     instrument = fields.ObjectField(properties={
@@ -124,12 +121,18 @@ class DatasetDocument(Document):
     )
     created_time = fields.DateField()
     modified_time = fields.DateField()
-
+    public_access = fields.IntegerField()
     # GetACLsforindexing with return Dataset ACLs, or parent Experiment ACLs
     # depending on if ONLY_EXPERIMENT_ACLS = False or True respectively
-    acls = fields.NestedField(attr='getACLsforIndexing', properties={
-                              'pluginId': fields.KeywordField(),
-                              'entityId': fields.KeywordField()})
+    acls = fields.NestedField(properties={'pluginId': fields.KeywordField(),
+                                          'entityId': fields.KeywordField()})
+
+    def prepare_public_access(self, instance):
+        if settings.ONLY_EXP:
+            flags = instance.experiments.all().values_list("experiments__public_access", flat=True)
+            return max(list(flags))
+        else:
+            return instance.public_access
 
     def prepare_acls(self, instance):
         """Returns the datasetACLs associated with this
@@ -199,12 +202,19 @@ class DataFileDocument(Document):
     })
 
     experiments = fields.ObjectField()
-
+    public_access = fields.IntegerField()
     # GetACLsforindexing with return Datafile ACLs, or parent Experiment ACLs
     # depending on if ONLY_EXPERIMENT_ACLS = False or True respectively
-    acls = fields.NestedField(attr='getACLsforIndexing', properties={
-                              'pluginId': fields.KeywordField(),
-                              'entityId': fields.KeywordField()})
+    acls = fields.NestedField(properties={'pluginId': fields.KeywordField(),
+                                          'entityId': fields.KeywordField()})
+
+    def prepare_public_access(self, instance):
+        if settings.ONLY_EXP:
+            flags = instance.dataset.experiments.all().values_list(
+                            "dataset__experiments__public_access", flat=True)
+            return max(list(flags))
+        else:
+            return instance.public_access
 
     def prepare_acls(self, instance):
         """Returns the datafileACLs associated with this
@@ -241,7 +251,6 @@ class DataFileDocument(Document):
         for exp in exps:
             exp_dict = {}
             exp_dict['id'] = exp.id
-            exp_dict['public_access'] = exp.public_access
             experiments.append(exp_dict)
         return experiments
 

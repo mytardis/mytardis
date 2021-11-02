@@ -108,7 +108,7 @@ class SearchAppResource(Resource):
         query_dataset = Q("match", description=query_text)
 
         query_dataset_oacl = Q("term", **{'acls.entityId': user.id}) | \
-            Q("term", **{'experiments.public_access': 100})
+            Q("term", **{'public_access': 100})
         for group in groups:
             query_dataset_oacl = query_dataset_oacl | \
                                  Q("term", **{'acls.entityId': group.id})
@@ -118,7 +118,7 @@ class SearchAppResource(Resource):
 
         query_datafile = Q("match", filename=query_text)
         query_datafile_oacl = Q("term", acls__entityId=user.id) | \
-            Q("term", experiments__public_access=100)
+            Q("term", public_access=100)
         for group in groups:
             query_datafile_oacl = query_datafile_oacl | \
                                  Q("term", acls__entityId=group.id)
@@ -155,12 +155,12 @@ def simple_search_public_data(query_text):
                 .extra(size=MAX_SEARCH_RESULTS, min_score=MIN_CUTOFF_SCORE)
                 .query(query_exp))
     query_dataset = Q("match", description=query_text)
-    query_dataset_oacl = Q("term", **{'experiments.public_access': 100})
+    query_dataset_oacl = Q("term", **{'public_access': 100})
     ms = ms.add(Search(index='dataset')
                 .extra(size=MAX_SEARCH_RESULTS, min_score=MIN_CUTOFF_SCORE).query(query_dataset)
                 .query('nested', path='experiments', query=query_dataset_oacl))
     query_datafile = Q("match", filename=query_text)
-    query_datafile_oacl = Q("term", experiments__public_access=100)
+    query_datafile_oacl = Q("term", public_access=100)
     query_datafile = query_datafile & query_datafile_oacl
     ms = ms.add(Search(index='datafile')
                 .extra(size=MAX_SEARCH_RESULTS, min_score=MIN_CUTOFF_SCORE)
@@ -260,12 +260,12 @@ class AdvanceSearchAppResource(Resource):
             query_dataset = Q("match", description=query_text)
             if user.is_authenticated:
                 query_dataset_oacl = Q("term", **{'acls.entityId': user.id}) | \
-                                     Q("term", **{'experiments.public_access': 100})
+                                     Q("term", **{'public_access': 100})
                 for group in groups:
                     query_dataset_oacl = query_dataset_oacl | \
                                          Q("term", **{'acls.entityId': group.id})
             else:
-                query_dataset_oacl = Q("term", **{'experiments.public_access': 100})
+                query_dataset_oacl = Q("term", **{'public_access': 100})
             if start_date is not None:
                 query_dataset = query_dataset & Q("range", created_time={'gte': start_date, 'lte': end_date})
             if instrument_list:
@@ -278,12 +278,12 @@ class AdvanceSearchAppResource(Resource):
             query_datafile = Q("match", filename=query_text)
             if user.is_authenticated:
                 query_datafile_oacl = Q("term", acls__entityId=user.id) | \
-                                      Q("term", experiments__public_access=100)
+                                      Q("term", public_access=100)
                 for group in groups:
                     query_datafile_oacl = query_datafile_oacl | \
                                           Q("term", acls__entityId=group.id)
             else:
-                query_datafile_oacl = Q("term", experiments__public_access=100)
+                query_datafile_oacl = Q("term", public_access=100)
             if start_date is not None:
                 query_datafile = query_datafile & Q("range", created_time={'gte': start_date, 'lte': end_date})
             query_datafile = query_datafile & query_datafile_oacl
