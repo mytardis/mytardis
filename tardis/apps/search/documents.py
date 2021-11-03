@@ -72,6 +72,8 @@ class ExperimentDocument(Document):
             if acl.group is not None:
                 acl_dict["pluginId"] = "django_group"
                 acl_dict["entityId"] = acl.group.id
+            if acl.token is not None:
+                continue #token access shouldn't be added to search
             if acl_dict not in return_list:
                 return_list.append(acl_dict)
         return return_list
@@ -148,6 +150,8 @@ class DatasetDocument(Document):
                     if acl.group is not None:
                         acl_dict["pluginId"] = "django_group"
                         acl_dict["entityId"] = acl.group.id
+                    if acl.token is not None:
+                        continue #token access shouldn't be added to search
                     if acl_dict not in return_list:
                         return_list.append(acl_dict)
         else:
@@ -159,6 +163,8 @@ class DatasetDocument(Document):
                 if acl.group is not None:
                     acl_dict["pluginId"] = "django_group"
                     acl_dict["entityId"] = acl.group.id
+                if acl.token is not None:
+                    continue #token access shouldn't be added to search
                 if acl_dict not in return_list:
                     return_list.append(acl_dict)
         return return_list
@@ -230,6 +236,8 @@ class DataFileDocument(Document):
                     if acl.group is not None:
                         acl_dict["pluginId"] = "django_group"
                         acl_dict["entityId"] = acl.group.id
+                    if acl.token is not None:
+                        continue #token access shouldn't be added to search
                     if acl_dict not in return_list:
                         return_list.append(acl_dict)
         else:
@@ -241,6 +249,8 @@ class DataFileDocument(Document):
                 if acl.group is not None:
                     acl_dict["pluginId"] = "django_group"
                     acl_dict["entityId"] = acl.group.id
+                if acl.token is not None:
+                    continue #token access shouldn't be added to search
                 if acl_dict not in return_list:
                     return_list.append(acl_dict)
         return return_list
