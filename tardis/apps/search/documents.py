@@ -129,7 +129,7 @@ class DatasetDocument(Document):
 
     def prepare_public_access(self, instance):
         if settings.ONLY_EXPERIMENT_ACLS:
-            flags = instance.experiments.all().values_list("experiments__public_access", flat=True)
+            flags = instance.experiments.all().values_list("public_access", flat=True)
             return max(list(flags))
         return instance.public_access
 
@@ -210,7 +210,7 @@ class DataFileDocument(Document):
     def prepare_public_access(self, instance):
         if settings.ONLY_EXPERIMENT_ACLS:
             flags = instance.dataset.experiments.all().values_list(
-                            "dataset__experiments__public_access", flat=True)
+                            "public_access", flat=True)
             return max(list(flags))
         return instance.public_access
 
