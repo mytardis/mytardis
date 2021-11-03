@@ -112,6 +112,7 @@ class SearchAppResource(Resource):
         for group in groups:
             query_dataset_oacl = query_dataset_oacl | \
                                  Q("term", acls__entityId=group.id)
+        query_dataset = query_dataset & query_dataset_oacl
         ms = ms.add(Search(index='dataset')
                     .extra(size=MAX_SEARCH_RESULTS, min_score=MIN_CUTOFF_SCORE).query(query_dataset))
 
@@ -155,6 +156,7 @@ def simple_search_public_data(query_text):
                 .query(query_exp))
     query_dataset = Q("match", description=query_text)
     query_dataset_oacl = Q("term", public_access=100)
+    query_dataset = query_dataset & query_dataset_oacl
     ms = ms.add(Search(index='dataset')
                 .extra(size=MAX_SEARCH_RESULTS, min_score=MIN_CUTOFF_SCORE).query(query_dataset))
     query_datafile = Q("match", filename=query_text)
@@ -269,6 +271,7 @@ class AdvanceSearchAppResource(Resource):
             if instrument_list:
                 query_dataset = query_dataset & Q("terms", **{'instrument.id': instrument_list_id})
             # add instrument query
+            query_dataset = query_dataset & query_dataset_oacl
             ms = ms.add(Search(index='dataset')
                         .extra(size=MAX_SEARCH_RESULTS, min_score=MIN_CUTOFF_SCORE).query(query_dataset))
         if 'datafile' in index_list:
