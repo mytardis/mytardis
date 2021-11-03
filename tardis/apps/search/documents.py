@@ -221,7 +221,7 @@ class DataFileDocument(Document):
         """
         return_list = []
         if settings.ONLY_EXPERIMENT_ACLS:
-            for exp in self.dataset.experiments.all():
+            for exp in instance.dataset.experiments.all():
                 for acl in exp.experimentacl_set.all():
                     acl_dict = {}
                     if acl.user is not None:
@@ -233,7 +233,7 @@ class DataFileDocument(Document):
                     if acl_dict not in return_list:
                         return_list.append(acl_dict)
         else:
-            for acl in self.datafileacl_set.all():
+            for acl in instance.datafileacl_set.all():
                 acl_dict = {}
                 if acl.user is not None:
                     acl_dict["pluginId"] = "django_user"
