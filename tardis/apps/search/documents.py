@@ -128,7 +128,7 @@ class DatasetDocument(Document):
                                           'entityId': fields.KeywordField()})
 
     def prepare_public_access(self, instance):
-        if settings.ONLY_EXP:
+        if settings.ONLY_EXPERIMENT_ACLS:
             flags = instance.experiments.all().values_list("experiments__public_access", flat=True)
             return max(list(flags))
         return instance.public_access
@@ -138,7 +138,7 @@ class DatasetDocument(Document):
         dataset, formatted for elasticsearch.
         """
         return_list = []
-        if settings.ONLY_EXP:
+        if settings.ONLY_EXPERIMENT_ACLS:
             for acl in instance.experiments.experimentacl_set.all():
                 acl_dict = {}
                 if acl.user is not None:
@@ -208,7 +208,7 @@ class DataFileDocument(Document):
                                           'entityId': fields.KeywordField()})
 
     def prepare_public_access(self, instance):
-        if settings.ONLY_EXP:
+        if settings.ONLY_EXPERIMENT_ACLS:
             flags = instance.dataset.experiments.all().values_list(
                             "dataset__experiments__public_access", flat=True)
             return max(list(flags))
@@ -219,7 +219,7 @@ class DataFileDocument(Document):
         datafile, formatted for elasticsearch.
         """
         return_list = []
-        if settings.ONLY_EXP:
+        if settings.ONLY_EXPERIMENT_ACLS:
             for acl in self.dataset.experiments.experimentacl_set.all():
                 acl_dict = {}
                 if acl.user is not None:
