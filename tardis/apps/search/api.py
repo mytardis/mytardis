@@ -107,11 +107,11 @@ class SearchAppResource(Resource):
 
         query_dataset = Q("match", description=query_text)
 
-        query_dataset_oacl = Q("term", **{'acls.entityId': user.id}) | \
-            Q("term", **{'public_access': 100})
+        query_dataset_oacl = Q("term", acls__entityId=user.id) | \
+            Q("term", public_access=100)
         for group in groups:
             query_dataset_oacl = query_dataset_oacl | \
-                                 Q("term", **{'acls.entityId': group.id})
+                                 Q("term", acls__entityId=group.id)
         ms = ms.add(Search(index='dataset')
                     .extra(size=MAX_SEARCH_RESULTS, min_score=MIN_CUTOFF_SCORE).query(query_dataset)
                     .query('nested', path='experiments', query=query_dataset_oacl))
@@ -155,7 +155,7 @@ def simple_search_public_data(query_text):
                 .extra(size=MAX_SEARCH_RESULTS, min_score=MIN_CUTOFF_SCORE)
                 .query(query_exp))
     query_dataset = Q("match", description=query_text)
-    query_dataset_oacl = Q("term", **{'public_access': 100})
+    query_dataset_oacl = Q("term", public_access=100)
     ms = ms.add(Search(index='dataset')
                 .extra(size=MAX_SEARCH_RESULTS, min_score=MIN_CUTOFF_SCORE).query(query_dataset)
                 .query('nested', path='experiments', query=query_dataset_oacl))
@@ -259,8 +259,8 @@ class AdvanceSearchAppResource(Resource):
         if 'dataset' in index_list:
             query_dataset = Q("match", description=query_text)
             if user.is_authenticated:
-                query_dataset_oacl = Q("term", **{'acls.entityId': user.id}) | \
-                                     Q("term", **{'public_access': 100})
+                query_dataset_oacl = Q("term", acls__entityId=user.id) | \
+                                     Q("term", public_access=100)
                 for group in groups:
                     query_dataset_oacl = query_dataset_oacl | \
                                          Q("term", **{'acls.entityId': group.id})
