@@ -69,10 +69,10 @@ class ExperimentDocument(Document):
             if acl.user is not None:
                 acl_dict["pluginId"] = "django_user"
                 acl_dict["entityId"] = acl.user.id
-                return_list.append(acl_dict)
             if acl.group is not None:
                 acl_dict["pluginId"] = "django_group"
                 acl_dict["entityId"] = acl.group.id
+            if acl_dict not in return_list:
                 return_list.append(acl_dict)
         return return_list
 
@@ -139,26 +139,27 @@ class DatasetDocument(Document):
         """
         return_list = []
         if settings.ONLY_EXPERIMENT_ACLS:
-            for acl in instance.experiments.experimentacl_set.all():
-                acl_dict = {}
-                if acl.user is not None:
-                    acl_dict["pluginId"] = "django_user"
-                    acl_dict["entityId"] = acl.user.id
-                    return_list.append(acl_dict)
-                if acl.group is not None:
-                    acl_dict["pluginId"] = "django_group"
-                    acl_dict["entityId"] = acl.group.id
-                    return_list.append(acl_dict)
+            for exp in instance.experiments.all():
+                for acl in exp.experimentacl_set.all():
+                    acl_dict = {}
+                    if acl.user is not None:
+                        acl_dict["pluginId"] = "django_user"
+                        acl_dict["entityId"] = acl.user.id
+                    if acl.group is not None:
+                        acl_dict["pluginId"] = "django_group"
+                        acl_dict["entityId"] = acl.group.id
+                    if acl_dict not in return_list:
+                        return_list.append(acl_dict)
         else:
             for acl in instance.datasetacl_set.all():
                 acl_dict = {}
                 if acl.user is not None:
                     acl_dict["pluginId"] = "django_user"
                     acl_dict["entityId"] = acl.user.id
-                    return_list.append(acl_dict)
                 if acl.group is not None:
                     acl_dict["pluginId"] = "django_group"
                     acl_dict["entityId"] = acl.group.id
+                if acl_dict not in return_list:
                     return_list.append(acl_dict)
         return return_list
 
@@ -220,26 +221,27 @@ class DataFileDocument(Document):
         """
         return_list = []
         if settings.ONLY_EXPERIMENT_ACLS:
-            for acl in self.dataset.experiments.experimentacl_set.all():
-                acl_dict = {}
-                if acl.user is not None:
-                    acl_dict["pluginId"] = "django_user"
-                    acl_dict["entityId"] = acl.user.id
-                    return_list.append(acl_dict)
-                if acl.group is not None:
-                    acl_dict["pluginId"] = "django_group"
-                    acl_dict["entityId"] = acl.group.id
-                    return_list.append(acl_dict)
+            for exp in self.dataset.experiments.all():
+                for acl in exp.experimentacl_set.all():
+                    acl_dict = {}
+                    if acl.user is not None:
+                        acl_dict["pluginId"] = "django_user"
+                        acl_dict["entityId"] = acl.user.id
+                    if acl.group is not None:
+                        acl_dict["pluginId"] = "django_group"
+                        acl_dict["entityId"] = acl.group.id
+                    if acl_dict not in return_list:
+                        return_list.append(acl_dict)
         else:
             for acl in self.datafileacl_set.all():
                 acl_dict = {}
                 if acl.user is not None:
                     acl_dict["pluginId"] = "django_user"
                     acl_dict["entityId"] = acl.user.id
-                    return_list.append(acl_dict)
                 if acl.group is not None:
                     acl_dict["pluginId"] = "django_group"
                     acl_dict["entityId"] = acl.group.id
+                if acl_dict not in return_list:
                     return_list.append(acl_dict)
         return return_list
 
