@@ -56,7 +56,7 @@ class ExperimentDocument(Document):
     created_by = fields.ObjectField(properties={
         'username': fields.KeywordField()
     })
-    acls = fields.NestedField(properties={'pluginId': fields.KeywordField(),
+    acls = fields.ObjectField(properties={'pluginId': fields.KeywordField(),
                                           'entityId': fields.KeywordField()})
 
     def prepare_acls(self, instance):
@@ -126,7 +126,7 @@ class DatasetDocument(Document):
     public_access = fields.IntegerField()
     # GetACLsforindexing with return Dataset ACLs, or parent Experiment ACLs
     # depending on if ONLY_EXPERIMENT_ACLS = False or True respectively
-    acls = fields.NestedField(properties={'pluginId': fields.KeywordField(),
+    acls = fields.ObjectField(properties={'pluginId': fields.KeywordField(),
                                           'entityId': fields.KeywordField()})
 
     def prepare_public_access(self, instance):
@@ -211,7 +211,7 @@ class DataFileDocument(Document):
     public_access = fields.IntegerField()
     # GetACLsforindexing with return Datafile ACLs, or parent Experiment ACLs
     # depending on if ONLY_EXPERIMENT_ACLS = False or True respectively
-    acls = fields.NestedField(properties={'pluginId': fields.KeywordField(),
+    acls = fields.ObjectField(properties={'pluginId': fields.KeywordField(),
                                           'entityId': fields.KeywordField()})
 
     def prepare_public_access(self, instance):
