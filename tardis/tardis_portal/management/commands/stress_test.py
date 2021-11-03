@@ -223,36 +223,36 @@ class Command(BaseCommand):
         # Create 4 dummy schemas for use with all the models
         #test_schema_proj = Schema.objects.create(
         #    namespace="http://stress.test/project",
-        #    schema_type=Schema.PROJECT)
+        #    type=Schema.PROJECT)
         #test_schema_proj.save()
         test_schema_exp = Schema.objects.create(
             namespace="http://stress.test/experiment",
-            schema_type=Schema.EXPERIMENT)
+            type=Schema.EXPERIMENT)
         test_schema_exp.save()
         test_schema_set = Schema.objects.create(
             namespace="http://stress.test/dataset",
-            schema_type=Schema.DATASET)
+            type=Schema.DATASET)
         test_schema_set.save()
         test_schema_file = Schema.objects.create(
             namespace="http://stress.test/datafile",
-            schema_type=Schema.DATAFILE)
+            type=Schema.DATAFILE)
         test_schema_file.save()
 
         test_parnames = {}
         # Create 5 parameter names fo each schema, 1 of which should be sensitive
         for schema in [test_schema_exp, test_schema_set, test_schema_file]: #test_schema_proj,
-            schema_type = schema.namespace.split("/")[-1]
-            test_parnames[schema_type] = {}
+            type = schema.namespace.split("/")[-1]
+            test_parnames[type] = {}
             for x in ["Param_1","Param_2","Param_3","Param_4","Param_sens"]:
                 sens_flag = False
                 if x == "Param_sens":
                     sens_flag = True
-                test_parnames[schema_type][x] = ParameterName.objects.create(
+                test_parnames[type][x] = ParameterName.objects.create(
                                                     schema=schema,
                                                     name=x,
                                                     data_type=ParameterName.STRING,
                                                     sensitive=sens_flag)
-                test_parnames[schema_type][x].save()
+                test_parnames[type][x].save()
         sys.stderr.write("Done.\n")
 
 
