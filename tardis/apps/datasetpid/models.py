@@ -22,7 +22,7 @@ class DatasetPID(models.Model):
         Dataset, on_delete=models.CASCADE, related_name="pid"
     )
     pid = models.CharField(max_length=400, null=True, blank=True, unique=True)
-    alternate_identifiers = models.JSONField(null=True, blank=True, default=list)
+    alternate_ids = models.JSONField(null=True, blank=True)
 
     def __str__(self):
         if self.pid:
