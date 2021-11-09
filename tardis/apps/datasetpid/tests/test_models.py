@@ -89,3 +89,55 @@ class ModelsTestCase(TestCase):
         with self.assertRaises(IntegrityError):
             dataset2.pid.pid = pid
             dataset2.pid.save()
+
+    def test_model_has_alternate_ids(self):
+        user = "testuser"
+        pwd = User.objects.make_random_password()
+        user = User.objects.create(
+            username=user,
+            email="testuser@example.test",
+            first_name="Test",
+            last_name="User",
+        )
+        user.set_password(pwd)
+        user.save()
+        experiment = Experiment.objects.create(
+            title="Test Experiment",
+            created_by=user,
+            public_access=Experiment.PUBLIC_ACCESS_FULL,
+        )
+        experiment.save()
+        dataset1 = Dataset(description="test dataset1")
+        dataset1.save()
+        dataset1.experiments.add(experiment)
+        dataset1.save()
+        self.assertTrue(hasattr(dataset1, "alternate_identifiers"))
+
+    def test_adding_value_to_alternate_idenfiers(self):
+        user = "testuser"
+        pwd = User.objects.make_random_password()
+        user = User.objects.create(
+            username=user,
+            email="testuser@example.test",
+            first_name="Test",
+            last_name="User",
+        )
+        user.set_password(pwd)
+        user.save()
+        experiment = Experiment.objects.create(
+            title="Test Experiment",
+            created_by=user,
+            public_access=Experiment.PUBLIC_ACCESS_FULL,
+        )
+        experiment.save()
+        dataset = Dataset(description="test dataset1")
+        dataset.save()
+        dataset.experiments.add(experiment)
+        dataset.save()
+        alternate_ids = ["my_test_pid1", "my_test_pid2", "my_test_pid3"]
+        dataset.pid.alternate_identifiers = alternate_ids
+        dataset.pid.save()
+        key = dataset.id
+        dataset = Dataset.objects.get(pk=key)
+        print(dataset.pid)
+        self.assertTrue(dataset.pid.alternate_identifiers == alternate_ids)

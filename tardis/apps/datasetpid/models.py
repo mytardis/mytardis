@@ -10,10 +10,11 @@ logger = logging.getLogger(__name__)
 
 
 class DatasetPID(models.Model):
-    """A model that adds a PID field to an experiment model
+    """A model that adds a PID field to an dataset model
 
-    :attribute experiment: A OneToOneField pointing to the related Experiment
+    :attribute dataset: A OneToOneField pointing to the related Experiment
     :attribute pid: A CharField holding the chosen PID
+    :attribute alternate_identifiers: A JSONField holding a list of alternative identifers
 
     """
 
@@ -21,6 +22,7 @@ class DatasetPID(models.Model):
         Dataset, on_delete=models.CASCADE, related_name="pid"
     )
     pid = models.CharField(max_length=400, null=True, blank=True, unique=True)
+    alternate_identifiers = models.JSONField(null=True, blank=True, default=list())
 
     def __str__(self):
         if self.pid:
