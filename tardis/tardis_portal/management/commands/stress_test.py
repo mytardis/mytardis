@@ -3,7 +3,7 @@
  into the database.
 """
 
-# pylint: disable=R1702
+# pylint: disable=R1702,W0311
 
 import sys
 
