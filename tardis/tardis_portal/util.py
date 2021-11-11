@@ -1,3 +1,4 @@
+# pylint: disable=W1203
 import logging
 import os
 import time

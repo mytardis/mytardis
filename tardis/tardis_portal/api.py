@@ -209,26 +209,26 @@ class ACLAuthorization(Authorization):
         if isinstance(bundle.obj, ParameterName):
             return object_list
         if isinstance(bundle.obj, ExperimentACL):
-                query = ExperimentACL.objects.none()
-                if user_obj.is_authenticated:
-                    query |= user_obj.experimentacls
-                    for group in user_obj.groups.all():
-                        query |= group.experimentacls
-                return query
+            query = ExperimentACL.objects.none()
+            if bundle.request.user.is_authenticated:
+                query |= bundle.request.user.experimentacls
+                for group in bundle.request.user.groups.all():
+                    query |= group.experimentacls
+            return query
         if isinstance(bundle.obj, DatasetACL):
-                query = DatasetACL.objects.none()
-                if user_obj.is_authenticated:
-                    query |= user_obj.datasetacls
-                    for group in user_obj.groups.all():
-                        query |= group.datasetacls
-                return query
+            query = DatasetACL.objects.none()
+            if bundle.request.user.is_authenticated:
+                query |= bundle.request.user.datasetacls
+                for group in bundle.request.user.groups.all():
+                    query |= group.datasetacls
+            return query
         if isinstance(bundle.obj, DatafileACL):
-                query = DatafileACL.objects.none()
-                if user_obj.is_authenticated:
-                    query |= user_obj.datafileacls
-                    for group in user_obj.groups.all():
-                        query |= group.datafileacls
-                return query
+            query = DatafileACL.objects.none()
+            if bundle.request.user.is_authenticated:
+                query |= bundle.request.user.datafileacls
+                for group in bundle.request.user.groups.all():
+                    query |= group.datafileacls
+            return query
         if bundle.request.user.is_authenticated and \
                 isinstance(bundle.obj, User):
             if facilities_managed_by(bundle.request.user):
