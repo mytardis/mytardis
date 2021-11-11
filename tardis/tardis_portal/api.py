@@ -209,20 +209,26 @@ class ACLAuthorization(Authorization):
         if isinstance(bundle.obj, ParameterName):
             return object_list
         if isinstance(bundle.obj, ExperimentACL):
-            experiment_ids = Experiment.safe.all(
-                bundle.request.user).values_list('id', flat=True)
-            return ExperimentACL.objects.filter(object_id__in=experiment_ids,
-                id__in=obj_ids)
+                query = ExperimentACL.objects.none()
+                if user_obj.is_authenticated:
+                    query |= user_obj.experimentacls
+                    for group in user_obj.groups.all():
+                        query |= group.experimentacls
+                return query
         if isinstance(bundle.obj, DatasetACL):
-            dataset_ids = Dataset.safe.all(
-                bundle.request.user).values_list('id', flat=True)
-            return DatasetACL.objects.filter(object_id__in=dataset_ids,
-                id__in=obj_ids)
+                query = DatasetACL.objects.none()
+                if user_obj.is_authenticated:
+                    query |= user_obj.datasetacls
+                    for group in user_obj.groups.all():
+                        query |= group.datasetacls
+                return query
         if isinstance(bundle.obj, DatafileACL):
-            datafile_ids = DataFile.safe.all(
-                bundle.request.user).values_list('id', flat=True)
-            return DatafileACL.objects.filter(object_id__in=datafile_ids,
-                id__in=obj_ids)
+                query = DatafileACL.objects.none()
+                if user_obj.is_authenticated:
+                    query |= user_obj.datafileacls
+                    for group in user_obj.groups.all():
+                        query |= group.datafileacls
+                return query
         if bundle.request.user.is_authenticated and \
                 isinstance(bundle.obj, User):
             if facilities_managed_by(bundle.request.user):
