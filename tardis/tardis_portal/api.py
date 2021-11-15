@@ -211,23 +211,23 @@ class ACLAuthorization(Authorization):
         if isinstance(bundle.obj, ExperimentACL):
             query = ExperimentACL.objects.none()
             if bundle.request.user.is_authenticated:
-                query |= bundle.request.user.experimentacls
+                query |= bundle.request.user.experimentacls.all()
                 for group in bundle.request.user.groups.all():
-                    query |= group.experimentacls
+                    query |= group.experimentacls.all()
             return query
         if isinstance(bundle.obj, DatasetACL):
             query = DatasetACL.objects.none()
             if bundle.request.user.is_authenticated:
-                query |= bundle.request.user.datasetacls
+                query |= bundle.request.user.datasetacls.all()
                 for group in bundle.request.user.groups.all():
-                    query |= group.datasetacls
+                    query |= group.datasetacls.all()
             return query
         if isinstance(bundle.obj, DatafileACL):
             query = DatafileACL.objects.none()
             if bundle.request.user.is_authenticated:
-                query |= bundle.request.user.datafileacls
+                query |= bundle.request.user.datafileacls.all()
                 for group in bundle.request.user.groups.all():
-                    query |= group.datafileacls
+                    query |= group.datafileacls.all()
             return query
         if bundle.request.user.is_authenticated and \
                 isinstance(bundle.obj, User):
