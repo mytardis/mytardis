@@ -10,6 +10,9 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils.functional import lazy
 
+from .experiment import Experiment
+from .dataset import Dataset
+from .datafile import DataFile
 from .token import Token
 
 class UserProfile(models.Model):
