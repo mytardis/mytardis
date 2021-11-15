@@ -308,7 +308,7 @@ def delete_if_all_false(instance, **kwargs):
 def public_acls(instance, **kwargs):
     # Post save function to create/delete ACLs for the PUBLIC_USER based upon
     # an Exp/Set/File public_access flag
-    PUBLIC_USER = User.objects.get(settings.PUBLIC_USER_ID)
+    PUBLIC_USER = User.objects.get(pk=settings.PUBLIC_USER_ID)
     if instance.public_access > 25: #25 = Embargoed
         if isinstance(instance, Experiment):
             if not PUBLIC_USER.experimentacls.select_related("experiment"
