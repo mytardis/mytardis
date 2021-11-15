@@ -7,6 +7,7 @@ managers.py
 
 from datetime import datetime
 
+from django.conf import settings
 from django.db import models
 from django.core.exceptions import PermissionDenied
 from django.contrib.auth.models import User, Group
@@ -252,22 +253,11 @@ class SafeManager(models.Manager):
 
 
     def _query_all_public(self):
-        if self.model.get_ct(self.model).model == "experiment":
-            from .models import Experiment
-            query = Experiment.objects.filter(public_access=Experiment.PUBLIC_ACCESS_FULL)
-            query |= Experiment.objects.filter(public_access=Experiment.PUBLIC_ACCESS_METADATA)
-            return query
-        if self.model.get_ct(self.model).model == "dataset":
-            from .models import Dataset
-            query = Dataset.objects.filter(public_access=Dataset.PUBLIC_ACCESS_FULL)
-            query |= Dataset.objects.filter(public_access=Dataset.PUBLIC_ACCESS_METADATA)
-            return query
-        if self.model.get_ct(self.model).model == "datafile":
-            from .models import DataFile
-            query = DataFile.objects.filter(public_access=DataFile.PUBLIC_ACCESS_FULL)
-            query |= DataFile.objects.filter(public_access=DataFile.PUBLIC_ACCESS_METADATA)
-            return query
-        return super().get_queryset().none()
+        # Querying directly on the Exp/Set/File tables for public_flags scales
+        # horribly with table size, so query via a PUBLIC_USER who has a read_only
+        # ACL with all public objects.
+        PUBLIC_USER = User.objects.get(pk=settings.PUBLIC_USER_ID)
+        return self._query_on_acls(user=PUBLIC_USER)
 
 
     def owned_by_user(self, user):
@@ -336,7 +326,7 @@ class SafeManager(models.Manager):
         :rtype: QuerySet
         """
         acl = self.user_acls(obj_id)
-        return User.objects.filter(pk__in=[int(a.user.id) for a in acl])
+        return User.objects.filter(pk__in=[int(a.user.id) for a in acl]).exclude(pk=settings.PUBLIC_USER_ID)
 
 
     def group_acls(self, obj_id):

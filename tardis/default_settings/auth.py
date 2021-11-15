@@ -9,6 +9,11 @@ GROUP_PROVIDERS = (
 
 ONLY_EXPERIMENT_ACLS = True
 
+# For a freshly installed MyTardis DB this will the default User ID,
+# as it is created in the migrations prior to any SuperUser creation.
+# For existing DBs this will need to be overriden in the settings.py file
+PUBLIC_USER_ID = 1
+
 # AUTH_PROVIDERS entry format:
 # ('name', 'display name', 'backend implementation')
 #   name - used as the key for the entry

@@ -484,7 +484,7 @@ class UserResource(ModelResource):
         object_class = User
         authentication = default_authentication
         authorization = ACLAuthorization()
-        queryset = User.objects.all()
+        queryset = User.objects.all().exclude(pk=settings.PUBLIC_USER_ID)
         allowed_methods = ['get']
         fields = ['username', 'first_name', 'last_name', 'email']
         serializer = default_serializer
@@ -1330,7 +1330,7 @@ class ExperimentACLResource(MyTardisModelResource):
         object_class = ExperimentACL
         authentication = default_authentication
         authorization = ACLAuthorization()
-        queryset = ExperimentACL.objects.all()
+        queryset = ExperimentACL.objects.select_related("user").exclude(user__id = settings.PUBLIC_USER_ID)
         #filtering = {
         #    'pluginId': ('exact', ),
         #    'entityId': ('exact', ),
@@ -1357,7 +1357,7 @@ class DatasetACLResource(MyTardisModelResource):
         object_class = DatasetACL
         authentication = default_authentication
         authorization = ACLAuthorization()
-        queryset = DatasetACL.objects.all()
+        queryset = DatasetACL.objects.select_related("user").exclude(user__id = settings.PUBLIC_USER_ID)
         filtering = {
             'pluginId': ('exact', ),
             'entityId': ('exact', ),
@@ -1384,7 +1384,7 @@ class DatafileACLResource(MyTardisModelResource):
         object_class = DatafileACL
         authentication = default_authentication
         authorization = ACLAuthorization()
-        queryset = DatafileACL.objects.all()
+        queryset = DatafileACL.objects.select_related("user").exclude(user__id = settings.PUBLIC_USER_ID)
         filtering = {
             'pluginId': ('exact', ),
             'entityId': ('exact', ),

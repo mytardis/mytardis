@@ -302,6 +302,47 @@ def delete_if_all_false(instance, **kwargs):
         instance.delete()
 
 
+def public_acls(instance, **kwargs):
+    # Post save function to create/delete ACLs for the PUBLIC_USER based upon
+    # an Exp/Set/File public_access flag
+    PUBLIC_USER = User.objects.get(settings.PUBLIC_USER_ID)
+    if instance.public_access > 25: #25 = Embargoed
+        if isinstance(instance, Experiment):
+            if not PUBLIC_USER.experimentacls.select_related("experiment"
+                                ).filter(experiment__id=instance.id).exists():
+                acl = ExperimentACL(user=PUBLIC_USER, experiment=instance, canRead=True,
+                                    aclOwnershipType=ExperimentACL.SYSTEM_OWNED)
+                acl.save()
+        if not settings.ONLY_EXPERIMENT_ACLS:
+            if isinstance(instance, Dataset):
+                if not PUBLIC_USER.datasetacls.select_related("dataset"
+                                    ).filter(dataset__id=instance.id).exists():
+                    acl = DatasetACL(user=PUBLIC_USER, dataset=instance, canRead=True,
+                                        aclOwnershipType=DatasetACL.SYSTEM_OWNED)
+                    acl.save()
+            if isinstance(instance, DataFile):
+                if not PUBLIC_USER.datafileacls.select_related("datafile"
+                                    ).filter(datafile__id=instance.id).exists():
+                    acl = DatafileACL(user=PUBLIC_USER, datafile=instance, canRead=True,
+                                        aclOwnershipType=DatafileACL.SYSTEM_OWNED)
+                    acl.save()
+    else:
+        if isinstance(instance, Experiment):
+            PUBLIC_USER.experimentacls.select_related("experiment"
+                                ).filter(experiment__id=instance.id).delete()
+        if not settings.ONLY_EXPERIMENT_ACLS:
+            if isinstance(instance, Dataset):
+                PUBLIC_USER.datasetacls.select_related("dataset"
+                                    ).filter(dataset__id=instance.id).delete()
+            if isinstance(instance, DataFile):
+                PUBLIC_USER.datafileacls.select_related("datafile"
+                                    ).filter(datafile__id=instance.id).delete()
+
+
 post_save.connect(delete_if_all_false, sender=ExperimentACL)
 post_save.connect(delete_if_all_false, sender=DatasetACL)
 post_save.connect(delete_if_all_false, sender=DatafileACL)
+
+post_save.connect(public_acls, sender=Experiment)
+post_save.connect(public_acls, sender=Dataset)
+post_save.connect(public_acls, sender=DataFile)

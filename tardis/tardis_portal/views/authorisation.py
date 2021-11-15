@@ -52,8 +52,8 @@ def retrieve_user_list(request):
         q |= Q(first_name__icontains=' '.join(tokens[:-1])) &\
             Q(last_name__icontains=tokens[-1])
 
-    users_query = User.objects.filter(is_active=True)\
-                      .filter(q).distinct() .select_related('userprofile')
+    users_query = User.objects.filter(is_active=True).exclude(pk=settings.PUBLIC_USER_ID
+                                      ).filter(q).distinct().select_related('userprofile')
 
     # HACK FOR ORACLE - QUERY GENERATED DOES NOT WORK WITH LIMIT SO USING
     # ITERATOR INSTEAD
@@ -210,7 +210,7 @@ def retrieve_group_userlist(request, group_id):
     # TODO: Probably a smarter way to retrieve Users and admin status rather than
     # iterating over each user and checking, as below
     from ..forms import ManageGroupPermissionsForm
-    users = User.objects.filter(groups__id=group_id)
+    users = User.objects.filter(groups__id=group_id).exclude(pk=settings.PUBLIC_USER_ID)
     group_admins = []
     for user in users:
         query = GroupAdmin.objects.filter(admin_user=user, group__id=group_id)
@@ -230,7 +230,7 @@ def retrieve_group_userlist_readonly(request, group_id):
     # TODO: Probably a smarter way to retrieve Users and admin status rather than
     # iterating over each user and checking, as below
     from ..forms import ManageGroupPermissionsForm
-    users = User.objects.filter(groups__id=group_id)
+    users = User.objects.filter(groups__id=group_id).exclude(pk=settings.PUBLIC_USER_ID)
     group_admins = []
     for user in users:
         query = GroupAdmin.objects.filter(admin_user=user, group__id=group_id)
@@ -314,7 +314,7 @@ def add_user_to_group(request, group_id, username):
     if isAdmin:
         groupadmin = GroupAdmin(admin_user=user, group=group)
         groupadmin.save()
-    users = User.objects.filter(groups__id=group_id)
+    users = User.objects.filter(groups__id=group_id).exclude(pk=settings.PUBLIC_USER_ID)
     group_admins = []
     for user in users:
         if GroupAdmin.objects.filter(admin_user=user, group__id=group_id).exists():

@@ -64,7 +64,8 @@ class ExperimentDocument(Document):
         experiment, formatted for elasticsearch.
         """
         return_list = []
-        for acl in instance.experimentacl_set.all():
+        for acl in instance.experimentacl_set.select_related("user"
+                            ).exclude(user__id = settings.PUBLIC_USER_ID):
             acl_dict = {}
             if acl.user is not None:
                 acl_dict["pluginId"] = "django_user"
@@ -142,7 +143,8 @@ class DatasetDocument(Document):
         return_list = []
         if settings.ONLY_EXPERIMENT_ACLS:
             for exp in instance.experiments.all():
-                for acl in exp.experimentacl_set.all():
+                for acl in exp.experimentacl_set.select_related("user"
+                                ).exclude(user__id = settings.PUBLIC_USER_ID):
                     acl_dict = {}
                     if acl.user is not None:
                         acl_dict["pluginId"] = "django_user"
@@ -155,7 +157,8 @@ class DatasetDocument(Document):
                     if acl_dict not in return_list:
                         return_list.append(acl_dict)
         else:
-            for acl in instance.datasetacl_set.all():
+            for acl in instance.datasetacl_set.select_related("user"
+                                ).exclude(user__id = settings.PUBLIC_USER_ID):
                 acl_dict = {}
                 if acl.user is not None:
                     acl_dict["pluginId"] = "django_user"
@@ -228,7 +231,8 @@ class DataFileDocument(Document):
         return_list = []
         if settings.ONLY_EXPERIMENT_ACLS:
             for exp in instance.dataset.experiments.all():
-                for acl in exp.experimentacl_set.all():
+                for acl in exp.experimentacl_set.select_related("user"
+                                ).exclude(user__id = settings.PUBLIC_USER_ID):
                     acl_dict = {}
                     if acl.user is not None:
                         acl_dict["pluginId"] = "django_user"
@@ -241,7 +245,8 @@ class DataFileDocument(Document):
                     if acl_dict not in return_list:
                         return_list.append(acl_dict)
         else:
-            for acl in instance.datafileacl_set.all():
+            for acl in instance.datafileacl_set.select_related("user"
+                                ).exclude(user__id = settings.PUBLIC_USER_ID):
                 acl_dict = {}
                 if acl.user is not None:
                     acl_dict["pluginId"] = "django_user"

@@ -35,7 +35,7 @@ class UserGroupListsTestCase(TestCase):
             user.first_name = first
             user.last_name = last
             user.save()
-        self.users = User.objects.all()
+        self.users = User.objects.all().exclude(pk=settings.PUBLIC_USER_ID)
 
         self.client = Client()
         login = self.client.login(username=self.accounts[0][0],
@@ -131,7 +131,7 @@ class UserListTestCase(TestCase):
             user.first_name = first
             user.last_name = last
             user.save()
-        self.users = User.objects.all()
+        self.users = User.objects.all().exclude(pk=settings.PUBLIC_USER_ID)
 
         self.client = Client()
         login = self.client.login(username=self.accounts[0][0],
