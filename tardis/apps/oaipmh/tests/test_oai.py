@@ -151,7 +151,7 @@ class EndpointTestCase(TestCase):
             collection.xpath(
                 'r:relatedObject[r:relation/@type="isManagedBy"]/r:key/text()',
                 namespaces=ns),
-            ['keydomain.test.example/user/%d' % User.objects.first().id])
+            ['keydomain.test.example/user/%d' % User.objects.all().exclude(id = settings.PUBLIC_USER_ID).first().id])
         self.assertEqual(
             collection.xpath(
                 'r:relatedObject[r:relation/@type="hasCollector"]/r:key/text()',

@@ -24,6 +24,7 @@ from ...models import ExperimentACL, Experiment
 class UserGroupListsTestCase(TestCase):
 
     def setUp(self):
+        from django.conf import settings
 
         self.accounts = [
             ('user1', 'pwd1', 'useronefirstname', 'useronelastname'),
@@ -120,7 +121,7 @@ class UserListTestCase(TestCase):
     '''
 
     def setUp(self):
-
+        from django.conf import settings
         self.accounts = [
             ('user1', 'pwd1', 'useronefirstname', 'useronelastname'),
             ('user2', 'pwd2', 'usertwofirstname', 'usertwolastname'),
