@@ -17,7 +17,7 @@ def create_public_user(apps, schema_editor):
     # PUBLIC_USER
     for exp in EXPERIMENT.objects.filter(public_access__gt=25).iterator():
         EXPERIMENTACL.objects.create(canRead = True,
-                                     aclOwnershipType = EXPERIMENTACL.SYSTEM_OWNED,
+                                     aclOwnershipType = 2,# = .SYSTEM_OWNED,
                                      experiment = exp,
                                      user = PUBLIC_USER)
 
