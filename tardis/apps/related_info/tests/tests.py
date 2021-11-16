@@ -70,6 +70,8 @@ class ListTestCase(TransactionTestCase):
     def setUp(self):
         if not User.objects.filter(pk=settings.PUBLIC_USER_ID).exists():
             self.PUBLIC_USER = User.objects.create_user(username='PUBLIC_USER_TEST')
+        settings.PUBLIC_USER_ID = self.PUBLIC_USER.id
+
         self.assertEqual(self.PUBLIC_USER.id, settings.PUBLIC_USER_ID)
         user, client = _create_user_and_login()
 
@@ -89,6 +91,9 @@ class ListTestCase(TransactionTestCase):
         acl.save()
         self.client = client
         self.experiment = experiment
+
+    def tearDown(self):
+           settings.PUBLIC_USER_ID = 2
 
     def testHandlesEmptySet(self):
         response = self.client.get(
@@ -160,6 +165,8 @@ class GetTestCase(TransactionTestCase):
     def setUp(self):
         if not User.objects.filter(pk=settings.PUBLIC_USER_ID).exists():
             self.PUBLIC_USER = User.objects.create_user(username='PUBLIC_USER_TEST')
+        settings.PUBLIC_USER_ID = self.PUBLIC_USER.id
+
         self.assertEqual(self.PUBLIC_USER.id, settings.PUBLIC_USER_ID)
         user, client = _create_user_and_login()
 
@@ -179,6 +186,9 @@ class GetTestCase(TransactionTestCase):
         acl.save()
         self.client = client
         self.experiment = experiment
+
+    def tearDown(self):
+           settings.PUBLIC_USER_ID = 2
 
     @patch('webpack_loader.loader.WebpackLoader.get_bundle')
     def testHandlesNotFound(self, mock_webpack_get_bundle):
@@ -216,6 +226,8 @@ class CreateTestCase(TransactionTestCase):
     def setUp(self):
         if not User.objects.filter(pk=settings.PUBLIC_USER_ID).exists():
             self.PUBLIC_USER = User.objects.create_user(username='PUBLIC_USER_TEST')
+        settings.PUBLIC_USER_ID = self.PUBLIC_USER.id
+
         self.assertEqual(self.PUBLIC_USER.id, settings.PUBLIC_USER_ID)
 
         user, client = _create_user_and_login()
@@ -237,6 +249,9 @@ class CreateTestCase(TransactionTestCase):
         self.acl = acl
         self.client = client
         self.experiment = experiment
+
+    def tearDown(self):
+           settings.PUBLIC_USER_ID = 2
 
     @patch('webpack_loader.loader.WebpackLoader.get_bundle')
     def testMustHaveWrite(self, mock_webpack_get_bundle):
@@ -307,6 +322,8 @@ class UpdateTestCase(TransactionTestCase):
     def setUp(self):
         if not User.objects.filter(pk=settings.PUBLIC_USER_ID).exists():
             self.PUBLIC_USER = User.objects.create_user(username='PUBLIC_USER_TEST')
+        settings.PUBLIC_USER_ID = self.PUBLIC_USER.id
+
         self.assertEqual(self.PUBLIC_USER.id, settings.PUBLIC_USER_ID)
 
         user, client = _create_user_and_login()
@@ -328,6 +345,9 @@ class UpdateTestCase(TransactionTestCase):
         self.acl = acl
         self.client = client
         self.experiment = experiment
+
+    def tearDown(self):
+           settings.PUBLIC_USER_ID = 2
 
     def _create_initial_entry(self):
         params = {'type': 'website',
@@ -387,6 +407,8 @@ class DeleteTestCase(TransactionTestCase):
     def setUp(self):
         if not User.objects.filter(pk=settings.PUBLIC_USER_ID).exists():
             self.PUBLIC_USER = User.objects.create_user(username='PUBLIC_USER_TEST')
+        settings.PUBLIC_USER_ID = self.PUBLIC_USER.id
+
         self.assertEqual(self.PUBLIC_USER.id, settings.PUBLIC_USER_ID)
         user, client = _create_user_and_login()
 
@@ -407,6 +429,9 @@ class DeleteTestCase(TransactionTestCase):
         self.acl = acl
         self.client = client
         self.experiment = experiment
+
+    def tearDown(self):
+           settings.PUBLIC_USER_ID = 2
 
     def _create_initial_entry(self):
         params = {'type': 'website',
