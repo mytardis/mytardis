@@ -37,6 +37,7 @@ http://docs.djangoproject.com/en/dev/topics/testing/
 
 """
 from django.conf import settings
+from django.contrib.auth.models import User
 from django.test import TestCase
 
 from ..forms import RightsForm
