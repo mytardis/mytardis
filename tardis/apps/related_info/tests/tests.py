@@ -67,12 +67,10 @@ class TabTestCase(TestCase):
 
 class ListTestCase(TransactionTestCase):
 
-    @classmethod
-    def setUpTestData(self):
-        self.PUBLIC_USER = User.objects.create_user(username='PUBLIC_USER_TEST')
-        self.assertEqual(self.PUBLIC_USER.id, settings.PUBLIC_USER_ID)
-
     def setUp(self):
+        if not User.objects.filter(pk=settings.PUBLIC_USER_ID).exists():
+            self.PUBLIC_USER = User.objects.create_user(username='PUBLIC_USER_TEST')
+        self.assertEqual(self.PUBLIC_USER.id, settings.PUBLIC_USER_ID)
         user, client = _create_user_and_login()
 
         experiment = Experiment(title='Norwegian Blue',
@@ -159,12 +157,10 @@ class ListTestCase(TransactionTestCase):
 
 class GetTestCase(TransactionTestCase):
 
-    @classmethod
-    def setUpTestData(self):
-        self.PUBLIC_USER = User.objects.create_user(username='PUBLIC_USER_TEST')
-        self.assertEqual(self.PUBLIC_USER.id, settings.PUBLIC_USER_ID)
-
     def setUp(self):
+        if not User.objects.filter(pk=settings.PUBLIC_USER_ID).exists():
+            self.PUBLIC_USER = User.objects.create_user(username='PUBLIC_USER_TEST')
+        self.assertEqual(self.PUBLIC_USER.id, settings.PUBLIC_USER_ID)
         user, client = _create_user_and_login()
 
         experiment = Experiment(title='Norwegian Blue',
@@ -217,12 +213,11 @@ class GetTestCase(TransactionTestCase):
 
 class CreateTestCase(TransactionTestCase):
 
-    @classmethod
-    def setUpTestData(self):
-        self.PUBLIC_USER = User.objects.create_user(username='PUBLIC_USER_TEST')
+    def setUp(self):
+        if not User.objects.filter(pk=settings.PUBLIC_USER_ID).exists():
+            self.PUBLIC_USER = User.objects.create_user(username='PUBLIC_USER_TEST')
         self.assertEqual(self.PUBLIC_USER.id, settings.PUBLIC_USER_ID)
 
-    def setUp(self):
         user, client = _create_user_and_login()
 
         experiment = Experiment(title='Norwegian Blue',
@@ -309,12 +304,11 @@ class CreateTestCase(TransactionTestCase):
 
 class UpdateTestCase(TransactionTestCase):
 
-    @classmethod
-    def setUpTestData(self):
-        self.PUBLIC_USER = User.objects.create_user(username='PUBLIC_USER_TEST')
+    def setUp(self):
+        if not User.objects.filter(pk=settings.PUBLIC_USER_ID).exists():
+            self.PUBLIC_USER = User.objects.create_user(username='PUBLIC_USER_TEST')
         self.assertEqual(self.PUBLIC_USER.id, settings.PUBLIC_USER_ID)
 
-    def setUp(self):
         user, client = _create_user_and_login()
 
         experiment = Experiment(title='Norwegian Blue',
@@ -390,12 +384,10 @@ class UpdateTestCase(TransactionTestCase):
 
 class DeleteTestCase(TransactionTestCase):
 
-    @classmethod
-    def setUpTestData(self):
-        self.PUBLIC_USER = User.objects.create_user(username='PUBLIC_USER_TEST')
-        self.assertEqual(self.PUBLIC_USER.id, settings.PUBLIC_USER_ID)
-
     def setUp(self):
+        if not User.objects.filter(pk=settings.PUBLIC_USER_ID).exists():
+            self.PUBLIC_USER = User.objects.create_user(username='PUBLIC_USER_TEST')
+        self.assertEqual(self.PUBLIC_USER.id, settings.PUBLIC_USER_ID)
         user, client = _create_user_and_login()
 
         experiment = Experiment(title='Norwegian Blue',
