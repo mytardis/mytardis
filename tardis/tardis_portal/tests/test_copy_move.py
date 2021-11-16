@@ -25,6 +25,8 @@ class CopyMoveTestCase(TestCase):
     """
 
     def setUp(self):
+        self.PUBLIC_USER = User.objects.create_user(username='PUBLIC_USER_TEST')
+        self.assertEqual(self.PUBLIC_USER.id, settings.PUBLIC_USER_ID)
         self.dataset = Dataset.objects.create(description="test-dataset")
         file_content = u'bla'
         md5sum = hashlib.md5(file_content.encode('utf-8')).hexdigest()

@@ -13,6 +13,8 @@ from tardis.tardis_portal.tasks import df_save_metadata
 class DatafileSaveMetadataTestCase(TestCase):
 
     def setUp(self):
+        self.PUBLIC_USER = User.objects.create_user(username='PUBLIC_USER_TEST')
+        self.assertEqual(self.PUBLIC_USER.id, settings.PUBLIC_USER_ID)
         self.schema = Schema.objects.create(
             name="DataFile Schema 1",
             namespace="http://schema.namespace/datafile/1",

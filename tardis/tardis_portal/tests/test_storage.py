@@ -15,6 +15,8 @@ from ..models import DataFile
 class ModelTestCase(TestCase):
 
     def setUp(self):
+        self.PUBLIC_USER = User.objects.create_user(username='PUBLIC_USER_TEST')
+        self.assertEqual(self.PUBLIC_USER.id, settings.PUBLIC_USER_ID)
         self.test_box = StorageBox(name='test box',
                                    status='online',
                                    max_size=123)

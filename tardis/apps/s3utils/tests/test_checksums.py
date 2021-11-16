@@ -20,6 +20,8 @@ from tardis.tardis_portal.models.storage import StorageBox, StorageBoxOption
 class S3UtilsAppChecksumsTestCase(TestCase):
     def setUp(self):
         super().setUp()
+        self.PUBLIC_USER = User.objects.create_user(username='PUBLIC_USER_TEST')
+        self.assertEqual(self.PUBLIC_USER.id, settings.PUBLIC_USER_ID)
         self.dataset = Dataset.objects.create(description='Test Dataset')
         # Create a DataFile record with the correct size, MD5 sum and
         # SHA 512 sum to represent a file containing the string 'test'

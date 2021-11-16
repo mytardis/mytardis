@@ -47,7 +47,6 @@ def _create_test_data():
 class EndpointTestCase(TestCase):
 
     def setUp(self):
-
         self.PUBLIC_USER = User.objects.create_user(username='PUBLIC_USER_TEST')
         self.assertEqual(self.PUBLIC_USER.id, settings.PUBLIC_USER_ID)
         self._client = Client()
@@ -66,7 +65,7 @@ class EndpointTestCase(TestCase):
 
     def testGetRecord(self):
         ns = self.ns
-        _, experiment = _create_test_data()
+        _user, experiment = _create_test_data()
         args = {
             'verb': 'GetRecord',
             'metadataPrefix': 'rif',
@@ -156,7 +155,7 @@ class EndpointTestCase(TestCase):
             collection.xpath(
                 'r:relatedObject[r:relation/@type="isManagedBy"]/r:key/text()',
                 namespaces=ns),
-            ['keydomain.test.example/user/%d' % User.objects.all().exclude(id = settings.PUBLIC_USER_ID).first().id])
+            ['keydomain.test.example/user/%d' % _user.id])
         self.assertEqual(
             collection.xpath(
                 'r:relatedObject[r:relation/@type="hasCollector"]/r:key/text()',

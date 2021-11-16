@@ -53,6 +53,10 @@ from ..models import Experiment, ExperimentACL, Dataset
 # http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html
 class UserInterfaceTestCase(TestCase):
 
+    def setUp(self):
+        self.PUBLIC_USER = User.objects.create_user(username='PUBLIC_USER_TEST')
+        self.assertEqual(self.PUBLIC_USER.id, settings.PUBLIC_USER_ID)
+
     @patch('webpack_loader.loader.WebpackLoader.get_bundle')
     def test_root(self, mock_webpack_get_bundle):
         self.assertEqual(Client().get('/').status_code, 200)
@@ -73,8 +77,6 @@ class UserInterfaceTestCase(TestCase):
 
     @patch('webpack_loader.loader.WebpackLoader.get_bundle')
     def test_urls_with_some_content(self, mock_webpack_get_bundle):
-        self.PUBLIC_USER = User.objects.create_user(username='PUBLIC_USER_TEST')
-        self.assertEqual(self.PUBLIC_USER.id, settings.PUBLIC_USER_ID)
         # Things that might tend to be in a real live system
         user = 'testuser'
         pwd = User.objects.make_random_password()

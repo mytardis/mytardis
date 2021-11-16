@@ -96,7 +96,7 @@ class ExperimentResourceTest(MyTardisResourceTestCase):
 
     def test_get_experiment(self):
         exp_id = Experiment.objects.first().id
-        user_id = 2 #User.objects.first().id, PUBLIC_USER is created first
+        user_id = 3 #PUBLIC_USER and PUBLIC_USER_TEST both exist first
         expected_output = {
             "approved": True,
             "created_by": "/api/v1/user/%d/" % user_id,

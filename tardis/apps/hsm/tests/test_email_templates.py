@@ -15,6 +15,8 @@ from ..email_text import email_dfo_recall_failed
 
 class HsmAppEmailTemplateTestCase(TestCase):
     def setUp(self):
+        self.PUBLIC_USER = User.objects.create_user(username='PUBLIC_USER_TEST')
+        self.assertEqual(self.PUBLIC_USER.id, settings.PUBLIC_USER_ID)
         self.dataset = Dataset.objects.create(description='Test')
         self.datafile = DataFile.objects.create(
             dataset=self.dataset, filename='test.txt',
