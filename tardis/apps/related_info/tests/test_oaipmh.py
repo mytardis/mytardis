@@ -24,7 +24,7 @@ def _create_user_and_login(username='testuser', password='testpass'):
 class RifCSTestCase(TransactionTestCase):
 
     def setUp(self):
-        self.PUBLIC_USER = User.objects.create_user(username='PUBLIC_USER')
+        self.PUBLIC_USER = User.objects.create_user(username='PUBLIC_USER_TEST')
         self.assertEqual(self.PUBLIC_USER.id, settings.PUBLIC_USER_ID)
         self.ns = {'r': 'http://ands.org.au/standards/rif-cs/registryObjects',
                    'o': 'http://www.openarchives.org/OAI/2.0/'}

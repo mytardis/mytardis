@@ -46,7 +46,8 @@ def _create_test_data():
 class EndpointTestCase(TestCase):
 
     def setUp(self):
-        self.PUBLIC_USER = User.objects.create_user(username='PUBLIC_USER')
+
+        self.PUBLIC_USER = User.objects.create_user(username='PUBLIC_USER_TEST')
         self.assertEqual(self.PUBLIC_USER.id, settings.PUBLIC_USER_ID)
         self._client = Client()
         self.ns = {'r': 'http://ands.org.au/standards/rif-cs/registryObjects',

@@ -22,7 +22,7 @@ class MyTardisResourceTestCase(ResourceTestCaseMixin, TestCase):
     '''
     def setUp(self):
         super().setUp()
-        self.PUBLIC_USER = User.objects.create_user(username='PUBLIC_USER')
+        self.PUBLIC_USER = User.objects.create_user(username='PUBLIC_USER_TEST')
         self.assertEqual(self.PUBLIC_USER.id, settings.PUBLIC_USER_ID)
 
         self.username = 'mytardis'

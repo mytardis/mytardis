@@ -41,7 +41,7 @@ class MockRifCsProvider(RifCsProvider):
 class PublishServiceTestCase(TestCase):
 
     def setUp(self):
-        self.PUBLIC_USER = User.objects.create_user(username='PUBLIC_USER')
+        self.PUBLIC_USER = User.objects.create_user(username='PUBLIC_USER_TEST')
         self.assertEqual(self.PUBLIC_USER.id, settings.PUBLIC_USER_ID)
         self.user = User.objects.create_user(username='TestUser',
                                              email='user@test.com',

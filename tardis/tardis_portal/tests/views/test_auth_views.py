@@ -25,7 +25,7 @@ class UserGroupListsTestCase(TestCase):
 
     def setUp(self):
         from django.conf import settings
-        self.PUBLIC_USER = User.objects.create_user(username='PUBLIC_USER')
+        self.PUBLIC_USER = User.objects.create_user(username='PUBLIC_USER_TEST')
         self.assertEqual(self.PUBLIC_USER.id, settings.PUBLIC_USER_ID)
 
         self.accounts = [
@@ -124,7 +124,7 @@ class UserListTestCase(TestCase):
 
     def setUp(self):
         from django.conf import settings
-        self.PUBLIC_USER = User.objects.create_user(username='PUBLIC_USER')
+        self.PUBLIC_USER = User.objects.create_user(username='PUBLIC_USER_TEST')
         self.assertEqual(self.PUBLIC_USER.id, settings.PUBLIC_USER_ID)
         self.accounts = [
             ('user1', 'pwd1', 'useronefirstname', 'useronelastname'),

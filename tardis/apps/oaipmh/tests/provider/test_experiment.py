@@ -72,7 +72,7 @@ class AbstractExperimentProviderTC():
         return ''
 
     def setUp(self):
-        self.PUBLIC_USER = User.objects.create_user(username='PUBLIC_USER')
+        self.PUBLIC_USER = User.objects.create_user(username='PUBLIC_USER_TEST')
         self.assertEqual(self.PUBLIC_USER.id, settings.PUBLIC_USER_ID)
         self._experiment, self._experiment2, self._user = _create_test_data()
 

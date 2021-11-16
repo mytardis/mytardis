@@ -15,7 +15,7 @@ from django.contrib.auth.models import User, Permission
 class AuthenticationTestCase(TestCase):
 
     def setUp(self):
-        self.PUBLIC_USER = User.objects.create_user(username='PUBLIC_USER')
+        self.PUBLIC_USER = User.objects.create_user(username='PUBLIC_USER_TEST')
         self.assertEqual(self.PUBLIC_USER.id, settings.PUBLIC_USER_ID)
         self.client = Client()
         self.loginUrl = "/login/"
