@@ -6,8 +6,6 @@ Testing the Experiment resource in MyTardis's Tastypie-based REST API
 '''
 import json
 
-from django.contrib.auth.models import User
-
 from ...models.experiment import Experiment, ExperimentAuthor
 from ...models.parameters import (ExperimentParameter,
                                   ExperimentParameterSet,

@@ -93,7 +93,7 @@ class ListTestCase(TransactionTestCase):
         self.experiment = experiment
 
     def tearDown(self):
-           settings.PUBLIC_USER_ID = 2
+        settings.PUBLIC_USER_ID = 2
 
     def testHandlesEmptySet(self):
         response = self.client.get(
@@ -188,7 +188,7 @@ class GetTestCase(TransactionTestCase):
         self.experiment = experiment
 
     def tearDown(self):
-           settings.PUBLIC_USER_ID = 2
+        settings.PUBLIC_USER_ID = 2
 
     @patch('webpack_loader.loader.WebpackLoader.get_bundle')
     def testHandlesNotFound(self, mock_webpack_get_bundle):
@@ -251,7 +251,7 @@ class CreateTestCase(TransactionTestCase):
         self.experiment = experiment
 
     def tearDown(self):
-           settings.PUBLIC_USER_ID = 2
+        settings.PUBLIC_USER_ID = 2
 
     @patch('webpack_loader.loader.WebpackLoader.get_bundle')
     def testMustHaveWrite(self, mock_webpack_get_bundle):
@@ -347,7 +347,7 @@ class UpdateTestCase(TransactionTestCase):
         self.experiment = experiment
 
     def tearDown(self):
-           settings.PUBLIC_USER_ID = 2
+        settings.PUBLIC_USER_ID = 2
 
     def _create_initial_entry(self):
         params = {'type': 'website',
@@ -431,7 +431,7 @@ class DeleteTestCase(TransactionTestCase):
         self.experiment = experiment
 
     def tearDown(self):
-           settings.PUBLIC_USER_ID = 2
+        settings.PUBLIC_USER_ID = 2
 
     def _create_initial_entry(self):
         params = {'type': 'website',
