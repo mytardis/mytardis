@@ -90,6 +90,7 @@ class EndpointTestCase(TestCase):
                                            namespaces=ns)[0])
 
     def _check_experiment_regobj(self, experiment, registryObject):
+        from django.conf import settings
         ns = self.ns
         # <key>keydomain.test.example/experiment/1</key>
         self.assertEqual(
