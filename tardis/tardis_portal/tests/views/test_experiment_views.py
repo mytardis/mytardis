@@ -13,6 +13,7 @@ from urllib.parse import urlparse
 
 from unittest.mock import patch
 
+from django.conf import settings
 from django.urls import resolve, reverse
 from django.test import TestCase
 from django.test.client import Client

@@ -5,6 +5,8 @@ http://docs.djangoproject.com/en/dev/topics/testing/
 .. moduleauthor::  Grischa Meyer <grischa@gmail.com>
 
 """
+from django.conf import settings
+from django.contrib.auth.models import User
 from django.test import TestCase
 
 from ..models import StorageBox, StorageBoxOption

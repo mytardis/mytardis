@@ -65,7 +65,7 @@ class EndpointTestCase(TestCase):
 
     def testGetRecord(self):
         ns = self.ns
-        _user, experiment = _create_test_data()
+        user, experiment = _create_test_data()
         args = {
             'verb': 'GetRecord',
             'metadataPrefix': 'rif',
@@ -88,12 +88,11 @@ class EndpointTestCase(TestCase):
         # <registryObject group="MyTARDIS Default Group">
         self.assertEqual(metadata.xpath('r:registryObjects/r:registryObject/@group',
                               namespaces=ns)[0], 'MyTardis Test Group')
-        self._check_experiment_regobj(experiment,
+        self._check_experiment_regobj(user, experiment,
                             metadata.xpath('r:registryObjects/r:registryObject',
                                            namespaces=ns)[0])
 
-    def _check_experiment_regobj(self, experiment, registryObject):
-        from django.conf import settings
+    def _check_experiment_regobj(self, user, experiment, registryObject):
         ns = self.ns
         # <key>keydomain.test.example/experiment/1</key>
         self.assertEqual(
@@ -155,7 +154,7 @@ class EndpointTestCase(TestCase):
             collection.xpath(
                 'r:relatedObject[r:relation/@type="isManagedBy"]/r:key/text()',
                 namespaces=ns),
-            ['keydomain.test.example/user/%d' % _user.id])
+            ['keydomain.test.example/user/%d' % user.id])
         self.assertEqual(
             collection.xpath(
                 'r:relatedObject[r:relation/@type="hasCollector"]/r:key/text()',
@@ -301,7 +300,7 @@ class EndpointTestCase(TestCase):
                                      '[r:collection]',
                                      namespaces=ns)
         assert len(collectionObject) == 1
-        self._check_experiment_regobj(experiment, collectionObject[0])
+        self._check_experiment_regobj(user, experiment, collectionObject[0])
         partyObject = xml.xpath(metadata_xpath +
                                 '/r:registryObjects/r:registryObject' +
                                 '[r:party]',

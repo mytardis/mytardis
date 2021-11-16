@@ -8,6 +8,8 @@ import sys
 
 from unittest.mock import patch
 
+from django.conf import settings
+from django.contrib.auth.models import User
 from django.test import TestCase
 
 from tardis.tardis_portal.models.dataset import Dataset
