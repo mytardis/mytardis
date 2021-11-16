@@ -45,6 +45,8 @@ from ..models import Experiment, License
 class RightsFormTestCase(TestCase):
 
     def setUp(self):
+        self.PUBLIC_USER = User.objects.create_user(username='PUBLIC_USER')
+        self.assertEqual(self.PUBLIC_USER.id, settings.PUBLIC_USER_ID)
         self.restrictiveLicense = License(name="Restrictive License",
                                           url="http://example.test/rl",
                                           internal_description="Description...",

@@ -100,6 +100,8 @@ def _next_id():
 class RmExperimentTestCase(TestCase):
 
     def testList(self):
+        self.PUBLIC_USER = User.objects.create_user(username='PUBLIC_USER')
+        self.assertEqual(self.PUBLIC_USER.id, settings.PUBLIC_USER_ID)
         (exp1_, exp2_, user_) = _create_test_data()
         self.assertEqual(DataFile.objects.all().count(), 6)
         self.assertEqual(len(exp1_.get_datafiles(user_)), 3)

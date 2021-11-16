@@ -18,7 +18,8 @@ class ACLTestCase(TestCase):
     urls = 'tardis.urls'
 
     def setUp(self):
-
+        self.PUBLIC_USER = User.objects.create_user(username='PUBLIC_USER')
+        self.assertEqual(self.PUBLIC_USER.id, settings.PUBLIC_USER_ID)
         # create a couple of test users
         self.user1 = User.objects.create_user('testuser1', '', 'secret')
         self.user2 = User.objects.create_user('testuser2', '', 'secret')

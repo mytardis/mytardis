@@ -22,6 +22,9 @@ class MyTardisResourceTestCase(ResourceTestCaseMixin, TestCase):
     '''
     def setUp(self):
         super().setUp()
+        self.PUBLIC_USER = User.objects.create_user(username='PUBLIC_USER')
+        self.assertEqual(self.PUBLIC_USER.id, settings.PUBLIC_USER_ID)
+
         self.username = 'mytardis'
         self.password = 'mytardis'  # nosec
         self.user = User.objects.create_user(username=self.username,

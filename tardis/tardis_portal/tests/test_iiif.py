@@ -88,6 +88,8 @@ class Level0TestCase(TestCase):
     """ As per: http://library.stanford.edu/iiif/image-api/compliance.html """
 
     def setUp(self):
+        self.PUBLIC_USER = User.objects.create_user(username='PUBLIC_USER')
+        self.assertEqual(self.PUBLIC_USER.id, settings.PUBLIC_USER_ID)
         self.datafile = _create_datafile()
         self.width = 70
         self.height = 46
@@ -151,6 +153,8 @@ class Level1TestCase(TestCase):
     """ As per: http://library.stanford.edu/iiif/image-api/compliance.html """
 
     def setUp(self):
+        self.PUBLIC_USER = User.objects.create_user(username='PUBLIC_USER')
+        self.assertEqual(self.PUBLIC_USER.id, settings.PUBLIC_USER_ID)
         self.datafile = _create_datafile()
         self.width = 70
         self.height = 46
@@ -268,6 +272,8 @@ class Level2TestCase(TestCase):
     """ As per: http://library.stanford.edu/iiif/image-api/compliance.html """
 
     def setUp(self):
+        self.PUBLIC_USER = User.objects.create_user(username='PUBLIC_USER')
+        self.assertEqual(self.PUBLIC_USER.id, settings.PUBLIC_USER_ID)
         self.datafile = _create_datafile()
         self.width = 70
         self.height = 46
@@ -337,6 +343,8 @@ class ExtraTestCases(TestCase):
     """ As per: http://library.stanford.edu/iiif/image-api/compliance.html """
 
     def setUp(self):
+        self.PUBLIC_USER = User.objects.create_user(username='PUBLIC_USER')
+        self.assertEqual(self.PUBLIC_USER.id, settings.PUBLIC_USER_ID)
         self.datafile = _create_datafile()
         self.width = 70
         self.height = 46

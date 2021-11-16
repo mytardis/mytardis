@@ -18,6 +18,8 @@ from ..models.experiment import Experiment
 class TarDownloadTestCase(TestCase):
 
     def setUp(self):
+        self.PUBLIC_USER = User.objects.create_user(username='PUBLIC_USER')
+        self.assertEqual(self.PUBLIC_USER.id, settings.PUBLIC_USER_ID)
         # create user
         self.testuser = User(username='testuser')
         self.testuser.save()
