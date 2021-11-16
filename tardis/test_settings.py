@@ -84,6 +84,12 @@ for app in INSTALLED_APPS:
         DEDUP_INSTALLED_APPS.append(app)
 INSTALLED_APPS = tuple(DEDUP_INSTALLED_APPS)
 
+# For a freshly installed MyTardis DB this will the default User ID,
+# as it is created in the migrations prior to any SuperUser creation.
+# For existing DBs this will need to be overriden in the settings.py file.
+# However for Github tests this ends up being ID=2, hence the test override here...
+PUBLIC_USER_ID = 2
+
 # LDAP configuration
 LDAP_USE_TLS = False
 LDAP_URL = "ldap://localhost:38911/"
