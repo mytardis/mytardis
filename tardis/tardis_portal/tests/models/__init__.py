@@ -36,6 +36,7 @@ http://docs.djangoproject.com/en/dev/topics/testing/
 .. moduleauthor::  James Wettenhall <james.wettenhall@monash.edu>
 
 """
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.test import TestCase
 

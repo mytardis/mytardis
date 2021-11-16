@@ -36,6 +36,7 @@ http://docs.djangoproject.com/en/dev/topics/testing/
 .. moduleauthor::  Russell Sim <russell.sim@monash.edu>
 
 """
+from django.conf import settings
 from django.test import TestCase
 
 from ..forms import RightsForm

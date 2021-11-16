@@ -42,6 +42,7 @@ import unittest
 
 from unittest.mock import patch
 
+from django.conf import settings
 from django.test import TestCase
 from django.test.client import Client
 from django.contrib.auth.models import User

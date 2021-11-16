@@ -1,5 +1,6 @@
 import json
 
+from django.conf import settings
 from django.contrib.auth.models import Permission
 from django.test import TransactionTestCase
 from django.test.client import Client

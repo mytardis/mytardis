@@ -1,6 +1,7 @@
 import hashlib
 from os import urandom
 
+from django.conf import settings
 from django.core.files.base import ContentFile
 from django.test import TestCase
 
