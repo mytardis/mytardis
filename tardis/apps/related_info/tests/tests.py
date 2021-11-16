@@ -67,9 +67,12 @@ class TabTestCase(TestCase):
 
 class ListTestCase(TransactionTestCase):
 
-    def setUp(self):
+    @classmethod
+    def setUpTestData(self):
         self.PUBLIC_USER = User.objects.create_user(username='PUBLIC_USER_TEST')
         self.assertEqual(self.PUBLIC_USER.id, settings.PUBLIC_USER_ID)
+
+    def setUp(self):
         user, client = _create_user_and_login()
 
         experiment = Experiment(title='Norwegian Blue',
@@ -156,9 +159,12 @@ class ListTestCase(TransactionTestCase):
 
 class GetTestCase(TransactionTestCase):
 
-    def setUp(self):
+    @classmethod
+    def setUpTestData(self):
         self.PUBLIC_USER = User.objects.create_user(username='PUBLIC_USER_TEST')
         self.assertEqual(self.PUBLIC_USER.id, settings.PUBLIC_USER_ID)
+
+    def setUp(self):
         user, client = _create_user_and_login()
 
         experiment = Experiment(title='Norwegian Blue',
@@ -211,9 +217,12 @@ class GetTestCase(TransactionTestCase):
 
 class CreateTestCase(TransactionTestCase):
 
-    def setUp(self):
+    @classmethod
+    def setUpTestData(self):
         self.PUBLIC_USER = User.objects.create_user(username='PUBLIC_USER_TEST')
         self.assertEqual(self.PUBLIC_USER.id, settings.PUBLIC_USER_ID)
+
+    def setUp(self):
         user, client = _create_user_and_login()
 
         experiment = Experiment(title='Norwegian Blue',
@@ -300,9 +309,12 @@ class CreateTestCase(TransactionTestCase):
 
 class UpdateTestCase(TransactionTestCase):
 
-    def setUp(self):
+    @classmethod
+    def setUpTestData(self):
         self.PUBLIC_USER = User.objects.create_user(username='PUBLIC_USER_TEST')
         self.assertEqual(self.PUBLIC_USER.id, settings.PUBLIC_USER_ID)
+
+    def setUp(self):
         user, client = _create_user_and_login()
 
         experiment = Experiment(title='Norwegian Blue',
@@ -378,9 +390,12 @@ class UpdateTestCase(TransactionTestCase):
 
 class DeleteTestCase(TransactionTestCase):
 
-    def setUp(self):
+    @classmethod
+    def setUpTestData(self):
         self.PUBLIC_USER = User.objects.create_user(username='PUBLIC_USER_TEST')
         self.assertEqual(self.PUBLIC_USER.id, settings.PUBLIC_USER_ID)
+
+    def setUp(self):
         user, client = _create_user_and_login()
 
         experiment = Experiment(title='Norwegian Blue',
