@@ -17,6 +17,7 @@ link to the same Users/Groups/Tokens that the correpsonding ExperimentACL linked
 import sys
 
 from django.core.management.base import BaseCommand
+from django.db.models import F
 
 from ...models.access_control import  DatasetACL, DatafileACL
 from ...models import Experiment
@@ -32,17 +33,19 @@ class Command(BaseCommand):
         for exp in Experiment.objects.all().only("id", "public_access").iterator():
             sys.stderr.write("Processing Experiment_ID="+str(exp.id)+" ...\n")
             acls_to_cascade = exp.experimentacl_set.select_related("user", "group", "token"
-                                        ).all().values("user__id", "group__id", "token__id",
+                                        ).all().values(user_id=F("user__id"), group_id=F("group__id"), token_id=F("token__id"),
                                     "canRead", "canDownload", "canWrite", "canSensitive",
                                     "canDelete", "isOwner", "aclOwnershipType", "effectiveDate",
                                     "expiryDate")
+
+
 
             public_to_cascade = int(exp.public_access)
 
             datasets = exp.datasets.all()
             for ds in datasets:
                 sys.stderr.write("Creating ACLs for Dataset_ID="+str(ds.id)+".\n")
-                new_acls = [DatasetACL(**dict((key.replace("__","_"), val), **{'dataset_id':ds.id})) for (key, val) in acls_to_cascade]
+                new_acls = [DatasetACL(**dict(item, **{'dataset_id':ds.id})) for item in acls_to_cascade]
                 DatasetACL.objects.bulk_create(new_acls)
                 if ds.public_access < public_to_cascade:
                     sys.stderr.write("Cascading public_access flag to Dataset.\n")
@@ -52,7 +55,7 @@ class Command(BaseCommand):
                 datafiles = ds.datafile_set.all()
                 for df in datafiles:
                     sys.stderr.write("Creating ACLs for DataFile_ID="+str(df.id)+".\n")
-                    new_acls = [DatafileACL(**dict((key.replace("__","_"), val), **{'dataset_id':df.id})) for (key, val) in acls_to_cascade]
+                    new_acls = [DatafileACL(**dict(item, **{'dataset_id':df.id})) for item in acls_to_cascade]
                     DatafileACL.objects.bulk_create(new_acls)
                     if df.public_access < public_to_cascade:
                         sys.stderr.write("Cascading public_access flag to DataFile.\n")
