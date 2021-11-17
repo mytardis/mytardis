@@ -33,14 +33,13 @@ class Command(BaseCommand):
         for exp in Experiment.objects.all().only("id", "public_access").iterator():
             sys.stderr.write("Processing Experiment_ID="+str(exp.id)+" ...\n")
             acls_to_cascade = exp.experimentacl_set.select_related("user", "group", "token"
-                                        ).all().values("canRead", "canDownload", "canWrite", "canSensitive",
-                                    "canDelete", "isOwner", "aclOwnershipType", "effectiveDate","expiryDate",
-                                     user_id=F("user__id"), group_id=F("group__id"), token_id=F("token__id"))
-
-
-
+                                        ).all().values(canRead=F("canRead"), canDownload=F("canDownload"),
+                                                       canWrite=F("canWrite"), canSensitive=F("canSensitive"),
+                                                       canDelete=F("canDelete"), isOwner=F("isOwner"),
+                                                       aclOwnershipType=F("aclOwnershipType"),
+                                                       effectiveDate=F("effectiveDate"),expiryDate=F("expiryDate"),
+                                                       user_id=F("user__id"), group_id=F("group__id"), token_id=F("token__id"))
             public_to_cascade = int(exp.public_access)
-
             datasets = exp.datasets.all()
             for ds in datasets:
                 sys.stderr.write("Creating ACLs for Dataset_ID="+str(ds.id)+".\n")
