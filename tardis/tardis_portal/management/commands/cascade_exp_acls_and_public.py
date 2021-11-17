@@ -42,7 +42,7 @@ class Command(BaseCommand):
             datasets = exp.datasets.all()
             for ds in datasets:
                 sys.stderr.write("Creating ACLs for Dataset_ID="+str(ds.id)+".\n")
-                new_acls = [DatasetACL(dict(item, **{'dataset_id':ds.id})) for item in acls_to_cascade]
+                new_acls = [DatasetACL(**dict(item, **{'dataset_id':ds.id})) for item in acls_to_cascade]
                 DatasetACL.objects.bulk_create(new_acls)
                 if ds.public_access < public_to_cascade:
                     sys.stderr.write("Cascading public_access flag to Dataset.\n")
@@ -52,7 +52,7 @@ class Command(BaseCommand):
                 datafiles = ds.datafile_set.all()
                 for df in datafiles:
                     sys.stderr.write("Creating ACLs for DataFile_ID="+str(df.id)+".\n")
-                    new_acls = [DatafileACL(dict(item, **{'dataset_id':df.id})) for item in acls_to_cascade]
+                    new_acls = [DatafileACL(**dict(item, **{'dataset_id':df.id})) for item in acls_to_cascade]
                     DatafileACL.objects.bulk_create(new_acls)
                     if df.public_access < public_to_cascade:
                         sys.stderr.write("Cascading public_access flag to DataFile.\n")
