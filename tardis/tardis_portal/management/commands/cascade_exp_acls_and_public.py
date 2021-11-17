@@ -17,7 +17,6 @@ link to the same Users/Groups/Tokens that the correpsonding ExperimentACL linked
 import sys
 
 from django.core.management.base import BaseCommand
-from django.db.models import F
 
 from ...models.access_control import  DatasetACL, DatafileACL
 from ...models import Experiment
@@ -33,13 +32,18 @@ class Command(BaseCommand):
         for exp in Experiment.objects.all().only("id", "public_access").iterator():
             sys.stderr.write("Processing Experiment_ID="+str(exp.id)+" ...\n")
             acls_to_cascade = exp.experimentacl_set.select_related("user", "group", "token"
-                                        ).all().values(canRead=F("canRead"), canDownload=F("canDownload"),
-                                                       canWrite=F("canWrite"), canSensitive=F("canSensitive"),
-                                                       canDelete=F("canDelete"), isOwner=F("isOwner"),
-                                                       aclOwnershipType=F("aclOwnershipType"),
-                                                       effectiveDate=F("effectiveDate"),expiryDate=F("expiryDate"),
-                                                       user_id=F("user__id"), group_id=F("group__id"), token_id=F("token__id"))
+                                        ).all().values("user__id", "group__id", "token__id",
+                                    "canRead", "canDownload", "canWrite", "canSensitive",
+                                    "canDelete", "isOwner", "aclOwnershipType", "effectiveDate",
+                                    "expiryDate")
+            acls_to_cascade = [acl for acl in acls_to_cascade]
+            for acl in acls_to_cascade:
+                acl['user_id'] = acl.pop('user__id')
+                acl['group_id'] = acl.pop('group__id')
+                acl['token_id'] = acl.pop('token__id')
+
             public_to_cascade = int(exp.public_access)
+
             datasets = exp.datasets.all()
             for ds in datasets:
                 sys.stderr.write("Creating ACLs for Dataset_ID="+str(ds.id)+".\n")
