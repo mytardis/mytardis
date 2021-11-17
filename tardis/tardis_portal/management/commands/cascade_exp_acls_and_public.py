@@ -57,7 +57,7 @@ class Command(BaseCommand):
                 datafiles = ds.datafile_set.all()
                 for df in datafiles:
                     sys.stderr.write("Creating ACLs for DataFile_ID="+str(df.id)+".\n")
-                    new_acls = [DatafileACL(**dict(item, **{'dataset_id':df.id})) for item in acls_to_cascade]
+                    new_acls = [DatafileACL(**dict(item, **{'datafile_id':df.id})) for item in acls_to_cascade]
                     DatafileACL.objects.bulk_create(new_acls)
                     if df.public_access < public_to_cascade:
                         sys.stderr.write("Cascading public_access flag to DataFile.\n")
