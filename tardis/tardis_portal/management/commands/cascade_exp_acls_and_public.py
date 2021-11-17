@@ -31,7 +31,7 @@ class Command(BaseCommand):
 
         for exp in Experiment.objects.all().only("id", "public_access").iterator():
             sys.stderr.write("Processing Experiment_ID="+str(exp.id)+" ...\n")
-            acls_to_cascade = exp.experimentacls.select_related("user", "group", "token"
+            acls_to_cascade = exp.experimentacl_set.select_related("user", "group", "token"
                                         ).all().values("user__id", "group__id", "token__id",
                                     "canRead", "canDownload", "canWrite", "canSensitive",
                                     "canDelete", "isOwner", "aclOwnershipType", "effectiveDate",
