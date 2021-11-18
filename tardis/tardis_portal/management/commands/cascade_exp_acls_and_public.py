@@ -36,7 +36,7 @@ class Command(BaseCommand):
                                     "canRead", "canDownload", "canWrite", "canSensitive",
                                     "canDelete", "isOwner", "aclOwnershipType", "effectiveDate",
                                     "expiryDate")
-            acls_to_cascade = [acl for acl in acls_to_cascade]
+            acls_to_cascade = list(acl for acl in acls_to_cascade)
             for acl in acls_to_cascade:
                 acl['user_id'] = acl.pop('user__id')
                 acl['group_id'] = acl.pop('group__id')
