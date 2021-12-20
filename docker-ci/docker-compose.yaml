@@ -27,7 +27,7 @@ services:
       MYSQL_ROOT_PASSWORD: mysql
     command: --default-authentication-plugin=mysql_native_password
   es:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.12.1
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.16.2
     environment:
       - bootstrap.memory_lock=true
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
