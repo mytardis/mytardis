@@ -1,0 +1,8 @@
+{% extends "tardis_portal/portal_template.html" %}
+{% load render_bundle from webpack_loader %}
+{% load bleach_tag %}
+
+{% block content %}
+    <div id="project-app"></div>
+{% render_bundle 'project_app' %}
+{% endblock content%}

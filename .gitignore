@@ -51,6 +51,8 @@ tardis/apps/*
 !tardis/apps/social_auth
 !tardis/apps/search
 !tardis/apps/eventlog
+!tardis/apps/projects
+
 
 *.old
 
