@@ -7,7 +7,6 @@ from django.urls import reverse
 from django.db import models
 from django.db.models.signals import post_save
 
-from django.utils.encoding import python_2_unicode_compatible
 from django.utils.timezone import now as django_time_now
 
 from tardis.tardis_portal.models.institution import Institution
@@ -26,7 +25,6 @@ from tardis.tardis_portal.managers import OracleSafeManager, SafeManager
 logger = logging.getLogger(__name__)
 
 
-@python_2_unicode_compatible
 class Project(models.Model):
     """A project is a collection of :class: '~tardis.tardis_portal.experiment.Experiment'
     records. A project can have multiple Experiments but an experiment has only one
@@ -311,7 +309,6 @@ class ProjectParameterSet(ParameterSet):
         return ("project.name", "Project")
 
 
-@python_2_unicode_compatible
 class ProjectACL(ACL):
     project = models.ForeignKey("Project", on_delete=models.CASCADE)
 
