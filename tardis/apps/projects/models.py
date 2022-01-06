@@ -9,7 +9,7 @@ from django.db.models.signals import post_save
 
 from django.utils.timezone import now as django_time_now
 
-from tardis.tardis_portal.models.institution import Institution
+# from tardis.tardis_portal.models.institution import Institution
 from tardis.tardis_portal.models.experiment import Experiment
 from tardis.tardis_portal.models.parameters import Parameter, ParameterSet
 from tardis.tardis_portal.models.access_control import (
@@ -60,7 +60,7 @@ class Project(models.Model):
     end_time = models.DateTimeField(null=True, blank=True)
     created_by = models.ForeignKey(User, on_delete=models.CASCADE)
     url = models.URLField(max_length=255, null=True, blank=True)
-    institution = models.ManyToManyField(Institution, related_name="projects")
+    # institution = models.ManyToManyField(Institution, related_name="projects")
     experiments = models.ManyToManyField(Experiment, related_name="projects")
     objects = OracleSafeManager()
     safe = SafeManager()
@@ -288,7 +288,7 @@ class Project(models.Model):
             "description": self.description,
             "start_time": self.start_time,
             "end_time": self.end_time,
-            "institution": self.institution,
+            # "institution": self.institution,
             "lead_researcher": self.lead_researcher,
             "acls": self.getACLsforIndexing(),
             "parameters": self.getParametersforIndexing(),
