@@ -69,9 +69,6 @@ class Project(models.Model):
     # data_management_plan = models.ManyToManyField(DataManagementPlan,
     #                                              null=True, blank=True)
 
-    class Meta:
-        app_label = "tardis_portal"
-
     def save(self, *args, **kwargs):
         super(Project, self).save(*args, **kwargs)
 
