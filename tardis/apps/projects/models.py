@@ -69,6 +69,9 @@ class Project(models.Model):
     # data_management_plan = models.ManyToManyField(DataManagementPlan,
     #                                              null=True, blank=True)
 
+    class Meta:
+        app_label = "projects"
+
     def save(self, *args, **kwargs):
         super(Project, self).save(*args, **kwargs)
 
@@ -297,10 +300,16 @@ class ProjectParameter(Parameter):
     parameterset = models.ForeignKey("ProjectParameterSet", on_delete=models.CASCADE)
     parameter_type = "Project"
 
+    class Meta:
+        app_label = "projects"
+
 
 class ProjectParameterSet(ParameterSet):
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
     parameter_class = ProjectParameter
+
+    class Meta:
+        app_label = "projects"
 
     def _get_label(self):
         return ("project.name", "Project")
@@ -308,6 +317,9 @@ class ProjectParameterSet(ParameterSet):
 
 class ProjectACL(ACL):
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
+
+    class Meta:
+        app_label = "projects"
 
     def __str__(self):
         return str(self.id)
