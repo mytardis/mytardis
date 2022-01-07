@@ -20,7 +20,7 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.AlterField(
-            model_name="schema",
+            model_name="tardis_portal.schema",
             name="type",
             field=models.IntegerField(
                 choices=[
