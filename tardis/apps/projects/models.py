@@ -26,7 +26,7 @@ from tardis.tardis_portal.managers import OracleSafeManager, SafeManager
 logger = logging.getLogger(__name__)
 
 
-PROJECT_INSTITUTION = "project.DefaultInstitutionProfile"
+PROJECT_INSTITUTION = "projects.DefaultInstitutionProfile"
 if "tardis.apps.institution_profile" in settings.INSTALLED_APPS:
     from tardis.apps.institution_profile import InstitutionProfile
 
