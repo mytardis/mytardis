@@ -25,6 +25,23 @@ from tardis.tardis_portal.managers import OracleSafeManager, SafeManager
 logger = logging.getLogger(__name__)
 
 
+PROJECT_INSTITUTION = "project.DefaultInstitutionProfile"
+if "tardis.apps.institution_profile" in settings.INSTALLED_APPS:
+    from tardis.apps.institution_profile import InstitutionProfile
+
+    PROJECT_INSTITUTION = InstitutionProfile
+
+
+class DefaultInstitutionProfile(models.Model):
+
+    name = models.CharField(
+        max_length=255, null=False, blank=False, default=settings.DEFAULT_INSTITUTION
+    )
+
+    def __str__(self):
+        return self.name
+
+
 class Project(models.Model):
     """A project is a collection of :class: '~tardis.tardis_portal.experiment.Experiment'
     records. A project can have multiple Experiments but an experiment has only one
@@ -45,23 +62,26 @@ class Project(models.Model):
         (PUBLIC_ACCESS_FULL, "Public"),
     )
     name = models.CharField(max_length=255, null=False, blank=False)
-    raid = models.CharField(max_length=255, null=False, blank=False, unique=True)
+    # pid = models.CharField(max_length=255, null=False, blank=False, unique=True)
     description = models.TextField()
     locked = models.BooleanField(default=False)
     public_access = models.PositiveSmallIntegerField(
         choices=PUBLIC_ACCESS_CHOICES, null=False, default=PUBLIC_ACCESS_NONE
     )
-    # TODO No project should have the ingestion service account as the lead_researcher
-    lead_researcher = models.ForeignKey(
-        User, related_name="lead_researcher", on_delete=models.CASCADE
+    principal_investigator = models.ForeignKey(
+        User, related_name="principal_investigator", on_delete=models.CASCADE
+    )
+    institution = models.ManyToManyField(
+        PROJECT_INSTITUTION, related_name="institutions"
     )
     embargo_until = models.DateTimeField(null=True, blank=True)
     start_time = models.DateTimeField(default=django_time_now)
     end_time = models.DateTimeField(null=True, blank=True)
     created_by = models.ForeignKey(User, on_delete=models.CASCADE)
     url = models.URLField(max_length=255, null=True, blank=True)
-    # institution = models.ManyToManyField(Institution, related_name="projects")
-    experiments = models.ManyToManyField(Experiment, related_name="projects")
+    experiments = models.ManyToManyField(
+        Experiment, related_name="projects", blank=True
+    )
     objects = OracleSafeManager()
     safe = SafeManager()
 
@@ -73,7 +93,7 @@ class Project(models.Model):
         app_label = "projects"
 
     def save(self, *args, **kwargs):
-        super(Project, self).save(*args, **kwargs)
+        super().save(*args, **kwargs)
 
     def getParameterSets(self):
         """Return the project parametersets associated with this
