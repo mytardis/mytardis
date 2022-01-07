@@ -19,21 +19,6 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AlterField(
-            model_name="tardis_portal.schema",
-            name="type",
-            field=models.IntegerField(
-                choices=[
-                    (1, "Experiment schema"),
-                    (2, "Dataset schema"),
-                    (3, "Datafile schema"),
-                    (4, "None"),
-                    (5, "Instrument schema"),
-                    (6, "Project schema"),
-                ],
-                default=1,
-            ),
-        ),
         migrations.CreateModel(
             name="DefaultInstitutionProfile",
             fields=[
