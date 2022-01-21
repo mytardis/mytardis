@@ -16,6 +16,7 @@ module.exports = {
         tardis_portal: glob.sync("./assets/js/tardis_portal/*.js"),
         tardis_portal_add_or_edit_dataset: glob.sync("./assets/js/tardis_portal/add_or_edit_dataset/*.js"),
         tardis_portal_create_experiment: glob.sync("./assets/js/tardis_portal/create_experiment/*.js"),
+        tardis_portal_create_project: glob.sync("./assets/js/tardis_portal/create_project/*.js"),
         tardis_portal_push_to: glob.sync("./assets/js/tardis_portal/push-to.js"),
         tardis_portal_view_experiment_init: glob.sync("./assets/js/tardis_portal/view_experiment/init/init.js"),
         tardis_portal_view_experiment_share: glob.sync("./assets/js/tardis_portal/view_experiment/share/share.js"),
@@ -24,6 +25,7 @@ module.exports = {
         tardis_portal_manage_group_members: glob.sync("./assets/js/tardis_portal/manage_group_members/**/*.js"),
         tardis_portal_index: glob.sync("./assets/js/tardis_portal/index/**/*.js"),
         tardis_portal_my_data: glob.sync("./assets/js/tardis_portal/my_data/**/*.js"),
+        tardis_portal_my_projects: glob.sync("./assets/js/tardis_portal/my_projects/**/*.js"),
         tardis_portal_shared: glob.sync("./assets/js/tardis_portal/shared/**/*.js"),
         tardis_portal_public_data: glob.sync("./assets/js/tardis_portal/public_data/**/*.js"),
         tardis_portal_facility_view: "./assets/js/tardis_portal/facility_view/index.js",
@@ -142,4 +144,3 @@ module.exports = {
         },
     }
 };
-

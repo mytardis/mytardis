@@ -10,6 +10,23 @@ i.o-6 {
   opacity: 0.6;
 }
 
+/* Utilities */
+
+.row-primary, .row-active-primary, .row-primary:active {
+    border-left: 4px solid transparent !important;
+    color: rgb(33, 37, 41) !important;
+}
+
+.row-primary:hover, .row-primary:focus {
+    background-color: rgba(0,123,255,0.075) !important;
+    border-left: 4px solid rgba(0,123,255,0.5) !important;
+}
+
+.row-active-primary {
+    background-color: rgba(0,123,255,0.1) !important;
+    border-left: 4px solid rgb(0,123,255) !important;
+}
+
 /* Inset brand in nav bar */
 .navbar .brand a {
   color: #0097E2;
@@ -123,6 +140,18 @@ a.dataset-link :hover {
     color: black;
 }
 
+/* Exp links */
+
+a.experiment-link {
+    font-size: 110%;
+    color: black;
+}
+
+a.experiment-link :hover {
+    color: black;
+}
+
+
 /* Black links */
 
 a.explink, a.dllink, a[rel=license], table td a {
@@ -209,6 +238,59 @@ i.group-icon :hover {
 }
 
 /* index page */
+
+/* index page project */
+.projects .card {
+    border-color: rgba(0, 0, 0, 0.06);
+}
+
+.projects .card .accordion-toggle {
+    cursor: pointer;
+}
+
+.projects .card-body {
+    background-color: #E8F6FF;
+}
+
+.projects .accordion-inner .experiment-list-header {
+    font-style: italic;
+    padding-top: 5px;
+    padding-left: 5px;
+}
+
+
+.projects .accordion-toggle .projectlink {
+    font-size: 1.1em;
+    font-weight: 500;
+}
+
+.projects .accordion-toggle .badgelist {
+    margin-bottom: 4px;
+}
+.projects .card-header {
+    border: none;
+    background-color: #F5FBFF;
+}
+.projects .nav .nav-header {
+    font-size: 11px;
+    font-weight: normal;
+    color: #000000;
+    text-shadow: none;
+    font-style: italic;
+    text-transform: none;
+}
+
+.projects .projectlink {
+    color: black;
+    font-size: 110%;
+}
+
+.projects .ul .small {
+    font-weight: 400;
+}
+
+ /* end index page project */
+
 .experiments .accordion-toggle .explink {
     font-size: 1.1em;
     font-weight: 500;
@@ -235,6 +317,38 @@ i.group-icon :hover {
     width: 100px;
 }
 /* end dataset tiles */
+
+/* myprojects page */
+.myprojects .accordion-toggle .explink {
+    font-size: 1.1em;
+    font-weight: 500;
+    max-width: 67%;
+    cursor: pointer;
+}
+
+.myprojects .accordion-toggle .badgelist {
+    margin-bottom: 4px;
+}
+.myprojects .card-body p {
+    width: 75%;
+}
+.myprojects .card-body .thumbnails li {
+    margin-bottom: 5px;
+    margin-top: 2px;
+}
+.myprojects .nav .nav-header {
+    font-size: 11px;
+    font-weight: normal;
+    color: #000000;
+    text-shadow: none;
+    font-style: italic;
+    text-transform: none;
+}
+.borderless .list-group-item {
+    border: none;
+    background-color: transparent !important;
+}
+/* end myprojects page */
 
 /* mydata page */
 .mydata .accordion-toggle .explink {

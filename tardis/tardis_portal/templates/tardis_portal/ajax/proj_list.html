@@ -1,0 +1,62 @@
+{% load static from staticfiles %}
+{% load project_tags %}
+{% load experimentstats %}
+{% load humanize %}
+{% load bleach_tag %}
+{% load static %}
+{% load pagination %}
+
+{% if projects.paginator.num_pages > 1 %}
+  {% block top-pagination %}{% pagination projects paginator page_num query_string %}{% endblock %}
+  <!-- Page {{ page_num|add:1 }} of {{ experiments.paginator.num_pages }} -->
+{% endif %}
+
+{% for proj in projects %}
+  <div class="card mb-2">
+    <div id="toggle-{{proj.id}}"
+         class="card-header accordion-toggle py-2" data-parent="#projects"
+         data-toggle="collapse">
+      <div class="row">
+        <div class="col-md-8 px-1 pb-1">
+          <input type="hidden" class="proj-index" value="{{ forloop.counter }}">
+          <a class="explink"
+             href="{% url 'tardis_portal.view_project' proj.id %}">{{ proj.name }}</a>
+        </div>
+        <div class="col">
+          {% project_badges proj request.user %}
+        </div>
+      </div>
+      <div class="row">
+        <div class="card-subtitle text-muted small col-6 px-1">
+          {% project_authors proj %}
+        </div>
+        <div class="col">
+          <span class="float-right">
+            {% project_download_link proj %}
+          </span>
+        </div>
+      </div>
+    </div>
+    <div id="collapse-{{proj.id}}" class="card-body collapse py-2">
+      <div class="row">
+        <div class="col-md-9 px-1">
+          <div class="accordion-inner">
+            <p class="card-text small mb-1">{{proj.description|default:""|bleach}}</p>
+            <div id="latest-dataset-{{proj.id}}"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% empty %}
+  <p>You do not own any Projects on this server.<br/>
+    <% comment %>
+    <a href="{% url 'tardis.tardis_portal.views.create_project' %}">Create a new project</a>
+    and upload your data
+    <% endcomment %>
+  </p>
+{% endfor %}
+
+{% if projects.paginator.num_pages > 1 %}
+  {% block bottom-pagination %}{% pagination projects paginator page_num query_string %}{% endblock %}
+{% endif %}

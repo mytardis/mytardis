@@ -18,7 +18,7 @@ from tardis.tardis_portal.shortcuts import (
 from tardis.tardis_portal.views.utils import _redirect_303
 
 from .models import Project, ProjectACL
-from XXX import ProjectForm
+from .forms import ProjectForm
 
 logger = logging.getLogger(__name__)
 
