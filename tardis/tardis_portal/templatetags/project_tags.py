@@ -228,7 +228,7 @@ def project_authors(project, **kwargs):
 
 
 @register.inclusion_tag("tardis_portal/project_tags/project_download_link.html")
-def project_download_link(experiment, **kwargs):
+def project_download_link(project, **kwargs):
     """
     Displays a download link for a project in a list view
     """
