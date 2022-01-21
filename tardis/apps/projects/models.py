@@ -27,10 +27,11 @@ logger = logging.getLogger(__name__)
 
 
 PROJECT_INSTITUTION = "projects.DefaultInstitutionProfile"
-if "tardis.apps.institution_profile" in settings.INSTALLED_APPS:
-    from tardis.apps.institution_profile import InstitutionProfile
 
-    PROJECT_INSTITUTION = InstitutionProfile
+# IMPLEMENT ONCE INSTRUMENT_PROFILE APP IS CREATED, NOT BEFORE
+# if "tardis.apps.institution_profile" in settings.INSTALLED_APPS:
+#    from tardis.apps.institution_profile import InstitutionProfile
+#    PROJECT_INSTITUTION = InstitutionProfile
 
 
 class DefaultInstitutionProfile(models.Model):
@@ -100,7 +101,7 @@ class Project(models.Model):
         """Return the project parametersets associated with this
         project.
         """
-        from .parameters import Schema
+        from tardis.tardis_portal.models.parameters import Schema
 
         return self.projectparameterset_set.filter(schema__schema_type=Schema.PROJECT)
 
@@ -108,7 +109,10 @@ class Project(models.Model):
         """Returns the project parameters associated with this
         project, formatted for elasticsearch.
         """
-        from .parameters import ProjectParameter, ParameterName
+        from tardis.tardis_portal.models.parameters import (
+            ProjectParameter,
+            ParameterName,
+        )
 
         paramsets = list(self.getParameterSets())
         parameter_groups = {
@@ -289,18 +293,19 @@ class Project(models.Model):
         return None
 
     def get_datafiles(self, user, downloadable=False):
-        from .datafile import DataFile
+        from tardis.tardis_portal.models.datafile import DataFile
 
         return DataFile.safe.all(user, downloadable=downloadable).filter(
             dataset__experiments__project=self
         )
 
     def get_size(self, user, downloadable=False):
-        from .datafile import DataFile
+        from tardis.tardis_portal.models.datafile import DataFile
 
         return DataFile.sum_sizes(self.get_datafiles(user, downloadable=downloadable))
 
-    def to_search(self):
+    # IMPLEMENT ONCE SEARCH OVERHAULED
+    """def to_search(self):
         from tardis.apps.search.documents import ProjectDocument as ProjectDoc
 
         metadata = {
@@ -314,7 +319,7 @@ class Project(models.Model):
             "acls": self.getACLsforIndexing(),
             "parameters": self.getParametersforIndexing(),
         }
-        return ProjectDoc(meta=metadata)
+        return ProjectDoc(meta=metadata)"""
 
 
 class ProjectParameter(Parameter):

@@ -16,13 +16,14 @@ from tardis.tardis_portal.models import (
     DatafileACL,
 )
 
-if "tardis.apps.projects" in settings.INSTALLED_APPS:
-    from tardis.apps.projects.models import (
-        Project,
-        ProjectParameter,
-        ProjectParameterSet,
-        ProjectACL,
-    )
+# IMPLEMENT ONCE SEARCH IS OVERHEAULED
+# if "tardis.apps.projects" in settings.INSTALLED_APPS:
+#    from tardis.apps.projects.models import (
+#        Project,
+#        ProjectParameter,
+#        ProjectParameterSet,
+#        ProjectACL,
+#    )
 
 
 logger = logging.getLogger(__name__)

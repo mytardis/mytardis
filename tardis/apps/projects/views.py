@@ -8,18 +8,16 @@ import re
 from django.conf import settings
 from django.contrib.auth.decorators import login_required, permission_required
 from django.core.exceptions import PermissionDenied
-from django.http import HttpResponse
-from django.views.generic.base import TemplateView, View
+from django.views.generic.base import TemplateView
 
 from tardis.tardis_portal.shortcuts import (
     render_response_index,
     return_response_error,
     return_response_not_found,
 )
-from tardis.tardis_portal.views.utils import (
-    _redirect_303,
-    _add_protocols_and_organizations,
-)
+from tardis.tardis_portal.views.utils import _redirect_303
+
+from .models import Project, ProjectACL
 
 logger = logging.getLogger(__name__)
 
@@ -37,7 +35,7 @@ class ProjectView(TemplateView):
         Determines if any custom view overrides have been defined in
         settings.PROJECT_VIEWS and returns the view function if a match
         to one the schemas for the project is found.
-        (DATASET_VIEWS is a list of (schema_namespace, view_function) tuples).
+        (PROJECT_VIEWS is a list of (schema_namespace, view_function) tuples).
         :param request:
         :type request:
         :param project:
@@ -90,9 +88,9 @@ class ProjectView(TemplateView):
 
     def get(self, request, *args, **kwargs):
         """
-        View an existing dataset.
+        View an existing project.
         This default view can be overriden by defining a dictionary
-        DATASET_VIEWS in settings.
+        PROJECT_VIEWS in settings.
         :param request: a HTTP request object
         :type request: :class:`django.http.HttpRequest`
         :param list args:
@@ -144,7 +142,7 @@ def create_project(request):
             project.member.add(*members)
             project.save()
 
-            # add defaul ACL
+            # add default ACL
             acl = ProjectACL(
                 project=project,
                 user=request.user,

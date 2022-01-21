@@ -19,8 +19,9 @@ from elasticsearch_dsl import MultiSearch, Q
 from tardis.tardis_portal.api import default_authentication
 from tardis.tardis_portal.models import Instrument
 
-if "tardis.apps.projects" in settings.INSTALLED_APPS:
-    from tardis.apps.projects.models import Project
+# IMPLEMENT ONCE SEARCH PR IS CREATED
+# if "tardis.apps.projects" in settings.INSTALLED_APPS:
+#    from tardis.apps.projects.models import Project
 
 LOCAL_TZ = pytz.timezone(settings.TIME_ZONE)
 MAX_SEARCH_RESULTS = settings.MAX_SEARCH_RESULTS
