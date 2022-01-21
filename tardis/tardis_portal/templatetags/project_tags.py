@@ -3,7 +3,8 @@ from django import template
 from django.template.defaultfilters import pluralize
 from django.contrib.humanize.templatetags.humanize import naturalday
 from ..util import get_local_time
-from ..util import render_mustache  # render_public_access_badge
+
+# from ..util import render_public_access_badge
 from ..models.experiment import Experiment
 from ..models.access_control import ExperimentACL, DatafileACL, DatasetACL
 
@@ -26,6 +27,7 @@ def project_get_recent_experiments(project_id, user):
     return experiments
 
 
+'''
 @register.simple_tag
 def project_experiments_badge(project_id, user):
     """
@@ -77,9 +79,9 @@ def project_experiments_badge(project_id, user):
             "count": count,
         },
     )
+'''
 
-
-@register.simple_tag
+'''@register.simple_tag
 def project_datafiles_badge(project, user):
     """
     Displays a badge with the number of datafiles for this project.
@@ -130,9 +132,9 @@ def project_datafiles_badge(project, user):
             "count": count,
         },
     )
+'''
 
-
-@register.simple_tag
+'''@register.simple_tag
 def project_datasets_badge(project_id, user):
     """
     Displays a badge with the number of datasets for this project
@@ -182,9 +184,9 @@ def project_datasets_badge(project_id, user):
             "count": count,
         },
     )
+'''
 
-
-@register.filter
+"""@register.filter
 def project_last_updated_badge(project):
     return render_mustache(
         "tardis_portal/badges/last_updated_badge",
@@ -196,6 +198,7 @@ def project_last_updated_badge(project):
             "natural_time": naturalday(project.start_time),
         },
     )
+"""
 
 
 @register.filter
