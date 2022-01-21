@@ -18,12 +18,13 @@ from tardis.tardis_portal.shortcuts import (
 from tardis.tardis_portal.views.utils import _redirect_303
 
 from .models import Project, ProjectACL
+from XXX import ProjectForm
 
 logger = logging.getLogger(__name__)
 
 
 class ProjectView(TemplateView):
-    template_name = "tardis_portal/project_details.html"
+    template_name = "tardis_portal/view_project.html"
     # TODO: Can me make this a generic function like site_routed_view
     #       that will take an Experiment, Dataset or DataFile and
     #       the associated routing list from settings ?
