@@ -103,82 +103,7 @@ class Project(models.Model):
         """
         from tardis.tardis_portal.models.parameters import Schema
 
-        return self.projectparameterset_set.filter(schema__schema_type=Schema.PROJECT)
-
-    def getParametersforIndexing(self):
-        """Returns the project parameters associated with this
-        project, formatted for elasticsearch.
-        """
-        from tardis.tardis_portal.models.parameters import (
-            ProjectParameter,
-            ParameterName,
-        )
-
-        paramsets = list(self.getParameterSets())
-        parameter_groups = {
-            "string": [],
-            "numerical": [],
-            "datetime": [],
-            "schemas": [],
-        }
-        for paramset in paramsets:
-            param_type = {1: "datetime", 2: "string", 3: "numerical"}
-            param_glob = (
-                ProjectParameter.objects.filter(parameterset=paramset)
-                .all()
-                .values_list(
-                    "name",
-                    "datetime_value",
-                    "string_value",
-                    "numerical_value",
-                    "sensitive_metadata",
-                )
-            )
-            parameter_groups["schemas"].append({"schema_id": paramset.schema_id})
-            for sublist in param_glob:
-                PN_id = ParameterName.objects.get(id=sublist[0])
-                param_dict = {}
-                type_idx = 0
-                for idx, value in enumerate(sublist[1:-1]):
-                    if value not in [None, ""]:
-                        param_dict["pn_id"] = str(PN_id.id)
-                        param_dict["pn_name"] = str(PN_id.full_name)
-                        if sublist[-1]:
-                            param_dict["sensitive"] = True
-                        else:
-                            param_dict["sensitive"] = False
-
-                        type_idx = idx + 1
-
-                        if type_idx == 1:
-                            param_dict["value"] = value
-                        elif type_idx == 2:
-                            param_dict["value"] = str(value)
-                        elif type_idx == 3:
-                            param_dict["value"] = float(value)
-                parameter_groups[param_type[type_idx]].append(param_dict)
-        return parameter_groups
-
-    def getACLsforIndexing(self):
-        """Returns the projectACLs associated with this
-        project, formatted for elasticsearch.
-        """
-        return_list = []
-        for acl in self.projectacl_set.all():
-            acl_dict = {}
-            if acl.user is not None:
-                acl_dict["pluginId"] = "django_user"
-                acl_dict["entityId"] = acl.user.id
-                return_list.append(acl_dict)
-            if acl.group is not None:
-                acl_dict["pluginId"] = "django_group"
-                acl_dict["entityId"] = acl.group.id
-                return_list.append(acl_dict)
-            # if acl.token is not None:
-            #    acl_dict["pluginId"] = "token"
-            #    acl_dict["entityId"] = acl.token.id
-            #    return_list.append(acl_dict)
-        return return_list
+        return self.projectparameterset_set.filter(schema__type=Schema.PROJECT)
 
     def is_embargoed(self):
         if self.embargo_until:
@@ -216,40 +141,9 @@ class Project(models.Model):
         )
         return [acl.get_related_object() for acl in acls]
 
-    def get_users_and_perms(self):
-        acls = self.projectacl_set.select_related("user").filter(
-            user__isnull=False, isOwner=False
-        )
-        ret_list = []
-        if acls.exists():
-            for acl in acls:
-                user = acl.get_related_object()
-                sensitive_flg = acl.canSensitive
-                download_flg = acl.canDownload
-                ret_list.append([user, sensitive_flg, download_flg])
-        return ret_list
-
-    def get_admins(self):
-        acls = self.projectacl_set.select_related("group").filter(
-            group__isnull=False, isOwner=True
-        )
-        return [acl.get_related_object() for acl in acls]
-
     def get_groups(self):
         acls = self.projectacl_set.select_related("group").filter(group__isnull=False)
         return [acl.get_related_object() for acl in acls]
-
-    def get_groups_and_perms(self):
-        acls = self.projectacl_set.select_related("group").filter(group__isnull=False)
-        ret_list = []
-        if acls.exists():
-            for acl in acls:
-                if not acl.isOwner:
-                    group = acl.get_related_object()
-                    sensitive_flg = acl.canSensitive
-                    download_flg = acl.canDownload
-                    ret_list.append([group, sensitive_flg, download_flg])
-        return ret_list
 
     def _has_view_perm(self, user_obj):
         """
@@ -292,34 +186,17 @@ class Project(models.Model):
             return False
         return None
 
-    def get_datafiles(self, user, downloadable=False):
+    def get_datafiles(self, user):
         from tardis.tardis_portal.models.datafile import DataFile
 
-        return DataFile.safe.all(user, downloadable=downloadable).filter(
-            dataset__experiments__project=self
-        )
+        if settings.ONLY_EXPERIMENT_ACLS:
+            return DataFile.objects.filter(dataset__experiments__projects=self)
+        return DataFile.safe.all(user).filter(dataset__experiments___projects=self)
 
     def get_size(self, user, downloadable=False):
         from tardis.tardis_portal.models.datafile import DataFile
 
-        return DataFile.sum_sizes(self.get_datafiles(user, downloadable=downloadable))
-
-    # IMPLEMENT ONCE SEARCH OVERHAULED
-    """def to_search(self):
-        from tardis.apps.search.documents import ProjectDocument as ProjectDoc
-
-        metadata = {
-            "id": self.id,
-            "name": self.name,
-            "description": self.description,
-            "start_time": self.start_time,
-            "end_time": self.end_time,
-            # "institution": self.institution,
-            "lead_researcher": self.lead_researcher,
-            "acls": self.getACLsforIndexing(),
-            "parameters": self.getParametersforIndexing(),
-        }
-        return ProjectDoc(meta=metadata)"""
+        return DataFile.sum_sizes(self.get_datafiles(user))
 
 
 class ProjectParameter(Parameter):
