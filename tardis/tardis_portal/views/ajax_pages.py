@@ -499,7 +499,7 @@ def retrieve_owned_proj_list(
     projects = []
 
     if "tardis.apps.projects" in settings.INSTALLED_APPS:
-        from tardis_portal.apps.projects import Project
+        from tardis.apps.projects import Project
 
         projects = Project.safe.owned_and_shared(request.user).order_by("-start_time")
 

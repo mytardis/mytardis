@@ -16,6 +16,8 @@ from tardis.tardis_portal.shortcuts import (
     return_response_not_found,
 )
 from tardis.tardis_portal.views.utils import _redirect_303
+from tardis.tardis_portal.views.pages import _resolve_view
+
 
 from .models import Project, ProjectACL
 from .forms import ProjectForm
