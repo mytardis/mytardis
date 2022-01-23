@@ -12,9 +12,8 @@ class ProjectForm(forms.ModelForm):
         fields = [
             "created_by",
             "name",
-            "raid",
             "description",
-            "lead_researcher",
+            "principal_investigator",
             "url",
             "institution",
             "embargo_until",
