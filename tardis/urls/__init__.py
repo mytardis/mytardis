@@ -115,6 +115,13 @@ urlpatterns = [
     url(r"", include(overridable_urls)),
 ]
 
+# Import project app urls here to avoid /apps prefix in url
+if "tardis.apps.projects" in settings.INSTALLED_APPS:
+    from tardis.apps.project import urls as project_urls
+
+    urlpatterns += (url(r"^project/", include(project_urls)),)
+
+
 # Handle static files from /static
 urlpatterns += staticfiles_urlpatterns()
 
