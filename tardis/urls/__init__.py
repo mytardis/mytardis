@@ -117,7 +117,7 @@ urlpatterns = [
 
 # Import project app urls here to avoid /apps prefix in url
 if "tardis.apps.projects" in settings.INSTALLED_APPS:
-    from tardis.apps.projects import urls as project_urls
+    from tardis.apps.projects.urls import project_urls
 
     urlpatterns += (url(r"^project/", include(project_urls)),)
 
