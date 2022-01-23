@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
 
 
 class ProjectView(TemplateView):
-    template_name = "projects/view_project.html"
+    template_name = "view_project.html"
     # TODO: Can me make this a generic function like site_routed_view
     #       that will take an Experiment, Dataset or DataFile and
     #       the associated routing list from settings ?
@@ -164,7 +164,7 @@ def create_project(request):
         form = ProjectForm()
 
     c = {"form": form}
-    return render_response_index(request, "projects/create_project.html", c)
+    return render_response_index(request, "create_project.html", c)
 
 
 @login_required
@@ -189,4 +189,4 @@ def edit_project(request, project_id):
         form = ProjectForm(instance=project)
 
     c = {"form": form, "project": project}
-    return render_response_index(request, "projects/create_project.html", c)
+    return render_response_index(request, "create_project.html", c)
