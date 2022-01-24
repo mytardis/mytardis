@@ -190,3 +190,19 @@ def edit_project(request, project_id):
 
     c = {"form": form, "project": project}
     return render_response_index(request, "create_project.html", c)
+
+
+@login_required
+def my_projects(request):
+    """
+    show owned_and_shared data with credential-based access
+    """
+
+    owned_projects = Project.objects.all().order_by("-start_time")  # TODO revert this
+    # owned_projects = Project.safe.owned_and_shared(request.user).order_by("-start_time")
+    proj_expand_accordion = getattr(settings, "PROJ_EXPAND_ACCORDION", 5)
+    c = {
+        "owned_projects": owned_projects,
+        "proj_expand_accordion": proj_expand_accordion,
+    }
+    return render_response_index(request, "my_projects.html", c)
