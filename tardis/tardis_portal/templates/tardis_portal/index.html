@@ -28,6 +28,7 @@
   <div class="row">
     <div class="col-md-12">
       {% if is_authenticated and project_app_enabled %}
+      {% load project_tags %}
       <h3>
         Your most recent projects
         <small>(<a href="{% url 'tardis.tardis_portal.views.my_projects' %}">view all</a>)</small>
@@ -62,7 +63,7 @@
 
                 <div class="col">
                   <ul class="list-inline float-right list-unstyled">
-                  <!--- resinsert project badges here---> 
+                  <!--- resinsert project badges here--->
                   </ul>
                 </div>
 
