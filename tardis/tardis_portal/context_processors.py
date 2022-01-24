@@ -27,7 +27,7 @@ def single_search_processor(request):
 
 def project_app_processor(request):
 
-    return {"project_app_enabled": "tardis.apps.project" in settings.INSTALLED_APPS}
+    return {"project_app_enabled": "tardis.apps.projects" in settings.INSTALLED_APPS}
 
 
 def registration_processor(request):
