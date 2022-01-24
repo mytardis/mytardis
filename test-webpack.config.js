@@ -28,6 +28,8 @@ module.exports = {
         tardis_portal_public_data: glob.sync("./assets/js/tardis_portal/public_data/**/*.js"),
         tardis_portal_facility_view: "./assets/js/tardis_portal/facility_view/index.js",
         tardis_portal_auth_methods: "./assets/js/tardis_portal/auth_methods/auth_methods.js",
+        related_info_index: "./assets/js/apps/related_info/index.js",
+        related_info_index_ro: "./assets/js/apps/related_info/index_ro.js",
         lib: glob.sync("./assets/js/lib/**/*.js"),
         search_app : "./assets/js/apps/search/index.jsx",
         test: glob.sync("./js_tests/tardis_portal/**/*.js"),
@@ -37,7 +39,10 @@ module.exports = {
         experiment_view_badges: "./assets/js/apps/badges/components/ExperimentViewPageBadges.jsx",
         dataset_view_badges: "./assets/js/apps/badges/components/DatasetViewPageBadges.jsx",
         dataset_tiles: "./assets/js/apps/tiles/index.jsx",
-        choose_rights: "./assets/js/apps/choose_rights/index.jsx"
+        choose_rights: "./assets/js/apps/choose_rights/index.jsx",
+        tardis_portal_create_project: glob.sync("./assets/js/apps/projects/create_project/*.js"),
+        project_app : "./assets/js/apps/projects/view/index.jsx",
+        tardis_portal_my_projects: glob.sync("./assets/js/apps/projects/my_projects/*.js")
     },
     output: {
         path: path.resolve("./assets/bundles/"),
