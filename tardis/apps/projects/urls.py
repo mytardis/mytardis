@@ -17,5 +17,5 @@ project_urls = [
         name="tardis.apps.projects.edit_project",
     ),
     url(r"^create/$", create_project, name="tardis.apps.projects.create_project"),
-    url(r"^myprojects/$", my_projects, name="tardis.tardis_portal.views.my_projects"),
+    url(r"^myprojects/$", my_projects, name="tardis.apps.projects.views.my_projects"),
 ]
