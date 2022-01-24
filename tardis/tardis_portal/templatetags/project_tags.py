@@ -188,7 +188,8 @@ def project_datasets_badge(project_id, user):
     )
 '''
 
-"""@register.filter
+"""
+@register.filter
 def project_last_updated_badge(project):
     return render_mustache(
         "tardis_portal/badges/last_updated_badge",
