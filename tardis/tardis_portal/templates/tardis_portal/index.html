@@ -62,10 +62,12 @@
 
                 <div class="col">
                   <ul class="list-inline float-right list-unstyled">
-                  <!-->  <li class="list-inline-item m-0">{{ project|project_last_updated_badge }}</li>
+                  <!---
+                    <li class="list-inline-item m-0">{{ project|project_last_updated_badge }}</li>
                     <li class="list-inline-item m-0">{% project_experiments_badge project.id request.user %}</li>
                     <li class="list-inline-item m-0">{% project_datasets_badge project.id request.user %}</li>
-                    <li class="list-inline-item m-0">{% project_datafiles_badge project request.user %}</li><!-->
+                    <li class="list-inline-item m-0">{% project_datafiles_badge project request.user %}</li>
+                  ---> 
                   </ul>
                 </div>
 
