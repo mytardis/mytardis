@@ -116,7 +116,9 @@ class Project(models.Model):
 
     def get_absolute_url(self):
         """Return the absolute url to the current ``Project``"""
-        return reverse("tardis_portal.view_project", kwargs={"project_id": self.id})
+        return reverse(
+            "tardis.apps.projects.view_project", kwargs={"project_id": self.id}
+        )
 
     def get_edit_url(self):
         """Return the absolute url to the edit view of the current

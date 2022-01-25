@@ -20,7 +20,7 @@
         <div class="col-md-8 px-1 pb-1">
           <input type="hidden" class="proj-index" value="{{ forloop.counter }}">
           <a class="explink"
-             href="{% url 'tardis_portal.view_project' proj.id %}">{{ proj.name }}</a>
+             href="{% url 'tardis.apps.projects.view_project' proj.id %}">{{ proj.name }}</a>
         </div>
         <div class="col">
           {% project_badges proj request.user %}
@@ -51,7 +51,7 @@
 {% empty %}
   <p>You do not own any Projects on this server.<br/>
     <% comment %>
-    <a href="{% url 'tardis.tardis_portal.views.create_project' %}">Create a new project</a>
+    <a href="{% url 'tardis.apps.projects.create_project' %}">Create a new project</a>
     and upload your data
     <% endcomment %>
   </p>
