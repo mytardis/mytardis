@@ -212,9 +212,7 @@ def my_projects(request):
 
 @never_cache
 @login_required
-def retrieve_owned_proj_list(
-    request, template_name="tardis_portal/ajax/proj_list.html"
-):
+def retrieve_owned_proj_list(request, template_name="ajax/proj_list.html"):
 
     projects = []
 
