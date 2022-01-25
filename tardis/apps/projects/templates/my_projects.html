@@ -1,5 +1,5 @@
 {% extends "tardis_portal/portal_template.html" %}
-{% load static from staticfiles %}
+{% load static %}
 {% load render_bundle from webpack_loader %}
 {% load project_tags %}
 {% load experimentstats %}
@@ -14,7 +14,6 @@
     <div class="col-md-12">
       <h3 class="d-block d-sm-none">Projects</h3>
       <div class="pull-right pb-1">
-        {% comment %}
         {% if perms.tardis_portal.add_project %}
         <a id="create-project"
            class="btn btn-primary"
@@ -23,7 +22,6 @@
           Create
         </a>
         {% endif %}
-        {% endcomment %}
       </div>  <!-- class="pull-right" -->
       <div class="pull-left">
         <h3 class="d-none d-sm-block" style="text-align: center">Projects</h3>
