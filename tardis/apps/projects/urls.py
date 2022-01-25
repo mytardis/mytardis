@@ -25,7 +25,7 @@ project_urls = [
     url(r"^create/$", create_project, name="tardis.apps.projects.create_project"),
     url(r"^myprojects/$", my_projects, name="tardis.apps.projects.views.my_projects"),
     url(
-        r"^owned_proj_list/$",
+        r"^ajax/owned_proj_list/$",
         retrieve_owned_proj_list,
         name="tardis.apps.projects.retrieve_owned_proj_list",
     ),

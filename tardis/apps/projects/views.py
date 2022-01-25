@@ -219,7 +219,10 @@ def retrieve_owned_proj_list(request, template_name="ajax/proj_list.html"):
     if "tardis.apps.projects" in settings.INSTALLED_APPS:
         from tardis.apps.projects.models import Project
 
-        projects = Project.safe.owned_and_shared(request.user).order_by("-start_time")
+        projects = Project.objects.all().order_by(
+            "-start_time"
+        )  # replace when ACLs done
+        # projects = Project.safe.owned_and_shared(request.user).order_by("-start_time")
 
     try:
         page_num = int(request.GET.get("page", "0"))
