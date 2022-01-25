@@ -8,6 +8,8 @@ import re
 from django.conf import settings
 from django.contrib.auth.decorators import login_required, permission_required
 from django.core.exceptions import PermissionDenied
+from django.core.paginator import Paginator
+from django.views.decorators.cache import never_cache
 from django.views.generic.base import TemplateView
 
 from tardis.tardis_portal.shortcuts import (
@@ -206,3 +208,35 @@ def my_projects(request):
         "proj_expand_accordion": proj_expand_accordion,
     }
     return render_response_index(request, "my_projects.html", c)
+
+
+@never_cache
+@login_required
+def retrieve_owned_proj_list(
+    request, template_name="tardis_portal/ajax/proj_list.html"
+):
+
+    projects = []
+
+    if "tardis.apps.projects" in settings.INSTALLED_APPS:
+        from tardis.apps.projects.models import Project
+
+        projects = Project.safe.owned_and_shared(request.user).order_by("-start_time")
+
+    try:
+        page_num = int(request.GET.get("page", "0"))
+    except ValueError:
+        page_num = 0
+
+    paginator = Paginator(projects, settings.OWNED_EXPS_PER_PAGE)
+    proj_page = paginator.page(page_num + 1)
+
+    query_string = "/project/ajax/owned_proj_list/?page={page}"
+
+    c = {
+        "projects": proj_page,
+        "paginator": paginator,
+        "page_num": page_num,
+        "query_string": query_string,
+    }
+    return render_response_index(request, template_name, c)

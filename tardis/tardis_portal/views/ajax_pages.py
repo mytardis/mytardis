@@ -488,35 +488,3 @@ def retrieve_shared_exps_list(
         "query_string": query_string,
     }
     return render_response_index(request, template_name, c)
-
-
-@never_cache
-@login_required
-def retrieve_owned_proj_list(
-    request, template_name="tardis_portal/ajax/proj_list.html"
-):
-
-    projects = []
-
-    if "tardis.apps.projects" in settings.INSTALLED_APPS:
-        from tardis.apps.projects.models import Project
-
-        projects = Project.safe.owned_and_shared(request.user).order_by("-start_time")
-
-    try:
-        page_num = int(request.GET.get("page", "0"))
-    except ValueError:
-        page_num = 0
-
-    paginator = Paginator(projects, settings.OWNED_EXPS_PER_PAGE)
-    proj_page = paginator.page(page_num + 1)
-
-    query_string = "/ajax/owned_proj_list/?page={page}"
-
-    c = {
-        "projects": proj_page,
-        "paginator": paginator,
-        "page_num": page_num,
-        "query_string": query_string,
-    }
-    return render_response_index(request, template_name, c)
