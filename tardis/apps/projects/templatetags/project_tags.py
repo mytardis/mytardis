@@ -6,7 +6,7 @@ from django import template
 # from ..util import get_local_time
 
 # from ..util import render_public_access_badge
-from ..models.experiment import Experiment
+from tardis.tardis_portal.models.experiment import Experiment
 
 # from ..models.access_control import ExperimentACL, DatafileACL, DatasetACL
 
