@@ -212,7 +212,7 @@ def project_public_access_badge(project):
     # return render_public_access_badge(project)
 
 
-@register.inclusion_tag("tardis_portal/project_tags/project_badges.html")
+@register.inclusion_tag("templatetags/project_tags/project_badges.html")
 def project_badges(project, user, **kwargs):
     """
     Displays badges for a Project for displaying in an Project list view
@@ -220,7 +220,7 @@ def project_badges(project, user, **kwargs):
     return {"project": project, "user": user}
 
 
-@register.inclusion_tag("tardis_portal/project_tags/project_authors.html")
+@register.inclusion_tag("templatetags/project_tags/project_authors.html")
 def project_authors(project, **kwargs):
     """
     Displays an Project's lead researcher in a project list view
@@ -228,7 +228,7 @@ def project_authors(project, **kwargs):
     return {"project": project}
 
 
-@register.inclusion_tag("tardis_portal/project_tags/project_download_link.html")
+@register.inclusion_tag("templatetags/project_tags/project_download_link.html")
 def project_download_link(project, **kwargs):
     """
     Displays a download link for a project in a list view
