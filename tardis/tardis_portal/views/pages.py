@@ -159,7 +159,6 @@ class IndexView(TemplateView):
         if "tardis.apps.projects" in settings.INSTALLED_APPS:
             from tardis.apps.projects.models import Project
 
-            c["project_app_enabled"] = True
             project_limit = 4
             if request.user.is_authenticated:
                 # While Project ACLs are being implemented, simply bypass ACLS
