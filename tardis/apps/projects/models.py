@@ -147,46 +147,35 @@ class Project(models.Model):
         acls = self.projectacl_set.select_related("group").filter(group__isnull=False)
         return [acl.get_related_object() for acl in acls]
 
-    def _has_view_perm(self, user_obj):
-        """
-        Called from the ACLAwareBackend class's has_perm method
-        in tardis/tardis_portal/auth/authorisation.py
-        Returning None means we won't override permissions here,
-        i.e. we'll leave it to ACLAwareBackend's has_perm method
-        to determine permissions from ProjectACLs
-        """
+    def _has_any_perm(self, user_obj):
         if not hasattr(self, "id"):
             return False
-        # May be redundant - left in for the short term
-        if self.public_access >= self.PUBLIC_ACCESS_METADATA:
-            return True
-        return None
+        return self.experiments.all()
+
+    def _has_view_perm(self, user_obj):
+        if not settings.ONLY_EXPERIMENT_ACLS:
+            if self.public_access >= self.PUBLIC_ACCESS_METADATA:
+                return True
+        return self._has_any_perm(user_obj)
+
+    def _has_download_perm(self, user_obj):
+        if not settings.ONLY_EXPERIMENT_ACLS:
+            if self.public_download_allowed():
+                return True
+        return self._has_any_perm(user_obj)
 
     def _has_change_perm(self, user_obj):
-        """
-        Called from the ACLAwareBackend class's has_perm method
-        in tardis/tardis_portal/auth/authorisation.py
-        Returning None means we won't override permissions here,
-        i.e. we'll leave it to ACLAwareBackend's has_perm method
-        to determine permissions from ProjectACLs
-        """
-        if not hasattr(self, "id"):
+        if self.immutable:
             return False
-        if self.locked:
-            return False
-        return None
+        return self._has_any_perm(user_obj)
+
+    def _has_sensitive_perm(self, user_obj):
+        return self._has_any_perm(user_obj)
 
     def _has_delete_perm(self, user_obj):
-        """
-        Called from the ACLAwareBackend class's has_perm method
-        in tardis/tardis_portal/auth/authorisation.py
-        Returning None means we won't override permissions here,
-        i.e. we'll leave it to ACLAwareBackend's has_perm method
-        to determine permissions from ProjectACLs
-        """
-        if not hasattr(self, "id"):
+        if self.immutable:
             return False
-        return None
+        return self._has_any_perm(user_obj)
 
     def get_datafiles(self, user):
         from tardis.tardis_portal.models.datafile import DataFile

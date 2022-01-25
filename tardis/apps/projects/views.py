@@ -12,6 +12,7 @@ from django.core.paginator import Paginator
 from django.views.decorators.cache import never_cache
 from django.views.generic.base import TemplateView
 
+from tardis.tardis_portal.auth import decorators as authz
 from tardis.tardis_portal.shortcuts import (
     render_response_index,
     return_response_error,
@@ -107,10 +108,12 @@ class ProjectView(TemplateView):
         if project_id is None:
             return return_response_error(request)
         try:
-            project = Project.safe.get(request.user, project_id)
+            if not authz.has_access(request, project_id, "project"):
+                return return_response_error(request)
+            project = Project.objects.get(id=project_id)
         except PermissionDenied:
             return return_response_error(request)
-        except Project.DoesNotExist:
+        except Dataset.DoesNotExist:
             return return_response_not_found(request)
         view_override = self.find_custom_view_override(request, project)
         if view_override is not None:
@@ -200,8 +203,16 @@ def my_projects(request):
     show owned_and_shared data with credential-based access
     """
 
-    owned_projects = Project.objects.all().order_by("-start_time")  # TODO revert this
-    # owned_projects = Project.safe.owned_and_shared(request.user).order_by("-start_time")
+    if settings.ONLY_EXPERIMENT_ACLS:
+        owned_projects = Project.objects.prefetch_related(
+            Prefetch(
+                "experiments", queryset=Experiment.safe.owned_and_shared(request.user)
+            )
+        ).order_by("-start_time")
+    else:
+        owned_projects = Project.safe.owned_and_shared(request.user).order_by(
+            "-start_time"
+        )
     proj_expand_accordion = getattr(settings, "PROJ_EXPAND_ACCORDION", 5)
     c = {
         "owned_projects": owned_projects,
@@ -219,11 +230,14 @@ def retrieve_owned_proj_list(request, template_name="ajax/proj_list.html"):
     if "tardis.apps.projects" in settings.INSTALLED_APPS:
         from tardis.apps.projects.models import Project
 
-        projects = Project.objects.all().order_by(
-            "-start_time"
-        )  # replace when ACLs done
-        # projects = Project.safe.owned_and_shared(request.user).order_by("-start_time")
-
+    if settings.ONLY_EXPERIMENT_ACLS:
+        projects = Project.objects.prefetch_related(
+            Prefetch(
+                "experiments", queryset=Experiment.safe.owned_and_shared(request.user)
+            )
+        ).order_by("-start_time")
+    else:
+        projects = Project.safe.owned_and_shared(request.user).order_by("-start_time")
     try:
         page_num = int(request.GET.get("page", "0"))
     except ValueError:

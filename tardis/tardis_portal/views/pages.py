@@ -161,13 +161,19 @@ class IndexView(TemplateView):
 
             project_limit = 4
             if request.user.is_authenticated:
-                # While Project ACLs are being implemented, simply bypass ACLS
-                private_projects = Project.objects.all().order_by("-start_time")[
-                    :project_limit
-                ]
-                # private_projects = Project.safe.owned_and_shared(request.user).order_by(
-                #    "-start_time"
-                # )[:project_limit]
+
+                if settings.ONLY_EXPERIMENT_ACLS:
+                    private_projects = Project.objects.prefetch_related(
+                        Prefetch(
+                            "experiments",
+                            queryset=Experiment.safe.owned_and_shared(request.user),
+                        )
+                    ).order_by("-start_time")[:project_limit]
+                else:
+                    private_projects = Project.safe.owned_and_shared(
+                        request.user
+                    ).order_by("-start_time")[:project_limit]
+
                 c["private_projects"] = private_projects
                 c["private_projects_count"] = private_projects.count()
 
