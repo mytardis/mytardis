@@ -9,6 +9,7 @@ from django.conf import settings
 from django.contrib.auth.decorators import login_required, permission_required
 from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator
+from django.db.models import Prefetch
 from django.views.decorators.cache import never_cache
 from django.views.generic.base import TemplateView
 
@@ -18,6 +19,7 @@ from tardis.tardis_portal.shortcuts import (
     return_response_error,
     return_response_not_found,
 )
+from tardis.tardis_portal.models import Experiment
 from tardis.tardis_portal.views.utils import _redirect_303
 from tardis.tardis_portal.views.pages import _resolve_view
 
@@ -113,7 +115,7 @@ class ProjectView(TemplateView):
             project = Project.objects.get(id=project_id)
         except PermissionDenied:
             return return_response_error(request)
-        except Dataset.DoesNotExist:
+        except Project.DoesNotExist:
             return return_response_not_found(request)
         view_override = self.find_custom_view_override(request, project)
         if view_override is not None:

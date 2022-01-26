@@ -314,18 +314,18 @@ def merge_auth_method(request):
             for project_ACL in project_ACLs:
                 try:
                     acl = ProjectACL.objects.get(
-                        user=replacementUserId, datafile=datafile_ACL.datafile
+                        user=replacementUserId, project=project_ACL.datafile
                     )
-                    acl.canRead = acl.canRead or datafile_ACL.canRead
-                    acl.canDownload = acl.canDownload or datafile_ACL.canDownload
-                    acl.canWrite = acl.canWrite or datafile_ACL.canWrite
-                    acl.canSensitive = acl.canSensitive or datafile_ACL.canSensitive
-                    acl.canDelete = acl.canDelete or datafile_ACL.canDelete
+                    acl.canRead = acl.canRead or project_ACL.canRead
+                    acl.canDownload = acl.canDownload or project_ACL.canDownload
+                    acl.canWrite = acl.canWrite or project_ACL.canWrite
+                    acl.canSensitive = acl.canSensitive or project_ACL.canSensitive
+                    acl.canDelete = acl.canDelete or project_ACL.canDelete
                     acl.save()
-                    datafile_ACL.delete()
+                    project_ACL.delete()
                 except ProjectACL.DoesNotExist:
-                    datafile_ACL.user = replacementUserId
-                    datafile_ACL.save()
+                    project_ACL.user = replacementUserId
+                    project_ACL.save()
 
         # let's also change the group memberships of all the groups that 'user'
         # is a member of

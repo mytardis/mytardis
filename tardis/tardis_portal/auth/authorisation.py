@@ -142,7 +142,7 @@ class ACLAwareBackend(object):
         if not settings.ONLY_EXPERIMENT_ACLS:
 
             if ct.model.replace(" ", "") == "project":
-                from tardis.apps.project.models import ProjectACL
+                from tardis.apps.projects.models import ProjectACL
 
                 # the only authorisation available for anonymous users is tokenauth
                 tgp = TokenGroupProvider()
