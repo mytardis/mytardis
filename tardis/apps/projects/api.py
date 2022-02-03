@@ -23,20 +23,27 @@ from tardis.tardis_portal.api import (
     ParameterResource,
     ParameterSetResource,
     UserResource,
-    InstitutionResource,
 )
 from tardis.tardis_portal.auth.decorators import (
     has_access,
     has_sensitive_access,
     has_write,
 )
-from .models import Project, ProjectACL, ProjectParameter, ProjectParameterSet
+from .models import (
+    Project,
+    ProjectACL,
+    ProjectParameter,
+    ProjectParameterSet,
+    DefaultInstitutionProfile,
+)
 
 
 if settings.DEBUG:
     default_serializer = PrettyJSONSerializer()
 else:
     default_serializer = Serializer()
+
+PROJECT_INSTITUTION_RESOURCE = "tardis.apps.projects.api.DefaultInstitutionProfile"
 
 
 class ProjectACLAuthorization(Authorization):
@@ -181,14 +188,14 @@ class ProjectResource(ModelResource):
 
     created_by = fields.ForeignKey(UserResource, "created_by")
     parameter_sets = fields.ToManyField(
-        "tardis.apps.project.api.ProjectParameterSetResource",
+        "tardis.apps.projects.api.ProjectParameterSetResource",
         "projectparameterset_set",
         related_name="project",
         full=True,
         null=True,
     )
     institution = fields.ToManyField(
-        InstitutionResource, "institutions", null=True, full=True
+        PROJECT_INSTITUTION_RESOURCE, "institutions", null=True, full=True
     )
     principal_investigator = fields.ForeignKey(UserResource, "principal_investigator")
 
@@ -326,3 +333,18 @@ class ProjectParameterResource(ParameterResource):
         serializer = default_serializer
         object_class = ProjectParameter
         queryset = ProjectParameter.objects.all()
+
+
+class DefaultInstitutionProfileResource(ModelResource):
+    class Meta:
+        authentication = MyTardisAuthentication()
+        authorization = ProjectACLAuthorization()
+        serializer = default_serializer
+        object_class = DefaultInstitutionProfile
+        queryset = DefaultInstitutionProfile.objects.all()
+        filtering = {
+            "id": ("exact",),
+            "name": ("exact",),
+        }
+        ordering = ["id", "name"]
+        always_return_data = True
