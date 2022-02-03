@@ -23,6 +23,7 @@ from tardis.tardis_portal.api import (
     ParameterResource,
     ParameterSetResource,
     UserResource,
+    InstitutionResource,
 )
 from tardis.tardis_portal.auth.decorators import (
     has_access,
