@@ -4,6 +4,7 @@ URLs for MyTardis's RESTful API
 from importlib import import_module
 import logging
 
+from django.conf import settings
 from django.conf.urls import include, url
 
 from tastypie.api import Api
