@@ -186,6 +186,9 @@ class ProjectResource(ModelResource):
     TODO: catch duplicate schema submissions for parameter sets
     """
 
+    experiments = fields.ToManyField(
+        ExperimentResource, "experiments", related_name="projects"
+    )
     created_by = fields.ForeignKey(UserResource, "created_by")
     parameter_sets = fields.ToManyField(
         "tardis.apps.projects.api.ProjectParameterSetResource",
@@ -208,7 +211,7 @@ class ProjectResource(ModelResource):
         filtering = {
             "id": ("exact",),
             "name": ("exact",),
-            "raid": ("exact",),
+            "experiments": ALL_WITH_RELATIONS,
             "url": ("exact",),
             "institution": ALL_WITH_RELATIONS,
         }
@@ -232,16 +235,15 @@ class ProjectResource(ModelResource):
         Create experiment-dataset associations first, because they affect
         authorization for adding other related resources, e.g. metadata
         """
-        if settings.ONLY_EXPERIMENT_ACLS:
-            if getattr(bundle.obj, "id", False):
-                for exp_uri in bundle.data.get("experiments", []):
-                    try:
-                        exp = ExperimentResource.get_via_uri(
-                            ExperimentResource(), exp_uri, bundle.request
-                        )
-                        bundle.obj.experiments.add(exp)
-                    except NotFound:
-                        pass
+        if getattr(bundle.obj, "id", False):
+            for exp_uri in bundle.data.get("experiments", []):
+                try:
+                    exp = ExperimentResource.get_via_uri(
+                        ExperimentResource(), exp_uri, bundle.request
+                    )
+                    bundle.obj.experiments.add(exp)
+                except NotFound:
+                    pass
         # acls = process_acls(bundle)
         # if acls:
         #    bulk_replace_existing_acls(acls)
