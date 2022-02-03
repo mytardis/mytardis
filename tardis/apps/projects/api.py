@@ -320,7 +320,7 @@ class ProjectACLResource(ModelResource):
 class ProjectParameterSetResource(ParameterSetResource):
     project = fields.ForeignKey(ProjectResource, "project")
     parameters = fields.ToManyField(
-        "tardis.tardis_portal.api.ProjectParameterResource",
+        "tardis.apps.projects.api.ProjectParameterResource",
         "projectparameter_set",
         related_name="parameterset",
         full=True,
