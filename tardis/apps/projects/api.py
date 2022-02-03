@@ -22,6 +22,7 @@ from tardis.tardis_portal.api import (
     PrettyJSONSerializer,
     ParameterResource,
     ParameterSetResource,
+    UserResource,
 )
 from tardis.tardis_portal.auth.decorators import (
     has_access,
@@ -179,16 +180,16 @@ class ProjectResource(ModelResource):
 
     created_by = fields.ForeignKey(UserResource, "created_by")
     parameter_sets = fields.ToManyField(
-        "tardis.tardis_portal.api.ProjectParameterSetResource",
+        "tardis.apps.project.api.ProjectParameterSetResource",
         "projectparameterset_set",
         related_name="project",
         full=True,
         null=True,
     )
     institution = fields.ToManyField(
-        InstitutionResource, "institution", null=True, full=True
+        InstitutionResource, "institutions", null=True, full=True
     )
-    lead_researcher = fields.ForeignKey(UserResource, "lead_researcher")
+    principal_investigator = fields.ForeignKey(UserResource, "principal_investigator")
 
     class Meta:
         authentication = MyTardisAuthentication()
@@ -234,8 +235,10 @@ class ProjectResource(ModelResource):
         """
         user = bundle.request.user
         bundle.data["created_by"] = user
-        if not User.objects.filter(username=bundle.data["lead_researcher"]).exists():
-            new_user = get_user_from_upi(bundle.data["lead_researcher"])
+        if not User.objects.filter(
+            username=bundle.data["principal_investigator"]
+        ).exists():
+            new_user = get_user_from_upi(bundle.data["principal_investigator"])
             if not new_user:
                 logger.error("No one found for upi: {member}")
             user = User.objects.create(
@@ -254,8 +257,8 @@ class ProjectResource(ModelResource):
                 authenticationMethod=settings.LDAP_METHOD,
             )
             authentication.save()
-        project_lead = User.objects.get(username=bundle.data["lead_researcher"])
-        bundle.data["lead_researcher"] = project_lead
+        project_lead = User.objects.get(username=bundle.data["principal_investigator"])
+        bundle.data["principal_investigator"] = project_lead
         bundle = super().obj_create(bundle, **kwargs)
         return bundle
 
