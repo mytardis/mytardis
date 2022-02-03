@@ -55,7 +55,6 @@ class ProjectACLAuthorization(Authorization):
     """
 
     def read_list(self, object_list, bundle):  # noqa # too complex
-        obj_ids = [obj.id for obj in object_list]
         if bundle.request.user.is_authenticated and bundle.request.user.is_superuser:
             return object_list
         if isinstance(bundle.obj, Project):
@@ -217,7 +216,7 @@ class ProjectResource(ModelResource):
         always_return_data = True
 
     def dehydrate(self, bundle):
-        project = bundle.obj
+        # project = bundle.obj
         # size = project.get_size(bundle.request.user)
         # bundle.data['project_size'] = size
         # project_experiment_count = project.experiments.count()
