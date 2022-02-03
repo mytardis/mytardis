@@ -13,7 +13,7 @@ from django.contrib.auth.models import User
 from tastypie import fields
 from tastypie.authorization import Authorization
 from tastypie.constants import ALL_WITH_RELATIONS
-from tastypie.exceptions import Unauthorized
+from tastypie.exceptions import NotFound, Unauthorized
 from tastypie.resources import ModelResource
 from tastypie.serializers import Serializer
 
@@ -23,6 +23,7 @@ from tardis.tardis_portal.api import (
     ParameterResource,
     ParameterSetResource,
     UserResource,
+    ExperimentResource,
 )
 from tardis.tardis_portal.auth.decorators import (
     has_access,
@@ -217,24 +218,42 @@ class ProjectResource(ModelResource):
 
     def dehydrate(self, bundle):
         project = bundle.obj
-        admins = project.get_admins()
-        bundle.data["admin_groups"] = [acl.id for acl in admins]
-        members = project.get_groups()
-        bundle.data["member_groups"] = [acl.id for acl in members]
+        # size = project.get_size(bundle.request.user)
+        # bundle.data['project_size'] = size
+        # project_experiment_count = project.experiments.count()
+        # bundle.data['project_experiment_count'] = project_experiment_count
+        # admins = project.get_admins()
+        # bundle.data["admin_groups"] = [acl.id for acl in admins]
+        # members = project.get_groups()
+        # bundle.data["member_groups"] = [acl.id for acl in members]
         return bundle
 
     def hydrate_m2m(self, bundle):
-        acls = process_acls(bundle)
-        if acls:
-            bulk_replace_existing_acls(acls)
-        if "admins" in bundle.data.keys():
-            bundle.data.pop("admins")
-        if "admin_groups" in bundle.data.keys():
-            bundle.data.pop("admin_groups")
-        if "members" in bundle.data.keys():
-            bundle.data.pop("members")
-        if "member_groups" in bundle.data.keys():
-            bundle.data.pop("member_groups")
+        """
+        Create experiment-dataset associations first, because they affect
+        authorization for adding other related resources, e.g. metadata
+        """
+        if settings.ONLY_EXPERIMENT_ACLS:
+            if getattr(bundle.obj, "id", False):
+                for exp_uri in bundle.data.get("experiments", []):
+                    try:
+                        exp = ExperimentResource.get_via_uri(
+                            ExperimentResource(), exp_uri, bundle.request
+                        )
+                        bundle.obj.experiments.add(exp)
+                    except NotFound:
+                        pass
+        # acls = process_acls(bundle)
+        # if acls:
+        #    bulk_replace_existing_acls(acls)
+        # if "admins" in bundle.data.keys():
+        #    bundle.data.pop("admins")
+        # if "admin_groups" in bundle.data.keys():
+        #    bundle.data.pop("admin_groups")
+        # if "members" in bundle.data.keys():
+        #    bundle.data.pop("members")
+        # if "member_groups" in bundle.data.keys():
+        #    bundle.data.pop("member_groups")
         return super().hydrate_m2m(bundle)
 
     def obj_create(self, bundle, **kwargs):
@@ -243,7 +262,7 @@ class ProjectResource(ModelResource):
         """
         user = bundle.request.user
         bundle.data["created_by"] = user
-        if not User.objects.filter(
+        """if not User.objects.filter(
             username=bundle.data["principal_investigator"]
         ).exists():
             new_user = get_user_from_upi(bundle.data["principal_investigator"])
@@ -264,7 +283,7 @@ class ProjectResource(ModelResource):
                 username=new_user["username"],
                 authenticationMethod=settings.LDAP_METHOD,
             )
-            authentication.save()
+            authentication.save()"""
         project_lead = User.objects.get(username=bundle.data["principal_investigator"])
         bundle.data["principal_investigator"] = project_lead
         bundle = super().obj_create(bundle, **kwargs)
