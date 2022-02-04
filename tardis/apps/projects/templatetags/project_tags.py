@@ -220,14 +220,6 @@ def project_last_updated_badge(project):
 #    return {"project": project, "user": user}
 
 
-@register.inclusion_tag("templatetags/project_tags/project_authors.html")
-def project_authors(project, **kwargs):
-    """
-    Displays an Project's lead researcher in a project list view
-    """
-    return {"project": project}
-
-
 @register.inclusion_tag("templatetags/project_tags/project_download_link.html")
 def project_download_link(project, **kwargs):
     """
