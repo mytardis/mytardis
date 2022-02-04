@@ -15,4 +15,9 @@ async function fetchHSMDatasetData(datasetId) {
   return await response.json();
 }
 
-export { fetchExperimentData, fetchDatasetData, fetchHSMDatasetData };
+async function fetchProjectData(projectId) {
+  const response = await fetch(`/api/v1/project/${projectId}/?format=json`);
+  return await response.json();
+}
+
+export { fetchExperimentData, fetchDatasetData, fetchHSMDatasetData , fetchProjectData};
