@@ -30,8 +30,14 @@ project_urls = [
         retrieve_owned_proj_list,
         name="tardis.apps.projects.retrieve_owned_proj_list",
     ),
-    url(r"^project/(?P<project_id>\d+)/latest_experiment$", project_latest_experiment),
     url(
-        r"^project/(?P<project_id>\d+)/recent_experiments$", project_recent_experiments
+        r"^ajax/(?P<project_id>\d+)/latest_experiment$",
+        project_latest_experiment,
+        name="tardis.apps.projects.project_latest_experiment",
+    ),
+    url(
+        r"^ajax/(?P<project_id>\d+)/recent_experiments$",
+        project_recent_experiments,
+        name="tardis.apps.projects.project_recent_experiments",
     ),
 ]
