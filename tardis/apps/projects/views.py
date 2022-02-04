@@ -248,7 +248,7 @@ def retrieve_owned_proj_list(request, template_name="ajax/proj_list.html"):
     paginator = Paginator(projects, settings.OWNED_EXPS_PER_PAGE)
     proj_page = paginator.page(page_num + 1)
 
-    query_string = "/projects/ajax/owned_proj_list/?page={page}"
+    query_string = "/project/ajax/owned_proj_list/?page={page}"
 
     c = {
         "projects": proj_page,

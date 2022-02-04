@@ -204,20 +204,20 @@ def project_last_updated_badge(project):
 """
 
 
-@register.filter
-def project_public_access_badge(project):
-    """
-    Displays a badge the level of public access for this experiment
-    """
-    # return render_public_access_badge(project)
+# @register.filter
+# def project_public_access_badge(project):
+#    """
+#    Displays a badge the level of public access for this experiment
+#    """
+# return render_public_access_badge(project)
 
 
-@register.inclusion_tag("templatetags/project_tags/project_badges.html")
-def project_badges(project, user, **kwargs):
-    """
-    Displays badges for a Project for displaying in an Project list view
-    """
-    return {"project": project, "user": user}
+# @register.inclusion_tag("templatetags/project_tags/project_badges.html")
+# def project_badges(project, user, **kwargs):
+#    """
+#    Displays badges for a Project for displaying in an Project list view
+#    """
+#    return {"project": project, "user": user}
 
 
 @register.inclusion_tag("templatetags/project_tags/project_authors.html")

@@ -4,7 +4,7 @@ $(document).ready(function() {
     var loadingHTML = "<img src=\"/static/images/ajax-loader.gif\"/><br />";
     $("#myprojects").html(loadingHTML);
     $("#myprojects").load(
-        "/projects/ajax/owned_proj_list/",
+        "/project/ajax/owned_proj_list/",
         function() {
             attachProjAccordionClickHandlers("accordion-toggle", "toggle-", "collapse-", "latest-exp-", loadLatestExpSummary);
             expandFirstProjects();
@@ -21,7 +21,7 @@ $(document).ready(function() {
     $("#myprojects").on("reload", function() {
         $(this).html(loadingHTML);
         $(this).load(
-            "/projects/ajax/owned_proj_list/",
+            "/project/ajax/owned_proj_list/",
             function() {
                 attachProjAccordionClickHandlers("accordion-toggle", "toggle-", "collapse-", "latest-exp-", loadLatestExpSummary);
                 expandFirstProjects();
