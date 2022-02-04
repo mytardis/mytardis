@@ -6,7 +6,7 @@
 // eslint-disable-next-line no-unused-vars
 var loadLatestExpSummary = function(divIdPrefix, projectId) {
     $.ajax({
-        url: "/ajax/project/" + projectId + "/latest_exp",
+        url: "/ajax/project/" + projectId + "/latest_experiment",
         type: "GET",
         dataType: "html",
         success: function(data) {
@@ -26,7 +26,7 @@ var loadLatestExpSummary = function(divIdPrefix, projectId) {
 // eslint-disable-next-line no-unused-vars
 var loadRecentExpsSummary = function(divIdPrefix, projectId) {
     $.ajax({
-        url: "/ajax/project/" + projectId + "/recent_exps",
+        url: "/ajax/project/" + projectId + "/recent_experiments",
         type: "GET",
         dataType: "html",
         success: function(data) {

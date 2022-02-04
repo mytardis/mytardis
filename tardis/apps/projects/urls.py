@@ -1,5 +1,6 @@
 from django.conf.urls import url
 
+from .ajax_pages import project_latest_experiment, project_recent_experiments
 from .views import (
     ProjectView,
     create_project,
@@ -28,5 +29,9 @@ project_urls = [
         r"^ajax/owned_proj_list/$",
         retrieve_owned_proj_list,
         name="tardis.apps.projects.retrieve_owned_proj_list",
+    ),
+    url(r"^project/(?P<project_id>\d+)/latest_experiment$", project_latest_experiment),
+    url(
+        r"^project/(?P<project_id>\d+)/recent_experiments$", project_recent_experiments
     ),
 ]
