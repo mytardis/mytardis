@@ -1,6 +1,5 @@
 {% load static %}
 {% load render_bundle from webpack_loader %}
-{% load project_tags %}
 {% load experimentstats %}
 {% load humanize %}
 {% load bleach_tag %}
@@ -25,13 +24,6 @@
         </div>
         <div class="col">
           <div class="badges" id="badge-{{proj.id}}"></div>
-        </div>
-      </div>
-      <div class="row">
-        <div class="col">
-          <span class="float-right">
-            {% project_download_link proj %}
-          </span>
         </div>
       </div>
     </div>

@@ -220,9 +220,9 @@ def project_last_updated_badge(project):
 #    return {"project": project, "user": user}
 
 
-@register.inclusion_tag("projects/templatetags/project_tags/project_download_link.html")
-def project_download_link(project, **kwargs):
-    """
-    Displays a download link for a project in a list view
-    """
-    return {"project": project}
+# @register.inclusion_tag("projects/templatetags/project_tags/project_download_link.html")
+# def project_download_link(project, **kwargs):
+#    """
+#    Displays a download link for a project in a list view
+#    """
+#    return {"project": project}
