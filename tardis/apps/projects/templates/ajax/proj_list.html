@@ -23,7 +23,7 @@
              href="{% url 'tardis.apps.projects.view_project' proj.id %}">{{ proj.name }}</a>
         </div>
         <div class="col">
-          <div class="badges" id="badge-{{proj.id}}"></div>
+          <div class="projectbadges" id="badge-{{proj.id}}"></div>
         </div>
       </div>
     </div>
@@ -50,4 +50,4 @@
 {% if projects.paginator.num_pages > 1 %}
   {% block bottom-pagination %}{% pagination projects paginator page_num query_string %}{% endblock %}
 {% endif %}
-{% render_bundle 'index_page_badges' %}
+{% render_bundle 'project_badges' %}

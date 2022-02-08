@@ -41,7 +41,8 @@ module.exports = {
         choose_rights: "./assets/js/apps/choose_rights/index.jsx",
         tardis_portal_create_project: glob.sync("./assets/js/apps/projects/create_project/*.js"),
         project_app : "./assets/js/apps/projects/view/index.jsx",
-        tardis_portal_my_projects: glob.sync("./assets/js/apps/projects/my_projects/*.js")
+        tardis_portal_my_projects: glob.sync("./assets/js/apps/projects/my_projects/*.js"),
+        project_badges: "./assets/js/apps/badges/components/ProjectBadges.jsx"
     },
     output: {
         path: path.resolve("./assets/bundles/"),
