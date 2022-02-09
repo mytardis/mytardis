@@ -4,6 +4,7 @@ import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
 import { css } from '@emotion/core';
 import PublicAccessBadge from './PublicAccessBadge';
+import ExperimentCountBadge from './ExperimentCountBadge';
 import DatasetCountBadge from './DatasetCountBadge';
 import DatafileCountBadge from './DatafileCountBadge';
 import { fetchProjectData } from './utils/FetchData';
@@ -30,6 +31,9 @@ const ProjectBadges = ({ projectID }) => {
       : (
         <Fragment>
           <ul className="list-inline float-right list-unstyled">
+            <li className="mr-1 list-inline-item">
+              <ExperimentCountBadge experimentData={projData} />
+            </li>
             <li className="mr-1 list-inline-item">
               <DatasetCountBadge experimentData={projData} />
             </li>
