@@ -8,14 +8,16 @@ Implemented with Tastypie.
 from itertools import chain
 
 from django.conf import settings
+from django.conf.urls import url
 from django.contrib.auth.models import User
-
+from django.http import JsonResponse
 from tastypie import fields
 from tastypie.authorization import Authorization
 from tastypie.constants import ALL_WITH_RELATIONS
 from tastypie.exceptions import NotFound, Unauthorized
 from tastypie.resources import ModelResource
 from tastypie.serializers import Serializer
+from tastypie.utils import trailing_slash
 
 from tardis.tardis_portal.api import (
     MyTardisAuthentication,
@@ -322,6 +324,8 @@ class ProjectResource(ModelResource):
         :return: a list of experiments
         :rtype: JsonResponse: :class: `django.http.JsonResponse`
         """
+        from tardis.tardis_portal.models import Experiment
+
         self.method_check(request, allowed=["get"])
         self.is_authenticated(request)
         project_id = kwargs["pk"]
