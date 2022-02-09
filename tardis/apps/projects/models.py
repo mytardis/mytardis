@@ -189,7 +189,7 @@ class Project(models.Model):
 
         if settings.ONLY_EXPERIMENT_ACLS:
             return Dataset.objects.filter(experiments__projects=self)
-        return Dataset.safe.all(user).filter(experiments___projects=self)
+        return Dataset.safe.all(user).filter(experiments__projects=self)
 
     def get_size(self, user, downloadable=False):
         from tardis.tardis_portal.models.datafile import DataFile
