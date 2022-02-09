@@ -10,7 +10,7 @@ const ExperimentCountBadge = ({ projectData }) => {
   React.useEffect(() => {
     const count = projectData.experiment_count;
     setExperimentCount(count);
-    setTitle(`${count} ${pluralize('experiment', count)}`);
+    setTitle(`Related to ${count} ${pluralize('experiment', count)}`);
   }, []);
 
 

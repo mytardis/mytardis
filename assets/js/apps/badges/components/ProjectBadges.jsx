@@ -32,7 +32,7 @@ const ProjectBadges = ({ projectID }) => {
         <Fragment>
           <ul className="list-inline float-right list-unstyled">
             <li className="mr-1 list-inline-item">
-              <ExperimentCountBadge experimentData={projData} />
+              <ExperimentCountBadge projectData={projData} />
             </li>
             <li className="mr-1 list-inline-item">
               <DatasetCountBadge experimentData={projData} />
