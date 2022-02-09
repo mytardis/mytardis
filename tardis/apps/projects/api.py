@@ -228,7 +228,9 @@ class ProjectResource(ModelResource):
             project_experiment_count = project.experiments.count()
         else:
             project_experiment_count = (
-                Experiment.safe.all(user).filter(projects=project).count()
+                Experiment.safe.all(bundle.request.user)
+                .filter(projects=project)
+                .count()
             )
         bundle.data["experiment_count"] = project_experiment_count
         project_dataset_count = project.get_datasets(bundle.request.user)
