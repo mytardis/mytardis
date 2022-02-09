@@ -6,7 +6,7 @@ import { css } from '@emotion/core';
 import PublicAccessBadge from './PublicAccessBadge';
 import DatasetCountBadge from './DatasetCountBadge';
 import DatafileCountBadge from './DatafileCountBadge';
-import { fetchExperimentData } from './utils/FetchData';
+import { fetchProjectData } from './utils/FetchData';
 import Spinner from './utils/Spinner';
 
 

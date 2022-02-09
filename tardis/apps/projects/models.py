@@ -184,6 +184,13 @@ class Project(models.Model):
             return DataFile.objects.filter(dataset__experiments__projects=self)
         return DataFile.safe.all(user).filter(dataset__experiments___projects=self)
 
+    def get_datasets(self, user):
+        from tardis.tardis_portal.models.dataset import Dataset
+
+        if settings.ONLY_EXPERIMENT_ACLS:
+            return Dataset.objects.filter(experiments__projects=self)
+        return Dataset.safe.all(user).filter(experiments___projects=self)
+
     def get_size(self, user, downloadable=False):
         from tardis.tardis_portal.models.datafile import DataFile
 
