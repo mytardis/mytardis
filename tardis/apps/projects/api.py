@@ -243,6 +243,16 @@ class ProjectResource(ModelResource):
         # bundle.data["member_groups"] = [acl.id for acl in members]
         return bundle
 
+    def prepend_urls(self):
+        return [
+            url(
+                r"^(?P<resource_name>%s)/(?P<pk>\w[\w/-]*)/project-experiments%s$"
+                % (self._meta.resource_name, trailing_slash()),
+                self.wrap_view("get_project_experiments"),
+                name="api_get_project_experiments",
+            ),
+        ]
+
     def hydrate_m2m(self, bundle):
         """
         Create experiment-dataset associations first, because they affect
@@ -302,6 +312,29 @@ class ProjectResource(ModelResource):
         bundle.data["principal_investigator"] = project_lead
         bundle = super().obj_create(bundle, **kwargs)
         return bundle
+
+    def get_project_experiments(self, request, **kwargs):
+        """
+        Return a list of experiments related to the project
+        :param request: a HTTP Request instance
+        :type request: :class:`django.http.HttpRequest`
+        :param kwargs:
+        :return: a list of experiments
+        :rtype: JsonResponse: :class: `django.http.JsonResponse`
+        """
+        self.method_check(request, allowed=["get"])
+        self.is_authenticated(request)
+        project_id = kwargs["pk"]
+        if not has_access(request, project_id, "project"):
+            return HttpResponseForbidden()
+
+        if settings.ONLY_EXPERIMENT_ACLS:
+            exp_list = Project.experiments.all()
+        else:
+            exp_list = Experiment.safe.all(request.user).filter(projects=project_id)
+
+        exp_list = exp_list.values_list("id", "title")
+        return JsonResponse(exp_list, status=200, safe=False)
 
 
 class ProjectACLResource(ModelResource):

@@ -8,7 +8,7 @@ export default function ExperimentList(props) {
 
   // fetching experiment data by project id
   useEffect(() => {
-    fetch(`/api/v1/experiment/?limit=${resultLimit}&project__id=${props.projectId}`, {
+    fetch(`/api/v1/project/${props.projectId}/project-experiments`, {
       method: 'get',
       headers: {
         'Accept': 'application/json',
