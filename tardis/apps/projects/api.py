@@ -337,7 +337,7 @@ class ProjectResource(ModelResource):
         else:
             exp_list = Experiment.safe.all(request.user).filter(projects=project_id)
 
-        exp_list = [*exp_list.values_list("id", "title")]
+        exp_list = [*exp_list.values("id", "title")]
         return JsonResponse(exp_list, status=200, safe=False)
 
 
