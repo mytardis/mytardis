@@ -233,9 +233,9 @@ class ProjectResource(ModelResource):
                 .count()
             )
         bundle.data["experiment_count"] = project_experiment_count
-        project_dataset_count = project.get_datasets(bundle.request.user)
+        project_dataset_count = project.get_datasets(bundle.request.user).count()
         bundle.data["dataset_count"] = project_dataset_count
-        project_datafile_count = project.get_datafiles(bundle.request.user)
+        project_datafile_count = project.get_datafiles(bundle.request.user).count()
         bundle.data["datafile_count"] = project_datafile_count
         # admins = project.get_admins()
         # bundle.data["admin_groups"] = [acl.id for acl in admins]
