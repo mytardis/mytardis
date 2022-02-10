@@ -40,5 +40,5 @@ def project_recent_experiments(request, project_id):
             )
         )
     return render_response_index(
-        request, "ajax/experiment_recent_experiments.html", context
+        request, "ajax/project_recent_experiments.html", context
     )
