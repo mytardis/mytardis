@@ -10,7 +10,7 @@ from itertools import chain
 from django.conf import settings
 from django.conf.urls import url
 from django.contrib.auth.models import User
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponseForbidden
 from tastypie import fields
 from tastypie.authorization import Authorization
 from tastypie.constants import ALL_WITH_RELATIONS
