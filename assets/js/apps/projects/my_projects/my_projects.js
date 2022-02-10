@@ -35,7 +35,7 @@ $(document).ready(function() {
             });
     });
 
-    // var attachProjAccordionClickHandlers = function(accordionToggleClass, accordionToggleIdPrefix, accordionBodyIdPrefix, divIdPrefix, loadDatasetsSummary)
+    // var attachProjAccordionClickHandlers = function(accordionToggleClass, accordionToggleIdPrefix, accordionBodyIdPrefix, divIdPrefix, loadExperimentsSummary)
     attachProjAccordionClickHandlers("accordion-toggle", "toggle-", "collapse-", "latest-experiment-", loadLatestExperimentSummary);
     expandFirstProjects();
 });

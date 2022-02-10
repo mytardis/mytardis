@@ -47,7 +47,7 @@ var loadRecentExperimentsSummary = function(divIdPrefix, projectId) {
  * @param {function} loadExperimentsSummary - Either loadLatestExperimentSummary or loadRecentExperimentsSummary
  */
 // eslint-disable-next-line no-unused-vars
-var attachProjAccordionClickHandlers = function(accordionToggleClass, accordionToggleIdPrefix, accordionBodyIdPrefix, divIdPrefix, loadDatasetsSummary) {
+var attachProjAccordionClickHandlers = function(accordionToggleClass, accordionToggleIdPrefix, accordionBodyIdPrefix, divIdPrefix, loadExperimentsSummary) {
     $("." + accordionToggleClass).click(function(event) {
         var projectId = $(this).attr("id").replace(accordionToggleIdPrefix, "");
         if (!$("#" + accordionBodyIdPrefix + projectId).hasClass("in")) {
