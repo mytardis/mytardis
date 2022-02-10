@@ -259,7 +259,7 @@ i.group-icon :hover {
 }
 
 
-.projects .accordion-toggle .projectlink {
+.projects .accordion-toggle .projlink {
     font-size: 1.1em;
     font-weight: 500;
 }
@@ -280,7 +280,7 @@ i.group-icon :hover {
     text-transform: none;
 }
 
-.projects .projectlink {
+.projects .projlink {
     color: black;
     font-size: 110%;
 }
