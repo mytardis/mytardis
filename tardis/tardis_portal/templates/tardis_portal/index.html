@@ -30,8 +30,52 @@
       {% if is_authenticated %}
         {% if project_app_enabled %}
         <h3>
-          Your most recent Projects
+          Your most recent projects
+          <small>(<a href="{% url 'tardis.apps.projects.views.my_projects' %}">view all</a>)</small>
         </h3>
+        <div id="private-projects" class="panel-group projects">
+          {% for proj in private_projects %}
+            <div class="card mb-2">
+              <div id="private-toggle-{{proj.id}}"
+                   class="card-header accordion-toggle private-project py-2"
+                   data-toggle="collapse" data-parent="#private-projects">
+                  <div class="row">
+                    <div class="col-md-8 px-1 pb-1">
+                      <input type="hidden" class="proj-index" value="{{ forloop.counter }}">
+                      <a class="card-title projlink"
+                         href="{% url 'tardis.apps.projects.view_project' proj.id %}">{{ proj.name }}</a>
+                    </div>
+                    <div class="col">
+                     <div class="projectbadges" id="badge-{{proj.id}}"></div>
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div class="col">
+                      <span class="float-right">
+                       {% for dltype, dlurl in proj.get_download_urls.items %}
+                        {% if forloop.first %}
+                          <a class="dllink" href="{{dlurl}}"
+                             title="Download Entire Project as {{dltype}}">
+                            <i class="fa fa-download"></i>
+                            <em>Download data as .{{dltype}}</em>
+                          </a>
+                        {% endif %}
+                      {% endfor %}
+                      </span>
+                    </div>
+                  </div>
+              </div>
+              <div id="collapse-{{proj.id}}" class="card-body py-2 collapse" data-parent="#private-projects">
+                  <div class="row">
+                    <div class="col-md-9 px-1">
+                      <div class="accordion-inner">
+                        <p class="card-text small mb-1">{{proj.description|default:"<em>No description</em>"|bleach}}</p>
+                        <div id="private-recent-projects-{{proj.id}}"></div>
+                      </div> {% comment %}class="accordion-inner"{% endcomment %}
+                    </div>
+                  </div>
+              </div>
+          </div>
         {% endif %}
       <h3>
         Your most recent experiments
@@ -151,5 +195,6 @@
 </div> {% comment %}id="content"{% endcomment %}
 <input type="hidden" id="exps-expand-accordion" value="{{ exps_expand_accordion }}">
 {% render_bundle 'tardis_portal_index' %}
-  {% render_bundle 'index_page_badges' %}
+{% render_bundle 'index_page_badges' %}
+{% render_bundle 'project_badges' %}
 {% endblock content %}
