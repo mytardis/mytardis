@@ -77,6 +77,7 @@
               </div>
           </div>
           {% endfor %}
+        </div>
         {% endif %}
       <h3>
         Your most recent experiments
@@ -195,6 +196,8 @@
   </div> {% comment %}class="row"{% endcomment %}
 </div> {% comment %}id="content"{% endcomment %}
 <input type="hidden" id="exps-expand-accordion" value="{{ exps_expand_accordion }}">
+<input type="hidden" id="proj-expand-accordion" value="{{ proj_expand_accordion }}">
+
 {% render_bundle 'tardis_portal_index' %}
 {% render_bundle 'index_page_badges' %}
 {% render_bundle 'project_badges' %}

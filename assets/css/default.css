@@ -252,7 +252,7 @@ i.group-icon :hover {
     background-color: #E8F6FF;
 }
 
-.projects .accordion-inner .experiment-list-header {
+.projects .accordion-inner .exp-list-header {
     font-style: italic;
     padding-top: 5px;
     padding-left: 5px;
