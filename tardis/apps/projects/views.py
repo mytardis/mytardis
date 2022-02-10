@@ -215,7 +215,7 @@ def my_projects(request):
         owned_projects = Project.safe.owned_and_shared(request.user).order_by(
             "-start_time"
         )
-    proj_expand_accordion = getattr(settings, "PROJ_EXPAND_ACCORDION", 5)
+    proj_expand_accordion = getattr(settings, "EXPS_EXPAND_ACCORDION", 5)
     c = {
         "owned_projects": owned_projects,
         "proj_expand_accordion": proj_expand_accordion,

@@ -177,6 +177,7 @@ class IndexView(TemplateView):
 
                 c["private_projects"] = private_projects
                 c["private_projects_count"] = private_projects.count()
+                c["proj_expand_accordion"] = 1
 
         return c
 
