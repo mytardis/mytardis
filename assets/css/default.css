@@ -319,24 +319,24 @@ i.group-icon :hover {
 /* end dataset tiles */
 
 /* myprojects page */
-.myprojects .accordion-toggle .explink {
+.myprojectdata .accordion-toggle .explink {
     font-size: 1.1em;
     font-weight: 500;
     max-width: 67%;
     cursor: pointer;
 }
 
-.myprojects .accordion-toggle .badgelist {
+.myprojectdata .accordion-toggle .badgelist {
     margin-bottom: 4px;
 }
-.myprojects .card-body p {
+.myprojectdata .card-body p {
     width: 75%;
 }
-.myprojects .card-body .thumbnails li {
+.myprojectdata .card-body .thumbnails li {
     margin-bottom: 5px;
     margin-top: 2px;
 }
-.myprojects .nav .nav-header {
+.myprojectdata .nav .nav-header {
     font-size: 11px;
     font-weight: normal;
     color: #000000;
