@@ -6,7 +6,7 @@ $(document).ready(function() {
     $("#myprojects").load(
         "/project/ajax/owned_proj_list/",
         function() {
-            attachProjAccordionClickHandlers("accordion-toggle", "toggle-", "collapse-", "latest-exp-", loadLatestExpSummary);
+            attachProjAccordionClickHandlers("accordion-toggle", "toggle-", "collapse-", "latest-experiment-", loadLatestExpSummary);
             expandFirstProjects();
 
             $(".explink").on("click", function(evt) {
@@ -23,7 +23,7 @@ $(document).ready(function() {
         $(this).load(
             "/project/ajax/owned_proj_list/",
             function() {
-                attachProjAccordionClickHandlers("accordion-toggle", "toggle-", "collapse-", "latest-exp-", loadLatestExpSummary);
+                attachProjAccordionClickHandlers("accordion-toggle", "toggle-", "collapse-", "latest-experiment-", loadLatestExpSummary);
                 expandFirstProjects();
 
                 $(".explink").on("click", function(evt) {
@@ -36,7 +36,7 @@ $(document).ready(function() {
     });
 
     // var attachProjAccordionClickHandlers = function(accordionToggleClass, accordionToggleIdPrefix, accordionBodyIdPrefix, divIdPrefix, loadDatasetsSummary)
-    attachProjAccordionClickHandlers("accordion-toggle", "toggle-", "collapse-", "latest-exp-", loadLatestExpSummary);
+    attachProjAccordionClickHandlers("accordion-toggle", "toggle-", "collapse-", "latest-experiment-", loadLatestExpSummary);
     expandFirstProjects();
 });
 
@@ -45,7 +45,7 @@ $(document).on("click", ".page-link", function() {
     var href = $(this).attr("href");
     $(this).html(loadingHTML);
     $("#myprojects").load(href, function() {
-        attachProjAccordionClickHandlers("accordion-toggle", "toggle-", "collapse-", "latest-exp-", loadLatestExpSummary);
+        attachProjAccordionClickHandlers("accordion-toggle", "toggle-", "collapse-", "latest-experiment-", loadLatestExpSummary);
         expandFirstProjects();
     });
     return false;
