@@ -2,8 +2,8 @@ import {attachProjAccordionClickHandlers, loadLatestExperimentSummary, expandFir
 $(document).ready(function() {
     // Load owned exps on page load
     var loadingHTML = "<img src=\"/static/images/ajax-loader.gif\"/><br />";
-    $("#myprojectdata").html(loadingHTML);
-    $("#myprojectdata").load(
+    $("#myprojects").html(loadingHTML);
+    $("#myprojects").load(
         "/project/ajax/owned_proj_list/",
         function() {
             attachProjAccordionClickHandlers("accordion-toggle", "toggle-", "collapse-", "latest-experiment-", loadLatestExperimentSummary);
@@ -18,7 +18,7 @@ $(document).ready(function() {
         });
 
     // Create a reload event handler
-    $("#myprojectdata").on("reload", function() {
+    $("#myprojects").on("reload", function() {
         $(this).html(loadingHTML);
         $(this).load(
             "/project/ajax/owned_proj_list/",
@@ -44,7 +44,7 @@ $(document).on("click", ".page-link", function() {
     var loadingHTML = "<img src=\"/static/images/ajax-loader.gif\"/><br />";
     var href = $(this).attr("href");
     $(this).html(loadingHTML);
-    $("#myprojectdata").load(href, function() {
+    $("#myprojects").load(href, function() {
         attachProjAccordionClickHandlers("accordion-toggle", "toggle-", "collapse-", "latest-experiment-", loadLatestExperimentSummary);
         expandFirstProjects();
     });
