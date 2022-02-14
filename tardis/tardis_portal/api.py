@@ -544,7 +544,7 @@ class IntrospectionObject(object):
         self.experiment_only_acls = experiment_only_acls
 
 
-class IntrospectionResource(ModelResource):
+class IntrospectionResource(Resource):
     """Tastypie resource for introspection - to expose some key settings publicly"""
 
     projects_enabled = fields.ApiField(attribute="projects_enabled", null=True)
