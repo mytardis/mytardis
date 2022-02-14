@@ -16,7 +16,6 @@ from tardis.tardis_portal.models.parameters import Parameter, ParameterSet
 from tardis.tardis_portal.models.access_control import (
     ACL,
     delete_if_all_false,
-    public_acls,
 )
 
 # from X.models import DataManagementPlan # Hook in place for future proofing
@@ -226,6 +225,32 @@ class ProjectACL(ACL):
         return str(self.id)
 
 
+def project_public_acls(instance, **kwargs):
+    # Post save function to create/delete ACLs for the PUBLIC_USER based upon
+    # project public_access flag
+    PUBLIC_USER = User.objects.get(pk=settings.PUBLIC_USER_ID)
+    if instance.public_access > 25:  # 25 = Embargoed
+        if not settings.ONLY_EXPERIMENT_ACLS:
+            if isinstance(instance, Project):
+                if (
+                    not PUBLIC_USER.projectacls.select_related("project")
+                    .filter(project__id=instance.id)
+                    .exists()
+                ):
+                    acl = ProjectACL(
+                        user=PUBLIC_USER,
+                        project=instance,
+                        canRead=True,
+                        aclOwnershipType=ProjectACL.SYSTEM_OWNED,
+                    )
+                    acl.save()
+    else:
+        if isinstance(instance, Project):
+            PUBLIC_USER.projectacls.select_related("project").filter(
+                project__id=instance.id
+            ).delete()
+
+
 post_save.connect(delete_if_all_false, sender=ProjectACL)
 
-post_save.connect(public_acls, sender=Project)
+post_save.connect(project_public_acls, sender=Project)
