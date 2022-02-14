@@ -539,9 +539,10 @@ class ACLAuthorization(Authorization):
 
 
 class IntrospectionObject(object):
-    def __init__(self, projects_enabled=None, experiment_only_acls=None):
+    def __init__(self, projects_enabled=None, experiment_only_acls=None, id=None):
         self.projects_enabled = projects_enabled
         self.experiment_only_acls = experiment_only_acls
+        self.id = id
 
 
 class IntrospectionResource(Resource):
@@ -557,6 +558,15 @@ class IntrospectionResource(Resource):
         authentication = default_authentication
         object_class = IntrospectionObject
         always_return_data = True
+
+    def detail_uri_kwargs(self, bundle_or_obj):
+        kwargs = {}
+        if isinstance(bundle_or_obj, Bundle):
+            kwargs["pk"] = bundle_or_obj.obj.id
+        else:
+            kwargs["pk"] = bundle_or_obj["id"]
+
+        return kwargs
 
     def get_object_list(self, request):
         return [
