@@ -26,6 +26,7 @@ from tardis.tardis_portal.api import (
     FacilityResource,
     GroupResource,
     InstrumentResource,
+    IntrospectionResource,
     LocationResource,
     ExperimentACLResource,
     DatasetACLResource,
@@ -66,6 +67,7 @@ v1_api.register(DatasetACLResource())
 v1_api.register(DatafileACLResource())
 v1_api.register(FacilityResource())
 v1_api.register(InstrumentResource())
+v1_api.register(IntrospectionResource())
 
 for app_name, app in get_tardis_apps():
     try:
