@@ -37,7 +37,7 @@ from tastypie.exceptions import ImmediateHttpResponse
 from tastypie.exceptions import NotFound
 from tastypie.exceptions import Unauthorized
 from tastypie.http import HttpUnauthorized
-from tastypie.resources import ModelResource
+from tastypie.resources import Resource, ModelResource
 from tastypie.serializers import Serializer
 from tastypie.utils import trailing_slash
 
@@ -544,7 +544,7 @@ class IntrospectionObject(object):
         self.experiment_only_acls = experiment_only_acls
 
 
-class IntrospectionResource(Resource):
+class IntrospectionResource(ModelResource):
     """Tastypie resource for introspection - to expose some key settings publicly"""
 
     projects_enabled = fields.ApiField(attribute="projects_enabled", null=True)
