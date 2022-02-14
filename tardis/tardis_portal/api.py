@@ -37,7 +37,7 @@ from tastypie.exceptions import ImmediateHttpResponse
 from tastypie.exceptions import NotFound
 from tastypie.exceptions import Unauthorized
 from tastypie.http import HttpUnauthorized
-from tastypie.resources import Resource, ModelResource
+from tastypie.resources import Resource, ModelResource, Bundle
 from tastypie.serializers import Serializer
 from tastypie.utils import trailing_slash
 
