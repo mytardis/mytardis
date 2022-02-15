@@ -86,12 +86,12 @@ class ProjectView(TemplateView):
         project_id = kwargs.get("project_id", None)
 
         c["project"] = project
-        c["has_write_permissions"] = authz.has_write(request, project_id, "project")
+        c["has_write_permissions"] = authz.has_write(request, project.id, "project")
         c["has_download_permissions"] = authz.has_download_access(
-            request, project_id, "project"
+            request, project.id, "project"
         )
         if request.user.is_authenticated:
-            c["is_owner"] = authz.has_ownership(request, project_id, "project")
+            c["is_owner"] = authz.has_ownership(request, project.id, "project")
 
         # _add_protocols_and_organizations(request, project, c)
         return c
@@ -122,7 +122,7 @@ class ProjectView(TemplateView):
         view_override = self.find_custom_view_override(request, project)
         if view_override is not None:
             return view_override
-        c = self.get_context_data(request, Project, **kwargs)
+        c = self.get_context_data(request, project, **kwargs)
         template_name = kwargs.get("template_name", None)
         if template_name is None:
             template_name = self.template_name
