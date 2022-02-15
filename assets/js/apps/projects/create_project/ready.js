@@ -5,7 +5,7 @@
  * duplicate submissions.
  */
 export function disableDuplicateSubmit() {
-    $("#create_experiment_form").submit(function() {
+    $("#create_project_form").submit(function() {
         $(this).find(":submit").prop("disabled", true);
     });
 }
