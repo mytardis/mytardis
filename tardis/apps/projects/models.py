@@ -124,7 +124,7 @@ class Project(models.Model):
         ``Project``
         """
         return reverse(
-            "tardis.tardis_portal.views.edit_project", kwargs={"project_id": self.id}
+            "tardis.apps.projects.edit_project", kwargs={"project_id": self.id}
         )
 
     def get_ct(self):
