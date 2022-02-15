@@ -188,9 +188,6 @@ class ProjectResource(ModelResource):
     TODO: catch duplicate schema submissions for parameter sets
     """
 
-    experiments = fields.ToManyField(
-        ExperimentResource, "experiments", related_name="projects"
-    )
     created_by = fields.ForeignKey(UserResource, "created_by")
     parameter_sets = fields.ToManyField(
         "tardis.apps.projects.api.ProjectParameterSetResource",
