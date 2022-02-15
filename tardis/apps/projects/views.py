@@ -83,7 +83,6 @@ class ProjectView(TemplateView):
 
         # This might need to be more complex to account for users
         c = super().get_context_data(**kwargs)
-        project_id = kwargs.get("project_id", None)
 
         c["project"] = project
         c["has_write_permissions"] = authz.has_write(request, project.id, "project")
