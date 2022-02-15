@@ -6,11 +6,13 @@
 <div class="page-header">
   <h4>Project</h4>
   {% if has_write_permissions %}
+  <div class="float-right">
   <a class="btn btn-sm btn-outline-secondary" title="Edit Project"
      href="{{ project.get_edit_url }}">
     <i class="fa fa-pencil"></i>
     Edit Project
   </a>
+  </div>
   {% endif %}
 
   <h1><span property="dc:title">{{ project.name }}</span></h1>
