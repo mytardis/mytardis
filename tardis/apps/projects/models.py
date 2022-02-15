@@ -164,7 +164,7 @@ class Project(models.Model):
         return self._has_any_perm(user_obj)
 
     def _has_change_perm(self, user_obj):
-        if self.immutable:
+        if self.locked:
             return False
         return self._has_any_perm(user_obj)
 
@@ -172,7 +172,7 @@ class Project(models.Model):
         return self._has_any_perm(user_obj)
 
     def _has_delete_perm(self, user_obj):
-        if self.immutable:
+        if self.locked:
             return False
         return self._has_any_perm(user_obj)
 
