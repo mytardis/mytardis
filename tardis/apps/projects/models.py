@@ -146,6 +146,12 @@ class Project(models.Model):
         acls = self.projectacl_set.select_related("group").filter(group__isnull=False)
         return [acl.get_related_object() for acl in acls]
 
+    def public_download_allowed(self):
+        """
+        instance method version of 'public_access_implies_distribution'
+        """
+        return self.public_access > Project.PUBLIC_ACCESS_METADATA
+
     def _has_any_perm(self, user_obj):
         if not hasattr(self, "id"):
             return False
