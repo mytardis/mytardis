@@ -17,11 +17,11 @@
     <p>
       {% if RAPID_CONNECT_ENABLED %}
         Please <a href={{ RAPID_CONNECT_LOGIN_URL }}>login</a>
-        to see your experiment data.
+        to see your projects and experiment data.
       {% else %}
         Please
         <a href="{% url 'tardis.tardis_portal.views.login' %}">login</a>
-        to see your experiment data.
+        to see your projects and experiment data.
       {% endif %}
     </p>
   {% endif %}

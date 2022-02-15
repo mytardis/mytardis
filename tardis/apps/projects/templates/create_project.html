@@ -18,49 +18,31 @@
             {{ form.name | add_class:"form-control" }}
           </div>
         </div>
-	<div class="form-group row">
-          <label class="col-form-label col-md-2 " for="title">Project Identifier (RaID)</label>
+		    <div class="form-group row">
+          <label class="col-form-label col-md-2 " for="title">Principal Investigator (PI)</label>
           <div class=" col-md-9 ">
-            {{ form.raid | add_class:"form-control" }}
+            {{ form.principal_investigator | add_class:"form-control" }}
           </div>
         </div>
-		<div class="form-group row">
-          <label class="col-form-label col-md-2 " for="title">Project Owner</label>
-          <div class=" col-md-9 ">
-            {{ form.owner | add_class:"form-control" }}
-          </div>
-        </div>
-	<div class="form-group row">
+	      <div class="form-group row">
           <label class="col-form-label col-md-2 " for="description">Description</label>
           <div class=" col-md-9 ">
             {{ form.description | add_class:"form-control" }}
           </div>
         </div>
         <div class="form-group row">
-          <label class="col-form-label col-md-2 " for="authors">Contacts</label>
+          <label class="col-form-label col-md-2 " for="authors">Institution</label>
           <div class=" col-md-9 ">
-            {{ form.contact | add_class:"form-control" }}
+            {{ form.institution | add_class:"form-control" }}
           </div>
         </div>
-	<div class="form-group row">
-          <label class="col-form-label col-md-2 " for="authors">Members</label>
-          <div class=" col-md-9 ">
-            {{ form.member | add_class:"form-control" }}
-          </div>
-        </div>
-	<div class="form-group row">
-          <label class="col-form-label col-md-2 " for="id_instrument">Embargo until</label>
-          <div class=" col-md-9 ">
-              {{ form.embargo_until | add_class:"form-control" }}
-          </div>
-        </div
         <div class="form-group row">
           <div class="offset-md-2 col-md-9 text-right">
             <a class="btn btn-outline-secondary"
-              {% if experiment_id %}
-                href="{% url 'tardis_portal.view_experiment' experiment_id %}"
+              {% if project_id %}
+                href="{% url 'tardis.apps.projects.view_project' project_id %}"
               {% else %}
-                href="{% url 'tardis.tardis_portal.views.my_data' %}"
+                href="{% url 'tardis.apps.projects.views.my_projects' %}"
               {% endif %}
             >
               <i class="fa fa-close"></i>

@@ -142,14 +142,12 @@ def create_project(request):
         if form.is_valid():
             project = Project()
             project.name = form.cleaned_data["name"]
-            project.raid = form.cleaned_data["raid"]
+            # project.raid = form.cleaned_data["raid"]
             project.description = form.cleaned_data["description"]
-            project.owner = form.cleaned_data["owner"]
+            project.principal_investigator = form.cleaned_data["principal_investigator"]
             project.save()
-            contacts = form.cleaned_data.get("contact")
-            project.contact.add(*contacts)
-            members = form.cleaned_data.get("member")
-            project.member.add(*members)
+            institutions = form.cleaned_data.get("institution")
+            project.institution.add(*institutions)
             project.save()
 
             # add default ACL
