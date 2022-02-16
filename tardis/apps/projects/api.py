@@ -330,7 +330,8 @@ class ProjectResource(ModelResource):
             return HttpResponseForbidden()
 
         if settings.ONLY_EXPERIMENT_ACLS:
-            exp_list = Project.experiments.all()
+            proj = Project.objects.get(pk=project_id)
+            exp_list = proj.experiments.all()
         else:
             exp_list = Experiment.safe.all(request.user).filter(projects=project_id)
 
