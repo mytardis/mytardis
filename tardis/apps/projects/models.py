@@ -187,7 +187,7 @@ class Project(models.Model):
                 .prefetch_related(
                     Prefetch(
                         "dataset__experiments",
-                        queryset=Experiment.safe.all(request.user),
+                        queryset=Experiment.safe.all(user),
                     )
                 )
                 .filter(dataset__experiments__projects=self)
@@ -199,7 +199,7 @@ class Project(models.Model):
 
         if settings.ONLY_EXPERIMENT_ACLS:
             return Dataset.objects.prefetch_related(
-                Prefetch("experiments", queryset=Experiment.safe.all(request.user))
+                Prefetch("experiments", queryset=Experiment.safe.all(user))
             ).filter(experiments__projects=self)
         return Dataset.safe.all(user).filter(experiments__projects=self)
 
