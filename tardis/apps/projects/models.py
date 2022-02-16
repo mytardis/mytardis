@@ -4,23 +4,16 @@ from datetime import datetime
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
-from django.urls import reverse
 from django.db import models
 from django.db.models.signals import post_save
-
+from django.urls import reverse
 from django.utils.timezone import now as django_time_now
-
+# from X.models import DataManagementPlan # Hook in place for future proofing
+from tardis.tardis_portal.managers import OracleSafeManager, SafeManager
+from tardis.tardis_portal.models.access_control import ACL, delete_if_all_false
 # from tardis.tardis_portal.models.institution import Institution
 from tardis.tardis_portal.models.experiment import Experiment
 from tardis.tardis_portal.models.parameters import Parameter, ParameterSet
-from tardis.tardis_portal.models.access_control import (
-    ACL,
-    delete_if_all_false,
-)
-
-# from X.models import DataManagementPlan # Hook in place for future proofing
-from tardis.tardis_portal.managers import OracleSafeManager, SafeManager
-
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +22,7 @@ PROJECT_INSTITUTION = "projects.DefaultInstitutionProfile"
 
 # IMPLEMENT ONCE INSTRUMENT_PROFILE APP IS CREATED, NOT BEFORE
 # if "tardis.apps.institution_profile" in settings.INSTALLED_APPS:
-#    from tardis.apps.institution_profile import InstitutionProfile
+#    from tardis.apps.institution_profile import InstitutionProfile - not sure if this code is needed
 #    PROJECT_INSTITUTION = InstitutionProfile
 
 
