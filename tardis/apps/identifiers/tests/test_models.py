@@ -1,8 +1,8 @@
-from django.test import TestCase
 from django.contrib.auth.models import User
 from django.db import IntegrityError
-from tardis.tardis_portal.models.experiment import Experiment
+from django.test import TestCase
 from tardis.tardis_portal.models.dataset import Dataset
+from tardis.tardis_portal.models.experiment import Experiment
 
 
 class ModelsTestCase(TestCase):
@@ -27,7 +27,7 @@ class ModelsTestCase(TestCase):
         dataset1.save()
         dataset1.experiments.add(experiment)
         dataset1.save()
-        self.assertTrue(hasattr(dataset1, "pid"))
+        self.assertTrue(hasattr(dataset1, "persistent_id"))
 
     def test_adding_value_to_pid(self):
         user = "testuser"
@@ -51,12 +51,12 @@ class ModelsTestCase(TestCase):
         dataset.experiments.add(experiment)
         dataset.save()
         pid = "my_test_pid"
-        dataset.pid.pid = pid
-        dataset.pid.save()
+        dataset.persistent_id.persistent_id = pid
+        dataset.persistent_id.save()
         key = dataset.id
         dataset = Dataset.objects.get(pk=key)
-        print(dataset.pid)
-        self.assertTrue(dataset.pid.pid == pid)
+        print(dataset.persistent_id)
+        self.assertTrue(dataset.persistent_id.persistent_id == pid)
 
     def test_duplicate_pids_raises_error(self):
         user = "testuser"
@@ -84,11 +84,11 @@ class ModelsTestCase(TestCase):
         dataset2.experiments.add(experiment)
         dataset2.save()
         pid = "my_test_pid_2"
-        dataset1.pid.pid = pid
-        dataset1.pid.save()
+        dataset1.persistent_id.persistent_id = pid
+        dataset1.persistent_id.save()
         with self.assertRaises(IntegrityError):
-            dataset2.pid.pid = pid
-            dataset2.pid.save()
+            dataset2.persistent_id.persistent_id = pid
+            dataset2.persistent_id.save()
 
     def test_adding_value_to_alternate_idenfiers(self):
         user = "testuser"
@@ -112,9 +112,9 @@ class ModelsTestCase(TestCase):
         dataset.experiments.add(experiment)
         dataset.save()
         alternate_ids = ["my_test_pid1", "my_test_pid2", "my_test_pid3"]
-        dataset.pid.alternate_ids = alternate_ids
-        dataset.pid.save()
+        dataset.persistent_id.alternate_ids = alternate_ids
+        dataset.persistent_id.save()
         key = dataset.id
         dataset = Dataset.objects.get(pk=key)
-        print(dataset.pid)
-        self.assertTrue(dataset.pid.alternate_ids == alternate_ids)
+        print(dataset.persistent_id)
+        self.assertTrue(dataset.persistent_id.alternate_ids == alternate_ids)
