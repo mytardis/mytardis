@@ -5,12 +5,15 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
+from django.db.models import Prefetch
 from django.db.models.signals import post_save
 from django.urls import reverse
 from django.utils.timezone import now as django_time_now
+
 # from X.models import DataManagementPlan # Hook in place for future proofing
 from tardis.tardis_portal.managers import OracleSafeManager, SafeManager
 from tardis.tardis_portal.models.access_control import ACL, delete_if_all_false
+
 # from tardis.tardis_portal.models.institution import Institution
 from tardis.tardis_portal.models.experiment import Experiment
 from tardis.tardis_portal.models.parameters import Parameter, ParameterSet
@@ -179,14 +182,25 @@ class Project(models.Model):
         from tardis.tardis_portal.models.datafile import DataFile
 
         if settings.ONLY_EXPERIMENT_ACLS:
-            return DataFile.objects.filter(dataset__experiments__projects=self)
+            return (
+                DataFile.objects.select_related("dataset")
+                .prefetch_related(
+                    Prefetch(
+                        "dataset__experiments",
+                        queryset=Experiment.safe.all(request.user),
+                    )
+                )
+                .filter(dataset__experiments__projects=self)
+            )
         return DataFile.safe.all(user).filter(dataset__experiments__projects=self)
 
     def get_datasets(self, user):
         from tardis.tardis_portal.models.dataset import Dataset
 
         if settings.ONLY_EXPERIMENT_ACLS:
-            return Dataset.objects.filter(experiments__projects=self)
+            return Dataset.objects.prefetch_related(
+                Prefetch("experiments", queryset=Experiment.safe.all(request.user))
+            ).filter(experiments__projects=self)
         return Dataset.safe.all(user).filter(experiments__projects=self)
 
     def get_size(self, user, downloadable=False):
