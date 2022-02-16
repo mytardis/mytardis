@@ -115,3 +115,15 @@ class ProjectPID(Identifier):
 
     # NB: the post_save connection is handled in the project app itself in able to ensure the
     # signal/slot connection can be made.
+
+
+if "tardis.apps.identifiers" in settings.INSTALLED_APPS:
+
+    def create_project_pid(instance, **kwargs):
+        """Post save function to create PIDs for Projects if the identifer app
+        is installed
+        """
+        ProjectPID(project=instance).save()
+
+    if "project" in settings.OBJECTS_WITH_IDENTIFIERS:
+        post_save.connect(create_project_pid, sender=Project)
