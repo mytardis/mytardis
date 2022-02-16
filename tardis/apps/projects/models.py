@@ -257,7 +257,7 @@ post_save.connect(project_public_acls, sender=Project)
 # Identifier app specific code here
 
 if "tardis.apps.identifiers" in settings.INSTALLED_APPS:
-    from tardis.apps.identifiers import ProjectPID
+    from tardis.apps.identifiers.models import ProjectPID
 
     def create_project_pid(instance, **kwargs):
         """Post save function to create PIDs for Projects if the identifer app
