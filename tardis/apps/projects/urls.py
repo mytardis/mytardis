@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.conf.urls import url
 
 from .ajax_pages import project_latest_experiment, project_recent_experiments
@@ -23,7 +24,6 @@ project_urls = [
         edit_project,
         name="tardis.apps.projects.edit_project",
     ),
-    url(r"^create/$", create_project, name="tardis.apps.projects.create_project"),
     url(r"^myprojects/$", my_projects, name="tardis.apps.projects.views.my_projects"),
     url(
         r"^ajax/owned_proj_list/$",
@@ -41,3 +41,9 @@ project_urls = [
         name="tardis.apps.projects.project_recent_experiments",
     ),
 ]
+
+
+if not settings.DISABLE_CREATION_FORMS:
+    project_urls += [
+        url(r"^create/$", create_project, name="tardis.apps.projects.create_project"),
+    ]

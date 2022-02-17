@@ -30,6 +30,11 @@ def project_app_processor(request):
     return {"project_app_enabled": "tardis.apps.projects" in settings.INSTALLED_APPS}
 
 
+def disable_creation_forms_processor(request):
+
+    return {"disable_creation_forms": settings.DISABLE_CREATION_FORMS}
+
+
 def registration_processor(request):
     def is_registration_enabled():
         try:

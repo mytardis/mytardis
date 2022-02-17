@@ -13,16 +13,18 @@
   <div class="row">
     <div class="col-md-12">
       <h3 class="d-block d-sm-none">Experiments</h3>
-      <div class="pull-right pb-1">
-        {% if perms.tardis_portal.add_experiment %}
-        <a id="create-experiment"
-           class="btn btn-primary"
-           href="{% url 'tardis.tardis_portal.views.create_experiment' %}">
-          <i class="fa fa-plus"></i>
-          Create
-        </a>
-        {% endif %}
-      </div>  <!-- class="pull-right" -->
+      {% if not disable_creation_forms %}
+        <div class="pull-right pb-1">
+          {% if perms.tardis_portal.add_experiment %}
+          <a id="create-experiment"
+             class="btn btn-primary"
+             href="{% url 'tardis.tardis_portal.views.create_experiment' %}">
+            <i class="fa fa-plus"></i>
+            Create
+          </a>
+          {% endif %}
+        </div>  <!-- class="pull-right" -->
+      {% endif %}
       <div class="pull-left">
         <h3 class="d-none d-sm-block" style="text-align: center">Experiments</h3>
       </div>
