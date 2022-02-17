@@ -15,7 +15,7 @@ import ExperimentListDropDown from './SelectExperiment';
 import DatasetPaneTopPanel from './DatasetPaneTopPanel';
 import Spinner from '../../badges/components/utils/Spinner';
 
-const DatasetTilesLists = ({ shareContainer, experimentId, hsmEnabled }) => {
+const DatasetTilesLists = ({ shareContainer, experimentId, hsmEnabled, disableCreationForms }) => {
   const [mainListData, setMainListData] = useState([]);
   const [shareListData, setShareListData] = useState([]);
   const [expListData, setExpListData] = useState();
@@ -164,6 +164,7 @@ const DatasetTilesLists = ({ shareContainer, experimentId, hsmEnabled }) => {
               experimentPermissions={experimentPermissions}
               onFilter={onFilter}
               onSort={onSort}
+              disableCreationForms={disableCreationForms}
             />
             <DragDropContext onDragEnd={onDragEnd}>
               <Droppable droppableId="main-list">
@@ -203,5 +204,6 @@ DatasetTilesLists.propTypes = {
   shareContainer: PropTypes.object.isRequired,
   experimentId: PropTypes.string.isRequired,
   hsmEnabled: PropTypes.bool.isRequired,
+  disableCreationForms: PropTypes.bool.isRequired,
 };
 export default DatasetTilesLists;
