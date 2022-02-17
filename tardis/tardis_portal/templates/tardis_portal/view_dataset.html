@@ -289,7 +289,7 @@
       </h3>
     </div>
     <div class="col-md-4">
-{% if has_write_permissions and perms.tardis_portal.add_datafile and not experiment.public and not immutable %}
+{% if has_write_permissions and perms.tardis_portal.add_datafile and not experiment.public and not immutable and not disable_creation_forms %}
     <span class="btn btn-sm btn-primary fileinput-button mb-1 pull-right">
         <i class="fa fa-plus"></i>
         <span>Add files...</span>
