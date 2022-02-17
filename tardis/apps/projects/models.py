@@ -182,15 +182,11 @@ class Project(models.Model):
         from tardis.tardis_portal.models.datafile import DataFile
 
         if settings.ONLY_EXPERIMENT_ACLS:
-            return (
-                DataFile.objects.select_related("dataset")
-                .prefetch_related(
-                    Prefetch(
-                        "dataset__experiments",
-                        queryset=Experiment.safe.all(user),
-                    )
+            return DataFile.objects.select_related("dataset").prefetch_related(
+                Prefetch(
+                    "dataset__experiments",
+                    queryset=Experiment.safe.all(user).filter(projects=self),
                 )
-                .filter(dataset__experiments__projects=self)
             )
         return DataFile.safe.all(user).filter(dataset__experiments__projects=self)
 
@@ -199,8 +195,11 @@ class Project(models.Model):
 
         if settings.ONLY_EXPERIMENT_ACLS:
             return Dataset.objects.prefetch_related(
-                Prefetch("experiments", queryset=Experiment.safe.all(user))
-            ).filter(experiments__projects=self)
+                Prefetch(
+                    "experiments",
+                    queryset=Experiment.safe.all(user).filter(projects=self),
+                )
+            )
         return Dataset.safe.all(user).filter(experiments__projects=self)
 
     def get_size(self, user, downloadable=False):
