@@ -10,7 +10,14 @@ from itertools import chain
 from django.conf import settings
 from django.conf.urls import url
 from django.contrib.auth.models import User
-from django.http import JsonResponse, HttpResponseForbidden
+from django.http import HttpResponseForbidden, JsonResponse
+from tardis.tardis_portal.api import (ExperimentResource,
+                                      MyTardisAuthentication,
+                                      ParameterResource, ParameterSetResource,
+                                      PrettyJSONSerializer, UserResource)
+from tardis.tardis_portal.auth.decorators import (has_access,
+                                                  has_sensitive_access,
+                                                  has_write)
 from tastypie import fields
 from tastypie.authorization import Authorization
 from tastypie.constants import ALL_WITH_RELATIONS
@@ -18,28 +25,10 @@ from tastypie.exceptions import NotFound, Unauthorized
 from tastypie.resources import ModelResource
 from tastypie.serializers import Serializer
 from tastypie.utils import trailing_slash
+from django.db.models import Q
 
-from tardis.tardis_portal.api import (
-    MyTardisAuthentication,
-    PrettyJSONSerializer,
-    ParameterResource,
-    ParameterSetResource,
-    UserResource,
-    ExperimentResource,
-)
-from tardis.tardis_portal.auth.decorators import (
-    has_access,
-    has_sensitive_access,
-    has_write,
-)
-from .models import (
-    Project,
-    ProjectACL,
-    ProjectParameter,
-    ProjectParameterSet,
-    DefaultInstitutionProfile,
-)
-
+from .models import (DefaultInstitutionProfile, Project, ProjectACL,
+                     ProjectParameter, ProjectParameterSet)
 
 if settings.DEBUG:
     default_serializer = PrettyJSONSerializer()
@@ -201,6 +190,37 @@ class ProjectResource(ModelResource):
     )
     principal_investigator = fields.ForeignKey(UserResource, "principal_investigator")
 
+    # Custom filter for identifiers module based on code example from
+    # https://stackoverflow.com/questions/10021749/ \
+    # django-tastypie-advanced-filtering-how-to-do-complex-lookups-with-q-objects
+
+    def build_filters(self, filters=None):
+        if filters is None:
+            filters = {}
+        orm_filters = super(ProjectResource, self).build_filters(filters)
+
+        if 'tardis.apps.identifiers' in settings.INSTALLED_APPS and 'pids' in filters:
+            query = filters['pids']
+            qset = (
+                Q(persistent_id__persistent_id__exact=query)|
+                Q(persistent_id__alternate_ids__icontains=query)
+            )
+            orm_filters.update(('pids': qset))
+        return orm_filters
+
+
+    def apply_filters(self, request, applicable_filters):
+        if 'tardis.apps.identifiers' in settings.INSTALLED_APPS and 'pids' in applicable_filters:
+            custom = applicable_filters.pop('pids')
+        else:
+            custom = None
+            
+        semi_filtered = super(ProjectResource, self).apply_filters(request, applicable_filters)
+    
+        return semi_filtered.filter(custom) if custom else semi_filtered
+
+    # End of custom filter code
+    
     class Meta:
         authentication = MyTardisAuthentication()
         authorization = ProjectACLAuthorization()
@@ -213,6 +233,7 @@ class ProjectResource(ModelResource):
             "experiments": ALL_WITH_RELATIONS,
             "url": ("exact",),
             "institution": ALL_WITH_RELATIONS,
+            'pids': ["exact", "icontains"]
         }
         ordering = ["id", "name", "url", "start_time", "end_time"]
         always_return_data = True

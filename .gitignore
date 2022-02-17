@@ -57,3 +57,9 @@ tardis/apps/*
 *.old
 
 *.txt~
+
+tardis/apps/identifiers/tests/#test_models.py#
+
+*.py#
+
+tardis/apps/projects/.#api.py
