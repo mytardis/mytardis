@@ -102,11 +102,6 @@ urlpatterns = [
     # Admin
     url(r"^admin/doc/", include("django.contrib.admindocs.urls")),
     url(r"^admin/", admin.site.urls),
-    url(
-        r"^upload/(?P<dataset_id>\d+)/$",
-        upload,
-        name="tardis.tardis_portal.views.upload",
-    ),
     # Apps
     url(r"^apps/", include(app_urls)),
     # Token login
@@ -114,6 +109,16 @@ urlpatterns = [
     # Class-based views that may be overriden by apps
     url(r"", include(overridable_urls)),
 ]
+
+if not settings.DISABLE_CREATION_FORMS:
+    urlpatterns += [
+        url(
+            r"^upload/(?P<dataset_id>\d+)/$",
+            upload,
+            name="tardis.tardis_portal.views.upload",
+        ),
+    ]
+
 
 # Import project app urls here to avoid /apps prefix in url
 if "tardis.apps.projects" in settings.INSTALLED_APPS:

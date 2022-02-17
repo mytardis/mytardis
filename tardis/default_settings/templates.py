@@ -22,6 +22,7 @@ TEMPLATES = [
                 "tardis.tardis_portal.context_processors.user_details_processor",
                 "tardis.tardis_portal.context_processors.google_analytics",
                 "tardis.tardis_portal.context_processors.user_menu_processor",
+                "tardis.tardis_portal.context_processors.disable_creation_forms_processor",
                 "tardis.tardis_portal.context_processors.project_app_processor",
             ],
             "loaders": [

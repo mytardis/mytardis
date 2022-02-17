@@ -244,14 +244,10 @@ class ProjectResource(ModelResource):
         project = bundle.obj
         size = project.get_size(bundle.request.user)
         bundle.data["size"] = size
-        if settings.ONLY_EXPERIMENT_ACLS:
-            project_experiment_count = project.experiments.count()
-        else:
-            project_experiment_count = (
-                Experiment.safe.all(bundle.request.user)
-                .filter(projects=project)
-                .count()
-            )
+        # Both Macro and Micro ACLs route through ExperimentACLs for this
+        project_experiment_count = (
+            Experiment.safe.all(bundle.request.user).filter(projects=project).count()
+        )
         bundle.data["experiment_count"] = project_experiment_count
         project_dataset_count = project.get_datasets(bundle.request.user).count()
         bundle.data["dataset_count"] = project_dataset_count
@@ -273,7 +269,7 @@ class ProjectResource(ModelResource):
             ),
         ]
 
-    def hydrate_m2m(self, bundle):
+    '''def hydrate_m2m(self, bundle):
         """
         Create experiment-dataset associations first, because they affect
         authorization for adding other related resources, e.g. metadata
@@ -298,7 +294,7 @@ class ProjectResource(ModelResource):
         #    bundle.data.pop("members")
         # if "member_groups" in bundle.data.keys():
         #    bundle.data.pop("member_groups")
-        return super().hydrate_m2m(bundle)
+        return super().hydrate_m2m(bundle)'''
 
     def obj_create(self, bundle, **kwargs):
         """Currently not tested for failed db transactions as sqlite does not
@@ -350,10 +346,8 @@ class ProjectResource(ModelResource):
         if not has_access(request, project_id, "project"):
             return HttpResponseForbidden()
 
-        if settings.ONLY_EXPERIMENT_ACLS:
-            exp_list = Project.experiments.all()
-        else:
-            exp_list = Experiment.safe.all(request.user).filter(projects=project_id)
+        # Both Macro and Micro ACLs route through ExperimentACLs for this
+        exp_list = Experiment.safe.all(request.user).filter(projects=project_id)
 
         exp_list = {"objects": [*exp_list.values("id", "title")]}
         return JsonResponse(exp_list, status=200, safe=False)

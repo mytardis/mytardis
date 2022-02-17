@@ -13,6 +13,7 @@
 <input type="hidden" id="experiment-id" value="{{ experiment.id }}">
 <input type="hidden" id="csrf-token" value="{{ csrf_token }}">
 <input type="hidden" id="hsm-enabled" value="{{hsm_enabled}}"/>
+<input type="hidden" id="disable-creation-forms" value="{{disable_creation_forms}}"/>
 {% render_bundle 'tardis_portal_view_experiment_init' %}
 {% render_bundle 'tardis_portal_view_experiment_share' %}
 

@@ -50,10 +50,14 @@
     </div>
   </div>
 {% empty %}
-  <p>You do not own any Experiment on this server.<br/>
-    <a href="{% url 'tardis.tardis_portal.views.create_experiment' %}">Create a new experiment</a>
-    and upload your data
-  </p>
+  {% if disable_creation_forms %}
+    <p>You do not own any Experiment on this server.</p>
+  {% else %}
+    <p>You do not own any Experiment on this server.<br/>
+      <a href="{% url 'tardis.tardis_portal.views.create_experiment' %}">Create a new experiment</a>
+      and upload your data
+    </p>
+  {% endif %}
 {% endfor %}
 
 {% if experiments.paginator.num_pages > 1 %}
