@@ -183,7 +183,7 @@ class Project(models.Model):
 
         if settings.ONLY_EXPERIMENT_ACLS:
             return DataFile.objects.filter(
-                dataset__experiments__in=self.experiments.all()
+                dataset__experiments__in=Experiments.safe.all(user).filter(project=self)
             )
         return DataFile.safe.all(user).filter(dataset__experiments__projects=self)
 
@@ -191,7 +191,9 @@ class Project(models.Model):
         from tardis.tardis_portal.models.dataset import Dataset
 
         if settings.ONLY_EXPERIMENT_ACLS:
-            return Dataset.objects.filter(experiments__in=self.experiments.all())
+            return Dataset.objects.filter(
+                experiments__in=Experiments.safe.all(user).filter(project=self)
+            )
         return Dataset.safe.all(user).filter(experiments__projects=self)
 
     def get_size(self, user, downloadable=False):
