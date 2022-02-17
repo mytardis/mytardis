@@ -183,7 +183,7 @@ class Project(models.Model):
 
         if settings.ONLY_EXPERIMENT_ACLS:
             return DataFile.objects.filter(
-                dataset__experiments__in=Experiment.safe.all(user).filter(project=self)
+                dataset__experiments__in=Experiment.safe.all(user).filter(projects=self)
             )
         return DataFile.safe.all(user).filter(dataset__experiments__projects=self)
 
@@ -192,7 +192,7 @@ class Project(models.Model):
 
         if settings.ONLY_EXPERIMENT_ACLS:
             return Dataset.objects.filter(
-                experiments__in=Experiment.safe.all(user).filter(project=self)
+                experiments__in=Experiment.safe.all(user).filter(projects=self)
             )
         return Dataset.safe.all(user).filter(experiments__projects=self)
 
