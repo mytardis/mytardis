@@ -326,7 +326,23 @@ class ProjectResource(ModelResource):
             authentication.save()"""
         project_lead = User.objects.get(username=bundle.data["principal_investigator"])
         bundle.data["principal_investigator"] = project_lead
+        # Clean up bundle to remove PIDS if the identifiers app is being used.
+        if 'tardis.apps.identifiers' in settings.INSTALLED_APPS:
+            pid = None
+            alternate_ids = None
+            if 'persistent_id' in bundle.data.keys():
+                pid = bundle.data.pop('persistent_id')
+            if 'alternate_ids' in bundle.data.keys():
+                alternate_ids = bundle.data.pop('alternate_ids')
         bundle = super().obj_create(bundle, **kwargs)
+        # After the obj has been created
+        if 'tardis.apps.identifiers' in settings.INSTALLED_APPS:
+            project = bundle.obj
+            if pid:
+                project.persistent_id.persistent_id = pid
+            if alternate_ids:
+                project.persistent_id.alternate_ids = alternate_ids
+            project.save()
         return bundle
 
     def get_project_experiments(self, request, **kwargs):
