@@ -196,7 +196,7 @@ class ProjectResource(ModelResource):
     # https://stackoverflow.com/questions/10021749/ \
     # django-tastypie-advanced-filtering-how-to-do-complex-lookups-with-q-objects
 
-    def build_filters(self, filters=None):
+    def build_filters(self, filters=None, ignore_bad_filters=False):
         if filters is None:
             filters = {}
         orm_filters = super().build_filters(filters)
