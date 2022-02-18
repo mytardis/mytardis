@@ -10,7 +10,8 @@ from celery import Celery  # pylint: disable=import-error
 
 from .default_settings import *  # noqa # pylint: disable=W0401,W0614
 
-import logging  # pylint: disable=wrong-import-order
+import logging  # pylint: disable=wrong-import-order isort: skip
+
 TEST_RUNNER = "django_nose.NoseTestSuiteRunner"
 
 DEBUG = True

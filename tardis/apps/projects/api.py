@@ -1,3 +1,4 @@
+# pylint: disable=wrong-import-order
 """
 RESTful API for MyTardis models and data.
 Implemented with Tastypie.
