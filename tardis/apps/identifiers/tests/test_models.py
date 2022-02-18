@@ -1,11 +1,12 @@
 from django.contrib.auth.models import User
 from django.db import IntegrityError
 from django.test import TestCase
-from tardis.apps.projects.models import Project
+# from tardis.apps.projects.models import Project
 from tardis.tardis_portal.models.dataset import Dataset
 from tardis.tardis_portal.models.experiment import Experiment
-from tardis.tardis_portal.models.facility import Facility
-from tardis.tardis_portal.models.instrument import Instrument
+
+# from tardis.tardis_portal.models.facility import Facility
+# from tardis.tardis_portal.models.instrument import Instrument
 
 
 class ModelsTestCase(TestCase):

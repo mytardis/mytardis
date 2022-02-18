@@ -198,7 +198,7 @@ class ProjectResource(ModelResource):
     def build_filters(self, filters=None):
         if filters is None:
             filters = {}
-        orm_filters = super(ProjectResource, self).build_filters(filters)
+        orm_filters = super().build_filters(filters)
 
         if "tardis.apps.identifiers" in settings.INSTALLED_APPS and "pids" in filters:
             query = filters["pids"]
@@ -217,9 +217,7 @@ class ProjectResource(ModelResource):
         else:
             custom = None
 
-        semi_filtered = super(ProjectResource, self).apply_filters(
-            request, applicable_filters
-        )
+        semi_filtered = super().apply_filters(request, applicable_filters)
 
         return semi_filtered.filter(custom) if custom else semi_filtered
 
