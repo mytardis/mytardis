@@ -16,8 +16,11 @@ from tardis.tardis_portal.models import (
     DatafileACL,
     ParameterName,
     ExperimentParameter,
+    ExperimentParameterSet,
     DatasetParameter,
+    DatasetParameterSet,
     DatafileParameter,
+    DatafileParameterSet,
 )
 
 from tardis.apps.projects.models import (
