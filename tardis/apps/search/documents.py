@@ -554,7 +554,7 @@ class ProjectDocument(Document):
         return return_list
 
     def prepare_parameters(self, instance):
-        return prepare_generic_parameters()
+        return prepare_generic_parameters(instance, "project")
 
     def prepare_principal_investigator(self, instance):
         username = instance.principal_investigator.username
