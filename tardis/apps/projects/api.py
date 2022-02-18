@@ -1,4 +1,3 @@
-# pylint: disable=wrong-import-order
 """
 RESTful API for MyTardis models and data.
 Implemented with Tastypie.
@@ -13,13 +12,7 @@ from django.conf.urls import url
 from django.contrib.auth.models import User
 from django.db.models import Q
 from django.http import HttpResponseForbidden, JsonResponse
-from tardis.tardis_portal.api import (ExperimentResource,
-                                      MyTardisAuthentication,
-                                      ParameterResource, ParameterSetResource,
-                                      PrettyJSONSerializer, UserResource)
-from tardis.tardis_portal.auth.decorators import (has_access,
-                                                  has_sensitive_access,
-                                                  has_write)
+
 from tastypie import fields
 from tastypie.authorization import Authorization
 from tastypie.constants import ALL_WITH_RELATIONS
@@ -27,6 +20,14 @@ from tastypie.exceptions import NotFound, Unauthorized
 from tastypie.resources import ModelResource
 from tastypie.serializers import Serializer
 from tastypie.utils import trailing_slash
+
+from tardis.tardis_portal.api import (ExperimentResource,
+                                      MyTardisAuthentication,
+                                      ParameterResource, ParameterSetResource,
+                                      PrettyJSONSerializer, UserResource)
+from tardis.tardis_portal.auth.decorators import (has_access,
+                                                  has_sensitive_access,
+                                                  has_write)
 
 from .models import (DefaultInstitutionProfile, Project, ProjectACL,
                      ProjectParameter, ProjectParameterSet)
