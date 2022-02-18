@@ -204,7 +204,7 @@ class ProjectResource(ModelResource):
         if "tardis.apps.identifiers" in settings.INSTALLED_APPS and "pids" in filters:
             query = filters["pids"]
             qset = Q(persistent_id__persistent_id__exact=query) | Q(
-                persistent_id__alternate_ids__icontains=query
+                persistent_id__alternate_ids__iexact=query
             )
             orm_filters.update({"pids": qset})
         return orm_filters
