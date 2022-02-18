@@ -22,6 +22,7 @@ from tardis.tardis_portal.models import (
     DatafileParameter,
     DatafileParameterSet,
     Schema,
+    DataFileObject,
 )
 
 from tardis.apps.projects.models import (
