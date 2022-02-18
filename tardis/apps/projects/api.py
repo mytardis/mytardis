@@ -236,8 +236,9 @@ class ProjectResource(ModelResource):
             "experiments": ALL_WITH_RELATIONS,
             "url": ("exact",),
             "institution": ALL_WITH_RELATIONS,
-            "pids": ["exact", "icontains"],
         }
+        if "tardis.apps.identifiers" in settings.INSTALLED_APPS:
+            filtering.update({"pids": ["pids"]})
         ordering = ["id", "name", "url", "start_time", "end_time"]
         always_return_data = True
 
