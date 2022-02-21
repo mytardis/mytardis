@@ -86,7 +86,12 @@ module.exports = {
         }),
         new MiniCssExtractPlugin({
             filename: "[name]-[hash].styles.css",
-        })
+        }),
+        new webpack.ProvidePlugin({
+            // Add polyfill for chunks that use the
+            // fetch AJAX function.
+            "fetch": ["whatwg-fetch","fetch"]
+        }),
     ],
     module: {
         rules: [
