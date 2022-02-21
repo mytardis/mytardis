@@ -1,0 +1,24 @@
+
+.filter-error {
+    margin: .8rem 0 ;
+    color: rgb(220, 53, 69);
+    font-family: inherit;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.filter-error p {
+    margin: 0 0.5rem 0 0;
+    max-width: 80%;
+}
+
+.filter-error___tooltip .tooltip-inner{
+    text-align: left;
+}
+
+.filter-error___text {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
