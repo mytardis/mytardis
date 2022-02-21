@@ -3,28 +3,36 @@ RESTful API for MyTardis search.
 Implemented with Tastypie.
 
 .. moduleauthor:: Manish Kumar <rishimanish123@gmail.com>
+.. moduleauthor:: Mike Laverick <mike.laverick@auckland.ac.nz>
 """
 import json
 import datetime
+from datetime import datetime
 import pytz
 
 from django.conf import settings
-
+from django.template.defaultfilters import filesizeformat
+from django_elasticsearch_dsl.search import Search
+from elasticsearch_dsl import MultiSearch, Q
 from tastypie import fields
 from tastypie.resources import Resource, Bundle
 from tastypie.serializers import Serializer
-from django_elasticsearch_dsl.search import Search
-from elasticsearch_dsl import MultiSearch, Q
+from tastypie.exceptions import ImmediateHttpResponse
+from tastypie.http import HttpUnauthorized
 
 from tardis.tardis_portal.api import default_authentication
-from tardis.tardis_portal.models import Instrument
+from tardis.tardis_portal.models import (
+    Experiment,
+    Dataset,
+    DataFile,
+    Schema,
+    ParameterName,
+)
+from tardis.apps.projects.models import Project
 
-# IMPLEMENT ONCE SEARCH PR IS CREATED
-# if "tardis.apps.projects" in settings.INSTALLED_APPS:
-#    from tardis.apps.projects.models import Project
 
 LOCAL_TZ = pytz.timezone(settings.TIME_ZONE)
-MAX_SEARCH_RESULTS = settings.MAX_SEARCH_RESULTS
+RESULTS_PER_PAGE = settings.RESULTS_PER_PAGE
 MIN_CUTOFF_SCORE = settings.MIN_CUTOFF_SCORE
 
 
@@ -53,9 +61,116 @@ else:
 
 
 class SearchObject(object):
-    def __init__(self, hits=None, id=None):
+    def __init__(self, hits=None, total_hits=None, id=None):
         self.hits = hits
+        self.total_hits = total_hits
         self.id = id
+
+
+class SchemasObject(object):
+    def __init__(self, schemas=None, id=None):
+        self.schemas = schemas
+        self.id = id
+
+
+class SchemasAppResource(Resource):
+    """Tastypie resource for schemas"""
+
+    schemas = fields.ApiField(attribute="schemas", null=True)
+
+    class Meta:
+        resource_name = "get-schemas"
+        list_allowed_methods = ["get"]
+        serializer = default_serializer
+        authentication = default_authentication
+        object_class = SchemasObject
+        always_return_data = True
+
+    def detail_uri_kwargs(self, bundle_or_obj):
+        kwargs = {}
+        if isinstance(bundle_or_obj, Bundle):
+            kwargs["pk"] = bundle_or_obj.obj.id
+        else:
+            kwargs["pk"] = bundle_or_obj["id"]
+
+        return kwargs
+
+    def get_object_list(self, request):
+        if not request.user.is_authenticated:
+            result_dict = {
+                "project": None,
+                "experiment": None,
+                "dataset": None,
+                "datafile": None,
+            }
+            return [SchemasObject(id=1, schemas=result_dict)]
+        result_dict = {
+            "project": [
+                *{
+                    *Project.safe.all(request.user)
+                    .prefetch_related("projectparameterset")
+                    .values_list("projectparameterset__schema__id", flat=True)
+                }
+            ],
+            "experiment": [
+                *{
+                    *Experiment.safe.all(request.user)
+                    .prefetch_related("experimentparameterset")
+                    .values_list("experimentparameterset__schema__id", flat=True)
+                }
+            ],
+            "dataset": [
+                *{
+                    *Dataset.safe.all(request.user)
+                    .prefetch_related("datasetparameterset")
+                    .values_list("datasetparameterset__schema__id", flat=True)
+                }
+            ],
+            "datafile": [
+                *{
+                    *DataFile.safe.all(request.user)
+                    .prefetch_related("datafileparameterset")
+                    .values_list("datafileparameterset__schema__id", flat=True)
+                }
+            ],
+        }
+        safe_dict = {}
+        for key in result_dict:
+            safe_dict[key] = {}
+            for value in result_dict[key]:
+                if value is not None:
+                    schema_id = str(value)
+                    schema_dict = {
+                        "id": schema_id,
+                        "type": key,
+                        "schema_name": Schema.objects.get(id=value).name,
+                        "parameters": {},
+                    }
+                    param_names = ParameterName.objects.filter(schema__id=value)
+                    for param in param_names:
+                        type_dict = {
+                            1: "NUMERIC",
+                            2: "STRING",
+                            3: "URL",
+                            4: "LINK",
+                            5: "FILENAME",
+                            6: "DATETIME",
+                            7: "LONGSTRING",
+                            8: "JSON",
+                        }
+                        param_id = str(param.id)
+                        param_dict = {
+                            "id": param_id,
+                            "full_name": param.full_name,
+                            "data_type": type_dict[param.data_type],
+                        }
+                        schema_dict["parameters"][param_id] = param_dict
+                    safe_dict[key][schema_id] = schema_dict
+
+        return [SchemasObject(id=1, schemas=safe_dict)]
+
+    def obj_get_list(self, bundle, **kwargs):
+        return self.get_object_list(bundle.request)
 
 
 class SearchAppResource(Resource):
