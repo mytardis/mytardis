@@ -112,7 +112,7 @@
     "test-watch": "grunt test --watch --verbose && npm run test-react -- --watch",
     "dev": "webpack --config webpack.config.js --progress --color --watch --display-error-details --mode development",
     "start": "concurrently -n \"webpack,storybook,test\" \"npm run dev\" \"npm run storybook\" \"npm run test-react\"",
-    "build": "webpack --config webpack.config.js --progress --colors --mode production",
+    "build": "webpack --config webpack.config.js --progress --color --mode production",
     "storybook": "start-storybook -p 6006",
     "build-storybook": "build-storybook"
   }
