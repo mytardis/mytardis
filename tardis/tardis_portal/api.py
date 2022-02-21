@@ -595,9 +595,9 @@ class IntrospectionResource(Resource):
             IntrospectionObject(
                 projects_enabled="tardis.apps.projects" in settings.INSTALLED_APPS,
                 experiment_only_acls=settings.ONLY_EXPERIMENT_ACLS,
-                identifiers_enabled='tardis.apps.identifiers' in settings.ISTALLED_APPS,
+                identifiers_enabled='tardis.apps.identifiers' in settings.INSTALLED_APPS,
                 identified_objects=identified_objects,
-                profiles_enabled='tardis.apps.profiles' in settings.ISTALLED_APPS,
+                profiles_enabled='tardis.apps.profiles' in settings.INSTALLED_APPS,
                 profiled_objects=profiled_objects,
             )
         ]
