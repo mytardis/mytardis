@@ -72,6 +72,7 @@
   "devDependencies": {
     "@storybook/addon-actions": "^6.1.9",
     "@storybook/addon-links": "^6.1.9",
+    "@storybook/addon-storyshots": "^6.1.9",
     "@storybook/addons": "^6.1.9",
     "@storybook/react": "^6.1.9",
     "babel-eslint": "^10.0.3",
