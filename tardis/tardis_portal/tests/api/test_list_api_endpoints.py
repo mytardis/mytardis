@@ -95,13 +95,9 @@ class ListEndpointsTest(MyTardisResourceTestCase):
                 "list_endpoint": "/api/v1/schema/",
                 "schema": "/api/v1/schema/schema/",
             },
-            "search_advance-search": {
-                "list_endpoint": "/api/v1/search_advance-search/",
-                "schema": "/api/v1/search_advance-search/schema/",
-            },
-            "search_search": {
-                "list_endpoint": "/api/v1/search_search/",
-                "schema": "/api/v1/search_search/schema/",
+            "search": {
+                "list_endpoint": "/api/v1/search/",
+                "schema": "/api/v1/search/schema/",
             },
             "sftp_publickey": {
                 "list_endpoint": "/api/v1/sftp_publickey/",

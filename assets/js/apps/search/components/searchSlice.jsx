@@ -335,7 +335,7 @@ export const {
 
 
 const fetchSearchResults = (queryBody) => {
-    return fetch(`/api/v1/search_search/`, {
+    return fetch(`/api/v1/search/`, {
         method: "post",
         headers: {
             "Accept": "application/json",
