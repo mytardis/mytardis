@@ -1,3 +1,4 @@
+# pylint: disable=C0302,R1702
 """
 RESTful API for MyTardis search.
 Implemented with Tastypie.
@@ -1170,7 +1171,6 @@ class SearchAppResource(Resource):
                     }.intersection(
                         preloaded[hit["_index"]]["objects"][hit["_source"]["id"]]["dfs"]
                     )
-                    safe_nested_dfs = [*safe_nested_dfs_set]
                     safe_nested_dfs_count = len(safe_nested_dfs_set)
                     if hit["_index"] in {"project", "experiment"}:
                         safe_nested_set = len(
