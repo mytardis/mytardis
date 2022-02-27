@@ -361,7 +361,7 @@ class SearchAppResource(Resource):
                     1: "experiment",
                     2: "dataset",
                     3: "datafile",
-                    11: "project",
+                    6: "project",
                 }
                 for filter in filterlist:
                     oper = operator_dict[filter["op"]]
@@ -370,10 +370,7 @@ class SearchAppResource(Resource):
                     if filter["kind"] == "schemaParameter":
                         schema_id, param_id = filter["target"][0], filter["target"][1]
                         # check filter is applied to correct object type
-                        if (
-                            num_2_type[Schema.objects.get(id=schema_id).schema_type]
-                            == obj
-                        ):
+                        if num_2_type[Schema.objects.get(id=schema_id).type] == obj:
                             if filter_level < hierarchy[obj]:
                                 filter_level = hierarchy[obj]
                             if filter["type"] == "STRING":
@@ -628,8 +625,8 @@ class SearchAppResource(Resource):
                             # (3.2.3) Apply filters that act on fields which are
                             # intrinsic to related objects (instruments, users, etc)
                             if target_fieldtype in {
-                                "lead_researcher",
-                                "project",
+                                "principal_investigator",
+                                "projects",
                                 "instrument",
                                 "institution",
                                 "experiments",
@@ -681,7 +678,7 @@ class SearchAppResource(Resource):
                                         }
                                     )
                                 # Special handling for list of lead researchers
-                                if target_fieldtype == "lead_researcher":
+                                if target_fieldtype == "principal_investigator":
                                     Qdict_lr = {"should": [query_obj_filt]}
                                     if isinstance(filter["content"], list):
                                         Qdict = {"should": []}
@@ -735,8 +732,8 @@ class SearchAppResource(Resource):
             excluded_fields_list = [
                 "end_time",
                 "institution",
-                "lead_researcher",
-                "created by",
+                "principal_investigator",
+                "created_by",
                 "end_time",
                 "update_time",
                 "instrument",
@@ -774,7 +771,7 @@ class SearchAppResource(Resource):
 
                         if len(sort["field"]) == 1:
                             if sort["field"][0] in {
-                                "lead_researcher",
+                                "principal_investigator",
                                 "name",
                                 "title",
                                 "description",
@@ -1086,7 +1083,7 @@ class SearchAppResource(Resource):
         # If filters are active, enforce the "parent in results" criteria on relevant objects
         if filter_level:
             # Define parent_type for experiment/datafile (N/A for project, hardcoded for dataset)
-            parent_child = {"experiment": "project", "datafile": "dataset"}
+            parent_child = {"experiment": "projects", "dataset": "experiments"}
             # Define hierarchy of types for filter levels
             hierarch = [3, 2, 1]  # {"experiments":3, "datasets":2, "datafiles":1}
             for idx, item in enumerate(results[1:]):
@@ -1099,19 +1096,20 @@ class SearchAppResource(Resource):
                     parent_ids_set = {*parent_ids}
 
                     for obj_idx, obj in reversed([*enumerate(item.hits.hits)]):
-                        if obj["_index"] != "dataset":
-                            if (
-                                obj["_source"][parent_child[obj["_index"]]]["id"]
-                                not in parent_ids_set
-                            ):  # parent object is idx-1, but idx in enumerate is already shifted by -1, so straight idx
+                        if obj["_index"] != "datafile":
+                            parent_es_ids = [
+                                parent["id"]
+                                for parent in obj["_source"][
+                                    parent_child[obj["_index"]]
+                                ]
+                            ]
+                            if not any(itemm in parent_es_ids for itemm in parent_ids):
                                 results[idx + 1].hits.hits.pop(obj_idx)
                         else:
-                            exp_ids = [
-                                parent["id"] for parent in obj["_source"]["experiments"]
-                            ]
-                            if not any(itemm in exp_ids for itemm in parent_ids):
+                            if (
+                                obj["_source"]["dataset"]["id"] not in parent_ids_set
+                            ):  # parent object is idx-1, but idx in enumerate is already shifted by -1, so straight idx
                                 results[idx + 1].hits.hits.pop(obj_idx)
-
         # Count the number of search results after elasticsearch + parent filtering
         total_hits = {
             index_list[idx]: len(type.hits.hits) for idx, type in enumerate(results)
@@ -1246,7 +1244,7 @@ class SearchAppResource(Resource):
         # Removed for tidiness in returned response to front-end
         # Define parent_type for experiment/datafile (N/A for project)
         parent_child = {
-            "experiment": "project",
+            "experiment": "projects",
             "dataset": "experiments",
             "datafile": "dataset",
         }

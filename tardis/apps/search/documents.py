@@ -159,6 +159,12 @@ class ExperimentDocument(Document):
     description = fields.TextField(
         fields={"raw": fields.KeywordField()}, analyzer=analyzer
     )
+    projects = fields.NestedField(
+        properties={
+            "id": fields.IntegerField(),
+            "name": fields.TextField(fields={"raw": fields.KeywordField()}),
+        }
+    )
     public_access = fields.IntegerField()
     created_time = fields.DateField()
     start_time = fields.DateField()
