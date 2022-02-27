@@ -1271,7 +1271,6 @@ exports[`Storyshots Filter sidebar Default 1`] = `
           onClick={[Function]}
           onKeyDown={[Function]}
           role="tab"
-          tabIndex={-1}
         >
           <div
             className="tab-sticker"
@@ -1298,7 +1297,6 @@ exports[`Storyshots Filter sidebar Default 1`] = `
           onClick={[Function]}
           onKeyDown={[Function]}
           role="tab"
-          tabIndex={-1}
         >
           <div
             className="tab-sticker"
@@ -1325,7 +1323,6 @@ exports[`Storyshots Filter sidebar Default 1`] = `
           onClick={[Function]}
           onKeyDown={[Function]}
           role="tab"
-          tabIndex={-1}
         >
           <div
             className="tab-sticker"
@@ -11145,7 +11142,6 @@ exports[`Storyshots Filters/Filters section Default 1`] = `
         onClick={[Function]}
         onKeyDown={[Function]}
         role="tab"
-        tabIndex={-1}
       >
         <div
           className="tab-sticker"
@@ -11172,7 +11168,6 @@ exports[`Storyshots Filters/Filters section Default 1`] = `
         onClick={[Function]}
         onKeyDown={[Function]}
         role="tab"
-        tabIndex={-1}
       >
         <div
           className="tab-sticker"
@@ -11199,7 +11194,6 @@ exports[`Storyshots Filters/Filters section Default 1`] = `
         onClick={[Function]}
         onKeyDown={[Function]}
         role="tab"
-        tabIndex={-1}
       >
         <div
           className="tab-sticker"
@@ -17715,7 +17709,6 @@ exports[`Storyshots Pager Default 1`] = `
       </label>
       <div
         className="pagesize--dropdown dropdown"
-        onKeyDown={[Function]}
       >
         <button
           aria-expanded={false}
@@ -17991,7 +17984,6 @@ exports[`Storyshots Pager Last Page 1`] = `
       </label>
       <div
         className="pagesize--dropdown dropdown"
-        onKeyDown={[Function]}
       >
         <button
           aria-expanded={false}
@@ -18226,7 +18218,6 @@ exports[`Storyshots Pager Less Than Five Pages 1`] = `
       </label>
       <div
         className="pagesize--dropdown dropdown"
-        onKeyDown={[Function]}
       >
         <button
           aria-expanded={false}
@@ -18426,7 +18417,6 @@ exports[`Storyshots Pager No Pages 1`] = `
       </label>
       <div
         className="pagesize--dropdown dropdown"
-        onKeyDown={[Function]}
       >
         <button
           aria-expanded={false}
@@ -18571,7 +18561,6 @@ exports[`Storyshots Pager One Page 1`] = `
       </label>
       <div
         className="pagesize--dropdown dropdown"
-        onKeyDown={[Function]}
       >
         <button
           aria-expanded={false}
@@ -19649,7 +19638,6 @@ exports[`Storyshots Search page Default 1`] = `
               onClick={[Function]}
               onKeyDown={[Function]}
               role="tab"
-              tabIndex={-1}
             >
               <div
                 className="tab-sticker"
@@ -19676,7 +19664,6 @@ exports[`Storyshots Search page Default 1`] = `
               onClick={[Function]}
               onKeyDown={[Function]}
               role="tab"
-              tabIndex={-1}
             >
               <div
                 className="tab-sticker"
@@ -19703,7 +19690,6 @@ exports[`Storyshots Search page Default 1`] = `
               onClick={[Function]}
               onKeyDown={[Function]}
               role="tab"
-              tabIndex={-1}
             >
               <div
                 className="tab-sticker"
@@ -25332,7 +25318,6 @@ exports[`Storyshots Search page Default 1`] = `
           </p>
           <div
             className="sortoptions dropdown"
-            onKeyDown={[Function]}
           >
             <button
               aria-expanded={false}
@@ -25555,7 +25540,6 @@ exports[`Storyshots Search page Default 1`] = `
               </label>
               <div
                 className="pagesize--dropdown dropdown"
-                onKeyDown={[Function]}
               >
                 <button
                   aria-expanded={false}
@@ -25755,7 +25739,6 @@ exports[`Storyshots Search page Error 1`] = `
               onClick={[Function]}
               onKeyDown={[Function]}
               role="tab"
-              tabIndex={-1}
             >
               <div
                 className="tab-sticker"
@@ -25782,7 +25765,6 @@ exports[`Storyshots Search page Error 1`] = `
               onClick={[Function]}
               onKeyDown={[Function]}
               role="tab"
-              tabIndex={-1}
             >
               <div
                 className="tab-sticker"
@@ -25809,7 +25791,6 @@ exports[`Storyshots Search page Error 1`] = `
               onClick={[Function]}
               onKeyDown={[Function]}
               role="tab"
-              tabIndex={-1}
             >
               <div
                 className="tab-sticker"
@@ -31491,7 +31472,6 @@ exports[`Storyshots Search page Loading 1`] = `
               onClick={[Function]}
               onKeyDown={[Function]}
               role="tab"
-              tabIndex={-1}
             >
               <div
                 className="tab-sticker"
@@ -31518,7 +31498,6 @@ exports[`Storyshots Search page Loading 1`] = `
               onClick={[Function]}
               onKeyDown={[Function]}
               role="tab"
-              tabIndex={-1}
             >
               <div
                 className="tab-sticker"
@@ -31545,7 +31524,6 @@ exports[`Storyshots Search page Loading 1`] = `
               onClick={[Function]}
               onKeyDown={[Function]}
               role="tab"
-              tabIndex={-1}
             >
               <div
                 className="tab-sticker"
@@ -37134,7 +37112,6 @@ exports[`Storyshots Search page Loading 1`] = `
           </p>
           <div
             className="sortoptions dropdown"
-            onKeyDown={[Function]}
           >
             <button
               aria-expanded={false}
@@ -37209,7 +37186,6 @@ exports[`Storyshots Search page Loading 1`] = `
               </label>
               <div
                 className="pagesize--dropdown dropdown"
-                onKeyDown={[Function]}
               >
                 <button
                   aria-expanded={false}
@@ -37347,7 +37323,6 @@ exports[`Storyshots Sort options list Default 1`] = `
 >
   <div
     className="sortoptions dropdown"
-    onKeyDown={[Function]}
   >
     <button
       aria-expanded={false}
@@ -37393,7 +37368,6 @@ exports[`Storyshots Sort options list Multi Selected 1`] = `
 >
   <div
     className="sortoptions dropdown"
-    onKeyDown={[Function]}
   >
     <button
       aria-expanded={false}
@@ -37439,7 +37413,6 @@ exports[`Storyshots Sort options list Sort Active 1`] = `
 >
   <div
     className="sortoptions dropdown"
-    onKeyDown={[Function]}
   >
     <button
       aria-expanded={false}
