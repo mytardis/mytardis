@@ -437,6 +437,7 @@ exports[`Storyshots EntryPreviewCard Experiment 1`] = `
           }
         />
         <input
+          aria-checked={false}
           aria-label="Toggle sensitive data switch"
           checked={false}
           disabled={false}
@@ -1436,7 +1437,7 @@ exports[`Storyshots Filter sidebar Default 1`] = `
                     onClick={[Function]}
                     onFocus={[Function]}
                     onKeyDown={[Function]}
-                    placeholder="YYYY-MM-DD (e.g. 2020-11-23)"
+                    placeholder="YYYY-MM-DD (e.g. 2020-11-22)"
                     type="text"
                     value=""
                   />
@@ -1840,7 +1841,7 @@ exports[`Storyshots Filter sidebar Default 1`] = `
                           </tr>
                           <tr>
                             <td
-                              className="rdtDay"
+                              className="rdtDay rdtToday"
                               data-month={10}
                               data-value={29}
                               data-year={2020}
@@ -1849,7 +1850,7 @@ exports[`Storyshots Filter sidebar Default 1`] = `
                               29
                             </td>
                             <td
-                              className="rdtDay rdtToday"
+                              className="rdtDay"
                               data-month={10}
                               data-value={30}
                               data-year={2020}
@@ -1928,7 +1929,7 @@ exports[`Storyshots Filter sidebar Default 1`] = `
                     onClick={[Function]}
                     onFocus={[Function]}
                     onKeyDown={[Function]}
-                    placeholder="YYYY-MM-DD (e.g. 2020-11-30)"
+                    placeholder="YYYY-MM-DD (e.g. 2020-11-29)"
                     type="text"
                     value=""
                   />
@@ -2332,7 +2333,7 @@ exports[`Storyshots Filter sidebar Default 1`] = `
                           </tr>
                           <tr>
                             <td
-                              className="rdtDay"
+                              className="rdtDay rdtToday"
                               data-month={10}
                               data-value={29}
                               data-year={2020}
@@ -2341,7 +2342,7 @@ exports[`Storyshots Filter sidebar Default 1`] = `
                               29
                             </td>
                             <td
-                              className="rdtDay rdtToday"
+                              className="rdtDay"
                               data-month={10}
                               data-value={30}
                               data-year={2020}
@@ -2734,7 +2735,7 @@ exports[`Storyshots Filter sidebar Default 1`] = `
                     onClick={[Function]}
                     onFocus={[Function]}
                     onKeyDown={[Function]}
-                    placeholder="YYYY-MM-DD (e.g. 2020-11-23)"
+                    placeholder="YYYY-MM-DD (e.g. 2020-11-22)"
                     type="text"
                     value=""
                   />
@@ -3138,7 +3139,7 @@ exports[`Storyshots Filter sidebar Default 1`] = `
                           </tr>
                           <tr>
                             <td
-                              className="rdtDay"
+                              className="rdtDay rdtToday"
                               data-month={10}
                               data-value={29}
                               data-year={2020}
@@ -3147,7 +3148,7 @@ exports[`Storyshots Filter sidebar Default 1`] = `
                               29
                             </td>
                             <td
-                              className="rdtDay rdtToday"
+                              className="rdtDay"
                               data-month={10}
                               data-value={30}
                               data-year={2020}
@@ -3226,7 +3227,7 @@ exports[`Storyshots Filter sidebar Default 1`] = `
                     onClick={[Function]}
                     onFocus={[Function]}
                     onKeyDown={[Function]}
-                    placeholder="YYYY-MM-DD (e.g. 2020-11-30)"
+                    placeholder="YYYY-MM-DD (e.g. 2020-11-29)"
                     type="text"
                     value=""
                   />
@@ -3630,7 +3631,7 @@ exports[`Storyshots Filter sidebar Default 1`] = `
                           </tr>
                           <tr>
                             <td
-                              className="rdtDay"
+                              className="rdtDay rdtToday"
                               data-month={10}
                               data-value={29}
                               data-year={2020}
@@ -3639,7 +3640,7 @@ exports[`Storyshots Filter sidebar Default 1`] = `
                               29
                             </td>
                             <td
-                              className="rdtDay rdtToday"
+                              className="rdtDay"
                               data-month={10}
                               data-value={30}
                               data-year={2020}
@@ -4032,7 +4033,7 @@ exports[`Storyshots Filter sidebar Default 1`] = `
                     onClick={[Function]}
                     onFocus={[Function]}
                     onKeyDown={[Function]}
-                    placeholder="YYYY-MM-DD (e.g. 2020-11-23)"
+                    placeholder="YYYY-MM-DD (e.g. 2020-11-22)"
                     type="text"
                     value=""
                   />
@@ -4436,7 +4437,7 @@ exports[`Storyshots Filter sidebar Default 1`] = `
                           </tr>
                           <tr>
                             <td
-                              className="rdtDay"
+                              className="rdtDay rdtToday"
                               data-month={10}
                               data-value={29}
                               data-year={2020}
@@ -4445,7 +4446,7 @@ exports[`Storyshots Filter sidebar Default 1`] = `
                               29
                             </td>
                             <td
-                              className="rdtDay rdtToday"
+                              className="rdtDay"
                               data-month={10}
                               data-value={30}
                               data-year={2020}
@@ -4524,7 +4525,7 @@ exports[`Storyshots Filter sidebar Default 1`] = `
                     onClick={[Function]}
                     onFocus={[Function]}
                     onKeyDown={[Function]}
-                    placeholder="YYYY-MM-DD (e.g. 2020-11-30)"
+                    placeholder="YYYY-MM-DD (e.g. 2020-11-29)"
                     type="text"
                     value=""
                   />
@@ -4928,7 +4929,7 @@ exports[`Storyshots Filter sidebar Default 1`] = `
                           </tr>
                           <tr>
                             <td
-                              className="rdtDay"
+                              className="rdtDay rdtToday"
                               data-month={10}
                               data-value={29}
                               data-year={2020}
@@ -4937,7 +4938,7 @@ exports[`Storyshots Filter sidebar Default 1`] = `
                               29
                             </td>
                             <td
-                              className="rdtDay rdtToday"
+                              className="rdtDay"
                               data-month={10}
                               data-value={30}
                               data-year={2020}
@@ -5330,7 +5331,7 @@ exports[`Storyshots Filter sidebar Default 1`] = `
                     onClick={[Function]}
                     onFocus={[Function]}
                     onKeyDown={[Function]}
-                    placeholder="YYYY-MM-DD (e.g. 2020-11-23)"
+                    placeholder="YYYY-MM-DD (e.g. 2020-11-22)"
                     type="text"
                     value=""
                   />
@@ -5734,7 +5735,7 @@ exports[`Storyshots Filter sidebar Default 1`] = `
                           </tr>
                           <tr>
                             <td
-                              className="rdtDay"
+                              className="rdtDay rdtToday"
                               data-month={10}
                               data-value={29}
                               data-year={2020}
@@ -5743,7 +5744,7 @@ exports[`Storyshots Filter sidebar Default 1`] = `
                               29
                             </td>
                             <td
-                              className="rdtDay rdtToday"
+                              className="rdtDay"
                               data-month={10}
                               data-value={30}
                               data-year={2020}
@@ -5822,7 +5823,7 @@ exports[`Storyshots Filter sidebar Default 1`] = `
                     onClick={[Function]}
                     onFocus={[Function]}
                     onKeyDown={[Function]}
-                    placeholder="YYYY-MM-DD (e.g. 2020-11-30)"
+                    placeholder="YYYY-MM-DD (e.g. 2020-11-29)"
                     type="text"
                     value=""
                   />
@@ -6226,7 +6227,7 @@ exports[`Storyshots Filter sidebar Default 1`] = `
                           </tr>
                           <tr>
                             <td
-                              className="rdtDay"
+                              className="rdtDay rdtToday"
                               data-month={10}
                               data-value={29}
                               data-year={2020}
@@ -6235,7 +6236,7 @@ exports[`Storyshots Filter sidebar Default 1`] = `
                               29
                             </td>
                             <td
-                              className="rdtDay rdtToday"
+                              className="rdtDay"
                               data-month={10}
                               data-value={30}
                               data-year={2020}
@@ -8475,7 +8476,7 @@ exports[`Storyshots Filters/Date range filter Empty 1`] = `
                 </tr>
                 <tr>
                   <td
-                    className="rdtDay"
+                    className="rdtDay rdtToday"
                     data-month={10}
                     data-value={29}
                     data-year={2020}
@@ -8484,7 +8485,7 @@ exports[`Storyshots Filters/Date range filter Empty 1`] = `
                     29
                   </td>
                   <td
-                    className="rdtDay rdtToday"
+                    className="rdtDay"
                     data-month={10}
                     data-value={30}
                     data-year={2020}
@@ -8967,7 +8968,7 @@ exports[`Storyshots Filters/Date range filter Empty 1`] = `
                 </tr>
                 <tr>
                   <td
-                    className="rdtDay"
+                    className="rdtDay rdtToday"
                     data-month={10}
                     data-value={29}
                     data-year={2020}
@@ -8976,7 +8977,7 @@ exports[`Storyshots Filters/Date range filter Empty 1`] = `
                     29
                   </td>
                   <td
-                    className="rdtDay rdtToday"
+                    className="rdtDay"
                     data-month={10}
                     data-value={30}
                     data-year={2020}
@@ -11307,7 +11308,7 @@ exports[`Storyshots Filters/Filters section Default 1`] = `
                   onClick={[Function]}
                   onFocus={[Function]}
                   onKeyDown={[Function]}
-                  placeholder="YYYY-MM-DD (e.g. 2020-11-23)"
+                  placeholder="YYYY-MM-DD (e.g. 2020-11-22)"
                   type="text"
                   value=""
                 />
@@ -11711,7 +11712,7 @@ exports[`Storyshots Filters/Filters section Default 1`] = `
                         </tr>
                         <tr>
                           <td
-                            className="rdtDay"
+                            className="rdtDay rdtToday"
                             data-month={10}
                             data-value={29}
                             data-year={2020}
@@ -11720,7 +11721,7 @@ exports[`Storyshots Filters/Filters section Default 1`] = `
                             29
                           </td>
                           <td
-                            className="rdtDay rdtToday"
+                            className="rdtDay"
                             data-month={10}
                             data-value={30}
                             data-year={2020}
@@ -11799,7 +11800,7 @@ exports[`Storyshots Filters/Filters section Default 1`] = `
                   onClick={[Function]}
                   onFocus={[Function]}
                   onKeyDown={[Function]}
-                  placeholder="YYYY-MM-DD (e.g. 2020-11-30)"
+                  placeholder="YYYY-MM-DD (e.g. 2020-11-29)"
                   type="text"
                   value=""
                 />
@@ -12203,7 +12204,7 @@ exports[`Storyshots Filters/Filters section Default 1`] = `
                         </tr>
                         <tr>
                           <td
-                            className="rdtDay"
+                            className="rdtDay rdtToday"
                             data-month={10}
                             data-value={29}
                             data-year={2020}
@@ -12212,7 +12213,7 @@ exports[`Storyshots Filters/Filters section Default 1`] = `
                             29
                           </td>
                           <td
-                            className="rdtDay rdtToday"
+                            className="rdtDay"
                             data-month={10}
                             data-value={30}
                             data-year={2020}
@@ -12605,7 +12606,7 @@ exports[`Storyshots Filters/Filters section Default 1`] = `
                   onClick={[Function]}
                   onFocus={[Function]}
                   onKeyDown={[Function]}
-                  placeholder="YYYY-MM-DD (e.g. 2020-11-23)"
+                  placeholder="YYYY-MM-DD (e.g. 2020-11-22)"
                   type="text"
                   value=""
                 />
@@ -13009,7 +13010,7 @@ exports[`Storyshots Filters/Filters section Default 1`] = `
                         </tr>
                         <tr>
                           <td
-                            className="rdtDay"
+                            className="rdtDay rdtToday"
                             data-month={10}
                             data-value={29}
                             data-year={2020}
@@ -13018,7 +13019,7 @@ exports[`Storyshots Filters/Filters section Default 1`] = `
                             29
                           </td>
                           <td
-                            className="rdtDay rdtToday"
+                            className="rdtDay"
                             data-month={10}
                             data-value={30}
                             data-year={2020}
@@ -13097,7 +13098,7 @@ exports[`Storyshots Filters/Filters section Default 1`] = `
                   onClick={[Function]}
                   onFocus={[Function]}
                   onKeyDown={[Function]}
-                  placeholder="YYYY-MM-DD (e.g. 2020-11-30)"
+                  placeholder="YYYY-MM-DD (e.g. 2020-11-29)"
                   type="text"
                   value=""
                 />
@@ -13501,7 +13502,7 @@ exports[`Storyshots Filters/Filters section Default 1`] = `
                         </tr>
                         <tr>
                           <td
-                            className="rdtDay"
+                            className="rdtDay rdtToday"
                             data-month={10}
                             data-value={29}
                             data-year={2020}
@@ -13510,7 +13511,7 @@ exports[`Storyshots Filters/Filters section Default 1`] = `
                             29
                           </td>
                           <td
-                            className="rdtDay rdtToday"
+                            className="rdtDay"
                             data-month={10}
                             data-value={30}
                             data-year={2020}
@@ -13903,7 +13904,7 @@ exports[`Storyshots Filters/Filters section Default 1`] = `
                   onClick={[Function]}
                   onFocus={[Function]}
                   onKeyDown={[Function]}
-                  placeholder="YYYY-MM-DD (e.g. 2020-11-23)"
+                  placeholder="YYYY-MM-DD (e.g. 2020-11-22)"
                   type="text"
                   value=""
                 />
@@ -14307,7 +14308,7 @@ exports[`Storyshots Filters/Filters section Default 1`] = `
                         </tr>
                         <tr>
                           <td
-                            className="rdtDay"
+                            className="rdtDay rdtToday"
                             data-month={10}
                             data-value={29}
                             data-year={2020}
@@ -14316,7 +14317,7 @@ exports[`Storyshots Filters/Filters section Default 1`] = `
                             29
                           </td>
                           <td
-                            className="rdtDay rdtToday"
+                            className="rdtDay"
                             data-month={10}
                             data-value={30}
                             data-year={2020}
@@ -14395,7 +14396,7 @@ exports[`Storyshots Filters/Filters section Default 1`] = `
                   onClick={[Function]}
                   onFocus={[Function]}
                   onKeyDown={[Function]}
-                  placeholder="YYYY-MM-DD (e.g. 2020-11-30)"
+                  placeholder="YYYY-MM-DD (e.g. 2020-11-29)"
                   type="text"
                   value=""
                 />
@@ -14799,7 +14800,7 @@ exports[`Storyshots Filters/Filters section Default 1`] = `
                         </tr>
                         <tr>
                           <td
-                            className="rdtDay"
+                            className="rdtDay rdtToday"
                             data-month={10}
                             data-value={29}
                             data-year={2020}
@@ -14808,7 +14809,7 @@ exports[`Storyshots Filters/Filters section Default 1`] = `
                             29
                           </td>
                           <td
-                            className="rdtDay rdtToday"
+                            className="rdtDay"
                             data-month={10}
                             data-value={30}
                             data-year={2020}
@@ -15201,7 +15202,7 @@ exports[`Storyshots Filters/Filters section Default 1`] = `
                   onClick={[Function]}
                   onFocus={[Function]}
                   onKeyDown={[Function]}
-                  placeholder="YYYY-MM-DD (e.g. 2020-11-23)"
+                  placeholder="YYYY-MM-DD (e.g. 2020-11-22)"
                   type="text"
                   value=""
                 />
@@ -15605,7 +15606,7 @@ exports[`Storyshots Filters/Filters section Default 1`] = `
                         </tr>
                         <tr>
                           <td
-                            className="rdtDay"
+                            className="rdtDay rdtToday"
                             data-month={10}
                             data-value={29}
                             data-year={2020}
@@ -15614,7 +15615,7 @@ exports[`Storyshots Filters/Filters section Default 1`] = `
                             29
                           </td>
                           <td
-                            className="rdtDay rdtToday"
+                            className="rdtDay"
                             data-month={10}
                             data-value={30}
                             data-year={2020}
@@ -15693,7 +15694,7 @@ exports[`Storyshots Filters/Filters section Default 1`] = `
                   onClick={[Function]}
                   onFocus={[Function]}
                   onKeyDown={[Function]}
-                  placeholder="YYYY-MM-DD (e.g. 2020-11-30)"
+                  placeholder="YYYY-MM-DD (e.g. 2020-11-29)"
                   type="text"
                   value=""
                 />
@@ -16097,7 +16098,7 @@ exports[`Storyshots Filters/Filters section Default 1`] = `
                         </tr>
                         <tr>
                           <td
-                            className="rdtDay"
+                            className="rdtDay rdtToday"
                             data-month={10}
                             data-value={29}
                             data-year={2020}
@@ -16106,7 +16107,7 @@ exports[`Storyshots Filters/Filters section Default 1`] = `
                             29
                           </td>
                           <td
-                            className="rdtDay rdtToday"
+                            className="rdtDay"
                             data-month={10}
                             data-value={30}
                             data-year={2020}
@@ -19803,7 +19804,7 @@ exports[`Storyshots Search page Default 1`] = `
                         onClick={[Function]}
                         onFocus={[Function]}
                         onKeyDown={[Function]}
-                        placeholder="YYYY-MM-DD (e.g. 2020-11-23)"
+                        placeholder="YYYY-MM-DD (e.g. 2020-11-22)"
                         type="text"
                         value=""
                       />
@@ -20207,7 +20208,7 @@ exports[`Storyshots Search page Default 1`] = `
                               </tr>
                               <tr>
                                 <td
-                                  className="rdtDay"
+                                  className="rdtDay rdtToday"
                                   data-month={10}
                                   data-value={29}
                                   data-year={2020}
@@ -20216,7 +20217,7 @@ exports[`Storyshots Search page Default 1`] = `
                                   29
                                 </td>
                                 <td
-                                  className="rdtDay rdtToday"
+                                  className="rdtDay"
                                   data-month={10}
                                   data-value={30}
                                   data-year={2020}
@@ -20295,7 +20296,7 @@ exports[`Storyshots Search page Default 1`] = `
                         onClick={[Function]}
                         onFocus={[Function]}
                         onKeyDown={[Function]}
-                        placeholder="YYYY-MM-DD (e.g. 2020-11-30)"
+                        placeholder="YYYY-MM-DD (e.g. 2020-11-29)"
                         type="text"
                         value=""
                       />
@@ -20699,7 +20700,7 @@ exports[`Storyshots Search page Default 1`] = `
                               </tr>
                               <tr>
                                 <td
-                                  className="rdtDay"
+                                  className="rdtDay rdtToday"
                                   data-month={10}
                                   data-value={29}
                                   data-year={2020}
@@ -20708,7 +20709,7 @@ exports[`Storyshots Search page Default 1`] = `
                                   29
                                 </td>
                                 <td
-                                  className="rdtDay rdtToday"
+                                  className="rdtDay"
                                   data-month={10}
                                   data-value={30}
                                   data-year={2020}
@@ -21101,7 +21102,7 @@ exports[`Storyshots Search page Default 1`] = `
                         onClick={[Function]}
                         onFocus={[Function]}
                         onKeyDown={[Function]}
-                        placeholder="YYYY-MM-DD (e.g. 2020-11-23)"
+                        placeholder="YYYY-MM-DD (e.g. 2020-11-22)"
                         type="text"
                         value=""
                       />
@@ -21505,7 +21506,7 @@ exports[`Storyshots Search page Default 1`] = `
                               </tr>
                               <tr>
                                 <td
-                                  className="rdtDay"
+                                  className="rdtDay rdtToday"
                                   data-month={10}
                                   data-value={29}
                                   data-year={2020}
@@ -21514,7 +21515,7 @@ exports[`Storyshots Search page Default 1`] = `
                                   29
                                 </td>
                                 <td
-                                  className="rdtDay rdtToday"
+                                  className="rdtDay"
                                   data-month={10}
                                   data-value={30}
                                   data-year={2020}
@@ -21593,7 +21594,7 @@ exports[`Storyshots Search page Default 1`] = `
                         onClick={[Function]}
                         onFocus={[Function]}
                         onKeyDown={[Function]}
-                        placeholder="YYYY-MM-DD (e.g. 2020-11-30)"
+                        placeholder="YYYY-MM-DD (e.g. 2020-11-29)"
                         type="text"
                         value=""
                       />
@@ -21997,7 +21998,7 @@ exports[`Storyshots Search page Default 1`] = `
                               </tr>
                               <tr>
                                 <td
-                                  className="rdtDay"
+                                  className="rdtDay rdtToday"
                                   data-month={10}
                                   data-value={29}
                                   data-year={2020}
@@ -22006,7 +22007,7 @@ exports[`Storyshots Search page Default 1`] = `
                                   29
                                 </td>
                                 <td
-                                  className="rdtDay rdtToday"
+                                  className="rdtDay"
                                   data-month={10}
                                   data-value={30}
                                   data-year={2020}
@@ -22399,7 +22400,7 @@ exports[`Storyshots Search page Default 1`] = `
                         onClick={[Function]}
                         onFocus={[Function]}
                         onKeyDown={[Function]}
-                        placeholder="YYYY-MM-DD (e.g. 2020-11-23)"
+                        placeholder="YYYY-MM-DD (e.g. 2020-11-22)"
                         type="text"
                         value=""
                       />
@@ -22803,7 +22804,7 @@ exports[`Storyshots Search page Default 1`] = `
                               </tr>
                               <tr>
                                 <td
-                                  className="rdtDay"
+                                  className="rdtDay rdtToday"
                                   data-month={10}
                                   data-value={29}
                                   data-year={2020}
@@ -22812,7 +22813,7 @@ exports[`Storyshots Search page Default 1`] = `
                                   29
                                 </td>
                                 <td
-                                  className="rdtDay rdtToday"
+                                  className="rdtDay"
                                   data-month={10}
                                   data-value={30}
                                   data-year={2020}
@@ -22891,7 +22892,7 @@ exports[`Storyshots Search page Default 1`] = `
                         onClick={[Function]}
                         onFocus={[Function]}
                         onKeyDown={[Function]}
-                        placeholder="YYYY-MM-DD (e.g. 2020-11-30)"
+                        placeholder="YYYY-MM-DD (e.g. 2020-11-29)"
                         type="text"
                         value=""
                       />
@@ -23295,7 +23296,7 @@ exports[`Storyshots Search page Default 1`] = `
                               </tr>
                               <tr>
                                 <td
-                                  className="rdtDay"
+                                  className="rdtDay rdtToday"
                                   data-month={10}
                                   data-value={29}
                                   data-year={2020}
@@ -23304,7 +23305,7 @@ exports[`Storyshots Search page Default 1`] = `
                                   29
                                 </td>
                                 <td
-                                  className="rdtDay rdtToday"
+                                  className="rdtDay"
                                   data-month={10}
                                   data-value={30}
                                   data-year={2020}
@@ -23697,7 +23698,7 @@ exports[`Storyshots Search page Default 1`] = `
                         onClick={[Function]}
                         onFocus={[Function]}
                         onKeyDown={[Function]}
-                        placeholder="YYYY-MM-DD (e.g. 2020-11-23)"
+                        placeholder="YYYY-MM-DD (e.g. 2020-11-22)"
                         type="text"
                         value=""
                       />
@@ -24101,7 +24102,7 @@ exports[`Storyshots Search page Default 1`] = `
                               </tr>
                               <tr>
                                 <td
-                                  className="rdtDay"
+                                  className="rdtDay rdtToday"
                                   data-month={10}
                                   data-value={29}
                                   data-year={2020}
@@ -24110,7 +24111,7 @@ exports[`Storyshots Search page Default 1`] = `
                                   29
                                 </td>
                                 <td
-                                  className="rdtDay rdtToday"
+                                  className="rdtDay"
                                   data-month={10}
                                   data-value={30}
                                   data-year={2020}
@@ -24189,7 +24190,7 @@ exports[`Storyshots Search page Default 1`] = `
                         onClick={[Function]}
                         onFocus={[Function]}
                         onKeyDown={[Function]}
-                        placeholder="YYYY-MM-DD (e.g. 2020-11-30)"
+                        placeholder="YYYY-MM-DD (e.g. 2020-11-29)"
                         type="text"
                         value=""
                       />
@@ -24593,7 +24594,7 @@ exports[`Storyshots Search page Default 1`] = `
                               </tr>
                               <tr>
                                 <td
-                                  className="rdtDay"
+                                  className="rdtDay rdtToday"
                                   data-month={10}
                                   data-value={29}
                                   data-year={2020}
@@ -24602,7 +24603,7 @@ exports[`Storyshots Search page Default 1`] = `
                                   29
                                 </td>
                                 <td
-                                  className="rdtDay rdtToday"
+                                  className="rdtDay"
                                   data-month={10}
                                   data-value={30}
                                   data-year={2020}
@@ -25904,7 +25905,7 @@ exports[`Storyshots Search page Error 1`] = `
                         onClick={[Function]}
                         onFocus={[Function]}
                         onKeyDown={[Function]}
-                        placeholder="YYYY-MM-DD (e.g. 2020-11-23)"
+                        placeholder="YYYY-MM-DD (e.g. 2020-11-22)"
                         type="text"
                         value=""
                       />
@@ -26308,7 +26309,7 @@ exports[`Storyshots Search page Error 1`] = `
                               </tr>
                               <tr>
                                 <td
-                                  className="rdtDay"
+                                  className="rdtDay rdtToday"
                                   data-month={10}
                                   data-value={29}
                                   data-year={2020}
@@ -26317,7 +26318,7 @@ exports[`Storyshots Search page Error 1`] = `
                                   29
                                 </td>
                                 <td
-                                  className="rdtDay rdtToday"
+                                  className="rdtDay"
                                   data-month={10}
                                   data-value={30}
                                   data-year={2020}
@@ -26396,7 +26397,7 @@ exports[`Storyshots Search page Error 1`] = `
                         onClick={[Function]}
                         onFocus={[Function]}
                         onKeyDown={[Function]}
-                        placeholder="YYYY-MM-DD (e.g. 2020-11-30)"
+                        placeholder="YYYY-MM-DD (e.g. 2020-11-29)"
                         type="text"
                         value=""
                       />
@@ -26800,7 +26801,7 @@ exports[`Storyshots Search page Error 1`] = `
                               </tr>
                               <tr>
                                 <td
-                                  className="rdtDay"
+                                  className="rdtDay rdtToday"
                                   data-month={10}
                                   data-value={29}
                                   data-year={2020}
@@ -26809,7 +26810,7 @@ exports[`Storyshots Search page Error 1`] = `
                                   29
                                 </td>
                                 <td
-                                  className="rdtDay rdtToday"
+                                  className="rdtDay"
                                   data-month={10}
                                   data-value={30}
                                   data-year={2020}
@@ -27202,7 +27203,7 @@ exports[`Storyshots Search page Error 1`] = `
                         onClick={[Function]}
                         onFocus={[Function]}
                         onKeyDown={[Function]}
-                        placeholder="YYYY-MM-DD (e.g. 2020-11-23)"
+                        placeholder="YYYY-MM-DD (e.g. 2020-11-22)"
                         type="text"
                         value=""
                       />
@@ -27606,7 +27607,7 @@ exports[`Storyshots Search page Error 1`] = `
                               </tr>
                               <tr>
                                 <td
-                                  className="rdtDay"
+                                  className="rdtDay rdtToday"
                                   data-month={10}
                                   data-value={29}
                                   data-year={2020}
@@ -27615,7 +27616,7 @@ exports[`Storyshots Search page Error 1`] = `
                                   29
                                 </td>
                                 <td
-                                  className="rdtDay rdtToday"
+                                  className="rdtDay"
                                   data-month={10}
                                   data-value={30}
                                   data-year={2020}
@@ -27694,7 +27695,7 @@ exports[`Storyshots Search page Error 1`] = `
                         onClick={[Function]}
                         onFocus={[Function]}
                         onKeyDown={[Function]}
-                        placeholder="YYYY-MM-DD (e.g. 2020-11-30)"
+                        placeholder="YYYY-MM-DD (e.g. 2020-11-29)"
                         type="text"
                         value=""
                       />
@@ -28098,7 +28099,7 @@ exports[`Storyshots Search page Error 1`] = `
                               </tr>
                               <tr>
                                 <td
-                                  className="rdtDay"
+                                  className="rdtDay rdtToday"
                                   data-month={10}
                                   data-value={29}
                                   data-year={2020}
@@ -28107,7 +28108,7 @@ exports[`Storyshots Search page Error 1`] = `
                                   29
                                 </td>
                                 <td
-                                  className="rdtDay rdtToday"
+                                  className="rdtDay"
                                   data-month={10}
                                   data-value={30}
                                   data-year={2020}
@@ -28500,7 +28501,7 @@ exports[`Storyshots Search page Error 1`] = `
                         onClick={[Function]}
                         onFocus={[Function]}
                         onKeyDown={[Function]}
-                        placeholder="YYYY-MM-DD (e.g. 2020-11-23)"
+                        placeholder="YYYY-MM-DD (e.g. 2020-11-22)"
                         type="text"
                         value=""
                       />
@@ -28904,7 +28905,7 @@ exports[`Storyshots Search page Error 1`] = `
                               </tr>
                               <tr>
                                 <td
-                                  className="rdtDay"
+                                  className="rdtDay rdtToday"
                                   data-month={10}
                                   data-value={29}
                                   data-year={2020}
@@ -28913,7 +28914,7 @@ exports[`Storyshots Search page Error 1`] = `
                                   29
                                 </td>
                                 <td
-                                  className="rdtDay rdtToday"
+                                  className="rdtDay"
                                   data-month={10}
                                   data-value={30}
                                   data-year={2020}
@@ -28992,7 +28993,7 @@ exports[`Storyshots Search page Error 1`] = `
                         onClick={[Function]}
                         onFocus={[Function]}
                         onKeyDown={[Function]}
-                        placeholder="YYYY-MM-DD (e.g. 2020-11-30)"
+                        placeholder="YYYY-MM-DD (e.g. 2020-11-29)"
                         type="text"
                         value=""
                       />
@@ -29396,7 +29397,7 @@ exports[`Storyshots Search page Error 1`] = `
                               </tr>
                               <tr>
                                 <td
-                                  className="rdtDay"
+                                  className="rdtDay rdtToday"
                                   data-month={10}
                                   data-value={29}
                                   data-year={2020}
@@ -29405,7 +29406,7 @@ exports[`Storyshots Search page Error 1`] = `
                                   29
                                 </td>
                                 <td
-                                  className="rdtDay rdtToday"
+                                  className="rdtDay"
                                   data-month={10}
                                   data-value={30}
                                   data-year={2020}
@@ -29798,7 +29799,7 @@ exports[`Storyshots Search page Error 1`] = `
                         onClick={[Function]}
                         onFocus={[Function]}
                         onKeyDown={[Function]}
-                        placeholder="YYYY-MM-DD (e.g. 2020-11-23)"
+                        placeholder="YYYY-MM-DD (e.g. 2020-11-22)"
                         type="text"
                         value=""
                       />
@@ -30202,7 +30203,7 @@ exports[`Storyshots Search page Error 1`] = `
                               </tr>
                               <tr>
                                 <td
-                                  className="rdtDay"
+                                  className="rdtDay rdtToday"
                                   data-month={10}
                                   data-value={29}
                                   data-year={2020}
@@ -30211,7 +30212,7 @@ exports[`Storyshots Search page Error 1`] = `
                                   29
                                 </td>
                                 <td
-                                  className="rdtDay rdtToday"
+                                  className="rdtDay"
                                   data-month={10}
                                   data-value={30}
                                   data-year={2020}
@@ -30290,7 +30291,7 @@ exports[`Storyshots Search page Error 1`] = `
                         onClick={[Function]}
                         onFocus={[Function]}
                         onKeyDown={[Function]}
-                        placeholder="YYYY-MM-DD (e.g. 2020-11-30)"
+                        placeholder="YYYY-MM-DD (e.g. 2020-11-29)"
                         type="text"
                         value=""
                       />
@@ -30694,7 +30695,7 @@ exports[`Storyshots Search page Error 1`] = `
                               </tr>
                               <tr>
                                 <td
-                                  className="rdtDay"
+                                  className="rdtDay rdtToday"
                                   data-month={10}
                                   data-value={29}
                                   data-year={2020}
@@ -30703,7 +30704,7 @@ exports[`Storyshots Search page Error 1`] = `
                                   29
                                 </td>
                                 <td
-                                  className="rdtDay rdtToday"
+                                  className="rdtDay"
                                   data-month={10}
                                   data-value={30}
                                   data-year={2020}
@@ -31637,7 +31638,7 @@ exports[`Storyshots Search page Loading 1`] = `
                         onClick={[Function]}
                         onFocus={[Function]}
                         onKeyDown={[Function]}
-                        placeholder="YYYY-MM-DD (e.g. 2020-11-23)"
+                        placeholder="YYYY-MM-DD (e.g. 2020-11-22)"
                         type="text"
                         value=""
                       />
@@ -32041,7 +32042,7 @@ exports[`Storyshots Search page Loading 1`] = `
                               </tr>
                               <tr>
                                 <td
-                                  className="rdtDay"
+                                  className="rdtDay rdtToday"
                                   data-month={10}
                                   data-value={29}
                                   data-year={2020}
@@ -32050,7 +32051,7 @@ exports[`Storyshots Search page Loading 1`] = `
                                   29
                                 </td>
                                 <td
-                                  className="rdtDay rdtToday"
+                                  className="rdtDay"
                                   data-month={10}
                                   data-value={30}
                                   data-year={2020}
@@ -32129,7 +32130,7 @@ exports[`Storyshots Search page Loading 1`] = `
                         onClick={[Function]}
                         onFocus={[Function]}
                         onKeyDown={[Function]}
-                        placeholder="YYYY-MM-DD (e.g. 2020-11-30)"
+                        placeholder="YYYY-MM-DD (e.g. 2020-11-29)"
                         type="text"
                         value=""
                       />
@@ -32533,7 +32534,7 @@ exports[`Storyshots Search page Loading 1`] = `
                               </tr>
                               <tr>
                                 <td
-                                  className="rdtDay"
+                                  className="rdtDay rdtToday"
                                   data-month={10}
                                   data-value={29}
                                   data-year={2020}
@@ -32542,7 +32543,7 @@ exports[`Storyshots Search page Loading 1`] = `
                                   29
                                 </td>
                                 <td
-                                  className="rdtDay rdtToday"
+                                  className="rdtDay"
                                   data-month={10}
                                   data-value={30}
                                   data-year={2020}
@@ -32935,7 +32936,7 @@ exports[`Storyshots Search page Loading 1`] = `
                         onClick={[Function]}
                         onFocus={[Function]}
                         onKeyDown={[Function]}
-                        placeholder="YYYY-MM-DD (e.g. 2020-11-23)"
+                        placeholder="YYYY-MM-DD (e.g. 2020-11-22)"
                         type="text"
                         value=""
                       />
@@ -33339,7 +33340,7 @@ exports[`Storyshots Search page Loading 1`] = `
                               </tr>
                               <tr>
                                 <td
-                                  className="rdtDay"
+                                  className="rdtDay rdtToday"
                                   data-month={10}
                                   data-value={29}
                                   data-year={2020}
@@ -33348,7 +33349,7 @@ exports[`Storyshots Search page Loading 1`] = `
                                   29
                                 </td>
                                 <td
-                                  className="rdtDay rdtToday"
+                                  className="rdtDay"
                                   data-month={10}
                                   data-value={30}
                                   data-year={2020}
@@ -33427,7 +33428,7 @@ exports[`Storyshots Search page Loading 1`] = `
                         onClick={[Function]}
                         onFocus={[Function]}
                         onKeyDown={[Function]}
-                        placeholder="YYYY-MM-DD (e.g. 2020-11-30)"
+                        placeholder="YYYY-MM-DD (e.g. 2020-11-29)"
                         type="text"
                         value=""
                       />
@@ -33831,7 +33832,7 @@ exports[`Storyshots Search page Loading 1`] = `
                               </tr>
                               <tr>
                                 <td
-                                  className="rdtDay"
+                                  className="rdtDay rdtToday"
                                   data-month={10}
                                   data-value={29}
                                   data-year={2020}
@@ -33840,7 +33841,7 @@ exports[`Storyshots Search page Loading 1`] = `
                                   29
                                 </td>
                                 <td
-                                  className="rdtDay rdtToday"
+                                  className="rdtDay"
                                   data-month={10}
                                   data-value={30}
                                   data-year={2020}
@@ -34233,7 +34234,7 @@ exports[`Storyshots Search page Loading 1`] = `
                         onClick={[Function]}
                         onFocus={[Function]}
                         onKeyDown={[Function]}
-                        placeholder="YYYY-MM-DD (e.g. 2020-11-23)"
+                        placeholder="YYYY-MM-DD (e.g. 2020-11-22)"
                         type="text"
                         value=""
                       />
@@ -34637,7 +34638,7 @@ exports[`Storyshots Search page Loading 1`] = `
                               </tr>
                               <tr>
                                 <td
-                                  className="rdtDay"
+                                  className="rdtDay rdtToday"
                                   data-month={10}
                                   data-value={29}
                                   data-year={2020}
@@ -34646,7 +34647,7 @@ exports[`Storyshots Search page Loading 1`] = `
                                   29
                                 </td>
                                 <td
-                                  className="rdtDay rdtToday"
+                                  className="rdtDay"
                                   data-month={10}
                                   data-value={30}
                                   data-year={2020}
@@ -34725,7 +34726,7 @@ exports[`Storyshots Search page Loading 1`] = `
                         onClick={[Function]}
                         onFocus={[Function]}
                         onKeyDown={[Function]}
-                        placeholder="YYYY-MM-DD (e.g. 2020-11-30)"
+                        placeholder="YYYY-MM-DD (e.g. 2020-11-29)"
                         type="text"
                         value=""
                       />
@@ -35129,7 +35130,7 @@ exports[`Storyshots Search page Loading 1`] = `
                               </tr>
                               <tr>
                                 <td
-                                  className="rdtDay"
+                                  className="rdtDay rdtToday"
                                   data-month={10}
                                   data-value={29}
                                   data-year={2020}
@@ -35138,7 +35139,7 @@ exports[`Storyshots Search page Loading 1`] = `
                                   29
                                 </td>
                                 <td
-                                  className="rdtDay rdtToday"
+                                  className="rdtDay"
                                   data-month={10}
                                   data-value={30}
                                   data-year={2020}
@@ -35531,7 +35532,7 @@ exports[`Storyshots Search page Loading 1`] = `
                         onClick={[Function]}
                         onFocus={[Function]}
                         onKeyDown={[Function]}
-                        placeholder="YYYY-MM-DD (e.g. 2020-11-23)"
+                        placeholder="YYYY-MM-DD (e.g. 2020-11-22)"
                         type="text"
                         value=""
                       />
@@ -35935,7 +35936,7 @@ exports[`Storyshots Search page Loading 1`] = `
                               </tr>
                               <tr>
                                 <td
-                                  className="rdtDay"
+                                  className="rdtDay rdtToday"
                                   data-month={10}
                                   data-value={29}
                                   data-year={2020}
@@ -35944,7 +35945,7 @@ exports[`Storyshots Search page Loading 1`] = `
                                   29
                                 </td>
                                 <td
-                                  className="rdtDay rdtToday"
+                                  className="rdtDay"
                                   data-month={10}
                                   data-value={30}
                                   data-year={2020}
@@ -36023,7 +36024,7 @@ exports[`Storyshots Search page Loading 1`] = `
                         onClick={[Function]}
                         onFocus={[Function]}
                         onKeyDown={[Function]}
-                        placeholder="YYYY-MM-DD (e.g. 2020-11-30)"
+                        placeholder="YYYY-MM-DD (e.g. 2020-11-29)"
                         type="text"
                         value=""
                       />
@@ -36427,7 +36428,7 @@ exports[`Storyshots Search page Loading 1`] = `
                               </tr>
                               <tr>
                                 <td
-                                  className="rdtDay"
+                                  className="rdtDay rdtToday"
                                   data-month={10}
                                   data-value={29}
                                   data-year={2020}
@@ -36436,7 +36437,7 @@ exports[`Storyshots Search page Loading 1`] = `
                                   29
                                 </td>
                                 <td
-                                  className="rdtDay rdtToday"
+                                  className="rdtDay"
                                   data-month={10}
                                   data-value={30}
                                   data-year={2020}
