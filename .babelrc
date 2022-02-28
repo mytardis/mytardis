@@ -1,5 +1,5 @@
 {
-  "presets": [["@babel/preset-env",{
+  "presets": ["@babel/preset-react", ["@babel/preset-env",{
     // Add polyfill for functions which are
     // not supported by all browsers.
     "useBuiltIns": "usage",
@@ -7,7 +7,7 @@
     "corejs":3,
     "bugfixes": true,
     // Required for support for class properties
-    "shippedProposals": true
-}], "@babel/preset-react"]
+    "shippedProposals": true,
+}]],
   "plugins": ["emotion", "@babel/plugin-proposal-class-properties"]
 }
