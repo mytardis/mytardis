@@ -53,7 +53,7 @@ analyzer = analyzer(
 
 
 def generic_acl_structure():
-    return fields.ObjectField(
+    return fields.NestedField(
         properties={
             "pluginId": fields.KeywordField(),
             "entityId": fields.KeywordField(),
