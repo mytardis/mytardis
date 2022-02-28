@@ -935,27 +935,27 @@ class SearchAppResource(Resource):
         projects_query = (
             user.projectacls.select_related("project")
             .prefetch_related(
-                "project__experiment",
-                "project__experiment__datasets",
-                "project__experiment__datasets__datafile",
+                "project__experiments",
+                "project__experiments__datasets",
+                "project__experiments__datasets__datafile",
             )
             .exclude(
                 effectiveDate__gte=datetime.today(), expiryDate__lte=datetime.today()
             )
             .values_list(
                 "project__id",
-                "project__experiment__id",
-                "project__experiment__datasets__id",
-                "project__experiment__datasets__datafile__id",
+                "project__experiments__id",
+                "project__experiments__datasets__id",
+                "project__experiments__datasets__datafile__id",
             )
         )
         for group in groups:
             projects_query |= (
                 group.projectacls.select_related("project")
                 .prefetch_related(
-                    "project__experiment",
-                    "project__experiment__datasets",
-                    "project__experiment__datasets__datafile",
+                    "project__experiments",
+                    "project__experiments__datasets",
+                    "project__experiments__datasets__datafile",
                 )
                 .exclude(
                     effectiveDate__gte=datetime.today(),
@@ -963,9 +963,9 @@ class SearchAppResource(Resource):
                 )
                 .values_list(
                     "project__id",
-                    "project__experiment__id",
-                    "project__experiment__datasets__id",
-                    "project__experiment__datasets__datafile__id",
+                    "project__experiments__id",
+                    "project__experiments__datasets__id",
+                    "project__experiments__datasets__datafile__id",
                 )
             )
         projects = [*projects_query.distinct()]
