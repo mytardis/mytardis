@@ -154,14 +154,14 @@ class ExperimentDocument(Document):
         name = "experiment"
         settings = elasticsearch_index_settings
 
-    id = fields.IntegerField()
+    id = fields.KeywordField()
     title = fields.TextField(fields={"raw": fields.KeywordField()}, analyzer=analyzer)
     description = fields.TextField(
         fields={"raw": fields.KeywordField()}, analyzer=analyzer
     )
     projects = fields.NestedField(
         properties={
-            "id": fields.IntegerField(),
+            "id": fields.KeywordField(),
             "name": fields.TextField(fields={"raw": fields.KeywordField()}),
         }
     )
@@ -241,19 +241,19 @@ class DatasetDocument(Document):
         name = "dataset"
         settings = elasticsearch_index_settings
 
-    id = fields.IntegerField()
+    id = fields.KeywordField()
     description = fields.TextField(
         fields={"raw": fields.KeywordField()}, analyzer=analyzer
     )
     experiments = fields.NestedField(
         properties={
-            "id": fields.IntegerField(),
+            "id": fields.KeywordField(),
             "title": fields.TextField(fields={"raw": fields.KeywordField()}),
         }
     )
-    instrument = fields.ObjectField(
+    instrument = fields.NestedField(
         properties={
-            "id": fields.IntegerField(),
+            "id": fields.KeywordField(),
             "name": fields.TextField(
                 fields={"raw": fields.KeywordField()},
             ),
@@ -357,6 +357,7 @@ class DataFileDocument(Document):
         name = "datafile"
         settings = elasticsearch_index_settings
 
+    id = fields.KeywordField()
     filename = fields.TextField(
         fields={"raw": fields.KeywordField()}, analyzer=analyzer
     )
@@ -495,7 +496,6 @@ class ProjectDocument(Document):
     description = fields.TextField(
         fields={"raw": fields.KeywordField()}, analyzer=analyzer
     )
-    # public_access = fields.IntegerField()
     start_time = fields.DateField()
     end_time = fields.DateField()
     institution = fields.NestedField(
