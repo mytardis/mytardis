@@ -7,7 +7,12 @@
     "corejs":3,
     "bugfixes": true,
     // Required for support for class properties
+<<<<<<< HEAD
     "shippedProposals": true,
 }]],
   "plugins": ["emotion", "@babel/plugin-proposal-class-properties"]
+=======
+    "shippedProposals": true
+}], "@babel/preset-react"]
+>>>>>>> 64179a04703965fdf5cfd7a0a3325a71892a371e
 }

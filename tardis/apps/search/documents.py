@@ -53,7 +53,7 @@ analyzer = analyzer(
 
 
 def generic_acl_structure():
-    return fields.ObjectField(
+    return fields.NestedField(
         properties={
             "pluginId": fields.KeywordField(),
             "entityId": fields.KeywordField(),
@@ -158,6 +158,12 @@ class ExperimentDocument(Document):
     title = fields.TextField(fields={"raw": fields.KeywordField()}, analyzer=analyzer)
     description = fields.TextField(
         fields={"raw": fields.KeywordField()}, analyzer=analyzer
+    )
+    projects = fields.NestedField(
+        properties={
+            "id": fields.IntegerField(),
+            "name": fields.TextField(fields={"raw": fields.KeywordField()}),
+        }
     )
     public_access = fields.IntegerField()
     created_time = fields.DateField()
