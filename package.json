@@ -45,12 +45,12 @@
     "pluralize": "^8.0.0",
     "prop-types": "^15.7.2",
     "query-string": "^7.0.0",
-    "react": "^17.0.1",
+    "react": "^16.14.0",
     "react-beautiful-dnd": "^13.1.0",
     "react-bootstrap": "^1.6.1",
     "react-bootstrap-typeahead": "^4.0.0-alpha.10",
     "react-datetime": "^3.0.3",
-    "react-dom": "^17.0.2",
+    "react-dom": "^16.14.0",
     "react-icons": "^3.10.0",
     "react-redux": "^7.2.0",
     "react-spinners": "^0.11.0",
@@ -100,7 +100,7 @@
     "js-yaml": "^4.1.0",
     "jscpd": "^3.3.26",
     "qunit": "^2.16.0",
-    "react-test-renderer": "^17.0.2"
+    "react-test-renderer": "^16.14.0"
   },
   "scripts": {
     "eslint.jquery": "eslint -c .eslintrc --ext .js assets/js/tardis_portal js_tests/tardis_portal/ tardis/apps/sftp/static/js/sftp/sftp.js tardis/apps/openid_migration/static/js/openid_migration/migrate_accounts.js",
