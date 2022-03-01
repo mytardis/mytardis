@@ -440,7 +440,7 @@ class Command(BaseCommand):
             test_raid = "STRESSTEST_"+hundred_words[idx_proj]
             testproject = Project(name=test_raid, raid=test_raid)
             testproject.created_by = user
-            testproject.lead_researcher = user
+            testproject.principal_investigator = user
             testproject.institutions.add(test_institution)
             testproject.save()
             #Create ACL for "owner"

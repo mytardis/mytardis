@@ -49,10 +49,10 @@
                         "sortable": true,
                         "filterable": true
                     },
-                    "lead_researcher": {
+                    "principal_investigator": {
                         "data_type": "STRING",
-                        "id": "lead_researcher",
-                        "full_name": "Lead researcher",
+                        "id": "principal_investigator",
+                        "full_name": "Principal investigator",
                         "nested_target": ["fullname"],
                         "sortable": true,
                         "filterable": true
@@ -69,7 +69,7 @@
                     "institution",
                     "start_time",
                     "end_time",
-                    "lead_researcher",
+                    "principal_investigator",
                     "schema"
                 ]
             }
@@ -115,9 +115,9 @@
                             "hideLabels": true
                         }
                     },
-                    "project": {
+                    "projects": {
                         "data_type": "STRING",
-                        "id": "project",
+                        "id": "projects",
                         "full_name": "Part of project",
                         "sortable": true,
                         "nested_target": ["name"],
@@ -134,7 +134,7 @@
                     "description",
                     "start_time",
                     "end_time",
-                    "project",
+                    "projects",
                     "schema"
                 ]
             }
