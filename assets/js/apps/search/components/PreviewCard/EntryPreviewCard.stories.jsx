@@ -38,7 +38,7 @@ const project = {
       "name": "Mikes ACL Institution"
     }
   ],
-  "lead_researcher": {
+  "principal_investigator": {
     "username": "mlav736"
   },
   "name": "Mikes_ACL_Project",
@@ -95,9 +95,11 @@ const experiment = {
       "value": "forbidden fruit"
     }
   ],
-  "project": {
+  "projects": [
+    {
     "id": 1
-  },
+    }
+  ],
   "size": "460.3 KB",
   "start_time": null,
   "title": "Test_ACLs",

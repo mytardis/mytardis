@@ -677,7 +677,7 @@ class SearchAppResource(Resource):
                                             }
                                         }
                                     )
-                                # Special handling for list of lead researchers
+                                # Special handling for list of principal investigators
                                 if target_fieldtype == "principal_investigator":
                                     Qdict_lr = {"should": [query_obj_filt]}
                                     if isinstance(filter["content"], list):
