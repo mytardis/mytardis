@@ -1,0 +1,34 @@
+{% for exp in experiments|dictsortreversed:"id"|slice:":5" %}
+  {% if forloop.first %}
+    <ul class="list-group borderless mt-2">
+    {% with total=experiments|length %}
+      <li class="list-group-item exp-list-header small px-1 py-1">
+        <em>The most recent experiment{{total|pluralize}} in this project:</em>
+      </li>
+    {% endwith %}
+  {% endif %}
+  <li class="list-group-item exp-list-item small px-2 py-1">
+    <i class="fa fa-cogs o-6"></i>
+    <a class="experiment-link"
+       href="{% url 'tardis_portal.view_experiment' exp.id %}">
+      {{ exp.title }}
+    </a>
+    {% for datafile in exp.get_images|slice:":5" %}
+      {% if forloop.first %}
+        <ul class="thumbnails list-inline">
+      {% endif %}
+      <li class="list-inline-item">
+        <a class="thumbnail" href="{% url 'tardis.tardis_portal.download.view_datafile' datafile.id %}">{% url 'tardis.tardis_portal.iiif.download_image' datafile_id=datafile.id region='full' size=',50' rotation=0 quality='native' format='jpg' as thumbnail %}
+        <img alt="Thumbnail for Datafile #{{datafile.id}}"
+             src="{{ thumbnail }}"
+             onerror="$(this).parent().parent().hide()"/></a>
+      </li>
+      {% if forloop.last %}
+        </ul>
+      {% endif %}
+    {% endfor %}
+  </li>
+  {% if forloop.last %}
+    </ul>
+  {% endif %}
+{% endfor %}

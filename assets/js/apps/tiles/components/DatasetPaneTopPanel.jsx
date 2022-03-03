@@ -6,11 +6,11 @@ import DownloadButton from './DownloadButton';
 import DatasetFilter from './DatasetFilter';
 
 const DatasetPaneTopPanel = ({
-  count, experimentID, selectedDatasets, csrfToken, experimentPermissions, onFilter, onSort,
+  count, experimentID, selectedDatasets, csrfToken, experimentPermissions, onFilter, onSort, disableCreationForms
 }) => (
   <Fragment>
     <DatasetCountHeader count={count} />
-    {(experimentPermissions.write_permissions && !experimentPermissions.is_publication) ? (
+    {(experimentPermissions.write_permissions && !experimentPermissions.is_publication && !disableCreationForms) ? (
       <AddDatasetButton experimentID={experimentID} />
     ) : ''}
     {experimentPermissions.download_permissions ? (
@@ -31,5 +31,6 @@ DatasetPaneTopPanel.propTypes = {
   experimentPermissions: PropTypes.object.isRequired,
   onFilter: PropTypes.func.isRequired,
   onSort: PropTypes.func.isRequired,
+  disableCreationForms: PropTypes.bool.isRequired,
 };
 export default DatasetPaneTopPanel;
