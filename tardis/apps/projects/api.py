@@ -208,7 +208,7 @@ class ProjectResource(ModelResource):
                     persistent_id__alternate_ids__contains=query
                 )
                 orm_filters.update({"pids": qset})
-            return orm_filters
+        return orm_filters
 
     def apply_filters(self, request, applicable_filters):
         if "tardis.apps.identifiers" in settings.INSTALLED_APPS:
@@ -472,7 +472,7 @@ class DefaultInstitutionProfileResource(ModelResource):
                     persistent_id__alternate_ids__contains=query
                 )
                 orm_filters.update({"pids": qset})
-            return orm_filters
+        return orm_filters
 
     def apply_filters(self, request, applicable_filters):
         if "tardis.apps.identifiers" in settings.INSTALLED_APPS:
