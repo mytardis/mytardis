@@ -539,16 +539,14 @@ class ACLAuthorization(Authorization):
 
 
 class IntrospectionObject(object):
-    def __init__(
-        self,
-        projects_enabled=None,
-        experiment_only_acls=None,
-        identifiers_enabled=None,
-        identified_objects=[],
-        profiles_enabled=None,
-        profiled_objects=[],
-        id=None,
-    ):
+    def __init__(self,
+                 projects_enabled=None,
+                 experiment_only_acls=None,
+                 identifiers_enabled = None,
+                 identified_objects = [],
+                 profiles_enabled = None,
+                 profiled_objects = [],
+                 id=None):
         self.projects_enabled = projects_enabled
         self.experiment_only_acls = experiment_only_acls
         self.identifiers_enabled = identifiers_enabled
@@ -564,10 +562,9 @@ class IntrospectionResource(Resource):
     projects_enabled = fields.ApiField(attribute="projects_enabled", null=True)
     experiment_only_acls = fields.ApiField(attribute="experiment_only_acls", null=True)
     identifiers_enabled = fields.ApiField(attribute="identifiers_enabled", null=True)
-    identified_objects = fields.ApiField(attribute="identified_objects", null=True)
+    identified_objects = fields.ApiField(attribute='identified_objects', null=True)
     profiles_enabled = fields.ApiField(attribute="profiles_enabled", null=True)
     profiled_objects = fields.ApiField(attribute="profiled_objects", null=True)
-
     class Meta:
         resource_name = "introspection"
         list_allowed_methods = ["get"]
@@ -593,6 +590,7 @@ class IntrospectionResource(Resource):
         try:
             profiled_objects = settings.OBJECTS_WITH_PROFILES
         except Exception:  # Ugly hack should tidy this up to catch specific errors
+
             profiled_objects = []
         return [
             IntrospectionObject(
@@ -602,6 +600,7 @@ class IntrospectionResource(Resource):
                 in settings.INSTALLED_APPS,
                 identified_objects=identified_objects,
                 profiles_enabled="tardis.apps.profiles" in settings.INSTALLED_APPS,
+
                 profiled_objects=profiled_objects,
             )
         ]

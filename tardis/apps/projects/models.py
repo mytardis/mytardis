@@ -259,3 +259,5 @@ def project_public_acls(instance, **kwargs):
 post_save.connect(delete_if_all_false, sender=ProjectACL)
 
 post_save.connect(project_public_acls, sender=Project)
+
+# Identifier app specific code here
