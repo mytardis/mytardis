@@ -4,7 +4,8 @@ from django.conf import settings
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from tardis.apps.projects.models import Project
+
+from tardis.apps.projects.models import DefaultInstitutionProfile, Project
 from tardis.tardis_portal.models.dataset import Dataset
 from tardis.tardis_portal.models.experiment import Experiment
 from tardis.tardis_portal.models.facility import Facility
@@ -127,3 +128,32 @@ if "tardis.apps.projects" in settings.INSTALLED_APPS:
 
     if "project" in settings.OBJECTS_WITH_IDENTIFIERS:
         post_save.connect(create_project_pid, sender=Project)
+
+
+class DefaultInstitutionPID(Identifier):
+    """A model that adds a PID field to a DefaultInstitutionProfile model
+
+    :attribute institution: A OneToOneField pointing to the related DefaultInstitutionProfile
+
+    """
+
+    institution = models.OneToOneField(
+        DefaultInstitutionProfile,
+        on_delete=models.CASCADE,
+        related_name="persistent_id",
+    )
+
+    # NB: the post_save connection is handled in the project app itself in able to ensure the
+    # signal/slot connection can be made.
+
+
+if "tardis.apps.projects" in settings.INSTALLED_APPS:
+
+    def create_default_institution_pid(instance, **kwargs):
+        """Post save function to create PIDs for Projects if the identifer app
+        is installed
+        """
+        DefaultInstitutionPID(institution=instance).save()
+
+    if "institution" in settings.OBJECTS_WITH_IDENTIFIERS:
+        post_save.connect(create_default_institution_pid, sender=Project)

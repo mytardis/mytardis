@@ -9,10 +9,11 @@ from django.db.models.signals import post_save
 from django.urls import reverse
 from django.utils.timezone import now as django_time_now
 
+from tardis.apps.identifiers.models import (create_default_institution_pid,
+                                            create_project_pid)
 # from X.models import DataManagementPlan # Hook in place for future proofing
 from tardis.tardis_portal.managers import OracleSafeManager, SafeManager
 from tardis.tardis_portal.models.access_control import ACL, delete_if_all_false
-
 # from tardis.tardis_portal.models.institution import Institution
 from tardis.tardis_portal.models.experiment import Experiment
 from tardis.tardis_portal.models.parameters import Parameter, ParameterSet
@@ -261,3 +262,11 @@ post_save.connect(delete_if_all_false, sender=ProjectACL)
 post_save.connect(project_public_acls, sender=Project)
 
 # Identifier app specific code here
+
+if "tardis.apps.identifiers" in settings.INSTALLED_APPS:
+    if "project" in settings.OBJECTS_WITH_IDENTIFIERS:
+        post_save.connect(create_project_pid, sender=Project)
+    if "institution" in settings.OBJECTS_WITH_IDENTIFIERS:
+        post_save.connect(
+            create_default_institution_pid, sender=DefaultInstitutionProfile
+        )
