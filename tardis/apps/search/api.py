@@ -22,7 +22,6 @@ from tastypie.exceptions import ImmediateHttpResponse
 from tastypie.http import HttpUnauthorized
 
 from tardis.tardis_portal.api import default_authentication
-from tardis.tardis_portal.auth import decorators as authz
 from tardis.tardis_portal.models import (
     Experiment,
     Dataset,
@@ -125,7 +124,6 @@ class SchemasAppResource(Resource):
                     .values_list(
                         "projectparameterset__schema__id",
                         "projectparameterset__schema__name",
-                        # "id",
                     )
                 }
             ],
@@ -136,7 +134,6 @@ class SchemasAppResource(Resource):
                     .values_list(
                         "experimentparameterset__schema__id",
                         "experimentparameterset__schema__name",
-                        # "id",
                     )
                 }
             ],
@@ -147,7 +144,6 @@ class SchemasAppResource(Resource):
                     .values_list(
                         "datasetparameterset__schema__id",
                         "datasetparameterset__schema__name",
-                        # "id",
                     )
                 }
             ],
@@ -158,7 +154,6 @@ class SchemasAppResource(Resource):
                     .values_list(
                         "datafileparameterset__schema__id",
                         "datafileparameterset__schema__name",
-                        # "id",
                     )
                 }
             ],
@@ -174,40 +169,23 @@ class SchemasAppResource(Resource):
                         "type": key,
                         "schema_name": values[1],
                         "parameters": {},
-                        "complete": False,
                     }
-                    if not schema_id in safe_dict[key]:
-                        safe_dict[key][schema_id] = schema_dict
-                    elif safe_dict[key][schema_id]["complete"]:
+                    if schema_id in safe_dict[key]:
                         continue
                     param_names = [
-                        *ParameterName.objects.filter(schema__id=values[0]).values_list(
-                            "id", "full_name", "data_type", "sensitive"
-                        )
+                        *ParameterName.objects.filter(
+                            schema__id=values[0], sensitive=False
+                        ).values_list("id", "full_name", "data_type")
                     ]
-                    if len(param_names) > len(safe_dict[key][schema_id]["parameters"]):
-                        for pn in param_names:
-                            if (
-                                str(pn[0])
-                                not in safe_dict[key][schema_id]["parameters"]
-                            ):
-                                param_dict = {
-                                    "id": str(pn[0]),
-                                    "full_name": pn[1],
-                                    "data_type": parname_type_dict[pn[2]],
-                                }
-                            if pn[3]:  # and not authz.has_sensitive_access(
-                                # request, values[2], key
-                                # ):
-                                continue
-                            safe_dict[key][schema_id]["parameters"][
-                                str(pn[0])
-                            ] = param_dict
-                    if len(param_names) == len(safe_dict[key][schema_id]["parameters"]):
-                        safe_dict[key][schema_id]["complete"] = True
-            for values in safe_dict[key].values():
-                values.pop("complete")
-        # pop completed key
+                    for pn in param_names:
+                        param_dict = {
+                            "id": str(pn[0]),
+                            "full_name": pn[1],
+                            "data_type": parname_type_dict[pn[2]],
+                        }
+                        schema_dict["parameters"][str(pn[0])] = param_dict
+                    safe_dict[key][schema_id] = schema_dict
+
         return [SchemasObject(id=1, schemas=safe_dict)]
 
     def obj_get_list(self, bundle, **kwargs):
