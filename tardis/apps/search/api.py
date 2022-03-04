@@ -125,7 +125,7 @@ class SchemasAppResource(Resource):
                     .values_list(
                         "projectparameterset__schema__id",
                         "projectparameterset__schema__name",
-                        "id",
+                        # "id",
                     )
                 }
             ],
@@ -136,7 +136,7 @@ class SchemasAppResource(Resource):
                     .values_list(
                         "experimentparameterset__schema__id",
                         "experimentparameterset__schema__name",
-                        "id",
+                        # "id",
                     )
                 }
             ],
@@ -147,7 +147,7 @@ class SchemasAppResource(Resource):
                     .values_list(
                         "datasetparameterset__schema__id",
                         "datasetparameterset__schema__name",
-                        "id",
+                        # "id",
                     )
                 }
             ],
@@ -158,7 +158,7 @@ class SchemasAppResource(Resource):
                     .values_list(
                         "datafileparameterset__schema__id",
                         "datafileparameterset__schema__name",
-                        "id",
+                        # "id",
                     )
                 }
             ],
@@ -196,9 +196,9 @@ class SchemasAppResource(Resource):
                                     "full_name": pn[1],
                                     "data_type": parname_type_dict[pn[2]],
                                 }
-                            if pn[3] and not authz.has_sensitive_access(
-                                request, values[2], key
-                            ):
+                            if pn[3]:  # and not authz.has_sensitive_access(
+                                # request, values[2], key
+                                # ):
                                 continue
                             safe_dict[key][schema_id]["parameters"][
                                 str(pn[0])
