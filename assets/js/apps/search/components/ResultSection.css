@@ -1,0 +1,68 @@
+.result-row--download-col {
+    width: 100px;
+}
+
+.result-section--msg {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 300px;
+    flex: 1;
+    height: 100%;
+    padding: 2em;
+}
+
+.result-section--error-msg {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+.result-section--tabpanel {
+    border-left: 1px solid #dee2e6;
+    border-right: 1px solid #dee2e6;
+    border-bottom: 1px solid #dee2e6;
+    padding: 1.5rem 1rem;
+    background-color: white;
+
+    /* Make result list and entry card take up available space */
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    overflow: hidden;
+
+}
+
+.result-section--tabpanel > * {
+    margin-bottom: 1em;
+}
+
+.result-section--tabpanel > *:last-child {
+    margin-bottom: 0;
+}
+
+.tabpanel__container--horizontal {
+    display: flex;
+    flex-direction: row;
+    overflow: hidden;
+    /* Make result list and entry card take up available space */
+    flex: 1;
+    padding-bottom: 1rem;
+}
+
+.result-section__container {
+    flex: 1;
+    overflow-y: auto;
+}
+
+.result-section__container .result-section--row {
+    transition: opacity 0.3s;
+    
+}
+
+.result-section--row:nth-child(odd) {
+    background-color: #f8fbff;
+}
+
+.result-section__container.loading .result-section--row {
+    opacity: 0.4;
+}
