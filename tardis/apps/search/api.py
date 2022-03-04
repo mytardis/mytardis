@@ -197,7 +197,7 @@ class SchemasAppResource(Resource):
                                     "data_type": parname_type_dict[pn[2]],
                                 }
                             if pn[3] and not authz.has_sensitive_access(
-                                request.user, values[2], key
+                                request, values[2], key
                             ):
                                 continue
                             safe_dict[key][schema_id]["parameters"][
