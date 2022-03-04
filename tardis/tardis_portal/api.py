@@ -585,19 +585,22 @@ class IntrospectionResource(Resource):
     def get_object_list(self, request):
         try:
             identified_objects = settings.OBJECTS_WITH_IDENTIFIERS
-        except Exception as error: # Ugly hack should tidy this up to catch specific errors
+        except Exception:  # Ugly hack should tidy this up to catch specific errors
             identified_objects = []
         try:
             profiled_objects = settings.OBJECTS_WITH_PROFILES
-        except Exception as error: # Ugly hack should tidy this up to catch specific errors
+        except Exception:  # Ugly hack should tidy this up to catch specific errors
+
             profiled_objects = []
         return [
             IntrospectionObject(
                 projects_enabled="tardis.apps.projects" in settings.INSTALLED_APPS,
                 experiment_only_acls=settings.ONLY_EXPERIMENT_ACLS,
-                identifiers_enabled='tardis.apps.identifiers' in settings.INSTALLED_APPS,
+                identifiers_enabled="tardis.apps.identifiers"
+                in settings.INSTALLED_APPS,
                 identified_objects=identified_objects,
-                profiles_enabled='tardis.apps.profiles' in settings.INSTALLED_APPS,
+                profiles_enabled="tardis.apps.profiles" in settings.INSTALLED_APPS,
+
                 profiled_objects=profiled_objects,
             )
         ]
