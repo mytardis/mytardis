@@ -262,12 +262,7 @@ post_save.connect(project_public_acls, sender=Project)
 # Identifier app specific code here
 
 if "tardis.apps.identifiers" in settings.INSTALLED_APPS:
-    from tardis.apps.identifiers.models import (create_default_institution_pid,
-                                                create_project_pid)
+    from tardis.apps.identifiers.models import create_project_pid
 
     if "project" in settings.OBJECTS_WITH_IDENTIFIERS:
         post_save.connect(create_project_pid, sender=Project)
-    if "institution" in settings.OBJECTS_WITH_IDENTIFIERS:
-        post_save.connect(
-            create_default_institution_pid, sender=DefaultInstitutionProfile
-        )
