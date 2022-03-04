@@ -403,6 +403,13 @@ class SearchAppResource(Resource):
                                                                             }
                                                                         }
                                                                     ),
+                                                                    Q(
+                                                                        {
+                                                                            "term": {
+                                                                                "parameters.string.sensitive": False
+                                                                            }
+                                                                        }
+                                                                    ),
                                                                 ]
                                                             }
                                                         }
@@ -436,6 +443,13 @@ class SearchAppResource(Resource):
                                                                             "parameters.string.value": filter[
                                                                                 "content"
                                                                             ]
+                                                                        }
+                                                                    }
+                                                                ),
+                                                                Q(
+                                                                    {
+                                                                        "term": {
+                                                                            "parameters.string.sensitive": False
                                                                         }
                                                                     }
                                                                 ),
@@ -475,6 +489,13 @@ class SearchAppResource(Resource):
                                                                     }
                                                                 }
                                                             ),
+                                                            Q(
+                                                                {
+                                                                    "term": {
+                                                                        "parameters.string.sensitive": False
+                                                                    }
+                                                                }
+                                                            ),
                                                         ]
                                                     }
                                                 }
@@ -508,6 +529,13 @@ class SearchAppResource(Resource):
                                                                                 "content"
                                                                             ]
                                                                         }
+                                                                    }
+                                                                }
+                                                            ),
+                                                            Q(
+                                                                {
+                                                                    "term": {
+                                                                        "parameters.string.sensitive": False
                                                                     }
                                                                 }
                                                             ),
