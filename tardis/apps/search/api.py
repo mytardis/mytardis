@@ -36,17 +36,6 @@ LOCAL_TZ = pytz.timezone(settings.TIME_ZONE)
 RESULTS_PER_PAGE = settings.RESULTS_PER_PAGE
 MIN_CUTOFF_SCORE = settings.MIN_CUTOFF_SCORE
 
-parname_type_dict = {
-    1: "NUMERIC",
-    2: "STRING",
-    3: "URL",
-    4: "LINK",
-    5: "FILENAME",
-    6: "DATETIME",
-    7: "LONGSTRING",
-    8: "JSON",
-}
-
 
 class PrettyJSONSerializer(Serializer):
     json_indent = 2
@@ -104,7 +93,6 @@ class SchemasAppResource(Resource):
             kwargs["pk"] = bundle_or_obj.obj.id
         else:
             kwargs["pk"] = bundle_or_obj["id"]
-
         return kwargs
 
     def get_object_list(self, request):
@@ -121,71 +109,65 @@ class SchemasAppResource(Resource):
                 *{
                     *Project.safe.all(request.user)
                     .prefetch_related("projectparameterset")
-                    .values_list(
-                        "projectparameterset__schema__id",
-                        "projectparameterset__schema__name",
-                    )
+                    .values_list("projectparameterset__schema__id", flat=True)
                 }
             ],
             "experiment": [
                 *{
                     *Experiment.safe.all(request.user)
                     .prefetch_related("experimentparameterset")
-                    .values_list(
-                        "experimentparameterset__schema__id",
-                        "experimentparameterset__schema__name",
-                    )
+                    .values_list("experimentparameterset__schema__id", flat=True)
                 }
             ],
             "dataset": [
                 *{
                     *Dataset.safe.all(request.user)
                     .prefetch_related("datasetparameterset")
-                    .values_list(
-                        "datasetparameterset__schema__id",
-                        "datasetparameterset__schema__name",
-                    )
+                    .values_list("datasetparameterset__schema__id", flat=True)
                 }
             ],
             "datafile": [
                 *{
                     *DataFile.safe.all(request.user)
                     .prefetch_related("datafileparameterset")
-                    .values_list(
-                        "datafileparameterset__schema__id",
-                        "datafileparameterset__schema__name",
-                    )
+                    .values_list("datafileparameterset__schema__id", flat=True)
                 }
             ],
         }
         safe_dict = {}
         for key in result_dict:
             safe_dict[key] = {}
-            for values in result_dict[key]:
-                if values is not None:
-                    schema_id = str(values[0])
+            for value in result_dict[key]:
+                if value is not None:
+                    schema_id = str(value)
                     schema_dict = {
                         "id": schema_id,
                         "type": key,
-                        "schema_name": values[1],
+                        "schema_name": Schema.objects.get(id=value).name,
                         "parameters": {},
                     }
-                    if schema_id in safe_dict[key]:
-                        continue
-                    param_names = [
-                        *ParameterName.objects.filter(
-                            schema__id=values[0], sensitive=False
-                        ).values_list("id", "full_name", "data_type")
-                    ]
-                    for pn in param_names:
-                        param_dict = {
-                            "id": str(pn[0]),
-                            "full_name": pn[1],
-                            "data_type": parname_type_dict[pn[2]],
+                    param_names = ParameterName.objects.filter(
+                        schema__id=value, sensitive=False
+                    )
+                    for param in param_names:
+                        type_dict = {
+                            1: "NUMERIC",
+                            2: "STRING",
+                            3: "URL",
+                            4: "LINK",
+                            5: "FILENAME",
+                            6: "DATETIME",
+                            7: "LONGSTRING",
+                            8: "JSON",
                         }
-                        schema_dict["parameters"][str(pn[0])] = param_dict
+                        param_id = str(param.id)
+                        param_dict = {
+                            "id": param_id,
+                            "full_name": param.full_name,
+                            "data_type": type_dict[param.data_type],
+                        }
+                        schema_dict["parameters"][param_id] = param_dict
                     safe_dict[key][schema_id] = schema_dict
-
         return [SchemasObject(id=1, schemas=safe_dict)]
 
     def obj_get_list(self, bundle, **kwargs):
