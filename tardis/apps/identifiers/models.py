@@ -118,14 +118,14 @@ class ProjectPID(Identifier):
     # signal/slot connection can be made.
 
 
-def create_project_pid(instance, **kwargs):
-    """Post save function to create PIDs for Projects if the identifer app
-    is installed
-    """
-    ProjectPID(project=instance).save()
-
-
 if "tardis.apps.projects" in settings.INSTALLED_APPS:
+
+    def create_project_pid(instance, **kwargs):
+        """Post save function to create PIDs for Projects if the identifer app
+        is installed
+        """
+        ProjectPID(project=instance).save()
+
     if "project" in settings.OBJECTS_WITH_IDENTIFIERS:
         post_save.connect(create_project_pid, sender=Project)
 
@@ -147,13 +147,15 @@ class DefaultInstitutionPID(Identifier):
     # signal/slot connection can be made.
 
 
-def create_default_institution_pid(instance, **kwargs):
-    """Post save function to create PIDs for Projects if the identifer app
-    is installed
-    """
-    DefaultInstitutionPID(institution=instance).save()
-
-
 if "tardis.apps.projects" in settings.INSTALLED_APPS:
+
+    def create_default_institution_pid(instance, **kwargs):
+        """Post save function to create PIDs for Projects if the identifer app
+        is installed
+        """
+        DefaultInstitutionPID(institution=instance).save()
+
     if "institution" in settings.OBJECTS_WITH_IDENTIFIERS:
-        post_save.connect(create_default_institution_pid, sender=Project)
+        post_save.connect(
+            create_default_institution_pid, sender=DefaultInstitutionProfile
+        )
