@@ -264,7 +264,7 @@ class DatasetDocument(Document):
     public_access = fields.IntegerField()
     acls = generic_acl_structure()
     parameters = generic_parameter_structure()
-    tags = fields.StringField(attr="tags_for_indexing")
+    tags = fields.TextField(attr="tags_for_indexing")
 
     def prepare_public_access(self, instance):
         if settings.ONLY_EXPERIMENT_ACLS:
