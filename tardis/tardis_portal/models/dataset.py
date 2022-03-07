@@ -6,6 +6,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.urls import reverse
 from django.db import models
 from django.utils import timezone
+from taggit.managers import TaggableManager
 
 from ..managers import OracleSafeManager, SafeManager
 from .storage import StorageBox
@@ -46,30 +47,31 @@ class Dataset(models.Model):
     PUBLIC_ACCESS_FULL = 100
 
     PUBLIC_ACCESS_CHOICES = (
-        (PUBLIC_ACCESS_NONE, 'No public access (hidden)'),
-        (PUBLIC_ACCESS_EMBARGO, 'Ready to be released pending embargo expiry'),
-        (PUBLIC_ACCESS_METADATA, 'Public Metadata only (no data file access)'),
-        (PUBLIC_ACCESS_FULL, 'Public'),
+        (PUBLIC_ACCESS_NONE, "No public access (hidden)"),
+        (PUBLIC_ACCESS_EMBARGO, "Ready to be released pending embargo expiry"),
+        (PUBLIC_ACCESS_METADATA, "Public Metadata only (no data file access)"),
+        (PUBLIC_ACCESS_FULL, "Public"),
     )
 
-    experiments = models.ManyToManyField(Experiment, related_name='datasets')
+    experiments = models.ManyToManyField(Experiment, related_name="datasets")
     description = models.TextField(blank=True)
     directory = models.CharField(blank=True, null=True, max_length=255)
     created_time = models.DateTimeField(null=True, blank=True, default=timezone.now)
     modified_time = models.DateTimeField(null=True, blank=True)
     immutable = models.BooleanField(default=False)
-    instrument = models.ForeignKey(Instrument, null=True, blank=True,
-                                   on_delete=models.CASCADE)
-    public_access = \
-        models.PositiveSmallIntegerField(choices=PUBLIC_ACCESS_CHOICES,
-                                         null=False,
-                                         default=PUBLIC_ACCESS_NONE)
+    instrument = models.ForeignKey(
+        Instrument, null=True, blank=True, on_delete=models.CASCADE
+    )
+    public_access = models.PositiveSmallIntegerField(
+        choices=PUBLIC_ACCESS_CHOICES, null=False, default=PUBLIC_ACCESS_NONE
+    )
     objects = OracleSafeManager()
     safe = SafeManager()  # The acl-aware specific manager.
+    tags = TaggableManager(blank=True)
 
     class Meta:
-        app_label = 'tardis_portal'
-        ordering = ['-id']
+        app_label = "tardis_portal"
+        ordering = ["-id"]
 
     # pylint: disable=W0222
     def save(self, *args, **kwargs):
@@ -77,30 +79,38 @@ class Dataset(models.Model):
         super().save(*args, **kwargs)
 
     @property
+    def tags_for_indexing(self):
+        """Tags for indexing
+        Used in Elasticsearch indexing.
+        """
+        return " ".join([tag.name for tag in self.tags.all()])
+
+    @property
     def is_online(self):
         return all(df.is_online for df in self.datafile_set.all())
 
     @property
     def online_files_count(self):
-        if 'tardis.apps.hsm' in settings.INSTALLED_APPS:
+        if "tardis.apps.hsm" in settings.INSTALLED_APPS:
             from tardis.apps.hsm.check import dataset_online_count
+
             return dataset_online_count(self)
         return self.datafile_set.count()
 
     @classmethod
     def public_access_implies_distribution(cls, public_access_level):
-        '''
+        """
         Determines if a level of public access implies that distribution should
         be allowed, or alternately if it should not be allowed. Used to
         prevent free-distribution licences for essentially private data, and
         overly-restrictive licences for public data.
-        '''
+        """
         return public_access_level > cls.PUBLIC_ACCESS_METADATA
 
     def public_download_allowed(self):
-        '''
+        """
         instance method version of 'public_access_implies_distribution'
-        '''
+        """
         return self.public_access > Dataset.PUBLIC_ACCESS_METADATA
 
     def getParameterSets(self, schemaType=None):
@@ -109,41 +119,36 @@ class Dataset(models.Model):
 
         """
         from .parameters import Schema
-        return self.datasetparameterset_set.filter(
-            schema__type=Schema.DATASET)
+
+        return self.datasetparameterset_set.filter(schema__type=Schema.DATASET)
 
     def __str__(self):
         return self.description
 
     def get_first_experiment(self):
-        return self.experiments.order_by('created_time')[:1].get()
+        return self.experiments.order_by("created_time")[:1].get()
 
     def get_path(self):
-        return path.join(str(self.get_first_experiment().id),
-                         str(self.id))
+        return path.join(str(self.get_first_experiment().id), str(self.id))
 
     def get_datafiles(self, user):
         from .datafile import DataFile
+
         if settings.ONLY_EXPERIMENT_ACLS:
             return DataFile.objects.filter(dataset__id=self.id)
         return DataFile.safe.all(user).filter(dataset__id=self.id)
 
     def get_absolute_url(self):
         """Return the absolute url to the current ``Dataset``"""
-        return reverse(
-            'tardis_portal.view_dataset',
-            kwargs={'dataset_id': self.id})
+        return reverse("tardis_portal.view_dataset", kwargs={"dataset_id": self.id})
 
     def get_download_urls(self):
-        view = 'tardis.tardis_portal.download.streaming_download_' \
-               'dataset'
+        view = "tardis.tardis_portal.download.streaming_download_" "dataset"
         urls = {}
-        for comptype in getattr(settings,
-                                'DEFAULT_ARCHIVE_FORMATS',
-                                ['tgz', 'tar']):
-            urls[comptype] = reverse(view, kwargs={
-                'dataset_id': self.id,
-                'comptype': comptype})
+        for comptype in getattr(settings, "DEFAULT_ARCHIVE_FORMATS", ["tgz", "tar"]):
+            urls[comptype] = reverse(
+                view, kwargs={"dataset_id": self.id, "comptype": comptype}
+            )
 
         return urls
 
@@ -151,19 +156,25 @@ class Dataset(models.Model):
         """Return the absolute url to the edit view of the current
         ``Dataset``
         """
-        return reverse(
-            'tardis.tardis_portal.views.edit_dataset',
-            args=[self.id])
+        return reverse("tardis.tardis_portal.views.edit_dataset", args=[self.id])
 
     def get_images(self):
         from .datafile import DataFile, IMAGE_FILTER
+
         render_image_ds_size_limit = getattr(
-            settings, 'RENDER_IMAGE_DATASET_SIZE_LIMIT', 0)
-        if render_image_ds_size_limit and \
-                self.datafile_set.count() > render_image_ds_size_limit:
+            settings, "RENDER_IMAGE_DATASET_SIZE_LIMIT", 0
+        )
+        if (
+            render_image_ds_size_limit
+            and self.datafile_set.count() > render_image_ds_size_limit
+        ):
             return DataFile.objects.none()
-        return self.datafile_set.order_by('filename').filter(IMAGE_FILTER)\
-            .filter(file_objects__verified=True).distinct()
+        return (
+            self.datafile_set.order_by("filename")
+            .filter(IMAGE_FILTER)
+            .filter(file_objects__verified=True)
+            .distinct()
+        )
 
     def _get_image(self):
         try:
@@ -176,20 +187,25 @@ class Dataset(models.Model):
     def get_thumbnail_url(self):
         if self.image is None:
             return None
-        return reverse('tardis.tardis_portal.iiif.download_image',
-                       kwargs={'datafile_id': self.image.id,
-                               'region': 'full',
-                               'size': '100,',
-                               'rotation': 0,
-                               'quality': 'native',
-                               'format': 'jpg'})
+        return reverse(
+            "tardis.tardis_portal.iiif.download_image",
+            kwargs={
+                "datafile_id": self.image.id,
+                "region": "full",
+                "size": "100,",
+                "rotation": 0,
+                "quality": "native",
+                "format": "jpg",
+            },
+        )
 
     def get_size(self, user):
         from .datafile import DataFile
+
         return DataFile.sum_sizes(self.get_datafiles(user))
 
     def _has_any_perm(self, user_obj):
-        if not hasattr(self, 'id'):
+        if not hasattr(self, "id"):
             return False
         return self.experiments.all()
 
@@ -220,7 +236,8 @@ class Dataset(models.Model):
 
     def get_all_storage_boxes_used(self):
         boxes = StorageBox.objects.filter(
-            file_objects__datafile__dataset=self).distinct()
+            file_objects__datafile__dataset=self
+        ).distinct()
         return boxes
 
     def get_ct(self):
@@ -266,24 +283,24 @@ class Dataset(models.Model):
         >>> ds.get_dir_tuples(user, "test files/subdir3/subdir4")
         [('..', 'test files/subdir3/subdir4')]
         """
-        #from .datafile import DataFile
+        # from .datafile import DataFile
 
         dir_tuples = []
         if basedir:
-            dir_tuples.append(('..', basedir))
+            dir_tuples.append(("..", basedir))
         dirs_query = self.get_datafiles(user)
         if basedir:
-            dirs_query = dirs_query.filter(directory__startswith='%s/' % basedir)
-        dir_paths = set(dirs_query.values_list('directory', flat=True))
+            dirs_query = dirs_query.filter(directory__startswith="%s/" % basedir)
+        dir_paths = set(dirs_query.values_list("directory", flat=True))
         for dir_path in dir_paths:
             if not dir_path:
                 continue
             if basedir:
-                dir_name = dir_path[len(basedir)+1:].lstrip('/').split('/')[0]
+                dir_name = dir_path[len(basedir) + 1 :].lstrip("/").split("/")[0]
             else:
-                dir_name = dir_path.split('/')[0]
+                dir_name = dir_path.split("/")[0]
             # Reconstruct the dir_path, eliminating subdirs within dir_name:
-            dir_path = '/'.join([basedir, dir_name]).lstrip('/')
+            dir_path = "/".join([basedir, dir_name]).lstrip("/")
             dir_tuple = (dir_name, dir_path)
             if dir_name and dir_tuple not in dir_tuples:
                 dir_tuples.append((dir_name, dir_path))
@@ -358,12 +375,8 @@ class Dataset(models.Model):
         dir_list = []
         for dir_tuple in dir_tuples:
             dir_name, dir_path = dir_tuple
-            if dir_name == '..':
+            if dir_name == "..":
                 continue
-            child_dict = {
-                'name': dir_name,
-                'path': dir_path,
-                'children': []
-            }
+            child_dict = {"name": dir_name, "path": dir_path, "children": []}
             dir_list.append(child_dict)
         return dir_list

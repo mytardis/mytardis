@@ -859,6 +859,7 @@ class DatasetResource(MyTardisModelResource):
     instrument = fields.ForeignKey(
         InstrumentResource, "instrument", null=True, full=True
     )
+    tags = fields.ListField()
 
     class Meta(MyTardisModelResource.Meta):
         object_class = Dataset
@@ -872,6 +873,14 @@ class DatasetResource(MyTardisModelResource):
         }
         ordering = ["id", "description"]
         always_return_data = True
+
+    def dehydrate_tags(self, bundle):
+        return list(map(str, bundle.obj.tags.all()))
+
+    def save_m2m(self, bundle):
+        tags = bundle.data.get("tags", [])
+        bundle.obj.tags.set(*tags)
+        return super().save_m2m(bundle)
 
     def dehydrate(self, bundle):
         dataset = bundle.obj
