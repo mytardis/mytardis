@@ -5,7 +5,7 @@ from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
-from tardis.apps.projects.models import DefaultInstitutionProfile, Project
+from tardis.apps.projects.models import Institution, Project
 from tardis.tardis_portal.models.dataset import Dataset
 from tardis.tardis_portal.models.experiment import Experiment
 from tardis.tardis_portal.models.facility import Facility
@@ -138,7 +138,7 @@ class DefaultInstitutionPID(Identifier):
     """
 
     institution = models.OneToOneField(
-        DefaultInstitutionProfile,
+        Institution,
         on_delete=models.CASCADE,
         related_name="persistent_id",
     )

@@ -29,8 +29,8 @@ from tardis.tardis_portal.auth.decorators import (has_access,
                                                   has_sensitive_access,
                                                   has_write)
 
-from .models import (DefaultInstitutionProfile, Project, ProjectACL,
-                     ProjectParameter, ProjectParameterSet)
+from .models import (Institution, Project, ProjectACL, ProjectParameter,
+                     ProjectParameterSet)
 
 if settings.DEBUG:
     default_serializer = PrettyJSONSerializer()
@@ -494,8 +494,8 @@ class DefaultInstitutionProfileResource(ModelResource):
         authentication = MyTardisAuthentication()
         authorization = ProjectACLAuthorization()
         serializer = default_serializer
-        object_class = DefaultInstitutionProfile
-        queryset = DefaultInstitutionProfile.objects.all()
+        object_class = Institution
+        queryset = Institution.objects.all()
         filtering = {
             "id": ("exact",),
             "name": ("exact",),

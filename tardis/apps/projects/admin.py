@@ -1,6 +1,6 @@
-from django.forms import TextInput
 import django.db
 from django.contrib import admin
+from django.forms import TextInput
 
 from . import models
 
@@ -43,4 +43,4 @@ admin.site.register(models.Project, ProjectAdmin)
 admin.site.register(models.ProjectParameterSet, ProjectParameterSetAdmin)
 admin.site.register(models.ProjectParameter)
 admin.site.register(models.ProjectACL, ProjectACLAdmin)
-admin.site.register(models.DefaultInstitutionProfile)
+admin.site.register(models.Institution)
