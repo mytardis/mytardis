@@ -158,11 +158,8 @@ def send_account_approved_email(user_id, authMethod):
     message = (
         "Dear %s %s, \n\nWelcome to %s. \n\n"
         "Your account has been approved. "
-        "Please use  the \"Log in with your %s\" link on the login page to "
-        "log in to %s. "
-        "If you have an existing %s account and would like to "
-        "migrate your data and settings to your new account, "
-        "follow the instructions on %s \n\n"
+        "Please use the \"Log in with your %s\" link on the login page to "
+        "log in to %s. \n\n"
         "Thanks,\n"
         "%s Team\n"
         % (user.first_name, user.last_name, site_title, 'Google Account',
