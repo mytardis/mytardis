@@ -5,8 +5,6 @@ from django.contrib.sites.models import Site
 from django.core import mail
 from django.core.mail import get_connection
 from django.contrib.auth.models import User, Permission
-from django.contrib import messages
-from django.urls import reverse
 
 from celery import shared_task
 
