@@ -37,7 +37,7 @@ from .models import (
     ProjectACL,
     ProjectParameter,
     ProjectParameterSet,
-    DefaultInstitutionProfile,
+    Institution,
 )
 
 
@@ -46,7 +46,7 @@ if settings.DEBUG:
 else:
     default_serializer = Serializer()
 
-PROJECT_INSTITUTION_RESOURCE = "tardis.apps.projects.api.DefaultInstitutionProfile"
+PROJECT_INSTITUTION_RESOURCE = "tardis.apps.projects.api.Institution"
 
 
 class ProjectACLAuthorization(Authorization):
@@ -396,13 +396,13 @@ class ProjectParameterResource(ParameterResource):
         queryset = ProjectParameter.objects.all()
 
 
-class DefaultInstitutionProfileResource(ModelResource):
+class InstitutionResource(ModelResource):
     class Meta:
         authentication = MyTardisAuthentication()
         authorization = ProjectACLAuthorization()
         serializer = default_serializer
-        object_class = DefaultInstitutionProfile
-        queryset = DefaultInstitutionProfile.objects.all()
+        object_class = Institution
+        queryset = Institution.objects.all()
         filtering = {
             "id": ("exact",),
             "name": ("exact",),
