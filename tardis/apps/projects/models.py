@@ -12,7 +12,6 @@ from django.utils.timezone import now as django_time_now
 # from X.models import DataManagementPlan # Hook in place for future proofing
 from tardis.tardis_portal.managers import OracleSafeManager, SafeManager
 from tardis.tardis_portal.models.access_control import ACL, delete_if_all_false
-
 # from tardis.tardis_portal.models.institution import Institution
 from tardis.tardis_portal.models.experiment import Experiment
 from tardis.tardis_portal.models.parameters import Parameter, ParameterSet
@@ -20,19 +19,24 @@ from tardis.tardis_portal.models.parameters import Parameter, ParameterSet
 logger = logging.getLogger(__name__)
 
 
-PROJECT_INSTITUTION = "projects.DefaultInstitutionProfile"
-
 # IMPLEMENT ONCE INSTRUMENT_PROFILE APP IS CREATED, NOT BEFORE
 # if "tardis.apps.institution_profile" in settings.INSTALLED_APPS:
 #    from tardis.apps.institution_profile import InstitutionProfile - not sure if this code is needed
 #    PROJECT_INSTITUTION = InstitutionProfile
 
 
-class DefaultInstitutionProfile(models.Model):
+class Institution(models.Model):
 
     name = models.CharField(
         max_length=255, null=False, blank=False, default=settings.DEFAULT_INSTITUTION
     )
+    url = models.URLField(blank=True, null=True)
+    institution_type = models.CharField(max_length=100, null=True, blank=True)
+    date_established = models.DateTimeField(null=True, blank=True)
+    address = models.TextField(null=True, blank=True)
+    aliases = models.CharField(max_length=255, blank=True, null=True)
+    status = models.CharField(max_length=255, blank=True, null=True)
+    country = models.CharField(max_length=255, blank=True, null=True)
 
     def __str__(self):
         return self.name
@@ -67,9 +71,7 @@ class Project(models.Model):
     principal_investigator = models.ForeignKey(
         User, related_name="principal_investigator", on_delete=models.CASCADE
     )
-    institution = models.ManyToManyField(
-        PROJECT_INSTITUTION, related_name="institutions"
-    )
+    institution = models.ManyToManyField(Institution, related_name="institutions")
     embargo_until = models.DateTimeField(null=True, blank=True)
     start_time = models.DateTimeField(default=django_time_now)
     end_time = models.DateTimeField(null=True, blank=True)

@@ -10,7 +10,8 @@ from itertools import chain
 from django.conf import settings
 from django.conf.urls import url
 from django.contrib.auth.models import User
-from django.http import JsonResponse, HttpResponseForbidden
+from django.http import HttpResponseForbidden, JsonResponse
+
 from tastypie import fields
 from tastypie.authorization import Authorization
 from tastypie.constants import ALL_WITH_RELATIONS
@@ -37,7 +38,7 @@ from .models import (
     ProjectACL,
     ProjectParameter,
     ProjectParameterSet,
-    DefaultInstitutionProfile,
+    Institution,
 )
 
 
@@ -46,7 +47,7 @@ if settings.DEBUG:
 else:
     default_serializer = Serializer()
 
-PROJECT_INSTITUTION_RESOURCE = "tardis.apps.projects.api.DefaultInstitutionProfile"
+PROJECT_INSTITUTION_RESOURCE = "tardis.apps.projects.api.Institution"
 
 
 class ProjectACLAuthorization(Authorization):
@@ -214,8 +215,6 @@ class ProjectResource(ModelResource):
             "url": ("exact",),
             "institution": ALL_WITH_RELATIONS,
         }
-        ordering = ["id", "name", "url", "start_time", "end_time"]
-        always_return_data = True
 
     def dehydrate(self, bundle):
         from tardis.tardis_portal.models import Experiment
@@ -396,16 +395,19 @@ class ProjectParameterResource(ParameterResource):
         queryset = ProjectParameter.objects.all()
 
 
-class DefaultInstitutionProfileResource(ModelResource):
+class InstitutionResource(ModelResource):
     class Meta:
         authentication = MyTardisAuthentication()
         authorization = ProjectACLAuthorization()
         serializer = default_serializer
-        object_class = DefaultInstitutionProfile
-        queryset = DefaultInstitutionProfile.objects.all()
+        object_class = Institution
+        queryset = Institution.objects.all()
         filtering = {
             "id": ("exact",),
             "name": ("exact",),
         }
         ordering = ["id", "name"]
         always_return_data = True
+
+    def dehydrate(self, bundle):
+        return bundle
