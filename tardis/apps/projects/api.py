@@ -10,7 +10,6 @@ from itertools import chain
 from django.conf import settings
 from django.conf.urls import url
 from django.contrib.auth.models import User
-from django.db.models import Q
 from django.http import HttpResponseForbidden, JsonResponse
 
 from tastypie import fields
@@ -411,5 +410,4 @@ class InstitutionResource(ModelResource):
         always_return_data = True
 
     def dehydrate(self, bundle):
-        institution = bundle.obj
         return bundle
