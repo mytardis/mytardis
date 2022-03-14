@@ -12,6 +12,7 @@ from django.utils.timezone import now as django_time_now
 # from X.models import DataManagementPlan # Hook in place for future proofing
 from tardis.tardis_portal.managers import OracleSafeManager, SafeManager
 from tardis.tardis_portal.models.access_control import ACL, delete_if_all_false
+
 # from tardis.tardis_portal.models.institution import Institution
 from tardis.tardis_portal.models.experiment import Experiment
 from tardis.tardis_portal.models.parameters import Parameter, ParameterSet
@@ -71,7 +72,7 @@ class Project(models.Model):
     principal_investigator = models.ForeignKey(
         User, related_name="principal_investigator", on_delete=models.CASCADE
     )
-    institution = models.ManyToManyField(Institution, related_name="institutions")
+    institution = models.ManyToManyField(Institution, related_name="projects")
     embargo_until = models.DateTimeField(null=True, blank=True)
     start_time = models.DateTimeField(default=django_time_now)
     end_time = models.DateTimeField(null=True, blank=True)
