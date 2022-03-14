@@ -199,7 +199,7 @@ class ProjectResource(ModelResource):
         null=True,
     )
     institution = fields.ToManyField(
-        "tardis.apps.projects.api.InstitutionResource", "institution_set"
+        InstitutionResource, "institution", related_name="projects"
     )
     principal_investigator = fields.ForeignKey(UserResource, "principal_investigator")
 
