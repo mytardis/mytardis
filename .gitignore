@@ -52,13 +52,11 @@ tardis/apps/*
 !tardis/apps/search
 !tardis/apps/eventlog
 !tardis/apps/projects
-!tardis/apps/identifiers
 
 *.old
 
 *.txt~
 
-tardis/apps/identifiers/tests/#test_models.py#
 
 *.py#
 
