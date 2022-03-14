@@ -140,7 +140,7 @@ if "tardis.apps.projects" in settings.INSTALLED_APPS:
         """Post save function to create PIDs for Projects if the identifer app
         is installed
         """
-        DefaultInstitutionPID(institution=instance).save()
+        InstitutionPID(institution=instance).save()
 
     if "institution" in settings.OBJECTS_WITH_IDENTIFIERS:
         post_save.connect(create_default_institution_pid, sender=Institution)
