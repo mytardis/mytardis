@@ -119,9 +119,9 @@ if "tardis.apps.projects" in settings.INSTALLED_APPS:
         post_save.connect(create_project_pid, sender=Project)
 
 
-class DefaultInstitutionPID(Identifier):
-    """A model that adds a PID field to a DefaultInstitutionProfile model
-    :attribute institution: A OneToOneField pointing to the related DefaultInstitutionProfile
+class InstitutionPID(Identifier):
+    """A model that adds a PID field to a Institution model
+    :attribute institution: A OneToOneField pointing to the related Institution
     """
 
     institution = models.OneToOneField(

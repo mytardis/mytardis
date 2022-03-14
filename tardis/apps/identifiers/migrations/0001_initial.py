@@ -163,4 +163,29 @@ class Migration(migrations.Migration):
             ],
             bases=("identifiers.identifier",),
         ),
+        migrations.CreateModel(
+            name="InstitutionPID",
+            fields=[
+                (
+                    "identifier_ptr",
+                    models.OneToOneField(
+                        auto_created=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        parent_link=True,
+                        primary_key=True,
+                        serialize=False,
+                        to="identifiers.identifier",
+                    ),
+                ),
+                (
+                    "institution",
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="persistent_id",
+                        to="projects.institution",
+                    ),
+                ),
+            ],
+            bases=("identifiers.identifier",),
+        ),
     ]
