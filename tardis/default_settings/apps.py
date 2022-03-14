@@ -26,6 +26,7 @@ INSTALLED_APPS = (
     "tardis.apps.sftp",
     # 'tardis.apps.push_to',
     # 'tardis.apps.social_auth',
+    "taggit",
 )
 
 USER_MENU_MODIFIERS = []
