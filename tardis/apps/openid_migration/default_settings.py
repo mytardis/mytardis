@@ -1,6 +1,3 @@
-from tardis.default_settings import USER_MENU_MODIFIERS
-
-
 OPENID_MIGRATION_EMAIL_MESSAGES = {
     'migration_complete': ('[{site_title}] User Migration Completed Successfully',
                            '''\
@@ -18,13 +15,6 @@ Regards,
 {site_title} Team.
 '''),
 }
-
-USER_MENU_MODIFIERS.extend([
-    'tardis.apps.openid_migration.user_menu_modifiers.add_migrate_account_menu_item'
-])
-'''
-Adds a Migrate My Account menu item to the user menu.
-'''
 
 ACCOUNT_MIGRATION_INSTRUCTIONS_LINKS = {
     "google": "",
