@@ -6,6 +6,7 @@ from tardis.apps.identifiers.models import (
     FacilityPID,
     InstrumentPID,
     ProjectPID,
+    InstitutionPID,
 )
 
 # Register PID models in admin site
@@ -17,6 +18,8 @@ if "facility" in settings.OBJECTS_WITH_IDENTIFIERS:
     admin.site.register(FacilityPID)
 if "instrument" in settings.OBJECTS_WITH_IDENTIFIERS:
     admin.site.register(InstrumentPID)
+if "institution" in settings.OBJECTS_WITH_IDENTIFIERS:
+    admin.site.register(InstitutionPID)
 if (
     "tardis.apps.projects" in settings.INSTALLED_APPS
     and "project" in settings.OBJECTS_WITH_IDENTIFIERS
