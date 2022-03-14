@@ -228,6 +228,8 @@ class ProjectResource(ModelResource):
                 and "pids" in applicable_filters
             ):
                 custom = applicable_filters.pop("pids")
+            else:
+                custom = None
         else:
             custom = None
 
@@ -492,6 +494,8 @@ class InstitutionResource(ModelResource):
                 and "pids" in applicable_filters
             ):
                 custom = applicable_filters.pop("pids")
+            else:
+                custom = None
         else:
             custom = None
 
