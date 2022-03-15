@@ -324,7 +324,6 @@ class ProjectResource(ModelResource):
         filtering = {
             "id": ("exact",),
             "name": ("exact",),
-            "experiments": ALL_WITH_RELATIONS,
             "url": ("exact",),
             "institution": ALL_WITH_RELATIONS,
         }
