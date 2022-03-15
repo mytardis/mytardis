@@ -9,11 +9,12 @@ class Migration(migrations.Migration):
     dependencies = [
         ("taggit", "0003_taggeditem_add_unique_index"),
         ("tardis_portal", "0023_schema_type_project"),
+        ("projects", "0001_initial"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name="project",
+            model_name="projects.project",
             name="tags",
             field=taggit.managers.TaggableManager(
                 blank=True,
