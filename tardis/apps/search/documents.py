@@ -174,6 +174,7 @@ class ExperimentDocument(Document):
     created_by = fields.ObjectField(properties={"username": fields.KeywordField()})
     acls = generic_acl_structure()
     parameters = generic_parameter_structure()
+    tags = fields.TextField(attr="tags_for_indexing")
 
     def prepare_acls(self, instance):
         """Returns the ExperimentACLs associated with an
@@ -381,6 +382,7 @@ class DataFileDocument(Document):
     public_access = fields.IntegerField()
     acls = generic_acl_structure()
     parameters = generic_parameter_structure()
+    tags = fields.TextField(attr="tags_for_indexing")
 
     def prepare_file_extension(self, instance):
         """
@@ -515,6 +517,7 @@ class ProjectDocument(Document):
     public_access = fields.IntegerField()
     acls = generic_acl_structure()
     parameters = generic_parameter_structure()
+    tags = fields.TextField(attr="tags_for_indexing")
 
     def prepare_public_access(self, instance):
         if settings.ONLY_EXPERIMENT_ACLS:

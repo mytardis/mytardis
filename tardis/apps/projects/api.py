@@ -269,6 +269,15 @@ class ProjectResource(ModelResource):
         InstitutionResource, "institution", related_name="projects"
     )
     principal_investigator = fields.ForeignKey(UserResource, "principal_investigator")
+    tags = fields.ListField()
+
+    def dehydrate_tags(self, bundle):
+        return list(map(str, bundle.obj.tags.all()))
+
+    def save_m2m(self, bundle):
+        tags = bundle.data.get("tags", [])
+        bundle.obj.tags.set(*tags)
+        return super().save_m2m(bundle)
 
     # Custom filter for identifiers module based on code example from
     # https://stackoverflow.com/questions/10021749/ \

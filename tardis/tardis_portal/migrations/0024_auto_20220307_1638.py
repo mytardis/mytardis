@@ -7,29 +7,72 @@ import taggit.managers
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('taggit', '0003_taggeditem_add_unique_index'),
-        ('tardis_portal', '0023_schema_type_project'),
+        ("taggit", "0003_taggeditem_add_unique_index"),
+        ("tardis_portal", "0023_schema_type_project"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='dataset',
-            name='tags',
-            field=taggit.managers.TaggableManager(blank=True, help_text='A comma-separated list of tags.', through='taggit.TaggedItem', to='taggit.Tag', verbose_name='Tags'),
+            model_name="project",
+            name="tags",
+            field=taggit.managers.TaggableManager(
+                blank=True,
+                help_text="A comma-separated list of tags.",
+                through="taggit.TaggedItem",
+                to="taggit.Tag",
+                verbose_name="Tags",
+            ),
+        ),
+        migrations.AddField(
+            model_name="experiment",
+            name="tags",
+            field=taggit.managers.TaggableManager(
+                blank=True,
+                help_text="A comma-separated list of tags.",
+                through="taggit.TaggedItem",
+                to="taggit.Tag",
+                verbose_name="Tags",
+            ),
+        ),
+        migrations.AddField(
+            model_name="dataset",
+            name="tags",
+            field=taggit.managers.TaggableManager(
+                blank=True,
+                help_text="A comma-separated list of tags.",
+                through="taggit.TaggedItem",
+                to="taggit.Tag",
+                verbose_name="Tags",
+            ),
+        ),
+        migrations.AddField(
+            model_name="datafile",
+            name="tags",
+            field=taggit.managers.TaggableManager(
+                blank=True,
+                help_text="A comma-separated list of tags.",
+                through="taggit.TaggedItem",
+                to="taggit.Tag",
+                verbose_name="Tags",
+            ),
         ),
         migrations.AlterField(
-            model_name='experiment',
-            name='institution_name',
-            field=models.CharField(default='University of Auckland', max_length=400),
+            model_name="experiment",
+            name="institution_name",
+            field=models.CharField(default="University of Auckland", max_length=400),
         ),
         migrations.AlterField(
-            model_name='storagebox',
-            name='django_storage_class',
-            field=models.TextField(default='django.core.files.storage.FileSystemStorage'),
+            model_name="storagebox",
+            name="django_storage_class",
+            field=models.TextField(
+                default="django.core.files.storage.FileSystemStorage"
+            ),
         ),
         migrations.AlterField(
-            model_name='userauthentication',
-            name='authenticationMethod',
-            field=models.CharField(choices=[('localdb', 'Local DB'), ('ldap', 'LDAP')], max_length=30),
+            model_name="userauthentication",
+            name="authenticationMethod",
+            field=models.CharField(
+                choices=[("localdb", "Local DB"), ("ldap", "LDAP")], max_length=30
+            ),
         ),
     ]
