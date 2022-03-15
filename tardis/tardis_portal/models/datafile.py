@@ -1,3 +1,4 @@
+# pylint: disable=C0302
 import hashlib
 import logging
 import re

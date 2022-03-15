@@ -18,6 +18,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.models import Group
 from django.core.paginator import EmptyPage, InvalidPage, Paginator
 from django.db import IntegrityError
+from django.db.models import Q
 from django.http import (
     HttpResponse,
     HttpResponseForbidden,
