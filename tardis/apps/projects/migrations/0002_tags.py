@@ -12,7 +12,7 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.AddField(
-            model_name="projects.project",
+            model_name="project",
             name="tags",
             field=taggit.managers.TaggableManager(
                 blank=True,
