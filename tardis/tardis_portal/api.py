@@ -700,6 +700,42 @@ class FacilityResource(MyTardisModelResource):
         GroupResource, "manager_group", null=True, full=True
     )
 
+    # Custom filter for identifiers module based on code example from
+    # https://stackoverflow.com/questions/10021749/ \
+    # django-tastypie-advanced-filtering-how-to-do-complex-lookups-with-q-objects
+
+    def build_filters(self, filters=None, ignore_bad_filters=False):
+        if filters is None:
+            filters = {}
+        orm_filters = super().build_filters(filters)
+
+        if "tardis.apps.identifiers" in settings.INSTALLED_APPS:
+            if "institution" in settings.OBJECTS_WITH_IDENTIFIERS and "pids" in filters:
+                query = filters["pids"]
+                qset = Q(persistent_id__persistent_id__exact=query) | Q(
+                    persistent_id__alternate_ids__contains=query
+                )
+                orm_filters.update({"pids": qset})
+        return orm_filters
+
+    def apply_filters(self, request, applicable_filters):
+        if "tardis.apps.identifiers" in settings.INSTALLED_APPS:
+            if (
+                "institution" in settings.OBJECTS_WITH_IDENTIFIERS
+                and "pids" in applicable_filters
+            ):
+                custom = applicable_filters.pop("pids")
+            else:
+                custom = None
+        else:
+            custom = None
+
+        semi_filtered = super().apply_filters(request, applicable_filters)
+
+        return semi_filtered.filter(custom) if custom else semi_filtered
+
+    # End of custom filter code
+
     class Meta(MyTardisModelResource.Meta):
         object_class = Facility
         queryset = Facility.objects.all()
@@ -711,9 +747,55 @@ class FacilityResource(MyTardisModelResource):
         ordering = ["id", "name"]
         always_return_data = True
 
+    def dehydrate(self, bundle):
+        facility = bundle.obj
+        if (
+            "tardis.apps.identifiers" in settings.INSTALLED_APPS
+            and "facility" in settings.OBJECTS_WITH_IDENTIFIERS
+        ):
+            bundle.data["persistent_id"] = facility.persistent_id.persistent_id
+            bundle.data["alternate_ids"] = facility.persistent_id.alternate_ids
+        return bundle
+
 
 class InstrumentResource(MyTardisModelResource):
     facility = fields.ForeignKey(FacilityResource, "facility", null=True, full=True)
+
+    # Custom filter for identifiers module based on code example from
+    # https://stackoverflow.com/questions/10021749/ \
+    # django-tastypie-advanced-filtering-how-to-do-complex-lookups-with-q-objects
+
+    def build_filters(self, filters=None, ignore_bad_filters=False):
+        if filters is None:
+            filters = {}
+        orm_filters = super().build_filters(filters)
+
+        if "tardis.apps.identifiers" in settings.INSTALLED_APPS:
+            if "institution" in settings.OBJECTS_WITH_IDENTIFIERS and "pids" in filters:
+                query = filters["pids"]
+                qset = Q(persistent_id__persistent_id__exact=query) | Q(
+                    persistent_id__alternate_ids__contains=query
+                )
+                orm_filters.update({"pids": qset})
+        return orm_filters
+
+    def apply_filters(self, request, applicable_filters):
+        if "tardis.apps.identifiers" in settings.INSTALLED_APPS:
+            if (
+                "institution" in settings.OBJECTS_WITH_IDENTIFIERS
+                and "pids" in applicable_filters
+            ):
+                custom = applicable_filters.pop("pids")
+            else:
+                custom = None
+        else:
+            custom = None
+
+        semi_filtered = super().apply_filters(request, applicable_filters)
+
+        return semi_filtered.filter(custom) if custom else semi_filtered
+
+    # End of custom filter code
 
     class Meta(MyTardisModelResource.Meta):
         object_class = Instrument
@@ -725,6 +807,16 @@ class InstrumentResource(MyTardisModelResource):
         }
         ordering = ["id", "name"]
         always_return_data = True
+
+    def dehydrate(self, bundle):
+        instrument = bundle.obj
+        if (
+            "tardis.apps.identifiers" in settings.INSTALLED_APPS
+            and "instrument" in settings.OBJECTS_WITH_IDENTIFIERS
+        ):
+            bundle.data["persistent_id"] = instrument.persistent_id.persistent_id
+            bundle.data["alternate_ids"] = instrument.persistent_id.alternate_ids
+        return bundle
 
 
 class ExperimentResource(MyTardisModelResource):
@@ -744,6 +836,42 @@ class ExperimentResource(MyTardisModelResource):
         null=True,
     )
     tags = fields.ListField()
+
+    # Custom filter for identifiers module based on code example from
+    # https://stackoverflow.com/questions/10021749/ \
+    # django-tastypie-advanced-filtering-how-to-do-complex-lookups-with-q-objects
+
+    def build_filters(self, filters=None, ignore_bad_filters=False):
+        if filters is None:
+            filters = {}
+        orm_filters = super().build_filters(filters)
+
+        if "tardis.apps.identifiers" in settings.INSTALLED_APPS:
+            if "institution" in settings.OBJECTS_WITH_IDENTIFIERS and "pids" in filters:
+                query = filters["pids"]
+                qset = Q(persistent_id__persistent_id__exact=query) | Q(
+                    persistent_id__alternate_ids__contains=query
+                )
+                orm_filters.update({"pids": qset})
+        return orm_filters
+
+    def apply_filters(self, request, applicable_filters):
+        if "tardis.apps.identifiers" in settings.INSTALLED_APPS:
+            if (
+                "institution" in settings.OBJECTS_WITH_IDENTIFIERS
+                and "pids" in applicable_filters
+            ):
+                custom = applicable_filters.pop("pids")
+            else:
+                custom = None
+        else:
+            custom = None
+
+        semi_filtered = super().apply_filters(request, applicable_filters)
+
+        return semi_filtered.filter(custom) if custom else semi_filtered
+
+    # End of custom filter code
 
     def dehydrate_tags(self, bundle):
         return list(map(str, bundle.obj.tags.all()))
@@ -794,6 +922,14 @@ class ExperimentResource(MyTardisModelResource):
         bundle.data["datafile_count"] = datafile_count
         experiment_size = exp.get_size(bundle.request.user)
         bundle.data["experiment_size"] = experiment_size
+
+        if (
+            "tardis.apps.identifiers" in settings.INSTALLED_APPS
+            and "experiment" in settings.OBJECTS_WITH_IDENTIFIERS
+        ):
+            bundle.data["persistent_id"] = exp.persistent_id.persistent_id
+            bundle.data["alternate_ids"] = exp.persistent_id.alternate_ids
+
         return bundle
 
     def hydrate_m2m(self, bundle):
@@ -871,6 +1007,42 @@ class DatasetResource(MyTardisModelResource):
     )
     tags = fields.ListField()
 
+    # Custom filter for identifiers module based on code example from
+    # https://stackoverflow.com/questions/10021749/ \
+    # django-tastypie-advanced-filtering-how-to-do-complex-lookups-with-q-objects
+
+    def build_filters(self, filters=None, ignore_bad_filters=False):
+        if filters is None:
+            filters = {}
+        orm_filters = super().build_filters(filters)
+
+        if "tardis.apps.identifiers" in settings.INSTALLED_APPS:
+            if "institution" in settings.OBJECTS_WITH_IDENTIFIERS and "pids" in filters:
+                query = filters["pids"]
+                qset = Q(persistent_id__persistent_id__exact=query) | Q(
+                    persistent_id__alternate_ids__contains=query
+                )
+                orm_filters.update({"pids": qset})
+        return orm_filters
+
+    def apply_filters(self, request, applicable_filters):
+        if "tardis.apps.identifiers" in settings.INSTALLED_APPS:
+            if (
+                "institution" in settings.OBJECTS_WITH_IDENTIFIERS
+                and "pids" in applicable_filters
+            ):
+                custom = applicable_filters.pop("pids")
+            else:
+                custom = None
+        else:
+            custom = None
+
+        semi_filtered = super().apply_filters(request, applicable_filters)
+
+        return semi_filtered.filter(custom) if custom else semi_filtered
+
+    # End of custom filter code
+
     class Meta(MyTardisModelResource.Meta):
         object_class = Dataset
         queryset = Dataset.objects.all()
@@ -907,6 +1079,12 @@ class DatasetResource(MyTardisModelResource):
                 .count()
             )
         bundle.data["dataset_datafile_count"] = dataset_datafile_count
+        if (
+            "tardis.apps.identifiers" in settings.INSTALLED_APPS
+            and "dataset" in settings.OBJECTS_WITH_IDENTIFIERS
+        ):
+            bundle.data["persistent_id"] = dataset.persistent_id.persistent_id
+            bundle.data["alternate_ids"] = dataset.persistent_id.alternate_ids
         return bundle
 
     def prepend_urls(self):
