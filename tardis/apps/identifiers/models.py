@@ -125,7 +125,7 @@ if "tardis.apps.projects" in settings.INSTALLED_APPS:
         """Post save function to create PIDs for Projects if the identifer app
         is installed
         """
-        if created:
+        if kwargs.get("created", False):
             ProjectPID(project=instance).save()
 
     if "project" in settings.OBJECTS_WITH_IDENTIFIERS:
@@ -138,7 +138,7 @@ if "tardis.apps.projects" in settings.INSTALLED_APPS:
         """Post save function to create PIDs for Projects if the identifer app
         is installed
         """
-        if created:
+        if kwargs.get("created", False):
             InstitutionPID(institution=instance).save()
 
     if "institution" in settings.OBJECTS_WITH_IDENTIFIERS:
