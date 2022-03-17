@@ -212,17 +212,20 @@ class ProjectACLAuthorization(Authorization):
             if not bundle.request.user.has_perm("tardis_portal.change_project"):
                 return False
             perm = False
-            for exp_uri in bundle.data.get("experiments", []):
-                try:
-                    this_exp = ExperimentResource.get_via_uri(
-                        ExperimentResource(), exp_uri, bundle.request
-                    )
-                except:
-                    return False
-                if has_write(bundle.request, this_exp.id, "experiment"):
-                    perm = True
-                else:
-                    return False
+            if settings.ONLY_EXPERIMENT_ACLS:
+                for exp_uri in bundle.data.get("experiments", []):
+                    try:
+                        this_exp = ExperimentResource.get_via_uri(
+                            ExperimentResource(), exp_uri, bundle.request
+                        )
+                    except:
+                        return False
+                    if has_write(bundle.request, this_exp.id, "experiment"):
+                        perm = True
+                    else:
+                        return False
+            else:
+                perm = True
             return perm
         if isinstance(bundle.obj, ProjectParameterSet):
             if not bundle.request.user.has_perm("tardis_portal.change_project"):
