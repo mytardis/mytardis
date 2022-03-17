@@ -12,6 +12,7 @@ from django.conf.urls import url
 from django.contrib.auth.models import User
 from django.db.models import Q
 from django.http import HttpResponseForbidden, JsonResponse
+from django.db import transaction
 
 from tastypie import fields
 from tastypie.authorization import Authorization
@@ -20,6 +21,8 @@ from tastypie.exceptions import NotFound, Unauthorized
 from tastypie.resources import ModelResource
 from tastypie.serializers import Serializer
 from tastypie.utils import trailing_slash
+
+import ldap3
 
 from tardis.tardis_portal.api import (
     MyTardisAuthentication,
@@ -49,6 +52,84 @@ else:
     default_serializer = Serializer()
 
 PROJECT_INSTITUTION_RESOURCE = "tardis.apps.projects.api.Institution"
+
+
+def get_user_from_upi(upi):
+    server = ldap3.Server(settings.LDAP_URL)
+    search_filter = "({}={})".format(settings.LDAP_USER_LOGIN_ATTR, upi)
+    with ldap3.Connection(
+        server,
+        auto_bind=True,
+        user=settings.LDAP_ADMIN_USER,
+        password=settings.LDAP_ADMIN_PASSWORD,
+    ) as connection:
+        connection.search(settings.LDAP_USER_BASE, search_filter, attributes=["*"])
+        if len(connection.entries) > 1:
+            error_message = (
+                "More than one person with {}: {} has been found in the LDAP".format(
+                    settings.LDAP_USER_LOGIN_ATTR, upi
+                )
+            )
+            # if logger:
+            #    logger.error(error_message)
+            raise Exception(error_message)
+        if len(connection.entries) == 0:
+            error_message = "No one with {}: {} has been found in the LDAP".format(
+                settings.LDAP_USER_LOGIN_ATTR, upi
+            )
+            # if logger:
+            #    logger.warning(error_message)
+            return None
+        person = connection.entries[0]
+        first_name_key = "givenName"
+        last_name_key = "sn"
+        email_key = "mail"
+        username = person[settings.LDAP_USER_LOGIN_ATTR].value
+        first_name = person[first_name_key].value
+        last_name = person[last_name_key].value
+        try:
+            email = person[email_key].value
+        except KeyError:
+            email = ""
+        details = {
+            "username": username,
+            "first_name": first_name,
+            "last_name": last_name,
+            "email": email,
+        }
+        return details
+
+
+def gen_random_password():
+    import random
+
+    random.seed()
+    characters = "abcdefghijklmnopqrstuvwxyzABCDFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()?"
+    passlen = 16
+    password = "".join(random.sample(characters, passlen))
+    return password
+
+
+def get_or_create_user(username):
+    if not User.objects.filter(username=username).exists():
+        new_user = get_user_from_upi(username)
+        user = User.objects.create(
+            username=new_user["username"],
+            first_name=new_user["first_name"],
+            last_name=new_user["last_name"],
+            email=new_user["email"],
+        )
+        user.set_password(gen_random_password())
+        user.save()
+        authentication = UserAuthentication(
+            userProfile=user.userprofile,
+            username=new_user["username"],
+            authenticationMethod=settings.LDAP_METHOD,
+        )
+        authentication.save()
+    else:
+        user = User.objects.get(username=username)
+    return user
 
 
 class ProjectACLAuthorization(Authorization):
@@ -405,54 +486,58 @@ class ProjectResource(ModelResource):
         """
         user = bundle.request.user
         bundle.data["created_by"] = user
-        """if not User.objects.filter(
-            username=bundle.data["principal_investigator"]
-        ).exists():
-            new_user = get_user_from_upi(bundle.data["principal_investigator"])
-            if not new_user:
-                logger.error("No one found for upi: {member}")
-            user = User.objects.create(
-                username=new_user["username"],
-                first_name=new_user["first_name"],
-                last_name=new_user["last_name"],
-                email=new_user["email"],
-            )
-            user.set_password(gen_random_password())
-            for permission in settings.DEFAULT_PERMISSIONS:
-                user.user_permission.add(Permission.objects.get(codename=permission))
-            user.save()
-            authentication = UserAuthentication(
-                userProfile=user.userprofile,
-                username=new_user["username"],
-                authenticationMethod=settings.LDAP_METHOD,
-            )
-            authentication.save()"""
-        project_lead = User.objects.get(username=bundle.data["principal_investigator"])
-        bundle.data["principal_investigator"] = project_lead
-        # Clean up bundle to remove PIDS if the identifiers app is being used.
-        if (
-            "tardis.apps.identifiers" in settings.INSTALLED_APPS
-            and "project" in settings.OBJECTS_WITH_IDENTIFIERS
-        ):
-            pid = None
-            alternate_ids = None
-            if "persistent_id" in bundle.data.keys():
-                pid = bundle.data.pop("persistent_id")
-            if "alternate_ids" in bundle.data.keys():
-                alternate_ids = bundle.data.pop("alternate_ids")
-        bundle = super().obj_create(bundle, **kwargs)
-        # After the obj has been created
-        if (
-            "tardis.apps.identifiers" in settings.INSTALLED_APPS
-            and "project" in settings.OBJECTS_WITH_IDENTIFIERS
-        ):
-            project = bundle.obj
-            if pid:
-                project.persistent_id.persistent_id = pid
-            if alternate_ids:
-                project.persistent_id.alternate_ids = alternate_ids
-            project.save()
-        return bundle
+        with transaction.atomic():
+            project_lead = get_or_create_user(bundle.data["principal_investigator"])
+            bundle.data["principal_investigator"] = project_lead
+            # Clean up bundle to remove PIDS if the identifiers app is being used.
+            if (
+                "tardis.apps.identifiers" in settings.INSTALLED_APPS
+                and "project" in settings.OBJECTS_WITH_IDENTIFIERS
+            ):
+                pid = None
+                alternate_ids = None
+                if "persistent_id" in bundle.data.keys():
+                    pid = bundle.data.pop("persistent_id")
+                if "alternate_ids" in bundle.data.keys():
+                    alternate_ids = bundle.data.pop("alternate_ids")
+            bundle = super().obj_create(bundle, **kwargs)
+            # After the obj has been created
+            if (
+                "tardis.apps.identifiers" in settings.INSTALLED_APPS
+                and "project" in settings.OBJECTS_WITH_IDENTIFIERS
+            ):
+                project = bundle.obj
+                if pid:
+                    project.persistent_id.persistent_id = pid
+                if alternate_ids:
+                    project.persistent_id.alternate_ids = alternate_ids
+                project.save()
+            if bundle.data["users"]:
+                for entry in bundle.data["users"]:
+                    username, isOwner, canDownload, canSensitive = entry
+                    acl_user = get_or_create_user(username)
+                    ProjectACL.objects.create(
+                        project=project,
+                        user=acl_user,
+                        canRead=True,
+                        canDownload=canDownload,
+                        canSensitive=canSensitive,
+                        isOwner=isOwner,
+                    )
+            if bundle.data["groups"]:
+                for entry in bundle.data["users"]:
+                    groupname, isOwner, canDownload, canSensitive = entry
+                    acl_group = Group.objects.get(groupname)
+                    ProjectACL.objects.create(
+                        project=project,
+                        group=acl_group,
+                        canRead=True,
+                        canDownload=canDownload,
+                        canSensitive=canSensitive,
+                        isOwner=isOwner,
+                    )
+
+            return bundle
 
     def get_project_experiments(self, request, **kwargs):
         """
