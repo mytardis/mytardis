@@ -44,6 +44,8 @@ from tastypie.utils import trailing_slash
 
 from uritemplate import URITemplate
 
+import ldap3
+
 from tardis.analytics.tracker import IteratorTracker
 from . import tasks
 from .auth.decorators import (
@@ -94,6 +96,84 @@ if settings.DEBUG:
     default_serializer = PrettyJSONSerializer()
 else:
     default_serializer = Serializer()
+
+
+def get_user_from_upi(upi):
+    server = ldap3.Server(settings.LDAP_URL)
+    search_filter = "({}={})".format(settings.LDAP_USER_LOGIN_ATTR, upi)
+    with ldap3.Connection(
+        server,
+        auto_bind=True,
+        user=settings.LDAP_ADMIN_USER,
+        password=settings.LDAP_ADMIN_PASSWORD,
+    ) as connection:
+        connection.search(settings.LDAP_USER_BASE, search_filter, attributes=["*"])
+        if len(connection.entries) > 1:
+            error_message = (
+                "More than one person with {}: {} has been found in the LDAP".format(
+                    settings.LDAP_USER_LOGIN_ATTR, upi
+                )
+            )
+            # if logger:
+            #    logger.error(error_message)
+            raise Exception(error_message)
+        if len(connection.entries) == 0:
+            error_message = "No one with {}: {} has been found in the LDAP".format(
+                settings.LDAP_USER_LOGIN_ATTR, upi
+            )
+            # if logger:
+            #    logger.warning(error_message)
+            return None
+        person = connection.entries[0]
+        first_name_key = "givenName"
+        last_name_key = "sn"
+        email_key = "mail"
+        username = person[settings.LDAP_USER_LOGIN_ATTR].value
+        first_name = person[first_name_key].value
+        last_name = person[last_name_key].value
+        try:
+            email = person[email_key].value
+        except KeyError:
+            email = ""
+        details = {
+            "username": username,
+            "first_name": first_name,
+            "last_name": last_name,
+            "email": email,
+        }
+        return details
+
+
+def gen_random_password():
+    import random
+
+    random.seed()
+    characters = "abcdefghijklmnopqrstuvwxyzABCDFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()?"
+    passlen = 16
+    password = "".join(random.sample(characters, passlen))
+    return password
+
+
+def get_or_create_user(username):
+    if not User.objects.filter(username=username).exists():
+        new_user = get_user_from_upi(username)
+        user = User.objects.create(
+            username=new_user["username"],
+            first_name=new_user["first_name"],
+            last_name=new_user["last_name"],
+            email=new_user["email"],
+        )
+        user.set_password(gen_random_password())
+        user.save()
+        authentication = UserAuthentication(
+            userProfile=user.userprofile,
+            username=new_user["username"],
+            authenticationMethod=settings.LDAP_METHOD,
+        )
+        authentication.save()
+    else:
+        user = User.objects.get(username=username)
+    return user
 
 
 class MyTardisAuthentication(object):
@@ -965,8 +1045,56 @@ class ExperimentResource(MyTardisModelResource):
         """
         user = bundle.request.user
         bundle.data["created_by"] = user
-        bundle = super().obj_create(bundle, **kwargs)
-        return bundle
+        with transaction.atomic():
+            # Clean up bundle to remove PIDS if the identifiers app is being used.
+            if (
+                "tardis.apps.identifiers" in settings.INSTALLED_APPS
+                and "experiment" in settings.OBJECTS_WITH_IDENTIFIERS
+            ):
+                pid = None
+                alternate_ids = None
+                if "persistent_id" in bundle.data.keys():
+                    pid = bundle.data.pop("persistent_id")
+                if "alternate_ids" in bundle.data.keys():
+                    alternate_ids = bundle.data.pop("alternate_ids")
+            bundle = super().obj_create(bundle, **kwargs)
+            # After the obj has been created
+            if (
+                "tardis.apps.identifiers" in settings.INSTALLED_APPS
+                and "experiment" in settings.OBJECTS_WITH_IDENTIFIERS
+            ):
+                experiment = bundle.obj
+                if pid:
+                    experiment.persistent_id.persistent_id = pid
+                if alternate_ids:
+                    experiment.persistent_id.alternate_ids = alternate_ids
+                experiment.save()
+            if bundle.data["users"]:
+                for entry in bundle.data["users"]:
+                    username, isOwner, canDownload, canSensitive = entry
+                    acl_user = get_or_create_user(username)
+                    ExperimentACL.objects.create(
+                        experiment=experiment,
+                        user=acl_user,
+                        canRead=True,
+                        canDownload=canDownload,
+                        canSensitive=canSensitive,
+                        isOwner=isOwner,
+                    )
+            if bundle.data["groups"]:
+                for entry in bundle.data["users"]:
+                    groupname, isOwner, canDownload, canSensitive = entry
+                    acl_group = Group.objects.get(groupname)
+                    ExperimentACL.objects.create(
+                        experiment=experiment,
+                        group=acl_group,
+                        canRead=True,
+                        canDownload=canDownload,
+                        canSensitive=canSensitive,
+                        isOwner=isOwner,
+                    )
+
+            return bundle
 
 
 class ExperimentAuthorResource(MyTardisModelResource):
@@ -1339,6 +1467,59 @@ class DatasetResource(MyTardisModelResource):
                     {"name": part2.rpartition("/")[2], "children": children}
                 )
 
+    def obj_create(self, bundle, **kwargs):
+        user = bundle.request.user
+        with transaction.atomic():
+            # Clean up bundle to remove PIDS if the identifiers app is being used.
+            if (
+                "tardis.apps.identifiers" in settings.INSTALLED_APPS
+                and "dataset" in settings.OBJECTS_WITH_IDENTIFIERS
+            ):
+                pid = None
+                alternate_ids = None
+                if "persistent_id" in bundle.data.keys():
+                    pid = bundle.data.pop("persistent_id")
+                if "alternate_ids" in bundle.data.keys():
+                    alternate_ids = bundle.data.pop("alternate_ids")
+            bundle = super().obj_create(bundle, **kwargs)
+            # After the obj has been created
+            if (
+                "tardis.apps.identifiers" in settings.INSTALLED_APPS
+                and "dataset" in settings.OBJECTS_WITH_IDENTIFIERS
+            ):
+                dataset = bundle.obj
+                if pid:
+                    dataset.persistent_id.persistent_id = pid
+                if alternate_ids:
+                    dataset.persistent_id.alternate_ids = alternate_ids
+                dataset.save()
+            if bundle.data["users"]:
+                for entry in bundle.data["users"]:
+                    username, isOwner, canDownload, canSensitive = entry
+                    acl_user = get_or_create_user(username)
+                    DatasetACL.objects.create(
+                        dataset=dataset,
+                        user=acl_user,
+                        canRead=True,
+                        canDownload=canDownload,
+                        canSensitive=canSensitive,
+                        isOwner=isOwner,
+                    )
+            if bundle.data["groups"]:
+                for entry in bundle.data["users"]:
+                    groupname, isOwner, canDownload, canSensitive = entry
+                    acl_group = Group.objects.get(groupname)
+                    DatasetACL.objects.create(
+                        dataset=dataset,
+                        group=acl_group,
+                        canRead=True,
+                        canDownload=canDownload,
+                        canSensitive=canSensitive,
+                        isOwner=isOwner,
+                    )
+
+            return bundle
+
 
 class DataFileResource(MyTardisModelResource):
     dataset = fields.ForeignKey(DatasetResource, "dataset")
@@ -1506,33 +1687,81 @@ class DataFileResource(MyTardisModelResource):
 
         If a duplicate key error occurs, responds with HTTP Error 409: CONFLICT
         """
-        try:
-            retval = super().obj_create(bundle, **kwargs)
-        except IntegrityError as err:
-            if "duplicate key" in str(err):
-                raise ImmediateHttpResponse(HttpResponse(status=409))
-            raise
+        with transaction.atomic():
+            if (
+                "tardis.apps.identifiers" in settings.INSTALLED_APPS
+                and "datafile" in settings.OBJECTS_WITH_IDENTIFIERS
+            ):
+                pid = None
+                alternate_ids = None
+                if "persistent_id" in bundle.data.keys():
+                    pid = bundle.data.pop("persistent_id")
+                if "alternate_ids" in bundle.data.keys():
+                    alternate_ids = bundle.data.pop("alternate_ids")
+            try:
+                retval = super().obj_create(bundle, **kwargs)
+            except IntegrityError as err:
+                if "duplicate key" in str(err):
+                    raise ImmediateHttpResponse(HttpResponse(status=409))
+                raise
 
-        if "replicas" not in bundle.data or not bundle.data["replicas"]:
-            # no replica specified: return upload path and create dfo for
-            # new path
-            sbox = bundle.obj.get_receiving_storage_box()
-            if sbox is None:
-                raise NotImplementedError
-            dfo = DataFileObject(datafile=bundle.obj, storage_box=sbox)
-            dfo.create_set_uri()
-            dfo.save()
-            self.temp_url = dfo.get_full_path()
-        else:
-            # Log file upload event
-            if getattr(settings, "ENABLE_EVENTLOG", False):
-                from tardis.apps.eventlog.utils import log
+            if "replicas" not in bundle.data or not bundle.data["replicas"]:
+                # no replica specified: return upload path and create dfo for
+                # new path
+                sbox = bundle.obj.get_receiving_storage_box()
+                if sbox is None:
+                    raise NotImplementedError
+                dfo = DataFileObject(datafile=bundle.obj, storage_box=sbox)
+                dfo.create_set_uri()
+                dfo.save()
+                self.temp_url = dfo.get_full_path()
+            else:
+                # Log file upload event
+                if getattr(settings, "ENABLE_EVENTLOG", False):
+                    from tardis.apps.eventlog.utils import log
 
-                log(
-                    action="UPLOAD_DATAFILE",
-                    extra={"id": bundle.obj.id, "type": "post"},
-                    request=bundle.request,
-                )
+                    log(
+                        action="UPLOAD_DATAFILE",
+                        extra={"id": bundle.obj.id, "type": "post"},
+                        request=bundle.request,
+                    )
+
+            user = bundle.request.user
+            # After the obj has been created
+            if (
+                "tardis.apps.identifiers" in settings.INSTALLED_APPS
+                and "datafile" in settings.OBJECTS_WITH_IDENTIFIERS
+            ):
+                datafile = bundle.obj
+                if pid:
+                    datafile.persistent_id.persistent_id = pid
+                if alternate_ids:
+                    datafile.persistent_id.alternate_ids = alternate_ids
+                datafile.save()
+            if bundle.data["users"]:
+                for entry in bundle.data["users"]:
+                    username, isOwner, canDownload, canSensitive = entry
+                    acl_user = get_or_create_user(username)
+                    DatafileACL.objects.create(
+                        datafile=datafile,
+                        user=acl_user,
+                        canRead=True,
+                        canDownload=canDownload,
+                        canSensitive=canSensitive,
+                        isOwner=isOwner,
+                    )
+            if bundle.data["groups"]:
+                for entry in bundle.data["users"]:
+                    groupname, isOwner, canDownload, canSensitive = entry
+                    acl_group = Group.objects.get(groupname)
+                    DatafileACL.objects.create(
+                        datafile=datafile,
+                        group=acl_group,
+                        canRead=True,
+                        canDownload=canDownload,
+                        canSensitive=canSensitive,
+                        isOwner=isOwner,
+                    )
 
         return retval
 
