@@ -1069,7 +1069,7 @@ class ExperimentResource(MyTardisModelResource):
                 if alternate_ids:
                     experiment.persistent_id.alternate_ids = alternate_ids
                 experiment.save()
-            if bundle.data["users"]:
+            if bundle.data.get("users", False):
                 for entry in bundle.data["users"]:
                     username, isOwner, canDownload, canSensitive = entry
                     acl_user = get_or_create_user(username)
@@ -1081,8 +1081,8 @@ class ExperimentResource(MyTardisModelResource):
                         canSensitive=canSensitive,
                         isOwner=isOwner,
                     )
-            if bundle.data["groups"]:
-                for entry in bundle.data["users"]:
+            if bundle.data.get("groups", False):
+                for entry in bundle.data["groups"]:
                     groupname, isOwner, canDownload, canSensitive = entry
                     acl_group = Group.objects.get(groupname)
                     ExperimentACL.objects.create(
@@ -1493,7 +1493,7 @@ class DatasetResource(MyTardisModelResource):
                 if alternate_ids:
                     dataset.persistent_id.alternate_ids = alternate_ids
                 dataset.save()
-            if bundle.data["users"]:
+            if bundle.data.get("users", False):
                 for entry in bundle.data["users"]:
                     username, isOwner, canDownload, canSensitive = entry
                     acl_user = get_or_create_user(username)
@@ -1505,8 +1505,8 @@ class DatasetResource(MyTardisModelResource):
                         canSensitive=canSensitive,
                         isOwner=isOwner,
                     )
-            if bundle.data["groups"]:
-                for entry in bundle.data["users"]:
+            if bundle.data.get("groups", False):
+                for entry in bundle.data["groups"]:
                     groupname, isOwner, canDownload, canSensitive = entry
                     acl_group = Group.objects.get(groupname)
                     DatasetACL.objects.create(
@@ -1738,7 +1738,7 @@ class DataFileResource(MyTardisModelResource):
                 if alternate_ids:
                     datafile.persistent_id.alternate_ids = alternate_ids
                 datafile.save()
-            if bundle.data["users"]:
+            if bundle.data.get("users", False):
                 for entry in bundle.data["users"]:
                     username, isOwner, canDownload, canSensitive = entry
                     acl_user = get_or_create_user(username)
@@ -1750,8 +1750,8 @@ class DataFileResource(MyTardisModelResource):
                         canSensitive=canSensitive,
                         isOwner=isOwner,
                     )
-            if bundle.data["groups"]:
-                for entry in bundle.data["users"]:
+            if bundle.data.get("groups", False):
+                for entry in bundle.data["groups"]:
                     groupname, isOwner, canDownload, canSensitive = entry
                     acl_group = Group.objects.get(groupname)
                     DatafileACL.objects.create(

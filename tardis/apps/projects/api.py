@@ -512,7 +512,7 @@ class ProjectResource(ModelResource):
                 if alternate_ids:
                     project.persistent_id.alternate_ids = alternate_ids
                 project.save()
-            if bundle.data["users"]:
+            if bundle.data.get("users", False):
                 for entry in bundle.data["users"]:
                     username, isOwner, canDownload, canSensitive = entry
                     acl_user = get_or_create_user(username)
@@ -524,8 +524,8 @@ class ProjectResource(ModelResource):
                         canSensitive=canSensitive,
                         isOwner=isOwner,
                     )
-            if bundle.data["groups"]:
-                for entry in bundle.data["users"]:
+            if bundle.data.get("groups", False):
+                for entry in bundle.data["groups"]:
                     groupname, isOwner, canDownload, canSensitive = entry
                     acl_group = Group.objects.get(groupname)
                     ProjectACL.objects.create(
