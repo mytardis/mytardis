@@ -9,7 +9,7 @@ from itertools import chain
 
 from django.conf import settings
 from django.conf.urls import url
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from django.db.models import Q
 from django.http import HttpResponseForbidden, JsonResponse
 from django.db import transaction
@@ -23,7 +23,7 @@ from tastypie.serializers import Serializer
 from tastypie.utils import trailing_slash
 
 import ldap3
-
+from tardis.tardis_portal.models.access_control import UserAuthentication
 from tardis.tardis_portal.api import (
     MyTardisAuthentication,
     PrettyJSONSerializer,
