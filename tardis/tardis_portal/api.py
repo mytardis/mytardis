@@ -55,7 +55,12 @@ from .auth.decorators import (
     has_write,
     has_delete_permissions,
 )
-from .models.access_control import ExperimentACL, DatasetACL, DatafileACL
+from .models.access_control import (
+    ExperimentACL,
+    DatasetACL,
+    DatafileACL,
+    UserAuthentication,
+)
 from .models.datafile import DataFile, DataFileObject, compute_checksums
 from .models.dataset import Dataset
 from .models.experiment import Experiment, ExperimentAuthor
@@ -1468,7 +1473,6 @@ class DatasetResource(MyTardisModelResource):
                 )
 
     def obj_create(self, bundle, **kwargs):
-        user = bundle.request.user
         with transaction.atomic():
             # Clean up bundle to remove PIDS if the identifiers app is being used.
             if (
@@ -1726,7 +1730,6 @@ class DataFileResource(MyTardisModelResource):
                         request=bundle.request,
                     )
 
-            user = bundle.request.user
             # After the obj has been created
             if (
                 "tardis.apps.identifiers" in settings.INSTALLED_APPS
