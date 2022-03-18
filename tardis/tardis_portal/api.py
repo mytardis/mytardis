@@ -1810,7 +1810,7 @@ class DataFileResource(MyTardisModelResource):
                 [bundle.data.get("users", False), bundle.data.get("groups", False)]
             ):
                 print("before")
-                print(datafile.dataset)
+                print(datafile)
                 parent = Dataset.objects.get(pk=datafile.dataset.id)
                 print("after")
                 """for parent_acl in parent.datasetacl_set.all():
