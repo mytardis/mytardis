@@ -1040,6 +1040,19 @@ class ExperimentResource(MyTardisModelResource):
             )
             acl.save()
 
+        if not settings.ONLY_EXPERIMENT_ACLS:
+            from tardis.apps.projects.api import ProjectResource
+
+            if getattr(bundle.obj, "id", False):
+                for proj_uri in bundle.data.get("projects", []):
+                    try:
+                        proj = ProjectResource.get_via_uri(
+                            ProjectResource(), proj_uri, bundle.request
+                        )
+                        bundle.obj.projects.add(proj)
+                    except NotFound:
+                        pass
+
         return super().hydrate_m2m(bundle)
 
     def obj_create(self, bundle, **kwargs):
