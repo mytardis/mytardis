@@ -1554,6 +1554,26 @@ class DatasetResource(MyTardisModelResource):
                         canSensitive=canSensitive,
                         isOwner=isOwner,
                     )
+                    for parent in dataset.experiments.all():
+                        if not acl_user.has_perm("tardis_acls.view_experiment", parent):
+                            ExperimentACL.objects.create(
+                                experiment=parent,
+                                user=acl_user,
+                                canRead=True,
+                                aclOwnershipType=ExperimentACL.OWNER_OWNED,
+                            )
+                        for grandparent in parent.projects.all():
+                            from tardis.apps.projects.models import ProjectACL
+
+                            if not acl_user.has_perm(
+                                "tardis_acls.view_project", parent
+                            ):
+                                ProjectACL.objects.create(
+                                    project=grandparent,
+                                    user=acl_user,
+                                    canRead=True,
+                                    aclOwnershipType=ProjectACL.OWNER_OWNED,
+                                )
             if bundle.data.get("groups", False):
                 for entry in bundle.data["groups"]:
                     groupname, isOwner, canDownload, canSensitive = entry
@@ -1806,6 +1826,12 @@ class DataFileResource(MyTardisModelResource):
                 if alternate_ids:
                     pid_obj.alternate_ids = alternate_ids
                 pid_obj.save()
+            try:
+                dataset = DatasetResource.get_via_uri(
+                    DatasetResource(), bundle.data["dataset"], bundle.request
+                )
+            except NotFound:
+                dataset = Dataset.objects.get(namespace=bundle.data["dataset"])
             if bundle.data.get("users", False):
                 for entry in bundle.data["users"]:
                     username, isOwner, canDownload, canSensitive = entry
@@ -1818,6 +1844,33 @@ class DataFileResource(MyTardisModelResource):
                         canSensitive=canSensitive,
                         isOwner=isOwner,
                     )
+                    if not acl_user.has_perm("tardis_acls.view_dataset", parent):
+                        DatasetACL.objects.create(
+                            dataset=dataset,
+                            user=acl_user,
+                            canRead=True,
+                            aclOwnershipType=DatasetACL.OWNER_OWNED,
+                        )
+                    for parent in dataset.experiments.all():
+                        if not acl_user.has_perm("tardis_acls.view_experiment", parent):
+                            ExperimentACL.objects.create(
+                                experiment=parent,
+                                user=acl_user,
+                                canRead=True,
+                                aclOwnershipType=ExperimentACL.OWNER_OWNED,
+                            )
+                        for grandparent in parent.projects.all():
+                            from tardis.apps.projects.models import ProjectACL
+
+                            if not acl_user.has_perm(
+                                "tardis_acls.view_project", parent
+                            ):
+                                ProjectACL.objects.create(
+                                    project=grandparent,
+                                    user=acl_user,
+                                    canRead=True,
+                                    aclOwnershipType=ProjectACL.OWNER_OWNED,
+                                )
             if bundle.data.get("groups", False):
                 for entry in bundle.data["groups"]:
                     groupname, isOwner, canDownload, canSensitive = entry
@@ -1833,12 +1886,6 @@ class DataFileResource(MyTardisModelResource):
             if not any(
                 [bundle.data.get("users", False), bundle.data.get("groups", False)]
             ):
-                try:
-                    dataset = DatasetResource.get_via_uri(
-                        DatasetResource(), bundle.data["dataset"], bundle.request
-                    )
-                except NotFound:
-                    dataset = Dataset.objects.get(namespace=bundle.data["dataset"])
                 for parent_acl in dataset.datasetacl_set.all():
                     DatafileACL.objects.create(
                         datafile=datafile,
