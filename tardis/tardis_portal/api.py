@@ -1100,6 +1100,17 @@ class ExperimentResource(MyTardisModelResource):
                         canSensitive=canSensitive,
                         isOwner=isOwner,
                     )
+                    for parent in experiment.projects.all():
+                        if not acl_user.has_perm("tardis_acls.view_project", parent):
+                            from tardis.apps.projects.models import ProjectACL
+
+                            ProjectACL.objects.create(
+                                project=parent,
+                                user=acl_user,
+                                canRead=True,
+                                aclOwnershipType=ProjectACL.OWNER_OWNED,
+                            )
+
             if bundle.data.get("groups", False):
                 for entry in bundle.data["groups"]:
                     groupname, isOwner, canDownload, canSensitive = entry
