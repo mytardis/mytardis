@@ -1069,11 +1069,12 @@ class ExperimentResource(MyTardisModelResource):
                 and "experiment" in settings.OBJECTS_WITH_IDENTIFIERS
             ):
                 experiment = bundle.obj
+                pid_obj = experiment.persistent_id
                 if pid:
-                    experiment.persistent_id.persistent_id = pid
+                    pid_obj.persistent_id = pid
                 if alternate_ids:
-                    experiment.persistent_id.alternate_ids = alternate_ids
-                experiment.save()
+                    pid_obj.alternate_ids = alternate_ids
+                pid_obj.save()
             if bundle.data.get("users", False):
                 for entry in bundle.data["users"]:
                     username, isOwner, canDownload, canSensitive = entry
@@ -1492,11 +1493,12 @@ class DatasetResource(MyTardisModelResource):
                 and "dataset" in settings.OBJECTS_WITH_IDENTIFIERS
             ):
                 dataset = bundle.obj
+                pid_obj = dataset.persistent_id
                 if pid:
-                    dataset.persistent_id.persistent_id = pid
+                    pid_obj.persistent_id = pid
                 if alternate_ids:
-                    dataset.persistent_id.alternate_ids = alternate_ids
-                dataset.save()
+                    pid_obj.alternate_ids = alternate_ids
+                pid_obj.save()
             if bundle.data.get("users", False):
                 for entry in bundle.data["users"]:
                     username, isOwner, canDownload, canSensitive = entry
@@ -1736,11 +1738,12 @@ class DataFileResource(MyTardisModelResource):
                 and "datafile" in settings.OBJECTS_WITH_IDENTIFIERS
             ):
                 datafile = bundle.obj
+                pid_obj = datafile.persistent_id
                 if pid:
-                    datafile.persistent_id.persistent_id = pid
+                    pid_obj.persistent_id = pid
                 if alternate_ids:
-                    datafile.persistent_id.alternate_ids = alternate_ids
-                datafile.save()
+                    pid_obj.alternate_ids = alternate_ids
+                pid_obj.save()
             if bundle.data.get("users", False):
                 for entry in bundle.data["users"]:
                     username, isOwner, canDownload, canSensitive = entry
