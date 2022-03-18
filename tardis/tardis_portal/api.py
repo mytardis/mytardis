@@ -1100,6 +1100,26 @@ class ExperimentResource(MyTardisModelResource):
                         isOwner=isOwner,
                     )
 
+            if not any(
+                [bundle.data.get("users", False), bundle.data.get("groups", False)]
+            ):
+                for parent in experiment.projects.all():
+                    for parent_acl in parent.projectacl_set.all():
+                        ExperimentACL.objects.create(
+                            experiment=experiment,
+                            user=parent_acl.user,
+                            group=parent_acl.group,
+                            token=parent_acl.token,
+                            canRead=parent_acl.canRead,
+                            canDownload=parent_acl.canDownload,
+                            canWrite=parent_acl.canWrite,
+                            canSensitive=parent_acl.canSensitive,
+                            canDelete=parent_acl.canDelete,
+                            isOwner=parent_acl.isOwner,
+                            effectiveDate=parent_acl.effectiveDate,
+                            expiryDate=parent_acl.expiryDate,
+                            aclOwnershipType=parent_acl.aclOwnershipType,
+                        )
             return bundle
 
 
@@ -1523,7 +1543,26 @@ class DatasetResource(MyTardisModelResource):
                         canSensitive=canSensitive,
                         isOwner=isOwner,
                     )
-
+            if not any(
+                [bundle.data.get("users", False), bundle.data.get("groups", False)]
+            ):
+                for parent in dataset.experiments.all():
+                    for parent_acl in parent.experimentacl_set.all():
+                        DatasetACL.objects.create(
+                            dataset=dataset,
+                            user=parent_acl.user,
+                            group=parent_acl.group,
+                            token=parent_acl.token,
+                            canRead=parent_acl.canRead,
+                            canDownload=parent_acl.canDownload,
+                            canWrite=parent_acl.canWrite,
+                            canSensitive=parent_acl.canSensitive,
+                            canDelete=parent_acl.canDelete,
+                            isOwner=parent_acl.isOwner,
+                            effectiveDate=parent_acl.effectiveDate,
+                            expiryDate=parent_acl.expiryDate,
+                            aclOwnershipType=parent_acl.aclOwnershipType,
+                        )
             return bundle
 
 
@@ -1768,7 +1807,25 @@ class DataFileResource(MyTardisModelResource):
                         canSensitive=canSensitive,
                         isOwner=isOwner,
                     )
-
+            if not any(
+                [bundle.data.get("users", False), bundle.data.get("groups", False)]
+            ):
+                for parent_acl in datafile.dataset.datasetacl_set.all():
+                    DatafileACL.objects.create(
+                        datafile=datafile,
+                        user=parent_acl.user,
+                        group=parent_acl.group,
+                        token=parent_acl.token,
+                        canRead=parent_acl.canRead,
+                        canDownload=parent_acl.canDownload,
+                        canWrite=parent_acl.canWrite,
+                        canSensitive=parent_acl.canSensitive,
+                        canDelete=parent_acl.canDelete,
+                        isOwner=parent_acl.isOwner,
+                        effectiveDate=parent_acl.effectiveDate,
+                        expiryDate=parent_acl.expiryDate,
+                        aclOwnershipType=parent_acl.aclOwnershipType,
+                    )
         return retval
 
     def post_list(self, request, **kwargs):
