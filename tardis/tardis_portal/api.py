@@ -1090,7 +1090,7 @@ class ExperimentResource(MyTardisModelResource):
             if bundle.data.get("groups", False):
                 for entry in bundle.data["groups"]:
                     groupname, isOwner, canDownload, canSensitive = entry
-                    acl_group, created = Group.objects.get_or_create(name=groupname)
+                    acl_group, _ = Group.objects.get_or_create(name=groupname)
                     ExperimentACL.objects.create(
                         experiment=experiment,
                         group=acl_group,
@@ -1514,7 +1514,7 @@ class DatasetResource(MyTardisModelResource):
             if bundle.data.get("groups", False):
                 for entry in bundle.data["groups"]:
                     groupname, isOwner, canDownload, canSensitive = entry
-                    acl_group, created = Group.objects.get_or_create(name=groupname)
+                    acl_group, _ = Group.objects.get_or_create(name=groupname)
                     DatasetACL.objects.create(
                         dataset=dataset,
                         group=acl_group,
@@ -1759,7 +1759,7 @@ class DataFileResource(MyTardisModelResource):
             if bundle.data.get("groups", False):
                 for entry in bundle.data["groups"]:
                     groupname, isOwner, canDownload, canSensitive = entry
-                    acl_group, created = Group.objects.get_or_create(name=groupname)
+                    acl_group, _ = Group.objects.get_or_create(name=groupname)
                     DatafileACL.objects.create(
                         datafile=datafile,
                         group=acl_group,
