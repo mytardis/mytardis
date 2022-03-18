@@ -1810,12 +1810,15 @@ class DataFileResource(MyTardisModelResource):
                 [bundle.data.get("users", False), bundle.data.get("groups", False)]
             ):
                 print("before")
-                print(bundle)
-                print("before 2")
-                print(retval)
-                parent = Dataset.objects.get(pk=datafile.dataset.id)
+
+                try:
+                    dataset = DatasetResource.get_via_uri(
+                        DatasetResource(), bundle.data["dataset"], bundle.request
+                    )
+                except NotFound:
+                    dataset = Dataset.objects.get(namespace=bundle.data["dataset"])
                 print("after")
-                """for parent_acl in parent.datasetacl_set.all():
+                for parent_acl in parent.datasetacl_set.all():
                     DatafileACL.objects.create(
                         datafile=datafile,
                         user=parent_acl.user,
@@ -1830,7 +1833,7 @@ class DataFileResource(MyTardisModelResource):
                         effectiveDate=parent_acl.effectiveDate,
                         expiryDate=parent_acl.expiryDate,
                         aclOwnershipType=parent_acl.aclOwnershipType,
-                    )"""
+                    )
         return retval
 
     def post_list(self, request, **kwargs):
