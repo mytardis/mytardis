@@ -510,11 +510,12 @@ class ProjectResource(ModelResource):
                 and "project" in settings.OBJECTS_WITH_IDENTIFIERS
             ):
                 project = bundle.obj
+                pid_obj = project.persistent_id
                 if pid:
-                    project.persistent_id.persistent_id = pid
+                    pid_obj.persistent_id = pid
                 if alternate_ids:
-                    project.persistent_id.alternate_ids = alternate_ids
-                project.save()
+                    pid_obj.alternate_ids = alternate_ids
+                pid_obj.save()
             if bundle.data.get("users", False):
                 for entry in bundle.data["users"]:
                     username, isOwner, canDownload, canSensitive = entry
