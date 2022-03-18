@@ -1809,7 +1809,7 @@ class DataFileResource(MyTardisModelResource):
             if not any(
                 [bundle.data.get("users", False), bundle.data.get("groups", False)]
             ):
-                parent = Dataset.objects.get(datafile.dataset.id)
+                parent = Dataset.objects.get(pk=datafile.dataset.id)
                 for parent_acl in parent.datasetacl_set.all():
                     DatafileACL.objects.create(
                         datafile=datafile,
