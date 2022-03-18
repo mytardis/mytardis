@@ -1822,15 +1822,12 @@ class DataFileResource(MyTardisModelResource):
             if not any(
                 [bundle.data.get("users", False), bundle.data.get("groups", False)]
             ):
-                print("before")
-
                 try:
                     dataset = DatasetResource.get_via_uri(
                         DatasetResource(), bundle.data["dataset"], bundle.request
                     )
                 except NotFound:
                     dataset = Dataset.objects.get(namespace=bundle.data["dataset"])
-                print("after")
                 for parent_acl in parent.datasetacl_set.all():
                     DatafileACL.objects.create(
                         datafile=datafile,
