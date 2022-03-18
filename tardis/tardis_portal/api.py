@@ -1822,12 +1822,14 @@ class DataFileResource(MyTardisModelResource):
             if not any(
                 [bundle.data.get("users", False), bundle.data.get("groups", False)]
             ):
+                print("1")
                 try:
                     dataset = DatasetResource.get_via_uri(
                         DatasetResource(), bundle.data["dataset"], bundle.request
                     )
                 except NotFound:
                     dataset = Dataset.objects.get(namespace=bundle.data["dataset"])
+                print("2")
                 for parent_acl in parent.datasetacl_set.all():
                     DatafileACL.objects.create(
                         datafile=datafile,
@@ -1844,6 +1846,7 @@ class DataFileResource(MyTardisModelResource):
                         expiryDate=parent_acl.expiryDate,
                         aclOwnershipType=parent_acl.aclOwnershipType,
                     )
+        print("3")
         return retval
 
     def post_list(self, request, **kwargs):
