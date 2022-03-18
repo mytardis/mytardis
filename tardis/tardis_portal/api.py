@@ -1099,7 +1099,6 @@ class ExperimentResource(MyTardisModelResource):
                         canSensitive=canSensitive,
                         isOwner=isOwner,
                     )
-
             if not any(
                 [bundle.data.get("users", False), bundle.data.get("groups", False)]
             ):
@@ -1810,7 +1809,8 @@ class DataFileResource(MyTardisModelResource):
             if not any(
                 [bundle.data.get("users", False), bundle.data.get("groups", False)]
             ):
-                for parent_acl in datafile.dataset.datasetacl_set.all():
+                parent = Dataset.objects.get(datafile.dataset.id)
+                for parent_acl in parent.datasetacl_set.all():
                     DatafileACL.objects.create(
                         datafile=datafile,
                         user=parent_acl.user,
