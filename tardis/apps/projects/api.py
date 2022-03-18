@@ -530,7 +530,7 @@ class ProjectResource(ModelResource):
             if bundle.data.get("groups", False):
                 for entry in bundle.data["groups"]:
                     groupname, isOwner, canDownload, canSensitive = entry
-                    acl_group = Group.objects.get(name=groupname)
+                    acl_group = Group.objects.get_or_create(name=groupname)
                     ProjectACL.objects.create(
                         project=project,
                         group=acl_group,
