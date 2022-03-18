@@ -1775,7 +1775,7 @@ class DataFileResource(MyTardisModelResource):
                 "tardis.apps.identifiers" in settings.INSTALLED_APPS
                 and "datafile" in settings.OBJECTS_WITH_IDENTIFIERS
             ):
-                datafile = bundle.obj
+                datafile = retval.obj
                 pid_obj = datafile.persistent_id
                 if pid:
                     pid_obj.persistent_id = pid
