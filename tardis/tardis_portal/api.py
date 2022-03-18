@@ -1830,7 +1830,7 @@ class DataFileResource(MyTardisModelResource):
                 except NotFound:
                     dataset = Dataset.objects.get(namespace=bundle.data["dataset"])
                 print("2")
-                for parent_acl in parent.datasetacl_set.all():
+                for parent_acl in dataset.datasetacl_set.all():
                     DatafileACL.objects.create(
                         datafile=datafile,
                         user=parent_acl.user,
