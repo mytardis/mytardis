@@ -1,4 +1,4 @@
-# pylint: disable=C0302
+# pylint: disable=C0302,R1702
 """
 RESTful API for MyTardis models and data.
 Implemented with Tastypie.
@@ -1102,12 +1102,11 @@ class ExperimentResource(MyTardisModelResource):
                     )
 
                     if not any(
-                        [
-                            acl_user.has_perm("tardis_acls.view_project", parent)
-                            for parent in experiment.projects.all()
-                        ]
+                        acl_user.has_perm("tardis_acls.view_project", parent)
+                        for parent in experiment.projects.all()
                     ):
                         for parent in experiment.projects.all():
+                            from tardis.apps.projects.models import ProjectACL
 
                             ProjectACL.objects.create(
                                 project=parent,
@@ -1561,10 +1560,8 @@ class DatasetResource(MyTardisModelResource):
                     )
 
                     if not any(
-                        [
-                            acl_user.has_perm("tardis_acls.view_experiment", parent)
-                            for parent in dataset.experiments.all()
-                        ]
+                        acl_user.has_perm("tardis_acls.view_experiment", parent)
+                        for parent in dataset.experiments.all()
                     ):
                         for parent in dataset.experiments.all():
                             ExperimentACL.objects.create(
@@ -1575,12 +1572,10 @@ class DatasetResource(MyTardisModelResource):
                             )
 
                             if not any(
-                                [
-                                    acl_user.has_perm(
-                                        "tardis_acls.view_project", grandparent
-                                    )
-                                    for grandparent in parent.projects.all()
-                                ]
+                                acl_user.has_perm(
+                                    "tardis_acls.view_project", grandparent
+                                )
+                                for grandparent in parent.projects.all()
                             ):
 
                                 for grandparent in parent.projects.all():
@@ -1871,10 +1866,8 @@ class DataFileResource(MyTardisModelResource):
                         )
 
                         if not any(
-                            [
-                                acl_user.has_perm("tardis_acls.view_experiment", parent)
-                                for parent in dataset.experiments.all()
-                            ]
+                            acl_user.has_perm("tardis_acls.view_experiment", parent)
+                            for parent in dataset.experiments.all()
                         ):
                             for parent in dataset.experiments.all():
                                 ExperimentACL.objects.create(
@@ -1885,12 +1878,10 @@ class DataFileResource(MyTardisModelResource):
                                 )
 
                                 if not any(
-                                    [
-                                        acl_user.has_perm(
-                                            "tardis_acls.view_project", grandparent
-                                        )
-                                        for grandparent in parent.projects.all()
-                                    ]
+                                    acl_user.has_perm(
+                                        "tardis_acls.view_project", grandparent
+                                    )
+                                    for grandparent in parent.projects.all()
                                 ):
 
                                     for grandparent in parent.projects.all():
