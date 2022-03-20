@@ -1100,9 +1100,14 @@ class ExperimentResource(MyTardisModelResource):
                         canSensitive=canSensitive,
                         isOwner=isOwner,
                     )
-                    for parent in experiment.projects.all():
-                        if not acl_user.has_perm("tardis_acls.view_project", parent):
-                            from tardis.apps.projects.models import ProjectACL
+
+                    if not any(
+                        [
+                            acl_user.has_perm("tardis_acls.view_project", parent)
+                            for parent in experiment.projects.all()
+                        ]
+                    ):
+                        for parent in experiment.projects.all():
 
                             ProjectACL.objects.create(
                                 project=parent,
@@ -1554,26 +1559,39 @@ class DatasetResource(MyTardisModelResource):
                         canSensitive=canSensitive,
                         isOwner=isOwner,
                     )
-                    for parent in dataset.experiments.all():
-                        if not acl_user.has_perm("tardis_acls.view_experiment", parent):
+
+                    if not any(
+                        [
+                            acl_user.has_perm("tardis_acls.view_experiment", parent)
+                            for parent in dataset.experiments.all()
+                        ]
+                    ):
+                        for parent in dataset.experiments.all():
                             ExperimentACL.objects.create(
                                 experiment=parent,
                                 user=acl_user,
                                 canRead=True,
                                 aclOwnershipType=ExperimentACL.OWNER_OWNED,
                             )
-                        for grandparent in parent.projects.all():
-                            from tardis.apps.projects.models import ProjectACL
 
-                            if not acl_user.has_perm(
-                                "tardis_acls.view_project", parent
+                            if not any(
+                                [
+                                    acl_user.has_perm(
+                                        "tardis_acls.view_project", grandparent
+                                    )
+                                    for grandparent in parent.projects.all()
+                                ]
                             ):
-                                ProjectACL.objects.create(
-                                    project=grandparent,
-                                    user=acl_user,
-                                    canRead=True,
-                                    aclOwnershipType=ProjectACL.OWNER_OWNED,
-                                )
+
+                                for grandparent in parent.projects.all():
+                                    from tardis.apps.projects.models import ProjectACL
+
+                                    ProjectACL.objects.create(
+                                        project=grandparent,
+                                        user=acl_user,
+                                        canRead=True,
+                                        aclOwnershipType=ProjectACL.OWNER_OWNED,
+                                    )
             if bundle.data.get("groups", False):
                 for entry in bundle.data["groups"]:
                     groupname, isOwner, canDownload, canSensitive = entry
@@ -1851,26 +1869,41 @@ class DataFileResource(MyTardisModelResource):
                             canRead=True,
                             aclOwnershipType=DatasetACL.OWNER_OWNED,
                         )
-                    for parent in dataset.experiments.all():
-                        if not acl_user.has_perm("tardis_acls.view_experiment", parent):
-                            ExperimentACL.objects.create(
-                                experiment=parent,
-                                user=acl_user,
-                                canRead=True,
-                                aclOwnershipType=ExperimentACL.OWNER_OWNED,
-                            )
-                        for grandparent in parent.projects.all():
-                            from tardis.apps.projects.models import ProjectACL
 
-                            if not acl_user.has_perm(
-                                "tardis_acls.view_project", parent
-                            ):
-                                ProjectACL.objects.create(
-                                    project=grandparent,
+                        if not any(
+                            [
+                                acl_user.has_perm("tardis_acls.view_experiment", parent)
+                                for parent in dataset.experiments.all()
+                            ]
+                        ):
+                            for parent in dataset.experiments.all():
+                                ExperimentACL.objects.create(
+                                    experiment=parent,
                                     user=acl_user,
                                     canRead=True,
-                                    aclOwnershipType=ProjectACL.OWNER_OWNED,
+                                    aclOwnershipType=ExperimentACL.OWNER_OWNED,
                                 )
+
+                                if not any(
+                                    [
+                                        acl_user.has_perm(
+                                            "tardis_acls.view_project", grandparent
+                                        )
+                                        for grandparent in parent.projects.all()
+                                    ]
+                                ):
+
+                                    for grandparent in parent.projects.all():
+                                        from tardis.apps.projects.models import (
+                                            ProjectACL,
+                                        )
+
+                                        ProjectACL.objects.create(
+                                            project=grandparent,
+                                            user=acl_user,
+                                            canRead=True,
+                                            aclOwnershipType=ProjectACL.OWNER_OWNED,
+                                        )
             if bundle.data.get("groups", False):
                 for entry in bundle.data["groups"]:
                     groupname, isOwner, canDownload, canSensitive = entry
