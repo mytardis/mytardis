@@ -22,11 +22,16 @@ class OracleSafeManager(models.Manager):
     containing TextFields fail when Oracle is being used as the
     backend.
     """
+
     def get_queryset(self):
         from django.db import connection
-        if connection.settings_dict['ENGINE'] == 'django.db.backends.oracle':
-            fields = [a.attname for a in self.model._meta.fields
-                      if a.db_type(connection=connection) == 'NCLOB']
+
+        if connection.settings_dict["ENGINE"] == "django.db.backends.oracle":
+            fields = [
+                a.attname
+                for a in self.model._meta.fields
+                if a.db_type(connection=connection) == "NCLOB"
+            ]
             return super().get_queryset().defer(*fields)
         return super().get_queryset()
 
@@ -72,12 +77,15 @@ class SafeManager(models.Manager):
     # level of manager subclassing
     def get_queryset(self):
         from django.db import connection
-        if connection.settings_dict['ENGINE'] == 'django.db.backends.oracle':
-            fields = [a.attname for a in self.model._meta.fields
-                      if a.db_type(connection=connection) == 'NCLOB']
+
+        if connection.settings_dict["ENGINE"] == "django.db.backends.oracle":
+            fields = [
+                a.attname
+                for a in self.model._meta.fields
+                if a.db_type(connection=connection) == "NCLOB"
+            ]
             return super().get_queryset().defer(*fields)
         return super().get_queryset()
-
 
     def get(self, user, obj_id):
         """
@@ -91,11 +99,12 @@ class SafeManager(models.Manager):
         :raises PermissionDenied:
         """
         obj = super().get(pk=obj_id)
-        if user.has_perm('tardis_acls.view_'+self.model.get_ct(self.model
-                                                ).model.replace(' ',''), obj):
+        if user.has_perm(
+            "tardis_acls.view_" + self.model.get_ct(self.model).model.replace(" ", ""),
+            obj,
+        ):
             return obj
         raise PermissionDenied
-
 
     def owned(self, user):
         """
@@ -114,7 +123,6 @@ class SafeManager(models.Manager):
             query |= self._query_owned_by_group(group)
         return query.distinct()
 
-
     def shared(self, user):
         """
         Return all experiments/datasets/datafiles which are shared with a
@@ -124,7 +132,6 @@ class SafeManager(models.Manager):
         :rtype: QuerySet
         """
         return self._query_shared(user).distinct()
-
 
     def owned_and_shared(self, user):
         """
@@ -137,7 +144,6 @@ class SafeManager(models.Manager):
         """
         return self._query_owned_and_shared(user).distinct()
 
-
     def public(self):
         """
         Return all experiments/datasets/datafiles which are publicly available.
@@ -145,7 +151,6 @@ class SafeManager(models.Manager):
         :rtype: QuerySet
         """
         return self._query_all_public().distinct()
-
 
     def all(self, user):  # @ReservedAssignment
         """
@@ -158,22 +163,24 @@ class SafeManager(models.Manager):
         query = self._query_all_public() | self._query_owned_and_shared(user)
         return query.distinct()
 
-
     def _query_on_acls(self, user=None, group=None, token=None, isOwner=False):
         filter_dict = {}
         exclude_dict = {}
         if self.model.get_ct(self.model).model == "experiment":
             from .models import Experiment, ExperimentACL
+
             OBJECT = Experiment
             OBJECTACL = ExperimentACL
             acl_str = "experimentacl"
         if self.model.get_ct(self.model).model == "dataset":
             from .models import Dataset, DatasetACL
+
             OBJECT = Dataset
             OBJECTACL = DatasetACL
             acl_str = "datasetacl"
         if self.model.get_ct(self.model).model == "datafile":
             from .models import DataFile, DatafileACL
+
             OBJECT = DataFile
             OBJECTACL = DatafileACL
             acl_str = "datafileacl"
@@ -183,27 +190,32 @@ class SafeManager(models.Manager):
 
         if user:
             related = "user"
-            filter_dict[acl_str+"__user"] = user
+            filter_dict[acl_str + "__user"] = user
         elif group:
             related = "group"
-            filter_dict[acl_str+"__group"] = group
+            filter_dict[acl_str + "__group"] = group
         elif token:
             related = "token"
-            filter_dict[acl_str+"__token"] = token
+            filter_dict[acl_str + "__token"] = token
 
         if isOwner:
-            filter_dict[acl_str+"__isOwner"] = True
+            filter_dict[acl_str + "__isOwner"] = True
         else:
-            filter_dict[acl_str+"__isOwner"] = False
+            filter_dict[acl_str + "__isOwner"] = False
 
-        exclude_dict[acl_str+"__effectiveDate__gte"] = datetime.today()
-        exclude_dict[acl_str+"__expiryDate__lte"] = datetime.today()
+        exclude_dict[acl_str + "__effectiveDate__gte"] = datetime.today()
+        exclude_dict[acl_str + "__expiryDate__lte"] = datetime.today()
 
-        query = OBJECT.objects.prefetch_related(Prefetch(acl_str+"_set",
-                             queryset=OBJECTACL.objects.select_related(related))
-                                 ).filter(**filter_dict).exclude(**exclude_dict)
+        query = (
+            OBJECT.objects.prefetch_related(
+                Prefetch(
+                    acl_str + "_set", queryset=OBJECTACL.objects.select_related(related)
+                )
+            )
+            .filter(**filter_dict)
+            .exclude(**exclude_dict)
+        )
         return query
-
 
     def _query_owned(self, user, user_id=None):
         if user_id is not None:
@@ -213,7 +225,6 @@ class SafeManager(models.Manager):
         query = self._query_on_acls(user=user, isOwner=True)
         return query
 
-
     def _query_owned_by_group(self, group, group_id=None):
         if group_id is not None:
             group = Group.objects.get(pk=group_id)
@@ -222,11 +233,10 @@ class SafeManager(models.Manager):
         query = self._query_on_acls(group=group, isOwner=True)
         return query
 
-
     def _query_shared(self, user):
-        '''
+        """
         get all shared proj/exp/set/files, not owned ones
-        '''
+        """
         # if the user is not authenticated, only tokens apply
         # this is almost duplicate code of end of has_perm in authorisation.py
         # should be refactored, but cannot think of good way atm
@@ -247,10 +257,11 @@ class SafeManager(models.Manager):
             query |= self._query_on_acls(group=group)
         return query
 
-
     def _query_owned_and_shared(self, user):
-        return self._query_shared(user) | self._query_owned(user)
-
+        query = self._query_shared(user) | self._query_owned(user)
+        for group in user.groups.all():
+            query |= self._query_owned_by_group(group)
+        return query
 
     def _query_all_public(self):
         # Querying directly on the Exp/Set/File tables for public_flags scales
@@ -258,7 +269,6 @@ class SafeManager(models.Manager):
         # ACL with all public objects.
         PUBLIC_USER = User.objects.get(pk=settings.PUBLIC_USER_ID)
         return self._query_on_acls(user=PUBLIC_USER)
-
 
     def owned_by_user(self, user):
         """
@@ -271,14 +281,12 @@ class SafeManager(models.Manager):
         query = self._query_owned(user)
         return query
 
-
     def owned_by_group(self, group):
         """
         Return all exps/sets/files that are owned by a particular group
         """
         query = self._query_owned_by_group(group)
         return query
-
 
     def owned_by_user_id(self, userId):
         """
@@ -291,7 +299,6 @@ class SafeManager(models.Manager):
         query = self._query_owned(user=None, user_id=userId)
         return query
 
-
     def user_acls(self, obj_id):
         """
         Returns a list of ACL rules associated with this exp/set/file.
@@ -303,18 +310,23 @@ class SafeManager(models.Manager):
         obj = super().get(pk=obj_id)
         if self.model.get_ct(self.model).model == "experiment":
             from .models.access_control import ExperimentACL
-            return obj.experimentacl_set.select_related("user").filter(user__isnull=False,
-                                             aclOwnershipType=ExperimentACL.OWNER_OWNED)
+
+            return obj.experimentacl_set.select_related("user").filter(
+                user__isnull=False, aclOwnershipType=ExperimentACL.OWNER_OWNED
+            )
         if self.model.get_ct(self.model).model == "dataset":
             from .models.access_control import DatasetACL
-            return obj.datasetacl_set.select_related("user").filter(user__isnull=False,
-                                             aclOwnershipType=DatasetACL.OWNER_OWNED)
-        if self.model.get_ct(self.model).model.replace(" ","") == "datafile":
-            from .models.access_control import DatafileACL
-            return obj.datafileacl_set.select_related("user").filter(user__isnull=False,
-                                             aclOwnershipType=DatafileACL.OWNER_OWNED)
-        return super().get_queryset().none()
 
+            return obj.datasetacl_set.select_related("user").filter(
+                user__isnull=False, aclOwnershipType=DatasetACL.OWNER_OWNED
+            )
+        if self.model.get_ct(self.model).model.replace(" ", "") == "datafile":
+            from .models.access_control import DatafileACL
+
+            return obj.datafileacl_set.select_related("user").filter(
+                user__isnull=False, aclOwnershipType=DatafileACL.OWNER_OWNED
+            )
+        return super().get_queryset().none()
 
     def users(self, obj_id):
         """
@@ -326,8 +338,9 @@ class SafeManager(models.Manager):
         :rtype: QuerySet
         """
         acl = self.user_acls(obj_id)
-        return User.objects.filter(pk__in=[int(a.user.id) for a in acl]).exclude(pk=settings.PUBLIC_USER_ID)
-
+        return User.objects.filter(pk__in=[int(a.user.id) for a in acl]).exclude(
+            pk=settings.PUBLIC_USER_ID
+        )
 
     def group_acls(self, obj_id):
         """
@@ -337,19 +350,22 @@ class SafeManager(models.Manager):
         :returns: QuerySet of ACLs
         :rtype: QuerySet
         """
-        from .models.access_control import (ExperimentACL, DatasetACL, DatafileACL)
+        from .models.access_control import ExperimentACL, DatasetACL, DatafileACL
+
         obj = super().get(pk=obj_id)
         if self.model.get_ct(self.model).model == "experiment":
-            return obj.experimentacl_set.select_related("group").filter(group__isnull=False,
-                                             aclOwnershipType=ExperimentACL.OWNER_OWNED)
+            return obj.experimentacl_set.select_related("group").filter(
+                group__isnull=False, aclOwnershipType=ExperimentACL.OWNER_OWNED
+            )
         if self.model.get_ct(self.model).model == "dataset":
-            return obj.datasetacl_set.select_related("group").filter(group__isnull=False,
-                                             aclOwnershipType=DatasetACL.OWNER_OWNED)
-        if self.model.get_ct(self.model).model.replace(" ","") == "datafile":
-            return obj.datafileacl_set.select_related("group").filter(group__isnull=False,
-                                             aclOwnershipType=DatafileACL.OWNER_OWNED)
+            return obj.datasetacl_set.select_related("group").filter(
+                group__isnull=False, aclOwnershipType=DatasetACL.OWNER_OWNED
+            )
+        if self.model.get_ct(self.model).model.replace(" ", "") == "datafile":
+            return obj.datafileacl_set.select_related("group").filter(
+                group__isnull=False, aclOwnershipType=DatafileACL.OWNER_OWNED
+            )
         return super().get_queryset().none()
-
 
     def groups(self, obj_id):
         """
@@ -363,7 +379,6 @@ class SafeManager(models.Manager):
         acl = self.group_acls(obj_id)
         return Group.objects.filter(pk__in=[int(a.group.id) for a in acl])
 
-
     def user_owned_groups(self, obj_id):
         """
         returns a list of user owned-groups which have ACL rules
@@ -372,20 +387,23 @@ class SafeManager(models.Manager):
         :returns: QuerySet of non system Groups
         :rtype: QuerySet
         """
-        from .models.access_control import (ExperimentACL, DatasetACL, DatafileACL)
+        from .models.access_control import ExperimentACL, DatasetACL, DatafileACL
+
         obj = super().get(pk=obj_id)
         if self.model.get_ct(self.model).model == "experiment":
-            acl = obj.experimentacl_set.select_related("group").filter(group__isnull=False,
-                                             aclOwnershipType=ExperimentACL.OWNER_OWNED)
+            acl = obj.experimentacl_set.select_related("group").filter(
+                group__isnull=False, aclOwnershipType=ExperimentACL.OWNER_OWNED
+            )
         if self.model.get_ct(self.model).model == "dataset":
-            acl = obj.datasetacl_set.select_related("group").filter(group__isnull=False,
-                                             aclOwnershipType=DatasetACL.OWNER_OWNED)
-        if self.model.get_ct(self.model).model.replace(" ","") == "datafile":
-            acl = obj.datafileacl_set.select_related("group").filter(group__isnull=False,
-                                             aclOwnershipType=DatafileACL.OWNER_OWNED)
+            acl = obj.datasetacl_set.select_related("group").filter(
+                group__isnull=False, aclOwnershipType=DatasetACL.OWNER_OWNED
+            )
+        if self.model.get_ct(self.model).model.replace(" ", "") == "datafile":
+            acl = obj.datafileacl_set.select_related("group").filter(
+                group__isnull=False, aclOwnershipType=DatafileACL.OWNER_OWNED
+            )
 
         return Group.objects.filter(pk__in=[str(a.group.id) for a in acl])
-
 
     def group_acls_user_owned(self, obj_id):
         """
@@ -394,19 +412,22 @@ class SafeManager(models.Manager):
         :returns: QuerySet of ACLs
         :rtype: QuerySet
         """
-        from .models.access_control import (ExperimentACL, DatasetACL, DatafileACL)
+        from .models.access_control import ExperimentACL, DatasetACL, DatafileACL
+
         obj = super().get(pk=obj_id)
         if self.model.get_ct(self.model).model == "experiment":
-            return obj.experimentacl_set.select_related("group").filter(group__isnull=False,
-                                             aclOwnershipType=ExperimentACL.OWNER_OWNED)
+            return obj.experimentacl_set.select_related("group").filter(
+                group__isnull=False, aclOwnershipType=ExperimentACL.OWNER_OWNED
+            )
         if self.model.get_ct(self.model).model == "dataset":
-            return obj.datasetacl_set.select_related("group").filter(group__isnull=False,
-                                             aclOwnershipType=DatasetACL.OWNER_OWNED)
-        if self.model.get_ct(self.model).model.replace(" ","") == "datafile":
-            return obj.datafileacl_set.select_related("group").filter(group__isnull=False,
-                                             aclOwnershipType=DatafileACL.OWNER_OWNED)
+            return obj.datasetacl_set.select_related("group").filter(
+                group__isnull=False, aclOwnershipType=DatasetACL.OWNER_OWNED
+            )
+        if self.model.get_ct(self.model).model.replace(" ", "") == "datafile":
+            return obj.datafileacl_set.select_related("group").filter(
+                group__isnull=False, aclOwnershipType=DatafileACL.OWNER_OWNED
+            )
         return super().get_queryset().none()
-
 
     def group_acls_system_owned(self, obj_id):
         """
@@ -415,19 +436,22 @@ class SafeManager(models.Manager):
         :returns: QuerySet of system-owned ACLs for exp/set/file
         :rtype: QuerySet
         """
-        from .models.access_control import (ExperimentACL, DatasetACL, DatafileACL)
+        from .models.access_control import ExperimentACL, DatasetACL, DatafileACL
+
         obj = super().get(pk=obj_id)
         if self.model.get_ct(self.model).model == "experiment":
-            return obj.experimentacl_set.select_related("group").filter(group__isnull=False,
-                                             aclOwnershipType=ExperimentACL.SYSTEM_OWNED)
+            return obj.experimentacl_set.select_related("group").filter(
+                group__isnull=False, aclOwnershipType=ExperimentACL.SYSTEM_OWNED
+            )
         if self.model.get_ct(self.model).model == "dataset":
-            return obj.datasetacl_set.select_related("group").filter(group__isnull=False,
-                                             aclOwnershipType=DatasetACL.SYSTEM_OWNED)
-        if self.model.get_ct(self.model).model.replace(" ","") == "datafile":
-            return obj.datafileacl_set.select_related("group").filter(group__isnull=False,
-                                             aclOwnershipType=DatafileACL.SYSTEM_OWNED)
+            return obj.datasetacl_set.select_related("group").filter(
+                group__isnull=False, aclOwnershipType=DatasetACL.SYSTEM_OWNED
+            )
+        if self.model.get_ct(self.model).model.replace(" ", "") == "datafile":
+            return obj.datafileacl_set.select_related("group").filter(
+                group__isnull=False, aclOwnershipType=DatafileACL.SYSTEM_OWNED
+            )
         return super().get_queryset().none()
-
 
     def system_owned_groups(self, obj_id):
         """
@@ -438,19 +462,22 @@ class SafeManager(models.Manager):
         :returns: system owned groups for proj/exp/set/file
         :rtype: QuerySet
         """
-        from .models.access_control import (ExperimentACL, DatasetACL, DatafileACL)
+        from .models.access_control import ExperimentACL, DatasetACL, DatafileACL
+
         obj = super().get(pk=obj_id)
         if self.model.get_ct(self.model).model == "experiment":
-            acl = obj.experimentacl_set.select_related("group").filter(group__isnull=False,
-                                             aclOwnershipType=ExperimentACL.SYSTEM_OWNED)
+            acl = obj.experimentacl_set.select_related("group").filter(
+                group__isnull=False, aclOwnershipType=ExperimentACL.SYSTEM_OWNED
+            )
         if self.model.get_ct(self.model).model == "dataset":
-            acl = obj.datasetacl_set.select_related("group").filter(group__isnull=False,
-                                             aclOwnershipType=DatasetACL.SYSTEM_OWNED)
-        if self.model.get_ct(self.model).model.replace(" ","") == "datafile":
-            acl = obj.datafileacl_set.select_related("group").filter(group__isnull=False,
-                                             aclOwnershipType=DatafileACL.SYSTEM_OWNED)
+            acl = obj.datasetacl_set.select_related("group").filter(
+                group__isnull=False, aclOwnershipType=DatasetACL.SYSTEM_OWNED
+            )
+        if self.model.get_ct(self.model).model.replace(" ", "") == "datafile":
+            acl = obj.datafileacl_set.select_related("group").filter(
+                group__isnull=False, aclOwnershipType=DatafileACL.SYSTEM_OWNED
+            )
         return Group.objects.filter(pk__in=[str(a.group.id) for a in acl])
-
 
     def external_users(self, obj_id):
         """
@@ -461,22 +488,28 @@ class SafeManager(models.Manager):
         """
         obj = super().get(pk=obj_id)
         if self.model.get_ct(self.model).model == "experiment":
-            acl = obj.experimentacl_set.select_related("token").filter(token__isnull=False)
+            acl = obj.experimentacl_set.select_related("token").filter(
+                token__isnull=False
+            )
         if self.model.get_ct(self.model).model == "dataset":
             acl = obj.datasetacl_set.select_related("token").filter(token__isnull=False)
-        if self.model.get_ct(self.model).model.replace(" ","") == "datafile":
-            acl = obj.datafileacl_set.select_related("token").filter(token__isnull=False)
+        if self.model.get_ct(self.model).model.replace(" ", "") == "datafile":
+            acl = obj.datafileacl_set.select_related("token").filter(
+                token__isnull=False
+            )
 
         if not acl:
             return None
 
         from .auth import AuthService
+
         authService = AuthService()
 
         result = []
         for a in acl:
-            group = authService.searchGroups(plugin=u'token_group',
-                                             name=a.experiment.id)
+            group = authService.searchGroups(
+                plugin=u"token_group", name=a.experiment.id
+            )
             if group:
                 result += group
         return result
