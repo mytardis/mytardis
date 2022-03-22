@@ -264,7 +264,10 @@ class SafeManager(models.Manager):
         return query
 
     def _query_owned_and_shared(self, user):
-        return self._query_shared(user) | self._query_owned(user)
+        query = self._query_shared(user) | self._query_owned(user)
+        for group in user.groups.all():
+            query |= self._query_owned_by_group(group)
+        return query
 
     def _query_all_public(self):
         # Querying directly on the Exp/Set/File tables for public_flags scales
