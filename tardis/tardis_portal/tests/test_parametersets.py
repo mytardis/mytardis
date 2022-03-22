@@ -425,7 +425,7 @@ class EditParameterSetTestCase(TestCase):
             full_name="Parameter Sensitive",
             sensitive=True,
         )
-        self.parametername1.save()
+        self.parametername_sens.save()
 
         self.experiment = Experiment(
             title="test exp1", institution_name="monash", created_by=self.user
