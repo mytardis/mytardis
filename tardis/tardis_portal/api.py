@@ -176,6 +176,8 @@ def get_or_create_user(username):
             authenticationMethod=settings.LDAP_METHOD,
         )
         authentication.save()
+        for permission in settings.DEFAULT_PERMISSIONS:
+            user.permissions.add(Permission.objects.get(codename=permission))
     else:
         user = User.objects.get(username=username)
     return user
