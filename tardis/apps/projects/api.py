@@ -9,7 +9,7 @@ from itertools import chain
 
 from django.conf import settings
 from django.conf.urls import url
-from django.contrib.auth.models import User, Group
+from django.contrib.auth.models import User, Group, Permission
 from django.db.models import Q
 from django.http import HttpResponseForbidden, JsonResponse
 from django.db import transaction
