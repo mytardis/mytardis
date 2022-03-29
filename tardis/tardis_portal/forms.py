@@ -636,7 +636,7 @@ def save_parameter_edit_form(parameterset, request, view_sensitive=False):
         stripped_key = key.replace("_s47_", "/")
         stripped_key = stripped_key.rpartition("__")[0]
 
-        if psm.get_param_sens_flag(stripped_key, value) and not view_sensitive:
+        if psm.get_param_sens_flag(stripped_key) and not view_sensitive:
             continue
         if value:
             psm.set_param(stripped_key, value)
