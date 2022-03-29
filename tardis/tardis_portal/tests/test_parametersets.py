@@ -519,13 +519,46 @@ class EditParameterSetTestCase(TestCase):
                 "parameter_sens__3": "new sensitive info",
             },
         )
-        # Check that parameters 1 and 2 were actually updated
+        # Check that parameters 1, 2, and 3 were actually updated
         request.user = self.user
         response = edit_experiment_par(request, self.experimentparameterset.id)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(ExperimentParameter.objects.get(id=self.exp_param1.id).string_value, "parameter1 value")
-        self.assertEqual(ExperimentParameter.objects.get(id=self.exp_param2.id).numerical_value, 123)
-        self.assertEqual(ExperimentParameter.objects.get(id=self.exp_param_sens.id).string_value, "new sensitive info")
+        self.assertEqual(
+            ExperimentParameter.objects.get(id=self.exp_param1.id).string_value,
+            "parameter1 value",
+        )
+        self.assertEqual(
+            ExperimentParameter.objects.get(id=self.exp_param2.id).numerical_value, 123
+        )
+        self.assertEqual(
+            ExperimentParameter.objects.get(id=self.exp_param_sens.id).string_value,
+            "new sensitive info",
+        )
+
+        request = factory.post(
+            "/ajax/edit_experiment_parameters/%s/" % self.experimentparameterset.id,
+            data={
+                "csrfmiddlewaretoken": "bogus",
+                "parameter1__1": "parameter1",
+                "parameter2__2": 1234,
+                "parameter_sens__3": "Forbidden update",
+            },
+        )
+        # Check that parameters 1, 2, and 3 were actually updated
+        request.user = self.user2
+        response = edit_experiment_par(request, self.experimentparameterset.id)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            ExperimentParameter.objects.get(id=self.exp_param1.id).string_value,
+            "parameter1",
+        )
+        self.assertEqual(
+            ExperimentParameter.objects.get(id=self.exp_param2.id).numerical_value, 1234
+        )
+        self.assertEqual(
+            ExperimentParameter.objects.get(id=self.exp_param_sens.id).string_value,
+            "new sensitive info",
+        )
 
     def test_add_experiment_params(self):
         factory = RequestFactory()
