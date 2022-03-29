@@ -160,7 +160,7 @@ class ParameterSetManager(object):
         return par
 
     def get_param_sens_flag(self, parname):
-        par_flag = self.parameters.get(name__name=parname).sensitive
+        par_flag = self.parameters.get(name__name=parname).name.sensitive
         return par_flag
 
     def get_params(self, parname, value=False):
