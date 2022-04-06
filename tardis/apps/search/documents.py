@@ -139,7 +139,8 @@ def prepare_generic_parameters(instance, type):
                         param_dict["value"] = str(value)
                     elif type_idx == 3:
                         param_dict["value"] = float(value)
-            parameter_groups[param_type[type_idx]].append(param_dict)
+            if type_idx:
+                parameter_groups[param_type[type_idx]].append(param_dict)
     return parameter_groups
 
 
