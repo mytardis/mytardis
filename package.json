@@ -42,7 +42,7 @@
     "less-loader": "^10.0.1",
     "mini-css-extract-plugin": "^2.2.0",
     "minimatch": "^3.0.2",
-    "moment": "^2.29.1",
+    "moment": "^2.29.2",
     "newman": "^5.2.4",
     "pluralize": "^8.0.0",
     "prop-types": "^15.7.2",
