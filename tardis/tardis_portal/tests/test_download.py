@@ -86,12 +86,21 @@ class DownloadTestCase(TestCase):
         self.experiment2.save()
 
         self.exp_acl = ExperimentACL(
+            user=self.user,
+            experiment=self.experiment2,
+            canRead=True,
+            canDownload=True,
+            aclOwnershipType=ExperimentACL.OWNER_OWNED,
+        )
+        self.exp_acl.save()
+
+        self.exp_acl2 = ExperimentACL(
             user=self.user2,
             experiment=self.experiment2,
             canRead=True,
             aclOwnershipType=ExperimentACL.OWNER_OWNED,
         )
-        self.exp_acl.save()
+        self.exp_acl2.save()
 
         # dataset1 belongs to experiment1
         self.dataset1 = Dataset(description="dangerous;name")
@@ -159,6 +168,7 @@ class DownloadTestCase(TestCase):
 
     def tearDown(self):
         self.user.delete()
+        self.user2.delete()
         self.experiment1.delete()
         self.experiment2.delete()
         rmtree(self.dest1)
