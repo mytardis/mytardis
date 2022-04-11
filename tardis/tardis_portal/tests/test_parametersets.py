@@ -57,6 +57,7 @@ from ..models.parameters import (
     DatafileParameterSet,
     DatafileParameter,
     DatasetParameterSet,
+    DatasetParameter,
     ExperimentParameterSet,
     ExperimentParameter,
 )
@@ -490,6 +491,18 @@ class EditParameterSetTestCase(TestCase):
         )
         self.datasetparameterset.save()
 
+        self.set_param = DatasetParameter.objects.create(
+            parameterset=self.datasetparameterset,
+            name=self.parametername1,
+            string_value="value1",
+        )
+
+        self.set_param_sens = DatasetParameter.objects.create(
+            parameterset=self.datasetparameterset,
+            name=self.parametername_sens,
+            string_value="sensitive info",
+        )
+
         self.datafile = DataFile(
             dataset=self.dataset, filename="testfile.txt", size="42", md5sum="bogus"
         )
@@ -499,6 +512,18 @@ class EditParameterSetTestCase(TestCase):
             schema=self.schema, datafile=self.datafile
         )
         self.datafileparameterset.save()
+
+        self.file_param = DatafileParameter.objects.create(
+            parameterset=self.datafileparameterset,
+            name=self.parametername1,
+            string_value="value1",
+        )
+
+        self.file_param_sens = DatafileParameter.objects.create(
+            parameterset=self.datafileparameterset,
+            name=self.parametername_sens,
+            string_value="sensitive info",
+        )
 
     def test_edit_experiment_params(self):
         factory = RequestFactory()
@@ -519,7 +544,7 @@ class EditParameterSetTestCase(TestCase):
                 "parameter_sens__3": "new sensitive info",
             },
         )
-        # Check that parameters 1, 2, and 3 were actually updated
+        # Check that parameters were actually updated
         request.user = self.user
         response = edit_experiment_par(request, self.experimentparameterset.id)
         self.assertEqual(response.status_code, 200)
@@ -544,7 +569,7 @@ class EditParameterSetTestCase(TestCase):
                 "parameter_sens__3": "Forbidden update",
             },
         )
-        # Check that parameters 1, 2, and 3 were actually updated
+        # Check that parameters 1, 2, were actually updated but not the sensitive one
         request.user = self.user2
         response = edit_experiment_par(request, self.experimentparameterset.id)
         self.assertEqual(response.status_code, 200)
@@ -596,14 +621,47 @@ class EditParameterSetTestCase(TestCase):
         request.user = self.user
         response = edit_dataset_par(request, self.datasetparameterset.id)
         self.assertEqual(response.status_code, 200)
-
+        # Check that parameters were actually updated
         request = factory.post(
             "/ajax/edit_dataset_parameters/%s/" % self.datasetparameterset.id,
-            data={"csrfmiddlewaretoken": "bogus"},
+            data={
+                "csrfmiddlewaretoken": "bogus",
+                "parameter1__1": "parameter1 value",
+                "parameter_sens__2": "new sensitive info",
+            },
         )
         request.user = self.user
         response = edit_dataset_par(request, self.datasetparameterset.id)
         self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            DatasetParameter.objects.get(id=self.set_param.id).string_value,
+            "parameter1 value",
+        )
+        self.assertEqual(
+            DatasetParameter.objects.get(id=self.set_param_sens.id).string_value,
+            "new sensitive info",
+        )
+
+        request = factory.post(
+            "/ajax/edit_dataset_parameters/%s/" % self.datasetparameterset.id,
+            data={
+                "csrfmiddlewaretoken": "bogus",
+                "parameter1__1": "parameter1",
+                "parameter_sens__2": "Forbidden update",
+            },
+        )
+        # Check that parameters 1 was actually updated but not the sensitive one
+        request.user = self.user2
+        response = edit_dataset_par(request, self.datasetparameterset.id)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            DatasetParameter.objects.get(id=self.set_param.id).string_value,
+            "parameter1",
+        )
+        self.assertEqual(
+            DatasetParameter.objects.get(id=self.set_param_sens.id).string_value,
+            "new sensitive info",
+        )
 
     def test_add_dataset_params(self):
         factory = RequestFactory()
@@ -642,11 +700,44 @@ class EditParameterSetTestCase(TestCase):
 
         request = factory.post(
             "/ajax/edit_datafile_parameters/%s/" % self.datafileparameterset.id,
-            data={"csrfmiddlewaretoken": "bogus"},
+            data={
+                "csrfmiddlewaretoken": "bogus",
+                "parameter1__1": "parameter1 value",
+                "parameter_sens__2": "new sensitive info",
+            },
         )
         request.user = self.user
         response = edit_datafile_par(request, self.datafileparameterset.id)
         self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            DatafileParameter.objects.get(id=self.file_param.id).string_value,
+            "parameter1 value",
+        )
+        self.assertEqual(
+            DatafileParameter.objects.get(id=self.file_param_sens.id).string_value,
+            "new sensitive info",
+        )
+
+        request = factory.post(
+            "/ajax/edit_datafile_parameters/%s/" % self.datafileparameterset.id,
+            data={
+                "csrfmiddlewaretoken": "bogus",
+                "parameter1__1": "parameter1",
+                "parameter_sens__2": "Forbidden update",
+            },
+        )
+        # Check that parameters 1 was actually updated but not the sensitive one
+        request.user = self.user2
+        response = edit_datafile_par(request, self.datafileparameterset.id)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            DatafileParameter.objects.get(id=self.file_param.id).string_value,
+            "parameter1",
+        )
+        self.assertEqual(
+            DatafileParameter.objects.get(id=self.file_param_sens.id).string_value,
+            "new sensitive info",
+        )
 
     def test_add_datafile_params(self):
         factory = RequestFactory()
