@@ -91,6 +91,13 @@ def add_user_permissions(**kwargs):
     return kwargs
 
 
+def add_migration_permission(**kwargs):
+    """
+    Keeping this to prevent to avoid issues social auth 
+    """
+    return kwargs
+
+
 def approve_user_auth(**kwargs):
     """
     Sets approved status to True in user authentication
