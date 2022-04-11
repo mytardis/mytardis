@@ -93,7 +93,7 @@ def add_user_permissions(**kwargs):
 
 def add_migration_permission(**kwargs):
     """
-    Keeping this to prevent to avoid issues social auth 
+    Keeping this to prevent to avoid issues social auth
     """
     return kwargs
 
