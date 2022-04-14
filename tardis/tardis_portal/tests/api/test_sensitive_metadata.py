@@ -89,6 +89,7 @@ class SensitiveMetadataTest(MyTardisResourceTestCase):
             schema=self.sens_schema,
             name="sensitiveparameter",
             data_type=ParameterName.STRING,
+            sensitive=True,
         )
         self.sens_parname.save()
 
@@ -106,7 +107,6 @@ class SensitiveMetadataTest(MyTardisResourceTestCase):
             parameterset=self.exp_paramset,
             name=self.sens_parname,
             string_value="sensitive",
-            sensitive=True,
         )
         self.exp_par_sens.save()
 
@@ -124,7 +124,6 @@ class SensitiveMetadataTest(MyTardisResourceTestCase):
             parameterset=self.set_paramset,
             name=self.sens_parname,
             string_value="sensitive",
-            sensitive=True,
         )
         self.set_par_sens.save()
 
@@ -142,7 +141,6 @@ class SensitiveMetadataTest(MyTardisResourceTestCase):
             parameterset=self.file_paramset,
             name=self.sens_parname,
             string_value="sensitive",
-            sensitive=True,
         )
         self.file_par_sens.save()
 
