@@ -154,7 +154,7 @@ class SensitiveMetadataTest(MyTardisResourceTestCase):
                 [
                     x["string_value"]
                     for y["parameter_sets"][0]["parameters"] in returned_data
-                    for y in returned_data
+                    for x in y["parameter_sets"][0]["parameters"]
                 ],
             ),
             ["normal data", "sensitive"],
@@ -169,11 +169,11 @@ class SensitiveMetadataTest(MyTardisResourceTestCase):
             sorted(
                 [
                     x["string_value"]
-                    for y in returned_data
+                    for y["parameter_sets"][0]["parameters"] in returned_data
                     for x in y["parameter_sets"][0]["parameters"]
                 ],
             ),
-            ["normal data", "sensitive"],
+            ["normal data"],
         )
 
     def test_experiment_detail_api(self):
@@ -184,11 +184,10 @@ class SensitiveMetadataTest(MyTardisResourceTestCase):
             sorted(
                 [
                     x["string_value"]
-                    for y in returned_data
-                    for x in y["parameter_sets"][0]["parameters"]
+                    for x in returned_data["parameter_sets"][0]["parameters"]
                 ],
             ),
-            ["normal data"],
+            ["normal data", "sensitive"],
         )
 
         response = self.django_client_non_sens.get(
