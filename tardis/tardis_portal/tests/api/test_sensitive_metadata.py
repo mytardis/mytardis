@@ -153,7 +153,7 @@ class SensitiveMetadataTest(MyTardisResourceTestCase):
             sorted(
                 [
                     x["string_value"]
-                    for y["parameter_sets"][0]["parameters"] in returned_data
+                    for y in returned_data
                     for x in y["parameter_sets"][0]["parameters"]
                 ],
             ),
@@ -169,7 +169,7 @@ class SensitiveMetadataTest(MyTardisResourceTestCase):
             sorted(
                 [
                     x["string_value"]
-                    for y["parameter_sets"][0]["parameters"] in returned_data
+                    for y in returned_data
                     for x in y["parameter_sets"][0]["parameters"]
                 ],
             ),
