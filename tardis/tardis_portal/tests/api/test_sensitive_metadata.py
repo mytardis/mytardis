@@ -166,8 +166,10 @@ class SensitiveMetadataTest(MyTardisResourceTestCase):
         returned_data = json.loads(response.content.decode())
         self.assertEqual(
             sorted(
-                returned_data["parameter_sets"][0]["parameters"],
-                key=lambda x: x["string_value"],
+                [
+                    x["string_value"]
+                    for x in returned_data["parameter_sets"][0]["parameters"]
+                ],
             ),
             ["normal data", "sensitive"],
         )
@@ -179,8 +181,10 @@ class SensitiveMetadataTest(MyTardisResourceTestCase):
         returned_data = json.loads(response.content.decode())
         self.assertEqual(
             sorted(
-                returned_data["parameter_sets"][0]["parameters"],
-                key=lambda x: x["string_value"],
+                [
+                    x["string_value"]
+                    for x in returned_data["parameter_sets"][0]["parameters"]
+                ],
             ),
             ["normal data"],
         )
