@@ -11,6 +11,9 @@ sensitive parameters are not exposed without correct permissions:
 """
 import json
 
+from django.contrib.auth.models import User
+
+from ...models.access_control import ExperimentACL
 from ...models.experiment import Experiment
 from ...models.dataset import Dataset
 from ...models.datafile import DataFile
@@ -32,10 +35,35 @@ from . import MyTardisResourceTestCase
 class SensitiveMetadataTest(MyTardisResourceTestCase):
     def setUp(self):
         super().setUp()
+        self.django_client = Client()
+        self.django_client.login(username=self.username, password=self.password)
+
+        self.user2 = User.objects.create_user("no_sensitive", "no@sens.com", "access")
+
+        self.django_client_non_sens = Client()
+        self.django_client_non_sens.login(username="no_sensitive", password="access")
+
         self.exp_sens = Experiment(
             title="test exp", institution_name="auckland", created_by=self.user
         )
         self.exp_sens.save()
+
+        self.acl = ExperimentACL(
+            user=self.user,
+            experiment=self.exp_sens,
+            canRead=True,
+            canSensitive=True,
+            aclOwnershipType=ExperimentACL.OWNER_OWNED,
+        )
+        self.acl.save()
+
+        self.acl2 = ExperimentACL(
+            user=self.user2,
+            experiment=self.exp_sens,
+            canRead=True,
+            aclOwnershipType=ExperimentACL.OWNER_OWNED,
+        )
+        self.acl2.save()
 
         self.set_sens = Dataset()
         self.set_sens.description = "Dataset with sensitive parameters"
@@ -130,7 +158,29 @@ class SensitiveMetadataTest(MyTardisResourceTestCase):
         pass
 
     def test_datafile_detail_api(self):
-        pass
+        response = self.django_client.get("/api/v1/dataset_file/%s/" % file_sens.id)
+        self.assertEqual(response.status_code, 200)
+        returned_data = json.loads(response.content.decode())
+        self.assertEqual(
+            sorted(
+                returned_data["parameter_sets"][0]["parameters"],
+                key=lambda x: x["string_value"],
+            ),
+            ["normal data", "sensitive"],
+        )
+
+        response = self.django_client_non_sens.get(
+            "/api/v1/dataset_file/%s/" % file_sens.id
+        )
+        self.assertEqual(response.status_code, 200)
+        returned_data = json.loads(response.content.decode())
+        self.assertEqual(
+            sorted(
+                returned_data["parameter_sets"][0]["parameters"],
+                key=lambda x: x["string_value"],
+            ),
+            ["normal data"],
+        )
 
     def test_experimentparameter_list_api(self):
         pass
@@ -182,3 +232,4 @@ class SensitiveMetadataTest(MyTardisResourceTestCase):
         self.set_paramset.delete()
         self.file_paramset.delete()
         self.sens_schema.delete()
+        self.user2.delete()
