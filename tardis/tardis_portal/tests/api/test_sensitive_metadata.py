@@ -148,13 +148,65 @@ class SensitiveMetadataTest(MyTardisResourceTestCase):
         pass
 
     def test_experiment_detail_api(self):
-        pass
+        response = self.django_client.get("/api/v1/experiment/%s/" % self.exp_sens.id)
+        self.assertEqual(response.status_code, 200)
+        returned_data = json.loads(response.content.decode())
+        self.assertEqual(
+            sorted(
+                [
+                    x["string_value"]
+                    for x in returned_data["parameter_sets"][0]["parameters"]
+                ],
+            ),
+            ["normal data", "sensitive"],
+        )
+
+        response = self.django_client_non_sens.get(
+            "/api/v1/experiment/%s/" % self.exp_sens.id
+        )
+        self.assertEqual(response.status_code, 200)
+        returned_data = json.loads(response.content.decode())
+        self.assertEqual(
+            sorted(
+                [
+                    x["string_value"]
+                    for x in returned_data["parameter_sets"][0]["parameters"]
+                ],
+            ),
+            ["normal data"],
+        )
 
     def test_dataset_list_api(self):
         pass
 
     def test_dataset_detail_api(self):
-        pass
+        response = self.django_client.get("/api/v1/dataset/%s/" % self.set_sens.id)
+        self.assertEqual(response.status_code, 200)
+        returned_data = json.loads(response.content.decode())
+        self.assertEqual(
+            sorted(
+                [
+                    x["string_value"]
+                    for x in returned_data["parameter_sets"][0]["parameters"]
+                ],
+            ),
+            ["normal data", "sensitive"],
+        )
+
+        response = self.django_client_non_sens.get(
+            "/api/v1/dataset/%s/" % self.set_sens.id
+        )
+        self.assertEqual(response.status_code, 200)
+        returned_data = json.loads(response.content.decode())
+        self.assertEqual(
+            sorted(
+                [
+                    x["string_value"]
+                    for x in returned_data["parameter_sets"][0]["parameters"]
+                ],
+            ),
+            ["normal data"],
+        )
 
     def test_datafile_list_api(self):
         pass
