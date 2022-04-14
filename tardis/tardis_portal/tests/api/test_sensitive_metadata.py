@@ -12,6 +12,7 @@ sensitive parameters are not exposed without correct permissions:
 import json
 
 from django.contrib.auth.models import User
+from django.test.client import Client
 
 from ...models.access_control import ExperimentACL
 from ...models.experiment import Experiment
