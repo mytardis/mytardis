@@ -171,7 +171,7 @@ class SensitiveMetadataTest(MyTardisResourceTestCase):
         )
 
         response = self.django_client_non_sens.get(
-            "/api/v1/dataset_file/%s/" % file_sens.id
+            "/api/v1/dataset_file/%s/" % self.file_sens.id
         )
         self.assertEqual(response.status_code, 200)
         returned_data = json.loads(response.content.decode())
