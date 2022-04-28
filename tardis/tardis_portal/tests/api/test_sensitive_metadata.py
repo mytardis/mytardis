@@ -146,10 +146,9 @@ class SensitiveMetadataTest(MyTardisResourceTestCase):
 
     def test_experiment_list_api(self):
 
-        response = self.django_client.get("/api/v1/experiment/%s/" % self.exp_sens.id)
+        response = self.django_client.get("/api/v1/experiment/")
         self.assertEqual(response.status_code, 200)
         returned_data = json.loads(response.content.decode())
-        print(returned_data)
         self.assertEqual(
             sorted(
                 [
@@ -161,9 +160,7 @@ class SensitiveMetadataTest(MyTardisResourceTestCase):
             ["normal data", "sensitive"],
         )
 
-        response = self.django_client_non_sens.get(
-            "/api/v1/experiment/%s/" % self.exp_sens.id
-        )
+        response = self.django_client_non_sens.get("/api/v1/experiment/")
         self.assertEqual(response.status_code, 200)
         returned_data = json.loads(response.content.decode())
         self.assertEqual(
