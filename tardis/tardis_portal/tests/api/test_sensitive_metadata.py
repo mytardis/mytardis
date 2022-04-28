@@ -149,6 +149,7 @@ class SensitiveMetadataTest(MyTardisResourceTestCase):
         response = self.django_client.get("/api/v1/experiment/")
         self.assertEqual(response.status_code, 200)
         returned_data = json.loads(response.content.decode())
+        print(returned_data)
         self.assertEqual(
             sorted(
                 [
