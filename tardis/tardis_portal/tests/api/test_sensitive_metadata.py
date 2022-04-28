@@ -154,8 +154,9 @@ class SensitiveMetadataTest(MyTardisResourceTestCase):
             sorted(
                 [
                     x["string_value"]
-                    for y in returned_data["objects"]
-                    for x in y["parameter_sets"][0]["parameters"]
+                    for z in returned_data["objects"]
+                    for y in z["parameter_sets"]
+                    for x in y["parameters"]
                 ],
             ),
             ["normal data", "sensitive"],
@@ -184,9 +185,7 @@ class SensitiveMetadataTest(MyTardisResourceTestCase):
             sorted(
                 [
                     x["string_value"]
-                    for z in returned_data["objects"]
-                    for y in z["parameter_sets"]
-                    for x in y["parameters"]
+                    for x in returned_data["parameter_sets"][0]["parameters"]
                 ],
             ),
             ["normal data", "sensitive"],
