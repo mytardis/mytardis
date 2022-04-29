@@ -263,7 +263,8 @@ class DataFileResourceMicroTest(MyTardisResourceTestCase):
             dfo_count = DataFileObject.objects.count()
 
             # Shouldn't be possible without an explicit write ACL for Dataset
-            self.assertHttpForbidden(
+            # Error should technically be a 403, but API returns 401 by default
+            self.assertHttpUnauthorized(
                 self.django_client.post(
                     "/api/v1/dataset_file/",
                     data={"json_data": post_data, "attached_file": post_file},
