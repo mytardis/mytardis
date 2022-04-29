@@ -279,7 +279,7 @@ class DataFileResourceMicroTest(MyTardisResourceTestCase):
             canRead=True,
             canDownload=True,
             canWrite=True,
-            aclOwnershipType=ExperimentACL.OWNER_OWNED,
+            aclOwnershipType=DatasetACL.OWNER_OWNED,
         )
         self.ds_acl.save()
 
@@ -327,7 +327,7 @@ class DataFileResourceMicroTest(MyTardisResourceTestCase):
             datafile=uploaded_file.id,
             user=self.user,
             canRead=True,
-            aclOwnershipType=ExperimentACL.OWNER_OWNED,
+            aclOwnershipType=DatafileACL.OWNER_OWNED,
         )
         self.df_acl.save()
 
@@ -343,7 +343,7 @@ class DataFileResourceMicroTest(MyTardisResourceTestCase):
             user=self.user,
             canRead=True,
             canDownload=True,
-            aclOwnershipType=ExperimentACL.OWNER_OWNED,
+            aclOwnershipType=DatafileACL.OWNER_OWNED,
         )
         self.df_acl2.save()
 
