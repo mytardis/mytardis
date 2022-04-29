@@ -324,7 +324,7 @@ class DataFileResourceMicroTest(MyTardisResourceTestCase):
         self.assertEqual(response.status_code, 403)
 
         self.df_acl = DatafileACL(
-            datafile=uploaded_file.id,
+            datafile=uploaded_file,
             user=self.user,
             canRead=True,
             aclOwnershipType=DatafileACL.OWNER_OWNED,
@@ -339,7 +339,7 @@ class DataFileResourceMicroTest(MyTardisResourceTestCase):
         self.assertEqual(response.status_code, 403)
 
         self.df_acl2 = DatafileACL(
-            datafile=uploaded_file.id,
+            datafile=uploaded_file,
             user=self.user,
             canRead=True,
             canDownload=True,
