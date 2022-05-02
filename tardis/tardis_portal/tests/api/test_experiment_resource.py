@@ -486,8 +486,8 @@ class ExperimentResourceCountsTest(MyTardisResourceTestCase):
             self.assertEqual(returned_data[key], value)
 
         # update the ds1 to be public, allowing user_noacls to see the set
-        self.testds1.public_access = 100
-        self.testds1.save()
+        self.testds2.public_access = 100
+        self.testds2.save()
 
         output = self.api_client.get(
             "/api/v1/experiment/%d/" % exp_id,
