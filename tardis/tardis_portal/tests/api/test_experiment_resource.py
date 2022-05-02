@@ -12,6 +12,8 @@ from django.test import override_settings
 
 from ...models.access_control import ExperimentACL, DatasetACL, DatafileACL
 from ...models.experiment import Experiment, ExperimentAuthor
+from ...models.dataset import Dataset
+from ...models.datafile import DataFile
 from ...models.parameters import (
     ExperimentParameter,
     ExperimentParameterSet,
