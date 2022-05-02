@@ -245,13 +245,13 @@ class ExperimentResourceCountsTest(MyTardisResourceTestCase):
             "/api/v1/experiment/%d/" % exp_id,
             authentication=self.get_acl_credentials("noacls", "noaclspassword"),
         )
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 401)
         # Try to access the experiment with the some_acl user - should fail as no acls yet
         response = self.api_client.get(
             "/api/v1/experiment/%d/" % exp_id,
             authentication=self.get_acl_credentials("someacls", "someaclspassword"),
         )
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 401)
 
         self.someacl_acl = ExperimentACL(
             experiment=self.testexp,
@@ -364,7 +364,7 @@ class ExperimentResourceCountsTest(MyTardisResourceTestCase):
         # create Datafile ACLs for self.user
         for df in [self.df1, self.df2, self.df3, self.df4]:
             df_acl = DatafileACL(
-                dataset=df,
+                datafile=df,
                 user=self.user,
                 canRead=True,
                 aclOwnershipType=DatafileACL.OWNER_OWNED,
@@ -390,13 +390,13 @@ class ExperimentResourceCountsTest(MyTardisResourceTestCase):
             "/api/v1/experiment/%d/" % exp_id,
             authentication=self.get_acl_credentials("noacls", "noaclspassword"),
         )
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 401)
         # Try to access the experiment with the some_acl user - should fail as no acls yet
         response = self.api_client.get(
             "/api/v1/experiment/%d/" % exp_id,
             authentication=self.get_acl_credentials("someacls", "someaclspassword"),
         )
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 401)
 
         self.someacl_acl = ExperimentACL(
             experiment=self.testexp,
@@ -446,7 +446,7 @@ class ExperimentResourceCountsTest(MyTardisResourceTestCase):
         # create Datafile ACLs for user_someacls for df1 and df2 in testds1
         for df in [self.df1, self.df2]:
             df_acl = DatafileACL(
-                dataset=df,
+                datafile=df,
                 user=self.user_someacls,
                 canRead=True,
                 aclOwnershipType=DatafileACL.OWNER_OWNED,
