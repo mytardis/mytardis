@@ -9,6 +9,7 @@ import json
 
 from django.test import override_settings
 
+from ...models.access_control import ExperimentACL, DatasetACL, DatafileACL
 from ...models.experiment import Experiment, ExperimentAuthor
 from ...models.parameters import (
     ExperimentParameter,
@@ -156,15 +157,27 @@ class ExperimentResourceTest(MyTardisResourceTestCase):
         )
 
 
-class ExperimentResourceMicroTest(MyTardisResourceTestCase):
+class ExperimentResourceCountsTest(MyTardisResourceTestCase):
     """
-    Test the ExperimentResource authorisation for the MicroACL (all level ACLs) scenario
+    Test the ExperimentResource counts for both the MacroACL (Exp only ACLs)
+    and MicroACL (all level ACLs) scenarios
     """
 
     def setUp(self):
         super().setUp()
+        # create two users: one that will have no ACLs and will only see public
+        # objects, and another user that will have ACLs for a subset of objects
+        self.user_noacls = User.objects.create_user(
+            username="noacls", password="noaclspassword"
+        )
+        self.user_someacls = User.objects.create_user(
+            username="someacls", password="someaclspassword"
+        )
 
-    def test_get_experiment_counts(self):
+    def get_acl_credentials(self, username, password):
+        return self.create_basic(username=username, password=password)
+
+    def test_get_experiment_counts_macro(self):
         exp_id = Experiment.objects.first().id
         expected_output = {
             "dataset_count": 0,
@@ -177,5 +190,361 @@ class ExperimentResourceMicroTest(MyTardisResourceTestCase):
         returned_data = json.loads(output.content.decode())
         # Values should all be zero as no datasets or datafiles created yet
         for key, value in expected_output.items():
+            self.assertTrue(key in returned_data)
+            self.assertEqual(returned_data[key], value)
+
+        self.testds1 = Dataset()
+        self.testds1.description = "test dataset"
+        self.testds1.save()
+        self.testds1.experiments.add(self.testexp)
+
+        self.df1 = DataFile(
+            dataset=self.testds1, filename="1.txt", size="42", md5sum="bogus"
+        )
+        self.df1.save()
+
+        self.df2 = DataFile(
+            dataset=self.testds1, filename="2.txt", size="42", md5sum="bogus"
+        )
+        self.df2.save()
+
+        self.testds2 = Dataset()
+        self.testds2.description = "test dataset 2"
+        self.testds2.save()
+        self.testds2.experiments.add(self.testexp)
+
+        self.df3 = DataFile(
+            dataset=self.testds2, filename="3.txt", size="42", md5sum="bogus"
+        )
+        self.df3.save()
+
+        self.df4 = DataFile(
+            dataset=self.testds2, filename="4.txt", size="42", md5sum="bogus"
+        )
+        self.df4.save()
+
+        expected_output = {
+            "dataset_count": 2,
+            "experiment_size": 168,
+            "datafile_count": 4,
+        }
+        output = self.api_client.get(
+            "/api/v1/experiment/%d/" % exp_id, authentication=self.get_credentials()
+        )
+        returned_data = json.loads(output.content.decode())
+        # Values should all be non-zero now that datasets and datafiles exist
+        for key, value in expected_output.items():
+            self.assertTrue(key in returned_data)
+            self.assertEqual(returned_data[key], value)
+
+        # Try to access the experiment with the no_acl user - should fail as exp not public
+        response = self.api_client.get(
+            "/api/v1/experiment/%d/" % exp_id,
+            authentication=self.get_acl_credentials("noacls", "noaclspassword"),
+        )
+        self.assertEqual(response.status_code, 403)
+        # Try to access the experiment with the some_acl user - should fail as no acls yet
+        response = self.api_client.get(
+            "/api/v1/experiment/%d/" % exp_id,
+            authentication=self.get_acl_credentials("someacls", "someaclspassword"),
+        )
+        self.assertEqual(response.status_code, 403)
+
+        self.someacl_acl = ExperimentACL(
+            experiment=self.testexp,
+            user=self.user_someacls,
+            canRead=True,
+            aclOwnershipType=ExperimentACL.OWNER_OWNED,
+        )
+        self.someacl_acl.save()
+
+        # try again for user_someacls - this time it should work
+        response = self.api_client.get(
+            "/api/v1/experiment/%d/" % exp_id,
+            authentication=self.get_acl_credentials("someacls", "someaclspassword"),
+        )
+        self.assertEqual(response.status_code, 200)
+        returned_data = json.loads(response.content.decode())
+
+        # user_someacls should now see the same output from above
+        for key, value in expected_output.items():
+            self.assertTrue(key in returned_data)
+            self.assertEqual(returned_data[key], value)
+
+        # update the experiment to be public, allowing user_noacls to see the exp
+        self.testexp.public_access = 100
+        self.testexp.save()
+
+        # try again for user_noacls - this time it should work
+        response = self.api_client.get(
+            "/api/v1/experiment/%d/" % exp_id,
+            authentication=self.get_acl_credentials("noacls", "noaclspassword"),
+        )
+        self.assertEqual(response.status_code, 200)
+        returned_data = json.loads(response.content.decode())
+
+        # user_noacls should now see the same output from above
+        for key, value in expected_output.items():
+            self.assertTrue(key in returned_data)
+            self.assertEqual(returned_data[key], value)
+
+        # revert the testexp public setting
+        self.testexp.public_access = 1
+        self.testexp.save()
+
+    @override_settings(ONLY_EXPERIMENT_ACLS=False)
+    def test_get_experiment_counts_micro(self):
+        exp_id = Experiment.objects.first().id
+        expected_output_blank = {
+            "dataset_count": 0,
+            "experiment_size": 0,
+            "datafile_count": 0,
+        }
+        output = self.api_client.get(
+            "/api/v1/experiment/%d/" % exp_id, authentication=self.get_credentials()
+        )
+        returned_data = json.loads(output.content.decode())
+        # Values should all be zero as no datasets or datafiles created yet
+        for key, value in expected_output_blank.items():
+            self.assertTrue(key in returned_data)
+            self.assertEqual(returned_data[key], value)
+
+        self.testds1 = Dataset()
+        self.testds1.description = "test dataset"
+        self.testds1.save()
+        self.testds1.experiments.add(self.testexp)
+
+        self.df1 = DataFile(
+            dataset=self.testds1, filename="1.txt", size="42", md5sum="bogus"
+        )
+        self.df1.save()
+
+        self.df2 = DataFile(
+            dataset=self.testds1, filename="2.txt", size="42", md5sum="bogus"
+        )
+        self.df2.save()
+
+        self.testds2 = Dataset()
+        self.testds2.description = "test dataset 2"
+        self.testds2.save()
+        self.testds2.experiments.add(self.testexp)
+
+        self.df3 = DataFile(
+            dataset=self.testds2, filename="3.txt", size="42", md5sum="bogus"
+        )
+        self.df3.save()
+
+        self.df4 = DataFile(
+            dataset=self.testds2, filename="4.txt", size="42", md5sum="bogus"
+        )
+        self.df4.save()
+
+        output = self.api_client.get(
+            "/api/v1/experiment/%d/" % exp_id, authentication=self.get_credentials()
+        )
+        returned_data = json.loads(output.content.decode())
+        # Values should still be zero as no DatasetACLs or DatafileACLs created
+        for key, value in expected_output_blank.items():
+            self.assertTrue(key in returned_data)
+            self.assertEqual(returned_data[key], value)
+
+        # create Dataset ACLs for self.user
+        for ds in [self.testds1, self.testds2]:
+            ds_acl = DatasetACL(
+                dataset=ds,
+                user=self.user,
+                canRead=True,
+                aclOwnershipType=DatasetACL.OWNER_OWNED,
+            )
+            ds_acl.save()
+
+        # create Datafile ACLs for self.user
+        for df in [self.df1, self.df2, self.df3, self.df4]:
+            df_acl = DatafileACL(
+                dataset=df,
+                user=self.user,
+                canRead=True,
+                aclOwnershipType=DatafileACL.OWNER_OWNED,
+            )
+            df_acl.save()
+
+        expected_output_full = {
+            "dataset_count": 2,
+            "experiment_size": 168,
+            "datafile_count": 4,
+        }
+        output = self.api_client.get(
+            "/api/v1/experiment/%d/" % exp_id, authentication=self.get_credentials()
+        )
+        returned_data = json.loads(output.content.decode())
+        # self.user should now see the full size and counts due to ACLs
+        for key, value in expected_output_full.items():
+            self.assertTrue(key in returned_data)
+            self.assertEqual(returned_data[key], value)
+
+        # Try to access the experiment with the no_acl user - should fail as exp not public
+        response = self.api_client.get(
+            "/api/v1/experiment/%d/" % exp_id,
+            authentication=self.get_acl_credentials("noacls", "noaclspassword"),
+        )
+        self.assertEqual(response.status_code, 403)
+        # Try to access the experiment with the some_acl user - should fail as no acls yet
+        response = self.api_client.get(
+            "/api/v1/experiment/%d/" % exp_id,
+            authentication=self.get_acl_credentials("someacls", "someaclspassword"),
+        )
+        self.assertEqual(response.status_code, 403)
+
+        self.someacl_acl = ExperimentACL(
+            experiment=self.testexp,
+            user=self.user_someacls,
+            canRead=True,
+            aclOwnershipType=ExperimentACL.OWNER_OWNED,
+        )
+        self.someacl_acl.save()
+
+        # try again for user_someacls - this time it should return 200
+        response = self.api_client.get(
+            "/api/v1/experiment/%d/" % exp_id,
+            authentication=self.get_acl_credentials("someacls", "someaclspassword"),
+        )
+        self.assertEqual(response.status_code, 200)
+        returned_data = json.loads(response.content.decode())
+
+        # user_someacls should not see any counts/sizes as they have no micro access
+        for key, value in expected_output_blank.items():
+            self.assertTrue(key in returned_data)
+            self.assertEqual(returned_data[key], value)
+
+        # create ACL for user_someacls for dataset 1
+        self.someacl_acl_ds = DatasetACL(
+            dataset=self.testds1,
+            user=self.user_someacls,
+            canRead=True,
+            aclOwnershipType=DatasetACL.OWNER_OWNED,
+        )
+        self.someacl_acl_ds.save()
+
+        expected_output_ds = {
+            "dataset_count": 1,
+            "experiment_size": 0,
+            "datafile_count": 0,
+        }
+        output = self.api_client.get(
+            "/api/v1/experiment/%d/" % exp_id,
+            authentication=self.get_acl_credentials("someacls", "someaclspassword"),
+        )
+        returned_data = json.loads(output.content.decode())
+        # user_someacls should now see the 1 dataset in the count
+        for key, value in expected_output_ds.items():
+            self.assertTrue(key in returned_data)
+            self.assertEqual(returned_data[key], value)
+
+        # create Datafile ACLs for user_someacls for df1 and df2 in testds1
+        for df in [self.df1, self.df2]:
+            df_acl = DatafileACL(
+                dataset=df,
+                user=self.user_someacls,
+                canRead=True,
+                aclOwnershipType=DatafileACL.OWNER_OWNED,
+            )
+            df_acl.save()
+
+        expected_output_half = {
+            "dataset_count": 1,
+            "experiment_size": 84,
+            "datafile_count": 2,
+        }
+        output = self.api_client.get(
+            "/api/v1/experiment/%d/" % exp_id,
+            authentication=self.get_acl_credentials("someacls", "someaclspassword"),
+        )
+        returned_data = json.loads(output.content.decode())
+        # user_someacls should now see the 1 dataset, 2 datafiles, and size=84
+        for key, value in expected_output_half.items():
+            self.assertTrue(key in returned_data)
+            self.assertEqual(returned_data[key], value)
+
+        # update the experiment to be public, allowing user_noacls to see the exp
+        self.testexp.public_access = 100
+        self.testexp.save()
+
+        # try again for user_noacls - this time it should work
+        response = self.api_client.get(
+            "/api/v1/experiment/%d/" % exp_id,
+            authentication=self.get_acl_credentials("noacls", "noaclspassword"),
+        )
+        self.assertEqual(response.status_code, 200)
+        returned_data = json.loads(response.content.decode())
+
+        # user_noacls should now see the same blank output from above as ds/df are not public
+        for key, value in expected_output_blank.items():
+            self.assertTrue(key in returned_data)
+            self.assertEqual(returned_data[key], value)
+
+        # update the ds1 to be public, allowing user_noacls to see the set
+        self.testds1.public_access = 100
+        self.testds1.save()
+
+        output = self.api_client.get(
+            "/api/v1/experiment/%d/" % exp_id,
+            authentication=self.get_acl_credentials("noacls", "noaclspassword"),
+        )
+        returned_data = json.loads(output.content.decode())
+        # user_noacls should now see the 1 dataset in the count
+        for key, value in expected_output_ds.items():
+            self.assertTrue(key in returned_data)
+            self.assertEqual(returned_data[key], value)
+
+        expected_output_ds2 = {
+            "dataset_count": 2,
+            "experiment_size": 84,
+            "datafile_count": 2,
+        }
+
+        output = self.api_client.get(
+            "/api/v1/experiment/%d/" % exp_id,
+            authentication=self.get_acl_credentials("someacls", "someaclspassword"),
+        )
+        returned_data = json.loads(output.content.decode())
+        # user_someacls should now see 2 datasets, 2 datafiles, and size=84
+        for key, value in expected_output_ds2.items():
+            self.assertTrue(key in returned_data)
+            self.assertEqual(returned_data[key], value)
+
+        # update the df3 and 4 to be public, allowing user_noacls to see them
+        self.df3.public_access = 100
+        self.df3.save()
+        self.df4.public_access = 100
+        self.df4.save()
+
+        output = self.api_client.get(
+            "/api/v1/experiment/%d/" % exp_id,
+            authentication=self.get_acl_credentials("noacls", "noaclspassword"),
+        )
+        returned_data = json.loads(output.content.decode())
+        # user_noacls should now see 1 dataset, 2 datafiles, and size=84
+        for key, value in expected_output_half.items():
+            self.assertTrue(key in returned_data)
+            self.assertEqual(returned_data[key], value)
+
+        output = self.api_client.get(
+            "/api/v1/experiment/%d/" % exp_id,
+            authentication=self.get_acl_credentials("someacls", "someaclspassword"),
+        )
+        returned_data = json.loads(output.content.decode())
+        # user_someacls should now see 2 datasets, 4 datafiles, and size=168
+        for key, value in expected_output_full.items():
+            self.assertTrue(key in returned_data)
+            self.assertEqual(returned_data[key], value)
+
+        output = self.api_client.get(
+            "/api/v1/experiment/%d/" % exp_id,
+            authentication=self.get_credentials(),
+        )
+        returned_data = json.loads(output.content.decode())
+        # self.user should still see the full results, hopefully no double counting
+        # due to public flags (counts check ACLs + public and combine using distinct)
+        for key, value in expected_output_full.items():
             self.assertTrue(key in returned_data)
             self.assertEqual(returned_data[key], value)
