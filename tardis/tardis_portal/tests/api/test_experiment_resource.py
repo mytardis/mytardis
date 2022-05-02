@@ -7,6 +7,7 @@ Testing the Experiment resource in MyTardis's Tastypie-based REST API
 """
 import json
 
+from django.contrib.auth.models import User
 from django.test import override_settings
 
 from ...models.access_control import ExperimentACL, DatasetACL, DatafileACL
