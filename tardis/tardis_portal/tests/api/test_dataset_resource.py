@@ -487,6 +487,16 @@ class DatasetResourceAuthTest(MyTardisResourceTestCase):
     @override_settings(ONLY_EXPERIMENT_ACLS=False)
     def test_get_dataset_counts_micro(self):
         set_id = self.testds.id
+
+        # create Dataset ACL for self.user
+        self.ds_acl = DatasetACL(
+            dataset=self.testds,
+            user=self.user,
+            canRead=True,
+            aclOwnershipType=DatasetACL.OWNER_OWNED,
+        )
+        self.ds_acl.save()
+
         expected_output_blank = {
             "dataset_size": 0,
             "dataset_datafile_count": 0,
@@ -518,15 +528,6 @@ class DatasetResourceAuthTest(MyTardisResourceTestCase):
         for key, value in expected_output_blank.items():
             self.assertTrue(key in returned_data)
             self.assertEqual(returned_data[key], value)
-
-        # create Dataset ACL for self.user
-        self.ds_acl = DatasetACL(
-            dataset=self.testds,
-            user=self.user,
-            canRead=True,
-            aclOwnershipType=DatasetACL.OWNER_OWNED,
-        )
-        self.ds_acl.save()
 
         # create Datafile ACLs for self.user
         for df in [self.df1, self.df2]:
