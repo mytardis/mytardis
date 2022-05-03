@@ -619,7 +619,6 @@ class DatasetResourceAuthTest(MyTardisResourceTestCase):
             authentication=self.get_acl_credentials("noacls", "noaclspassword"),
         )
         self.assertEqual(response.status_code, 401)
-        returned_data = json.loads(response.content.decode())
 
         # update the dataset to be public, allowing user_noacls to see the set
         self.testds.public_access = 100
