@@ -3,13 +3,14 @@ Testing the Dataset resource in MyTardis's Tastypie-based REST API
 
 .. moduleauthor:: Grischa Meyer <grischa@gmail.com>
 .. moduleauthor:: James Wettenhall <james.wettenhall@monash.edu>
+.. moduleauthor:: Mike Laverick <mike.laverick@auckland.ac.nz>
 """
 
 import json
+from urllib.parse import quote
 
 from django.contrib.auth.models import User
 from django.test import override_settings
-from urllib.parse import quote
 
 from ...models.access_control import ExperimentACL, DatasetACL, DatafileACL
 from ...models.datafile import DataFile
@@ -429,6 +430,12 @@ class DatasetResourceAuthTest(MyTardisResourceTestCase):
             self.assertTrue(key in returned_data)
             self.assertEqual(returned_data[key], value)
 
+        # make sure that /files works as this isn't tested with files in earlier tests
+        uri = "/api/v1/dataset/%d/files/" % set_id
+        response = self.api_client.get(uri, authentication=self.get_credentials())
+        returned_data = json.loads(response.content.decode())
+        self.assertEqual(returned_data["meta"]["total_count"], 2)
+
         # Try to access the dataset with the no_acl user - should fail as parent exp not public
         response = self.api_client.get(
             "/api/v1/dataset/%d/" % set_id,
@@ -463,6 +470,14 @@ class DatasetResourceAuthTest(MyTardisResourceTestCase):
             self.assertTrue(key in returned_data)
             self.assertEqual(returned_data[key], value)
 
+        # make sure that /files works for someacls user
+        uri = "/api/v1/dataset/%d/files/" % set_id
+        response = self.api_client.get(
+            uri, authentication=self.get_acl_credentials("someacls", "someaclspassword")
+        )
+        returned_data = json.loads(response.content.decode())
+        self.assertEqual(returned_data["meta"]["total_count"], 2)
+
         # update the experiment to be public, allowing user_noacls to see the set
         self.testexp.public_access = 100
         self.testexp.save()
@@ -479,6 +494,14 @@ class DatasetResourceAuthTest(MyTardisResourceTestCase):
         for key, value in expected_output.items():
             self.assertTrue(key in returned_data)
             self.assertEqual(returned_data[key], value)
+
+        # make sure that /files works for noacls user
+        uri = "/api/v1/dataset/%d/files/" % set_id
+        response = self.api_client.get(
+            uri, authentication=self.get_acl_credentials("noacls", "noaclspassword")
+        )
+        returned_data = json.loads(response.content.decode())
+        self.assertEqual(returned_data["meta"]["total_count"], 2)
 
         # revert the testexp public setting
         self.testexp.public_access = 1
@@ -529,6 +552,12 @@ class DatasetResourceAuthTest(MyTardisResourceTestCase):
             self.assertTrue(key in returned_data)
             self.assertEqual(returned_data[key], value)
 
+        # make sure that /files works returns 0 results here
+        uri = "/api/v1/dataset/%d/files/" % set_id
+        response = self.api_client.get(uri, authentication=self.get_credentials())
+        returned_data = json.loads(response.content.decode())
+        self.assertEqual(returned_data["meta"]["total_count"], 0)
+
         # create Datafile ACLs for self.user
         for df in [self.df1, self.df2]:
             df_acl = DatafileACL(
@@ -551,6 +580,12 @@ class DatasetResourceAuthTest(MyTardisResourceTestCase):
         for key, value in expected_output_full.items():
             self.assertTrue(key in returned_data)
             self.assertEqual(returned_data[key], value)
+
+        # make sure that /files works returns 2 results now that self.user has ACLs
+        uri = "/api/v1/dataset/%d/files/" % set_id
+        response = self.api_client.get(uri, authentication=self.get_credentials())
+        returned_data = json.loads(response.content.decode())
+        self.assertEqual(returned_data["meta"]["total_count"], 2)
 
         # Try to access the dataset with the no_acl user - should fail as set not public
         response = self.api_client.get(
@@ -586,6 +621,14 @@ class DatasetResourceAuthTest(MyTardisResourceTestCase):
             self.assertTrue(key in returned_data)
             self.assertEqual(returned_data[key], value)
 
+        # likewise, make sure this returns 0 results for someacls user
+        uri = "/api/v1/dataset/%d/files/" % set_id
+        response = self.api_client.get(
+            uri, authentication=self.get_acl_credentials("someacls", "someaclspassword")
+        )
+        returned_data = json.loads(response.content.decode())
+        self.assertEqual(returned_data["meta"]["total_count"], 0)
+
         # create Datafile ACL for user_someacls for df1
         self.usersome_df_acl = DatafileACL(
             datafile=self.df1,
@@ -608,6 +651,14 @@ class DatasetResourceAuthTest(MyTardisResourceTestCase):
         for key, value in expected_output_half.items():
             self.assertTrue(key in returned_data)
             self.assertEqual(returned_data[key], value)
+
+        # should return 1 result for someacls user now
+        uri = "/api/v1/dataset/%d/files/" % set_id
+        response = self.api_client.get(
+            uri, authentication=self.get_acl_credentials("someacls", "someaclspassword")
+        )
+        returned_data = json.loads(response.content.decode())
+        self.assertEqual(returned_data["meta"]["total_count"], 1)
 
         # update the experiment to be public, allowing user_noacls to see the exp
         self.testexp.public_access = 100
@@ -651,6 +702,14 @@ class DatasetResourceAuthTest(MyTardisResourceTestCase):
             self.assertTrue(key in returned_data)
             self.assertEqual(returned_data[key], value)
 
+        # should return 1 result for noacls user now
+        uri = "/api/v1/dataset/%d/files/" % set_id
+        response = self.api_client.get(
+            uri, authentication=self.get_acl_credentials("noacls", "noaclspassword")
+        )
+        returned_data = json.loads(response.content.decode())
+        self.assertEqual(returned_data["meta"]["total_count"], 1)
+
         # update the df2 to be public, allowing user_noacls to see it
         self.df2.public_access = 100
         self.df2.save()
@@ -665,6 +724,14 @@ class DatasetResourceAuthTest(MyTardisResourceTestCase):
             self.assertTrue(key in returned_data)
             self.assertEqual(returned_data[key], value)
 
+        # should return 2 result for noacls user now
+        uri = "/api/v1/dataset/%d/files/" % set_id
+        response = self.api_client.get(
+            uri, authentication=self.get_acl_credentials("noacls", "noaclspassword")
+        )
+        returned_data = json.loads(response.content.decode())
+        self.assertEqual(returned_data["meta"]["total_count"], 2)
+
         output = self.api_client.get(
             "/api/v1/dataset/%d/" % set_id,
             authentication=self.get_acl_credentials("someacls", "someaclspassword"),
@@ -674,6 +741,14 @@ class DatasetResourceAuthTest(MyTardisResourceTestCase):
         for key, value in expected_output_full.items():
             self.assertTrue(key in returned_data)
             self.assertEqual(returned_data[key], value)
+
+        # should return 2 result for someacls user now
+        uri = "/api/v1/dataset/%d/files/" % set_id
+        response = self.api_client.get(
+            uri, authentication=self.get_acl_credentials("someacls", "someaclspassword")
+        )
+        returned_data = json.loads(response.content.decode())
+        self.assertEqual(returned_data["meta"]["total_count"], 2)
 
         output = self.api_client.get(
             "/api/v1/dataset/%d/" % set_id,
@@ -685,3 +760,7 @@ class DatasetResourceAuthTest(MyTardisResourceTestCase):
         for key, value in expected_output_full.items():
             self.assertTrue(key in returned_data)
             self.assertEqual(returned_data[key], value)
+
+        # revert the testexp public setting
+        self.testexp.public_access = 1
+        self.testexp.save()
