@@ -41,7 +41,7 @@ class UploadTestCase(TestCase):
         user2 = "tardis_user2"
         pwd2 = "secret"  # nosec
         email2 = "seconduser@test.com"
-        self.user2 = User.objects.create_user(user, email, pwd)
+        self.user2 = User.objects.create_user(user2, email2, pwd2)
         self.user2.user_permissions.add(
             Permission.objects.get(codename="change_experiment")
         )
