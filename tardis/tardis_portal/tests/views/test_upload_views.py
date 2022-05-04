@@ -90,16 +90,8 @@ class UploadTestCase(TestCase):
             self.file1.write("Test file 1")
             self.file1.close()
 
-        with open(path.join(self.test_dir, self.filename2), "w") as self.file2:
-            self.file2.write("Test file 2")
-            self.file2.close()
-
         self.file1 = open(  # pylint: disable=consider-using-with
             path.join(self.test_dir, self.filename), "r"
-        )
-
-        self.file2 = open(  # pylint: disable=consider-using-with
-            path.join(self.test_dir, self.filename2), "r"
         )
 
     def tearDown(self):
@@ -122,16 +114,6 @@ class UploadTestCase(TestCase):
             {"Filedata": self.file1, "session_id": session_id},
         )
 
-        # tardis_user2 shouldn't be able to post data to experiment without ACL
-        client2 = Client()
-        client2.login(username="tardis_user2", password="secret")  # nosec
-        session_id2 = client2.session.session_key
-        response = client2.post(
-            "/upload/" + str(self.dataset.id) + "/",
-            {"Filedata": self.file2, "session_id": session_id2},
-        )
-        self.assertEqual(response.status_code, 403)
-
         test_files_db = DataFile.objects.filter(dataset__id=self.dataset.id)
         self.assertTrue(path.exists(path.join(self.dataset_path, self.filename)))
         target_id = Dataset.objects.first().id
@@ -148,16 +130,6 @@ class UploadTestCase(TestCase):
     @override_settings(ONLY_EXPERIMENT_ACLS=False)
     def test_file_upload_micro(self):
         from os import path
-
-        client = Client()
-        client.login(username="tardis_user1", password="secret")  # nosec
-        session_id = client.session.session_key
-        response = client.post(
-            "/upload/" + str(self.dataset.id) + "/",
-            {"Filedata": self.file2, "session_id": session_id},
-        )
-        # User shouldn't be able to upload without an ACL for the Dataset
-        self.assertEqual(response.status_code, 403)
 
         self.datasetacl = DatasetACL(
             user=self.user,
