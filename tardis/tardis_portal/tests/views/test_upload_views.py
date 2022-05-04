@@ -89,9 +89,13 @@ class UploadTestCase(TestCase):
             self.file1.write("Test file 1")
             self.file1.close()
 
-        self.file1 = open(
+        self.file1 = open(  # pylint: disable=consider-using-with
             path.join(self.test_dir, self.filename), "r"
-        )  # pylint: disable=consider-using-with
+        )
+
+        self.file2 = open(  # pylint: disable=consider-using-with
+            path.join(self.test_dir, self.filename), "r"
+        )
 
     def tearDown(self):
         from shutil import rmtree
@@ -114,14 +118,14 @@ class UploadTestCase(TestCase):
         )
 
         # tardis_user2 shouldn't be able to post data to experiment without ACL
-        # client2 = Client()
-        # client2.login(username="tardis_user2", password="secret")  # nosec
-        # session_id2 = client2.session.session_key
-        # response = client2.post(
-        #    "/upload/" + str(self.dataset.id) + "/",
-        #    {"Filedata": self.file1, "session_id": session_id2},
-        # )
-        # self.assertEqual(response.status_code, 403)
+        client2 = Client()
+        client2.login(username="tardis_user2", password="secret")  # nosec
+        session_id2 = client2.session.session_key
+        response = client2.post(
+            "/upload/" + str(self.dataset.id) + "/",
+            {"Filedata": self.file2, "session_id": session_id2},
+        )
+        self.assertEqual(response.status_code, 403)
 
         test_files_db = DataFile.objects.filter(dataset__id=self.dataset.id)
         self.assertTrue(path.exists(path.join(self.dataset_path, self.filename)))
@@ -140,15 +144,15 @@ class UploadTestCase(TestCase):
     def test_file_upload_micro(self):
         from os import path
 
-        # client = Client()
-        # client.login(username="tardis_user1", password="secret")  # nosec
-        # session_id = client.session.session_key
-        # response = client.post(
-        #    "/upload/" + str(self.dataset.id) + "/",
-        #    {"Filedata": self.file1, "session_id": session_id},
-        # )
+        client = Client()
+        client.login(username="tardis_user1", password="secret")  # nosec
+        session_id = client.session.session_key
+        response = client.post(
+            "/upload/" + str(self.dataset.id) + "/",
+            {"Filedata": self.file2, "session_id": session_id},
+        )
         # User shouldn't be able to upload without an ACL for the Dataset
-        # self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 403)
 
         self.datasetacl = DatasetACL(
             user=self.user,
