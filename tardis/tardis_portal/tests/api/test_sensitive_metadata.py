@@ -374,25 +374,71 @@ class SensitiveMetadataTest(MyTardisResourceTestCase):
         )
         self.assertEqual(response.status_code, 200)
         response = self.django_client_non_sens.get(
-            "/api/v1/experimentparameter/" % self.exp_par.id
+            "/api/v1/experimentparameter/%s/" % self.exp_par.id
         )
         self.assertEqual(response.status_code, 200)
         response = self.django_client_non_sens.get(
-            "/api/v1/experimentparameter/" % self.exp_par.id
+            "/api/v1/experimentparameter/%s/" % self.exp_par_sens.id
         )
         self.assertEqual(response.status_code, 401)
 
     def test_datasetparameter_list_api(self):
-        pass
+        response = self.django_client.get("/api/v1/datasetparameter/")
+        self.assertEqual(response.status_code, 200)
+        returned_data = json.loads(response.content.decode())
+        self.assert_param_list(returned_data, [self.set_par.id, self.set_par_sens.id])
+
+        response = self.django_client_non_sens.get("/api/v1/datasetparameter/")
+        self.assertEqual(response.status_code, 200)
+        returned_data = json.loads(response.content.decode())
+        self.assert_param_list(returned_data, [self.set_par.id])
 
     def test_datasetparameter_detail_api(self):
-        pass
+        response = self.django_client.get(
+            "/api/v1/datasetparameter/%s/" % self.set_par.id
+        )
+        self.assertEqual(response.status_code, 200)
+        response = self.django_client.get(
+            "/api/v1/datasetparameter/%s/" % self.set_par_sens.id
+        )
+        self.assertEqual(response.status_code, 200)
+        response = self.django_client_non_sens.get(
+            "/api/v1/datasetparameter/%s/" % self.set_par.id
+        )
+        self.assertEqual(response.status_code, 200)
+        response = self.django_client_non_sens.get(
+            "/api/v1/datasetparameter/%s/" % self.set_par_sens.id
+        )
+        self.assertEqual(response.status_code, 401)
 
     def test_datafileparameter_list_api(self):
-        pass
+        response = self.django_client.get("/api/v1/datafileparameter/")
+        self.assertEqual(response.status_code, 200)
+        returned_data = json.loads(response.content.decode())
+        self.assert_param_list(returned_data, [self.file_par.id, self.file_par_sens.id])
+
+        response = self.django_client_non_sens.get("/api/v1/datafileparameter/")
+        self.assertEqual(response.status_code, 200)
+        returned_data = json.loads(response.content.decode())
+        self.assert_param_list(returned_data, [self.file_par.id])
 
     def test_datafileparameter_detail_api(self):
-        pass
+        response = self.django_client.get(
+            "/api/v1/datafileparameter/%s/" % self.file_par.id
+        )
+        self.assertEqual(response.status_code, 200)
+        response = self.django_client.get(
+            "/api/v1/datafileparameter/%s/" % self.file_par_sens.id
+        )
+        self.assertEqual(response.status_code, 200)
+        response = self.django_client_non_sens.get(
+            "/api/v1/datafileparameter/%s/" % self.file_par.id
+        )
+        self.assertEqual(response.status_code, 200)
+        response = self.django_client_non_sens.get(
+            "/api/v1/datafileparameter/%s/" % self.file_par_sens.id
+        )
+        self.assertEqual(response.status_code, 401)
 
     def test_experimentparameterset_list_api(self):
         pass
