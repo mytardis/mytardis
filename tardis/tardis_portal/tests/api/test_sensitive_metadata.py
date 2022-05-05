@@ -12,9 +12,10 @@ sensitive parameters are not exposed without correct permissions:
 import json
 
 from django.contrib.auth.models import User
+from django.test import override_settings
 from django.test.client import Client
 
-from ...models.access_control import ExperimentACL
+from ...models.access_control import ExperimentACL, DatasetACL, DatafileACL
 from ...models.experiment import Experiment
 from ...models.dataset import Dataset
 from ...models.datafile import DataFile
@@ -230,6 +231,7 @@ class SensitiveMetadataTest(MyTardisResourceTestCase):
         returned_data = json.loads(response.content.decode())
         self.assert_params_list(returned_data, ["normal data"])
 
+    @override_settings(ONLY_EXPERIMENT_ACLS=False)
     def test_dataset_list_api_micro(self):
         # User2 shouldnt be able to see the sensitive metadata without a sens datasetACL
         self.create_acl(self.user2, self.exp_sens, True, "exp")
@@ -259,6 +261,7 @@ class SensitiveMetadataTest(MyTardisResourceTestCase):
         returned_data = json.loads(response.content.decode())
         self.assert_params_detail(returned_data, ["normal data"])
 
+    @override_settings(ONLY_EXPERIMENT_ACLS=False)
     def test_dataset_detail_api_micro(self):
         # User2 shouldnt be able to see the sensitive metadata without a sens datasetACL
         self.create_acl(self.user2, self.exp_sens, True, "exp")
@@ -290,6 +293,7 @@ class SensitiveMetadataTest(MyTardisResourceTestCase):
         returned_data = json.loads(response.content.decode())
         self.assert_params_list(returned_data, ["normal data"])
 
+    @override_settings(ONLY_EXPERIMENT_ACLS=False)
     def test_datafile_list_api_micro(self):
         # User2 shouldnt be able to see the sensitive metadata without a sens datafileACL
         self.create_acl(self.user2, self.exp_sens, True, "exp")
@@ -322,6 +326,7 @@ class SensitiveMetadataTest(MyTardisResourceTestCase):
         returned_data = json.loads(response.content.decode())
         self.assert_params_detail(returned_data, ["normal data"])
 
+    @override_settings(ONLY_EXPERIMENT_ACLS=False)
     def test_datafile_detail_api_micro(self):
         # User2 shouldnt be able to see the sensitive metadata without a sens datasetACL
         self.create_acl(self.user2, self.exp_sens, True, "exp")
