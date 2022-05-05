@@ -144,12 +144,7 @@ class SensitiveMetadataTest(MyTardisResourceTestCase):
         )
         self.file_par_sens.save()
 
-    def test_experiment_list_api(self):
-
-        response = self.django_client.get("/api/v1/experiment/")
-        self.assertEqual(response.status_code, 200)
-        returned_data = json.loads(response.content.decode())
-        print(returned_data)
+    def assert_params_list(returned_data, value_list):
         self.assertEqual(
             sorted(
                 [
@@ -159,28 +154,10 @@ class SensitiveMetadataTest(MyTardisResourceTestCase):
                     for x in y["parameters"]
                 ],
             ),
-            ["normal data", "sensitive"],
+            value_list,
         )
 
-        response = self.django_client_non_sens.get("/api/v1/experiment/")
-        self.assertEqual(response.status_code, 200)
-        returned_data = json.loads(response.content.decode())
-        self.assertEqual(
-            sorted(
-                [
-                    x["string_value"]
-                    for z in returned_data["objects"]
-                    for y in z["parameter_sets"]
-                    for x in y["parameters"]
-                ],
-            ),
-            ["normal data"],
-        )
-
-    def test_experiment_detail_api(self):
-        response = self.django_client.get("/api/v1/experiment/%s/" % self.exp_sens.id)
-        self.assertEqual(response.status_code, 200)
-        returned_data = json.loads(response.content.decode())
+    def assert_params_detail(returned_data, value_list):
         self.assertEqual(
             sorted(
                 [
@@ -188,149 +165,183 @@ class SensitiveMetadataTest(MyTardisResourceTestCase):
                     for x in returned_data["parameter_sets"][0]["parameters"]
                 ],
             ),
-            ["normal data", "sensitive"],
+            value_list,
         )
+
+    def create_acl(user, obj, sens_perm, obj_type):
+        if obj_type == "exp":
+            acl = ExperimentACL(
+                user=user,
+                experiment=obj,
+                canRead=True,
+                canSensitive=sens_perm,
+                aclOwnershipType=ExperimentACL.OWNER_OWNED,
+            )
+        if obj_type == "set":
+            acl = DatasetACL(
+                user=user,
+                dataset=obj,
+                canRead=True,
+                canSensitive=sens_perm,
+                aclOwnershipType=DatasetACL.OWNER_OWNED,
+            )
+        if obj_type == "file":
+            acl = DatafileACL(
+                user=user,
+                datafile=obj,
+                canRead=True,
+                canSensitive=sens_perm,
+                aclOwnershipType=DatafileACL.OWNER_OWNED,
+            )
+        acl.save()
+
+    def test_experiment_list_api(self):
+        response = self.django_client.get("/api/v1/experiment/")
+        self.assertEqual(response.status_code, 200)
+        returned_data = json.loads(response.content.decode())
+        assert_params_list(returned_data, ["normal data", "sensitive"])
+
+        response = self.django_client_non_sens.get("/api/v1/experiment/")
+        self.assertEqual(response.status_code, 200)
+        returned_data = json.loads(response.content.decode())
+        assert_params_list(returned_data, ["normal data"])
+
+    def test_experiment_detail_api(self):
+        response = self.django_client.get("/api/v1/experiment/%s/" % self.exp_sens.id)
+        self.assertEqual(response.status_code, 200)
+        returned_data = json.loads(response.content.decode())
+        assert_params_detail(returned_data, ["normal data", "sensitive"])
 
         response = self.django_client_non_sens.get(
             "/api/v1/experiment/%s/" % self.exp_sens.id
         )
         self.assertEqual(response.status_code, 200)
         returned_data = json.loads(response.content.decode())
-        self.assertEqual(
-            sorted(
-                [
-                    x["string_value"]
-                    for x in returned_data["parameter_sets"][0]["parameters"]
-                ],
-            ),
-            ["normal data"],
-        )
+        assert_params_detail(returned_data, ["normal data"])
 
-    def test_dataset_list_api(self):
-
+    def test_dataset_list_api_macro(self):
         response = self.django_client.get("/api/v1/dataset/")
         self.assertEqual(response.status_code, 200)
         returned_data = json.loads(response.content.decode())
-        print(returned_data)
-        self.assertEqual(
-            sorted(
-                [
-                    x["string_value"]
-                    for z in returned_data["objects"]
-                    for y in z["parameter_sets"]
-                    for x in y["parameters"]
-                ],
-            ),
-            ["normal data", "sensitive"],
-        )
+        assert_params_list(returned_data, ["normal data", "sensitive"])
 
         response = self.django_client_non_sens.get("/api/v1/dataset/")
         self.assertEqual(response.status_code, 200)
         returned_data = json.loads(response.content.decode())
-        self.assertEqual(
-            sorted(
-                [
-                    x["string_value"]
-                    for z in returned_data["objects"]
-                    for y in z["parameter_sets"]
-                    for x in y["parameters"]
-                ],
-            ),
-            ["normal data"],
-        )
+        assert_params_list(returned_data, ["normal data"])
 
-    def test_dataset_detail_api(self):
+    def test_dataset_list_api_micro(self):
+        # User2 shouldnt be able to see the sensitive metadata without a sens datasetACL
+        create_acl(self.user2, self.exp_sens, True, "exp")
+        create_acl(self.user2, self.set_sens, False, "set")
+        response = self.django_client_non_sens.get("/api/v1/dataset/")
+        self.assertEqual(response.status_code, 200)
+        returned_data = json.loads(response.content.decode())
+        assert_params_list(returned_data, ["normal data"])
+
+        create_acl(self.user2, self.set_sens, True, "set")
+        # User2 should now be able to see the sensitive metadata
+        response = self.django_client_non_sens.get("/api/v1/dataset/")
+        self.assertEqual(response.status_code, 200)
+        returned_data = json.loads(response.content.decode())
+        assert_params_list(returned_data, ["normal data", "sensitive"])
+
+    def test_dataset_detail_api_macro(self):
         response = self.django_client.get("/api/v1/dataset/%s/" % self.set_sens.id)
         self.assertEqual(response.status_code, 200)
         returned_data = json.loads(response.content.decode())
-        self.assertEqual(
-            sorted(
-                [
-                    x["string_value"]
-                    for x in returned_data["parameter_sets"][0]["parameters"]
-                ],
-            ),
-            ["normal data", "sensitive"],
-        )
+        assert_params_detail(returned_data, ["normal data", "sensitive"])
 
         response = self.django_client_non_sens.get(
             "/api/v1/dataset/%s/" % self.set_sens.id
         )
         self.assertEqual(response.status_code, 200)
         returned_data = json.loads(response.content.decode())
-        self.assertEqual(
-            sorted(
-                [
-                    x["string_value"]
-                    for x in returned_data["parameter_sets"][0]["parameters"]
-                ],
-            ),
-            ["normal data"],
+        assert_params_detail(returned_data, ["normal data"])
+
+    def test_dataset_detail_api_micro(self):
+        # User2 shouldnt be able to see the sensitive metadata without a sens datasetACL
+        create_acl(self.user2, self.exp_sens, True, "exp")
+        create_acl(self.user2, self.set_sens, False, "set")
+        response = self.django_client_non_sens.get(
+            "/api/v1/dataset/%s/" % self.set_sens.id
         )
+        self.assertEqual(response.status_code, 200)
+        returned_data = json.loads(response.content.decode())
+        assert_params_detail(returned_data, ["normal data"])
 
-    def test_datafile_list_api(self):
+        create_acl(self.user2, self.set_sens, True, "set")
+        # User2 should now be able to see the sensitive metadata
+        response = self.django_client_non_sens.get(
+            "/api/v1/dataset/%s/" % self.set_sens.id
+        )
+        self.assertEqual(response.status_code, 200)
+        returned_data = json.loads(response.content.decode())
+        assert_params_detail(returned_data, ["normal data", "sensitive"])
 
+    def test_datafile_list_api_macro(self):
         response = self.django_client.get("/api/v1/dataset_file/")
         self.assertEqual(response.status_code, 200)
         returned_data = json.loads(response.content.decode())
-        print(returned_data)
-        self.assertEqual(
-            sorted(
-                [
-                    x["string_value"]
-                    for z in returned_data["objects"]
-                    for y in z["parameter_sets"]
-                    for x in y["parameters"]
-                ],
-            ),
-            ["normal data", "sensitive"],
-        )
+        assert_params_list(returned_data, ["normal data", "sensitive"])
 
         response = self.django_client_non_sens.get("/api/v1/dataset_file/")
         self.assertEqual(response.status_code, 200)
         returned_data = json.loads(response.content.decode())
-        self.assertEqual(
-            sorted(
-                [
-                    x["string_value"]
-                    for z in returned_data["objects"]
-                    for y in z["parameter_sets"]
-                    for x in y["parameters"]
-                ],
-            ),
-            ["normal data"],
-        )
+        assert_params_list(returned_data, ["normal data"])
 
-    def test_datafile_detail_api(self):
+    def test_datafile_list_api_micro(self):
+        # User2 shouldnt be able to see the sensitive metadata without a sens datafileACL
+        create_acl(self.user2, self.exp_sens, True, "exp")
+        create_acl(self.user2, self.set_sens, True, "set")
+        create_acl(self.user2, self.file_sens, False, "file")
+        response = self.django_client_non_sens.get("/api/v1/dataset_file/")
+        self.assertEqual(response.status_code, 200)
+        returned_data = json.loads(response.content.decode())
+        assert_params_list(returned_data, ["normal data"])
+
+        create_acl(self.user2, self.file_sens, True, "file")
+        # User2 should now be able to see the sensitive metadata
+        response = self.django_client_non_sens.get("/api/v1/dataset_file/")
+        self.assertEqual(response.status_code, 200)
+        returned_data = json.loads(response.content.decode())
+        assert_params_list(returned_data, ["normal data", "sensitive"])
+
+    def test_datafile_detail_api_macro(self):
         response = self.django_client.get(
             "/api/v1/dataset_file/%s/" % self.file_sens.id
         )
         self.assertEqual(response.status_code, 200)
         returned_data = json.loads(response.content.decode())
-        self.assertEqual(
-            sorted(
-                [
-                    x["string_value"]
-                    for x in returned_data["parameter_sets"][0]["parameters"]
-                ],
-            ),
-            ["normal data", "sensitive"],
-        )
+        assert_params_detail(returned_data, ["normal data", "sensitive"])
 
         response = self.django_client_non_sens.get(
             "/api/v1/dataset_file/%s/" % self.file_sens.id
         )
         self.assertEqual(response.status_code, 200)
         returned_data = json.loads(response.content.decode())
-        self.assertEqual(
-            sorted(
-                [
-                    x["string_value"]
-                    for x in returned_data["parameter_sets"][0]["parameters"]
-                ],
-            ),
-            ["normal data"],
+        assert_params_detail(returned_data, ["normal data"])
+
+    def test_datafile_detail_api_micro(self):
+        # User2 shouldnt be able to see the sensitive metadata without a sens datasetACL
+        create_acl(self.user2, self.exp_sens, True, "exp")
+        create_acl(self.user2, self.set_sens, False, "set")
+        create_acl(self.user2, self.file_sens, False, "file")
+        response = self.django_client_non_sens.get(
+            "/api/v1/dataset_file/%s/" % self.set_sens.id
         )
+        self.assertEqual(response.status_code, 200)
+        returned_data = json.loads(response.content.decode())
+        assert_params_detail(returned_data, ["normal data"])
+
+        create_acl(self.user2, self.file_sens, True, "file")
+        # User2 should now be able to see the sensitive metadata
+        response = self.django_client_non_sens.get(
+            "/api/v1/dataset_file/%s/" % self.set_sens.id
+        )
+        self.assertEqual(response.status_code, 200)
+        returned_data = json.loads(response.content.decode())
+        assert_params_detail(returned_data, ["normal data", "sensitive"])
 
     def test_experimentparameter_list_api(self):
         pass
