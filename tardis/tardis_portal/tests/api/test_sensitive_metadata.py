@@ -207,7 +207,37 @@ class SensitiveMetadataTest(MyTardisResourceTestCase):
         )
 
     def test_dataset_list_api(self):
-        pass
+
+        response = self.django_client.get("/api/v1/dataset/")
+        self.assertEqual(response.status_code, 200)
+        returned_data = json.loads(response.content.decode())
+        print(returned_data)
+        self.assertEqual(
+            sorted(
+                [
+                    x["string_value"]
+                    for z in returned_data["objects"]
+                    for y in z["parameter_sets"]
+                    for x in y["parameters"]
+                ],
+            ),
+            ["normal data", "sensitive"],
+        )
+
+        response = self.django_client_non_sens.get("/api/v1/dataset/")
+        self.assertEqual(response.status_code, 200)
+        returned_data = json.loads(response.content.decode())
+        self.assertEqual(
+            sorted(
+                [
+                    x["string_value"]
+                    for z in returned_data["objects"]
+                    for y in z["parameter_sets"]
+                    for x in y["parameters"]
+                ],
+            ),
+            ["normal data"],
+        )
 
     def test_dataset_detail_api(self):
         response = self.django_client.get("/api/v1/dataset/%s/" % self.set_sens.id)
@@ -239,7 +269,37 @@ class SensitiveMetadataTest(MyTardisResourceTestCase):
         )
 
     def test_datafile_list_api(self):
-        pass
+
+        response = self.django_client.get("/api/v1/dataset_file/")
+        self.assertEqual(response.status_code, 200)
+        returned_data = json.loads(response.content.decode())
+        print(returned_data)
+        self.assertEqual(
+            sorted(
+                [
+                    x["string_value"]
+                    for z in returned_data["objects"]
+                    for y in z["parameter_sets"]
+                    for x in y["parameters"]
+                ],
+            ),
+            ["normal data", "sensitive"],
+        )
+
+        response = self.django_client_non_sens.get("/api/v1/dataset_file/")
+        self.assertEqual(response.status_code, 200)
+        returned_data = json.loads(response.content.decode())
+        self.assertEqual(
+            sorted(
+                [
+                    x["string_value"]
+                    for z in returned_data["objects"]
+                    for y in z["parameter_sets"]
+                    for x in y["parameters"]
+                ],
+            ),
+            ["normal data"],
+        )
 
     def test_datafile_detail_api(self):
         response = self.django_client.get(
