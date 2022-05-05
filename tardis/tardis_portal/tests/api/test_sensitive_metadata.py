@@ -393,6 +393,7 @@ class SensitiveMetadataTest(MyTardisResourceTestCase):
         returned_data = json.loads(response.content.decode())
         self.assert_param_list(returned_data, [self.set_par.id])
 
+    @override_settings(ONLY_EXPERIMENT_ACLS=False)
     def test_datasetparameter_list_api_micro(self):
         # User2 shouldnt be able to see the sensitive metadata without a sens datasetACL
         self.create_acl(self.user2, self.exp_sens, True, "exp")
@@ -426,11 +427,11 @@ class SensitiveMetadataTest(MyTardisResourceTestCase):
         )
         self.assertEqual(response.status_code, 401)
 
+    @override_settings(ONLY_EXPERIMENT_ACLS=False)
     def test_datasetparameter_detail_api_micro(self):
         # User2 shouldnt be able to see the sensitive metadata without a sens datasetACL
         self.create_acl(self.user2, self.exp_sens, True, "exp")
         self.create_acl(self.user2, self.set_sens, False, "set")
-        self.assertEqual(response.status_code, 200)
         response = self.django_client_non_sens.get(
             "/api/v1/datasetparameter/%s/" % self.set_par.id
         )
@@ -457,6 +458,7 @@ class SensitiveMetadataTest(MyTardisResourceTestCase):
         returned_data = json.loads(response.content.decode())
         self.assert_param_list(returned_data, [self.file_par.id])
 
+    @override_settings(ONLY_EXPERIMENT_ACLS=False)
     def test_datafileparameter_list_api_micro(self):
         # User2 shouldnt be able to see the sensitive metadata without a sens datafileACL
         self.create_acl(self.user2, self.exp_sens, True, "exp")
@@ -491,12 +493,12 @@ class SensitiveMetadataTest(MyTardisResourceTestCase):
         )
         self.assertEqual(response.status_code, 401)
 
+    @override_settings(ONLY_EXPERIMENT_ACLS=False)
     def test_datafileparameter_detail_api_micro(self):
         # User2 shouldnt be able to see the sensitive metadata without a sens datafileACL
         self.create_acl(self.user2, self.exp_sens, True, "exp")
         self.create_acl(self.user2, self.set_sens, True, "set")
         self.create_acl(self.user2, self.file_sens, False, "file")
-        self.assertEqual(response.status_code, 200)
         response = self.django_client_non_sens.get(
             "/api/v1/datafileparameter/%s/" % self.file_par.id
         )
