@@ -8,8 +8,8 @@ Implemented with Tastypie.
 """
 import json
 import re
-from wsgiref.util import FileWrapper
 from itertools import chain
+from wsgiref.util import FileWrapper
 
 from django.conf import settings
 from django.conf.urls import url
@@ -17,64 +17,42 @@ from django.contrib.auth.models import AnonymousUser, User, Group, Permission
 from django.core.paginator import EmptyPage, InvalidPage, Paginator
 from django.db import IntegrityError, transaction
 from django.db.models import Q
-from django.http import (
-    HttpResponse,
-    HttpResponseForbidden,
-    StreamingHttpResponse,
-    HttpResponseNotFound,
-    JsonResponse,
-)
+from django.http import (HttpResponse, HttpResponseForbidden,
+                         HttpResponseNotFound, JsonResponse,
+                         StreamingHttpResponse)
 from django.shortcuts import redirect
 
+import ldap3
 from tastypie import fields
-from tastypie.authentication import BasicAuthentication
-from tastypie.authentication import SessionAuthentication
-from tastypie.authentication import ApiKeyAuthentication
+from tastypie.authentication import (ApiKeyAuthentication, BasicAuthentication,
+                                     SessionAuthentication)
 from tastypie.authorization import Authorization
 from tastypie.constants import ALL_WITH_RELATIONS
-from tastypie.exceptions import ImmediateHttpResponse
-from tastypie.exceptions import NotFound
-from tastypie.exceptions import Unauthorized
+from tastypie.exceptions import ImmediateHttpResponse, NotFound, Unauthorized
 from tastypie.http import HttpUnauthorized
-from tastypie.resources import Resource, ModelResource, Bundle
+from tastypie.resources import Bundle, ModelResource, Resource
 from tastypie.serializers import Serializer
 from tastypie.utils import trailing_slash
-
 from uritemplate import URITemplate
 
-import ldap3
-
 from tardis.analytics.tracker import IteratorTracker
+
 from . import tasks
-from .auth.decorators import (
-    has_access,
-    has_download_access,
-    has_sensitive_access,
-    has_write,
-    has_delete_permissions,
-)
-from .models.access_control import (
-    ExperimentACL,
-    DatasetACL,
-    DatafileACL,
-    UserAuthentication,
-)
+from .auth.decorators import (has_access, has_delete_permissions,
+                              has_download_access, has_sensitive_access,
+                              has_write)
+from .models.access_control import (DatafileACL, DatasetACL, ExperimentACL,
+                                    UserAuthentication)
 from .models.datafile import DataFile, DataFileObject, compute_checksums
 from .models.dataset import Dataset
 from .models.experiment import Experiment, ExperimentAuthor
-from .models.parameters import (
-    DatafileParameter,
-    DatafileParameterSet,
-    DatasetParameter,
-    DatasetParameterSet,
-    ExperimentParameter,
-    ExperimentParameterSet,
-    ParameterName,
-    Schema,
-)
-from .models.storage import StorageBox, StorageBoxOption, StorageBoxAttribute
 from .models.facility import Facility, facilities_managed_by
 from .models.instrument import Instrument
+from .models.parameters import (DatafileParameter, DatafileParameterSet,
+                                DatasetParameter, DatasetParameterSet,
+                                ExperimentParameter, ExperimentParameterSet,
+                                ParameterName, Schema)
+from .models.storage import StorageBox, StorageBoxAttribute, StorageBoxOption
 
 
 class PrettyJSONSerializer(Serializer):
@@ -1579,7 +1557,8 @@ class DatasetResource(MyTardisModelResource):
                             ):
 
                                 for grandparent in parent.projects.all():
-                                    from tardis.apps.projects.models import ProjectACL
+                                    from tardis.apps.projects.models import \
+                                        ProjectACL
 
                                     ProjectACL.objects.create(
                                         project=grandparent,
@@ -1885,9 +1864,8 @@ class DataFileResource(MyTardisModelResource):
                                 ):
 
                                     for grandparent in parent.projects.all():
-                                        from tardis.apps.projects.models import (
-                                            ProjectACL,
-                                        )
+                                        from tardis.apps.projects.models import \
+                                            ProjectACL
 
                                         ProjectACL.objects.create(
                                             project=grandparent,
@@ -2290,6 +2268,10 @@ class StorageBoxResource(MyTardisModelResource):
         object_class = StorageBox
         queryset = StorageBox.objects.all()
         ordering = ["id"]
+        filtering = {
+            "id": ("exact",),
+            "name": ("exact",),
+        }
 
 
 class StorageBoxOptionResource(MyTardisModelResource):
