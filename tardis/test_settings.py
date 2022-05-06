@@ -202,3 +202,5 @@ OBJECTS_WITH_IDENTIFIERS = [
     "instrument",
     "project",
 ]
+
+DEFAULT_PERMISSIONS = []

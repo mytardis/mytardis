@@ -9,7 +9,7 @@ from itertools import chain
 
 from django.conf import settings
 from django.conf.urls import url
-from django.contrib.auth.models import User, Group
+from django.contrib.auth.models import User, Group, Permission
 from django.db.models import Q
 from django.http import HttpResponseForbidden, JsonResponse
 from django.db import transaction
@@ -127,6 +127,8 @@ def get_or_create_user(username):
             authenticationMethod=settings.LDAP_METHOD,
         )
         authentication.save()
+        for permission in settings.DEFAULT_PERMISSIONS:
+            user.permissions.add(Permission.objects.get(codename=permission))
     else:
         user = User.objects.get(username=username)
     return user

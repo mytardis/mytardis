@@ -13,7 +13,7 @@ from wsgiref.util import FileWrapper
 
 from django.conf import settings
 from django.conf.urls import url
-from django.contrib.auth.models import AnonymousUser, Group, User
+from django.contrib.auth.models import AnonymousUser, User, Group, Permission
 from django.core.paginator import EmptyPage, InvalidPage, Paginator
 from django.db import IntegrityError, transaction
 from django.db.models import Q
@@ -152,6 +152,8 @@ def get_or_create_user(username):
             authenticationMethod=settings.LDAP_METHOD,
         )
         authentication.save()
+        for permission in settings.DEFAULT_PERMISSIONS:
+            user.permissions.add(Permission.objects.get(codename=permission))
     else:
         user = User.objects.get(username=username)
     return user
