@@ -13,7 +13,7 @@ from itertools import chain
 
 from django.conf import settings
 from django.conf.urls import url
-from django.contrib.auth.models import AnonymousUser, User, Group
+from django.contrib.auth.models import AnonymousUser, User, Group, Permission
 from django.core.paginator import EmptyPage, InvalidPage, Paginator
 from django.db import IntegrityError, transaction
 from django.db.models import Q
