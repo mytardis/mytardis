@@ -271,7 +271,7 @@ class ACLAuthorization(Authorization):
                     yield bundle.request.user.is_authenticated
                 yield True
 
-            # Take chained generators and turn them into a set of parameters
+            # Take chained generators and turn them into a set of schemas
             return list(chain(chain.from_iterable(map(get_schema, object_list))))
         if isinstance(bundle.obj, ParameterName):
             # Generator to filter accessible schemas based upon accessible objects
@@ -311,10 +311,8 @@ class ACLAuthorization(Authorization):
                     yield bundle.request.user.is_authenticated
                 yield True
 
-            # Take chained generators and turn them into a set of parameters
+            # Take chained generators and turn them into a set of parameternames
             return list(chain(chain.from_iterable(map(get_parname, object_list))))
-
-            return object_list
         if isinstance(bundle.obj, ExperimentACL):
             query = ExperimentACL.objects.none()
             if bundle.request.user.is_authenticated:

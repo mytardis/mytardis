@@ -44,8 +44,6 @@ class ExperimentResourceTest(MyTardisResourceTestCase):
         self.test_parname2.save()
 
     def test_post_experiment(self):
-        schema_id = Schema.objects.first().id
-        parm_id = ParameterName.objects.first().id
         post_data = {
             "description": "test description",
             "institution_name": "Monash University",
