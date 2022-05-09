@@ -54,17 +54,17 @@ class ExperimentResourceTest(MyTardisResourceTestCase):
                     "schema": "http://experi-mental.com/",
                     "parameters": [
                         {
-                            "name": "/api/v1/parametername/%d/" % parm_id,
+                            "name": "expparameter1",
                             "string_value": "Test16",
                         },
                         {
-                            "name": "/api/v1/parametername/%d/" % (parm_id + 1),
+                            "name": "expparameter2",
                             "numerical_value": "244",
                         },
                     ],
                 },
                 {
-                    "schema": "/api/v1/schema/%d/" % schema_id,
+                    "schema": "http://experi-mental.com/",
                     "parameters": [
                         {"name": "expparameter1", "string_value": "Test16"},
                         {"name": "expparameter2", "value": "51244"},
