@@ -561,7 +561,7 @@ class SensitiveMetadataTest(MyTardisResourceTestCase):
         returned_data = json.loads(response.content.decode())
         self.assert_paramset_detail(returned_data, ["normal data"])
 
-    def test_datasetparameterset_list_api(self):
+    def test_datasetparameterset_list_api_macro(self):
         response = self.django_client.get("/api/v1/datasetparameterset/")
         self.assertEqual(response.status_code, 200)
         returned_data = json.loads(response.content.decode())
@@ -572,7 +572,24 @@ class SensitiveMetadataTest(MyTardisResourceTestCase):
         returned_data = json.loads(response.content.decode())
         self.assert_paramset_list(returned_data, ["normal data"])
 
-    def test_datasetparameterset_detail_api(self):
+    @override_settings(ONLY_EXPERIMENT_ACLS=False)
+    def test_datasetparameterset_list_api_micro(self):
+        # User2 shouldnt be able to see the sensitive metadata without a sens datasetACL
+        self.create_acl(self.user2, self.exp_sens, True, "exp")
+        self.create_acl(self.user2, self.set_sens, False, "set")
+        response = self.django_client_non_sens.get("/api/v1/datasetparameterset/")
+        self.assertEqual(response.status_code, 200)
+        returned_data = json.loads(response.content.decode())
+        self.assert_paramset_list(returned_data, ["normal data"])
+
+        self.create_acl(self.user2, self.set_sens, True, "set")
+        # User2 should now be able to see the sensitive metadata
+        response = self.django_client_non_sens.get("/api/v1/datasetparameterset/")
+        self.assertEqual(response.status_code, 200)
+        returned_data = json.loads(response.content.decode())
+        self.assert_paramset_list(returned_data, ["normal data", "sensitive"])
+
+    def test_datasetparameterset_detail_api_macro(self):
         response = self.django_client.get(
             "/api/v1/datasetparameterset/%s/" % self.set_paramset.id
         )
@@ -587,7 +604,27 @@ class SensitiveMetadataTest(MyTardisResourceTestCase):
         returned_data = json.loads(response.content.decode())
         self.assert_paramset_detail(returned_data, ["normal data"])
 
-    def test_datafileparameterset_list_api(self):
+    @override_settings(ONLY_EXPERIMENT_ACLS=False)
+    def test_datasetparameterset_detail_api_micro(self):
+        # User2 shouldnt be able to see the sensitive metadata without a sens datasetACL
+        self.create_acl(self.user2, self.exp_sens, True, "exp")
+        self.create_acl(self.user2, self.set_sens, False, "set")
+        response = self.django_client_non_sens.get(
+            "/api/v1/datasetparameterset/%s/" % self.set_par.id
+        )
+        self.assertEqual(response.status_code, 200)
+        response = self.django_client_non_sens.get(
+            "/api/v1/datasetparameterset/%s/" % self.set_par_sens.id
+        )
+        self.assertEqual(response.status_code, 401)
+        self.create_acl(self.user2, self.set_sens, True, "set")
+        # User2 should now be able to see the sensitive metadata
+        response = self.django_client_non_sens.get(
+            "/api/v1/datasetparameterset/%s/" % self.set_par_sens.id
+        )
+        self.assertEqual(response.status_code, 200)
+
+    def test_datafileparameterset_list_api_macro(self):
         response = self.django_client.get("/api/v1/datafileparameterset/")
         self.assertEqual(response.status_code, 200)
         returned_data = json.loads(response.content.decode())
@@ -598,7 +635,25 @@ class SensitiveMetadataTest(MyTardisResourceTestCase):
         returned_data = json.loads(response.content.decode())
         self.assert_paramset_list(returned_data, ["normal data"])
 
-    def test_datafileparameterset_detail_api(self):
+    @override_settings(ONLY_EXPERIMENT_ACLS=False)
+    def test_datafileparameterset_list_api_micro(self):
+        # User2 shouldnt be able to see the sensitive metadata without a sens datafileACL
+        self.create_acl(self.user2, self.exp_sens, True, "exp")
+        self.create_acl(self.user2, self.set_sens, True, "set")
+        self.create_acl(self.user2, self.file_sens, False, "file")
+        response = self.django_client_non_sens.get("/api/v1/datafileparameterset/")
+        self.assertEqual(response.status_code, 200)
+        returned_data = json.loads(response.content.decode())
+        self.assert_paramset_list(returned_data, ["normal data"])
+
+        self.create_acl(self.user2, self.file_sens, True, "file")
+        # User2 should now be able to see the sensitive metadata
+        response = self.django_client_non_sens.get("/api/v1/datafileparameterset/")
+        self.assertEqual(response.status_code, 200)
+        returned_data = json.loads(response.content.decode())
+        self.assert_paramset_list(returned_data, ["normal data", "sensitive"])
+
+    def test_datafileparameterset_detail_api_macro(self):
         response = self.django_client.get(
             "/api/v1/datafileparameterset/%s/" % self.file_paramset.id
         )
@@ -612,6 +667,27 @@ class SensitiveMetadataTest(MyTardisResourceTestCase):
         self.assertEqual(response.status_code, 200)
         returned_data = json.loads(response.content.decode())
         self.assert_paramset_detail(returned_data, ["normal data"])
+
+    @override_settings(ONLY_EXPERIMENT_ACLS=False)
+    def test_datafileparameterset_detail_api_micro(self):
+        # User2 shouldnt be able to see the sensitive metadata without a sens datafileACL
+        self.create_acl(self.user2, self.exp_sens, True, "exp")
+        self.create_acl(self.user2, self.set_sens, True, "set")
+        self.create_acl(self.user2, self.file_sens, False, "file")
+        response = self.django_client_non_sens.get(
+            "/api/v1/datafileparameterset/%s/" % self.file_par.id
+        )
+        self.assertEqual(response.status_code, 200)
+        response = self.django_client_non_sens.get(
+            "/api/v1/datafileparameterset/%s/" % self.file_par_sens.id
+        )
+        self.assertEqual(response.status_code, 401)
+        self.create_acl(self.user2, self.file_sens, True, "file")
+        # User2 should now be able to see the sensitive metadata
+        response = self.django_client_non_sens.get(
+            "/api/v1/datafileparameterset/%s/" % self.file_par_sens.id
+        )
+        self.assertEqual(response.status_code, 200)
 
     def test_parametername_list_api(self):
         pass
