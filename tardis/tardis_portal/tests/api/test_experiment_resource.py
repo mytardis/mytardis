@@ -44,6 +44,8 @@ class ExperimentResourceTest(MyTardisResourceTestCase):
         self.test_parname2.save()
 
     def test_post_experiment(self):
+        schema_id = Schema.objects.first().id
+        parm_id = ParameterName.objects.first().id
         post_data = {
             "description": "test description",
             "institution_name": "Monash University",
@@ -52,17 +54,17 @@ class ExperimentResourceTest(MyTardisResourceTestCase):
                     "schema": "http://experi-mental.com/",
                     "parameters": [
                         {
-                            "name": "expparameter1",
+                            "name": "/api/v1/parametername/%d/" % parm_id,
                             "string_value": "Test16",
                         },
                         {
-                            "name": "expparameter2",
+                            "name": "/api/v1/parametername/%d/" % (parm_id + 1),
                             "numerical_value": "244",
                         },
                     ],
                 },
                 {
-                    "schema": "http://experi-mental.com/",
+                    "schema": "/api/v1/schema/%d/" % schema_id,
                     "parameters": [
                         {"name": "expparameter1", "string_value": "Test16"},
                         {"name": "expparameter2", "value": "51244"},

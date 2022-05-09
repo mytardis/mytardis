@@ -250,69 +250,9 @@ class ACLAuthorization(Authorization):
             # Take chained generators and turn them into a set of parameters
             return list(chain(chain.from_iterable(map(get_file_param, dp_list))))
         if isinstance(bundle.obj, Schema):
-            # Generator to filter accessible schemas based upon accessible objects
-            def get_schema(schema):
-                if schema.type == Schema.EXPERIMENT:
-                    yield any(
-                        has_access(bundle.request, ps.experiment.id, "experiment")
-                        for ps in schema.experimentparameterset_set.all()
-                    )
-                if schema.type == Schema.DATASET:
-                    yield any(
-                        has_access(bundle.request, ps.dataset.id, "dataset")
-                        for ps in schema.datasetparameterset_set.all()
-                    )
-                if schema.type == Schema.DATAFILE:
-                    yield any(
-                        has_access(bundle.request, ps.datafile.id, "datafile")
-                        for ps in schema.datafileparameterset_set.all()
-                    )
-                if schema.type == Schema.INSTRUMENT:
-                    yield bundle.request.user.is_authenticated
-                yield True
-
-            # Take chained generators and turn them into a set of schemas
-            return list(chain(chain.from_iterable(map(get_schema, object_list))))
+            return object_list
         if isinstance(bundle.obj, ParameterName):
-            # Generator to filter accessible schemas based upon accessible objects
-            def get_parname(parname):
-                if parname.sensitive:
-                    if parname.schema.type == Schema.EXPERIMENT:
-                        yield any(
-                            has_access(bundle.request, ps.experiment.id, "experiment")
-                            for ps in parname.schema.experimentparameterset_set.all()
-                        )
-                    if parname.schema.type == Schema.DATASET:
-                        yield any(
-                            has_access(bundle.request, ps.dataset.id, "dataset")
-                            for ps in parname.schema.datasetparameterset_set.all()
-                        )
-                    if parname.schema.type == Schema.DATAFILE:
-                        yield any(
-                            has_access(bundle.request, ps.datafile.id, "datafile")
-                            for ps in parname.schema.datafileparameterset_set.all()
-                        )
-                if parname.schema.type == Schema.EXPERIMENT:
-                    yield any(
-                        has_access(bundle.request, ps.experiment.id, "experiment")
-                        for ps in parname.schema.experimentparameterset_set.all()
-                    )
-                if parname.schema.type == Schema.DATASET:
-                    yield any(
-                        has_access(bundle.request, ps.dataset.id, "dataset")
-                        for ps in parname.schema.datasetparameterset_set.all()
-                    )
-                if parname.schema.type == Schema.DATAFILE:
-                    yield any(
-                        has_access(bundle.request, ps.datafile.id, "datafile")
-                        for ps in parname.schema.datafileparameterset_set.all()
-                    )
-                if parname.schema.type == Schema.INSTRUMENT:
-                    yield bundle.request.user.is_authenticated
-                yield True
-
-            # Take chained generators and turn them into a set of parameternames
-            return list(chain(chain.from_iterable(map(get_parname, object_list))))
+            return object_list
         if isinstance(bundle.obj, ExperimentACL):
             query = ExperimentACL.objects.none()
             if bundle.request.user.is_authenticated:
@@ -422,66 +362,8 @@ class ACLAuthorization(Authorization):
             )
             return public_user or authenticated
         if isinstance(bundle.obj, Schema):
-            if bundle.obj.type == Schema.EXPERIMENT:
-                return any(
-                    has_access(bundle.request, ps.experiment.id, "experiment")
-                    for ps in bundle.obj.experimentparameterset_set.all()
-                )
-            if bundle.obj.type == Schema.DATASET:
-                return any(
-                    has_access(bundle.request, ps.dataset.id, "dataset")
-                    for ps in bundle.obj.datasetparameterset_set.all()
-                )
-            if bundle.obj.type == Schema.DATAFILE:
-                return any(
-                    has_access(bundle.request, ps.datafile.id, "datafile")
-                    for ps in bundle.obj.datafileparameterset_set.all()
-                )
-            if bundle.obj.type == Schema.INSTRUMENT:
-                return (
-                    bundle.obj.instrumentparameterset_set.instrument.facility
-                    in facilities_managed_by(bundle.request.user)
-                )
             return True
         if isinstance(bundle.obj, ParameterName):
-            if bundle.obj.sensitive:
-                if bundle.obj.schema.type == Schema.EXPERIMENT:
-                    return any(
-                        has_sensitive_access(
-                            bundle.request, ps.experiment.id, "experiment"
-                        )
-                        for ps in bundle.obj.schema.experimentparameterset_set.all()
-                    )
-                if bundle.obj.schema.type == Schema.DATASET:
-                    return any(
-                        has_sensitive_access(bundle.request, ps.dataset.id, "dataset")
-                        for ps in bundle.obj.schema.datasetparameterset_set.all()
-                    )
-                if bundle.obj.schema.type == Schema.DATAFILE:
-                    return any(
-                        has_sensitive_access(bundle.request, ps.datafile.id, "datafile")
-                        for ps in bundle.obj.schema.datafileparameterset_set.all()
-                    )
-            if bundle.obj.schema.type == Schema.EXPERIMENT:
-                return any(
-                    has_access(bundle.request, ps.experiment.id, "experiment")
-                    for ps in bundle.obj.schema.experimentparameterset_set.all()
-                )
-            if bundle.obj.schema.type == Schema.DATASET:
-                return any(
-                    has_access(bundle.request, ps.dataset.id, "dataset")
-                    for ps in bundle.obj.schema.datasetparameterset_set.all()
-                )
-            if bundle.obj.schema.type == Schema.DATAFILE:
-                return any(
-                    has_access(bundle.request, ps.datafile.id, "datafile")
-                    for ps in bundle.obj.schema.datafileparameterset_set.all()
-                )
-            if bundle.obj.schema.type == Schema.INSTRUMENT:
-                return (
-                    bundle.obj.schema.instrumentparameterset_set.instrument.facility
-                    in facilities_managed_by(bundle.request.user)
-                )
             return True
         if isinstance(bundle.obj, StorageBox):
             return bundle.request.user.is_authenticated

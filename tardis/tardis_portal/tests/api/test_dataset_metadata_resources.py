@@ -31,20 +31,6 @@ class DatasetParameterSetResourceTest(MyTardisResourceTestCase):
         # Add to experiment with ObjectACL granting access to self.user
         # so auth with self.get_credentials() will succeed:
         self.test_dataset.experiments.add(self.testexp)
-        # Create an extra dataset with metadata to ensure user already has access to the
-        # relevant Schema and ParameterName URIs when referring to them during post requests
-        self.prior_ds = Dataset.objects.create(description="Prior dataset")
-        self.prior_ds.experiments.add(self.testexp)
-        self.prior_ds_ps = DatasetParameterSet(
-            schema=self.test_schema, dataset=self.prior_ds
-        )
-        self.prior_ds_ps.save()
-        self.prior_ds_param1 = DatasetParameter(
-            parameterset=self.prior_ds_ps,
-            name=self.test_param1_name,
-            string_value="prior data",
-        )
-        self.prior_ds_param1.save()
 
     def tearDown(self):
         self.test_schema.delete()
