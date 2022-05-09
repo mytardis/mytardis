@@ -440,7 +440,10 @@ class ACLAuthorization(Authorization):
                     for ps in bundle.obj.datafileparameterset_set.all()
                 )
             if bundle.obj.type == Schema.INSTRUMENT:
-                return bundle.obj.instrumentparameterset_set.instrument.facility in facilities_managed_by(bundle.request.user)
+                return (
+                    bundle.obj.instrumentparameterset_set.instrument.facility
+                    in facilities_managed_by(bundle.request.user)
+                )
             return True
         if isinstance(bundle.obj, ParameterName):
             if bundle.obj.sensitive:
@@ -477,7 +480,10 @@ class ACLAuthorization(Authorization):
                     for ps in bundle.obj.schema.datafileparameterset_set.all()
                 )
             if bundle.obj.schema.type == Schema.INSTRUMENT:
-                return bundle.obj.schema.instrumentparameterset_set.instrument.facility in facilities_managed_by(bundle.request.user)
+                return (
+                    bundle.obj.schema.instrumentparameterset_set.instrument.facility
+                    in facilities_managed_by(bundle.request.user)
+                )
             return True
         if isinstance(bundle.obj, StorageBox):
             return bundle.request.user.is_authenticated
