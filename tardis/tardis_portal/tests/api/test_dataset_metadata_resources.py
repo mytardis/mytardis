@@ -35,7 +35,6 @@ class DatasetParameterSetResourceTest(MyTardisResourceTestCase):
     def tearDown(self):
         self.test_schema.delete()
         self.test_dataset.delete()
-        self.prior_ds.delete()
 
     def test_post_dataset_with_params(self):
         """
