@@ -163,8 +163,29 @@ class SensitiveMetadataTest(MyTardisResourceTestCase):
             sorted(
                 [
                     x["string_value"]
-                    for x in returned_data["parameter_sets"][0]["parameters"]
+                    for y in returned_data["parameter_sets"]
+                    for x in y["parameters"]
                 ],
+            ),
+            value_list,
+        )
+
+    def assert_paramset_list(self, returned_data, value_list):
+        self.assertEqual(
+            sorted(
+                [
+                    x["string_value"]
+                    for y in returned_data["objects"]
+                    for x in y["parameters"]
+                ],
+            ),
+            value_list,
+        )
+
+    def assert_paramset_detail(self, returned_data, value_list):
+        self.assertEqual(
+            sorted(
+                [x["string_value"] for x in returned_data["parameters"]],
             ),
             value_list,
         )
@@ -515,22 +536,82 @@ class SensitiveMetadataTest(MyTardisResourceTestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_experimentparameterset_list_api(self):
-        pass
+        response = self.django_client.get("/api/v1/experimentparameterset/")
+        self.assertEqual(response.status_code, 200)
+        returned_data = json.loads(response.content.decode())
+        self.assert_paramset_list(returned_data, ["normal data", "sensitive"])
+
+        response = self.django_client_non_sens.get("/api/v1/experimentparameterset/")
+        self.assertEqual(response.status_code, 200)
+        returned_data = json.loads(response.content.decode())
+        self.assert_paramset_list(returned_data, ["normal data"])
 
     def test_experimentparameterset_detail_api(self):
-        pass
+        response = self.django_client.get(
+            "/api/v1/experimentparameterset/%s/" % self.exp_paramset.id
+        )
+        self.assertEqual(response.status_code, 200)
+        returned_data = json.loads(response.content.decode())
+        self.assert_paramset_detail(returned_data, ["normal data", "sensitive"])
+
+        response = self.django_client_non_sens.get(
+            "/api/v1/experimentparameterset/%s/" % self.exp_paramset.id
+        )
+        self.assertEqual(response.status_code, 200)
+        returned_data = json.loads(response.content.decode())
+        self.assert_paramset_detail(returned_data, ["normal data"])
 
     def test_datasetparameterset_list_api(self):
-        pass
+        response = self.django_client.get("/api/v1/datasetparameterset/")
+        self.assertEqual(response.status_code, 200)
+        returned_data = json.loads(response.content.decode())
+        self.assert_paramset_list(returned_data, ["normal data", "sensitive"])
+
+        response = self.django_client_non_sens.get("/api/v1/datasetparameterset/")
+        self.assertEqual(response.status_code, 200)
+        returned_data = json.loads(response.content.decode())
+        self.assert_paramset_list(returned_data, ["normal data"])
 
     def test_datasetparameterset_detail_api(self):
-        pass
+        response = self.django_client.get(
+            "/api/v1/datasetparameterset/%s/" % self.set_paramset.id
+        )
+        self.assertEqual(response.status_code, 200)
+        returned_data = json.loads(response.content.decode())
+        self.assert_paramset_detail(returned_data, ["normal data", "sensitive"])
+
+        response = self.django_client_non_sens.get(
+            "/api/v1/datasetparameterset/%s/" % self.set_paramset.id
+        )
+        self.assertEqual(response.status_code, 200)
+        returned_data = json.loads(response.content.decode())
+        self.assert_paramset_detail(returned_data, ["normal data"])
 
     def test_datafileparameterset_list_api(self):
-        pass
+        response = self.django_client.get("/api/v1/datafileparameterset/")
+        self.assertEqual(response.status_code, 200)
+        returned_data = json.loads(response.content.decode())
+        self.assert_paramset_list(returned_data, ["normal data", "sensitive"])
+
+        response = self.django_client_non_sens.get("/api/v1/datafileparameterset/")
+        self.assertEqual(response.status_code, 200)
+        returned_data = json.loads(response.content.decode())
+        self.assert_paramset_list(returned_data, ["normal data"])
 
     def test_datafileparameterset_detail_api(self):
-        pass
+        response = self.django_client.get(
+            "/api/v1/datafileparameterset/%s/" % self.file_paramset.id
+        )
+        self.assertEqual(response.status_code, 200)
+        returned_data = json.loads(response.content.decode())
+        self.assert_paramset_detail(returned_data, ["normal data", "sensitive"])
+
+        response = self.django_client_non_sens.get(
+            "/api/v1/datafileparameterset/%s/" % self.file_paramset.id
+        )
+        self.assertEqual(response.status_code, 200)
+        returned_data = json.loads(response.content.decode())
+        self.assert_paramset_detail(returned_data, ["normal data"])
 
     def test_parametername_list_api(self):
         pass
