@@ -692,9 +692,13 @@ class SensitiveMetadataTest(MyTardisResourceTestCase):
         self.assert_paramset_detail(returned_data, ["normal data", "sensitive"])
 
     def test_parametername_list_api(self):
+        # While "sensitive parameternames" are visible, sensitive parameter values
+        # are not
         pass
 
     def test_parametername_detail_api(self):
+        # While "sensitive parameternames" are visible, sensitive parameter values
+        # are not
         pass
 
     def tearDown(self):
