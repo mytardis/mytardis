@@ -465,21 +465,7 @@ class DatasetResourceAuthTest(MyTardisResourceTestCase):
         )
         returned_data = json.loads(response.content.decode())
         # shouldn't show "subdir" as someuser has no access to df2
-        expected_data = [
-            {
-                "name": "filename1",
-                "id": df1.id,
-                "verified": False,
-                "is_online": True,
-                "recall_url": None,
-            },
-            {"name": "", "path": "", "children": []},
-            {"next_page": False},
-        ]
-        self.assertEqual(
-            sorted(returned_data, key=lambda x: ("name" not in x, x.get("name", None))),
-            sorted(expected_data, key=lambda x: ("name" not in x, x.get("name", None))),
-        )
+        self.assertEqual(returned_data, [{"next_page": False}])
 
     def test_get_dataset_counts_macro(self):
         set_id = self.testds.id
