@@ -406,7 +406,7 @@ class DatasetResourceAuthTest(MyTardisResourceTestCase):
         returned_data = json.loads(response.content.decode())
         self.assertEqual(returned_data, [{"next_page": False}])
 
-        DataFile.objects.create(
+        df2 = DataFile.objects.create(
             dataset=self.testds,
             filename="filename2",
             size=0,
@@ -445,6 +445,22 @@ class DatasetResourceAuthTest(MyTardisResourceTestCase):
             aclOwnershipType=DatafileACL.OWNER_OWNED,
         )
         self.fileacl_someuser.save()
+
+        self.fileacl_user1 = DatafileACL(
+            datafile=df1,
+            user=self.user,
+            canRead=True,
+            aclOwnershipType=DatafileACL.OWNER_OWNED,
+        )
+        self.fileacl_user1.save()
+
+        self.fileacl_user2 = DatafileACL(
+            datafile=df2,
+            user=self.user,
+            canRead=True,
+            aclOwnershipType=DatafileACL.OWNER_OWNED,
+        )
+        self.fileacl_user2.save()
 
         response = self.api_client.get(uri, authentication=self.get_credentials())
         returned_data = json.loads(response.content.decode())
