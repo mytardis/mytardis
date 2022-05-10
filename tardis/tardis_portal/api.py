@@ -871,6 +871,7 @@ class DatasetResource(MyTardisModelResource):
         authorization for adding other related resources, e.g. metadata
         """
         if getattr(bundle.obj, "id", False):
+            dataset = bundle.obj
             for exp_uri in bundle.data.get("experiments", []):
                 try:
                     exp = ExperimentResource.get_via_uri(
@@ -879,6 +880,20 @@ class DatasetResource(MyTardisModelResource):
                     bundle.obj.experiments.add(exp)
                 except NotFound:
                     pass
+        if not settings.ONLY_EXPERIMENT_ACLS:
+            acl = DatasetACL(
+                dataset=dataset,
+                user=bundle.request.user,
+                canRead=True,
+                canDownload=True,
+                canWrite=True,
+                canDelete=True,
+                canSensitive=True,
+                isOwner=True,
+                aclOwnershipType=DatasetACL.OWNER_OWNED,
+            )
+            acl.save()
+
         return super().hydrate_m2m(bundle)
 
     def get_root_dir_nodes(self, request, **kwargs):
@@ -1219,6 +1234,30 @@ class DataFileResource(MyTardisModelResource):
             del bundle.data["attached_file"]
 
         return bundle
+
+    def hydrate_m2m(self, bundle):
+        """
+        create ACL before any related objects are created in order to use
+        ACL permissions for those objects.
+        """
+        if getattr(bundle.obj, "id", False):
+            if not settings.ONLY_EXPERIMENT_ACLS:
+                datafile = bundle.obj
+                # TODO: unify this with the view function's ACL creation,
+                # maybe through an ACL toolbox.
+                acl = DatafileACL(
+                    datafile=datafile,
+                    user=bundle.request.user,
+                    canRead=True,
+                    canDownload=True,
+                    canWrite=True,
+                    canDelete=True,
+                    canSensitive=True,
+                    isOwner=True,
+                    aclOwnershipType=DatafileACL.OWNER_OWNED,
+                )
+                acl.save()
+        return super().hydrate_m2m(bundle)
 
     def obj_create(self, bundle, **kwargs):
         """
