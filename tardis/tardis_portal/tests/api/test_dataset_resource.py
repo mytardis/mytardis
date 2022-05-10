@@ -394,6 +394,13 @@ class DatasetResourceAuthTest(MyTardisResourceTestCase):
 
     @override_settings(ONLY_EXPERIMENT_ACLS=False)
     def test_get_root_dir_nodes_micro(self):
+        self.setacl_user = DatasetACL(
+            dataset=self.testds,
+            user=self.user,
+            canRead=True,
+            aclOwnershipType=DatasetACL.OWNER_OWNED,
+        )
+        self.setacl_someuser.save()
         uri = "/api/v1/dataset/%d/root-dir-nodes/" % self.testds.id
         response = self.api_client.get(uri, authentication=self.get_credentials())
         returned_data = json.loads(response.content.decode())
