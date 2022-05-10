@@ -392,6 +392,7 @@ class DatasetResourceAuthTest(MyTardisResourceTestCase):
     def get_acl_credentials(self, username, password):
         return self.create_basic(username=username, password=password)
 
+    @override_settings(ONLY_EXPERIMENT_ACLS=False)
     def test_get_root_dir_nodes_micro(self):
         uri = "/api/v1/dataset/%d/root-dir-nodes/" % self.testds.id
         response = self.api_client.get(uri, authentication=self.get_credentials())
