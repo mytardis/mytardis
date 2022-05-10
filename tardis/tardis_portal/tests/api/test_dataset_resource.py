@@ -439,7 +439,7 @@ class DatasetResourceAuthTest(MyTardisResourceTestCase):
         self.assertEqual(returned_data, [{"next_page": False}])
 
         self.fileacl_someuser = DatafileACL(
-            datafile=self.df1,
+            datafile=df1,
             user=self.user_someacls,
             canRead=True,
             aclOwnershipType=DatafileACL.OWNER_OWNED,
