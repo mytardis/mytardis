@@ -422,7 +422,7 @@ class DatasetResourceAuthTest(MyTardisResourceTestCase):
             canRead=True,
             aclOwnershipType=DatasetACL.OWNER_OWNED,
         )
-        self.fileacl_someuser.save()
+        self.setacl_someuser.save()
 
         response = self.api_client.get(
             uri, authentication=self.get_acl_credentials("someacls", "someaclspassword")
