@@ -400,7 +400,7 @@ class DatasetResourceAuthTest(MyTardisResourceTestCase):
             canRead=True,
             aclOwnershipType=DatasetACL.OWNER_OWNED,
         )
-        self.setacl_someuser.save()
+        self.setacl_user.save()
         uri = "/api/v1/dataset/%d/root-dir-nodes/" % self.testds.id
         response = self.api_client.get(uri, authentication=self.get_credentials())
         returned_data = json.loads(response.content.decode())
