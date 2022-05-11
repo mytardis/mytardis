@@ -606,7 +606,7 @@ class DatasetResourceAuthTest(MyTardisResourceTestCase):
             sorted(expected_data, key=lambda x: x["name"]),
         )
 
-        DataFile.objects.create(
+        df3 = DataFile.objects.create(
             dataset=self.testds,
             filename="filename3",
             size=0,
