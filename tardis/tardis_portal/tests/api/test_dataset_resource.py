@@ -505,7 +505,7 @@ class DatasetResourceAuthTest(MyTardisResourceTestCase):
         )
 
     @override_settings(ONLY_EXPERIMENT_ACLS=False)
-    def test_get_child_dir_nodes_no_files_in_root_dir(self):
+    def test_get_child_dir_nodes_no_files_in_root_dir_micro(self):
         self.setacl_user = DatasetACL(
             dataset=self.testds,
             user=self.user,
