@@ -529,7 +529,7 @@ class DatasetResourceAuthTest(MyTardisResourceTestCase):
 
         response = self.api_client.get(uri, authentication=self.get_credentials())
         returned_data = json.loads(response.content.decode())
-        self.assertEqual(returned_data, [{"next_page": False}])
+        self.assertEqual(returned_data, [])
 
         self.fileacl_user = DatafileACL(
             datafile=df1,
