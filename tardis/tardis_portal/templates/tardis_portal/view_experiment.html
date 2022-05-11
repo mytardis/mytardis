@@ -38,7 +38,16 @@
 </div>
 
 <div class="page-header">
-  <h4>Experiment</h4>
+  {% if experiment.is_publication %}
+    <h4>
+        Publication
+        {% if experiment.is_publication_draft %}
+        <small style="font-style:italic;"> draft</small>
+        {% endif %}
+    </h4>
+  {% else %}
+    <h4>Experiment</h4>
+  {% endif %}
   {% if not experiment.public %}
   <div class="float-end">
     {% if push_to_enabled and is_authenticated %}

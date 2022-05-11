@@ -103,6 +103,11 @@
             <li class="nav-item">
               <a class="nav-link" href="{% url 'tardis.tardis_portal.views.my_data' %}">My Data</a>
             </li>
+            {% if pub_workflow_enabled %}
+              <li class="nav-item">
+                <a class="nav-link" href="{% url 'tardis.apps.publication_workflow:my_publications' %}">My Publications</a>
+              </li>
+            {% endif %}
             <li class="nav-item">
               <a class="nav-link" href="{% url 'tardis.tardis_portal.views.shared' %}">Shared</a>
             </li>

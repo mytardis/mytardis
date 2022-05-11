@@ -53,9 +53,10 @@ class Experiment(models.Model):
         (PUBLIC_ACCESS_FULL, 'Public'),
     )
 
-    PUBLICATION_SCHEMA_ROOT = 'http://www.tardis.edu.au/schemas/publication/'
+    PUBLICATION_SCHEMA_ROOT = 'http://www.mytardis.org/schemas/publication/'
     PUBLICATION_DETAILS_SCHEMA = PUBLICATION_SCHEMA_ROOT + 'details/'
     PUBLICATION_DRAFT_SCHEMA = PUBLICATION_SCHEMA_ROOT + 'draft/'
+    PUBLICATION_RETRACTED_SCHEMA = PUBLICATION_SCHEMA_ROOT + 'retracted/'
 
     url = models.URLField(max_length=255,
                           null=True, blank=True)
@@ -91,17 +92,23 @@ class Experiment(models.Model):
         from .hooks import publish_public_expt_rifcs
         publish_public_expt_rifcs(self)
 
+    def is_publication(self):
+        return self.experimentparameterset_set.filter(
+            schema__namespace__startswith=getattr(
+                settings, 'PUBLICATION_SCHEMA_ROOT',
+                self.PUBLICATION_SCHEMA_ROOT)
+        ).count() > 0
+
     def is_publication_draft(self):
         return self.experimentparameterset_set.filter(
             schema__namespace=getattr(settings, 'PUBLICATION_DRAFT_SCHEMA',
                                       self.PUBLICATION_DRAFT_SCHEMA)
         ).count() > 0
 
-    def is_publication(self):
+    def is_retracted_publication(self):
         return self.experimentparameterset_set.filter(
-            schema__namespace__startswith=getattr(
-                settings, 'PUBLICATION_SCHEMA_ROOT',
-                self.PUBLICATION_SCHEMA_ROOT)
+            schema__namespace=getattr(settings, 'PUBLICATION_RETRACTED_SCHEMA',
+                                      self.PUBLICATION_RETRACTED_SCHEMA)
         ).count() > 0
 
     def getParameterSets(self):

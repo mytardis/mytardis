@@ -724,7 +724,7 @@ class RightsForm(ModelForm):
             suitable = license_ in License.get_suitable_licenses(public_access)
 
         if not suitable:
-            raise forms.ValidationError("Selected license it not suitable " +
+            raise forms.ValidationError("Selected license is not suitable " +
                                         "for public access level.")
 
         return cleaned_data

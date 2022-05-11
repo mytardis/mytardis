@@ -1,0 +1,18 @@
+{% extends "tardis_portal/portal_template.html" %}
+{% load static %}
+{% load render_bundle from webpack_loader %}
+{% load experiment_tags %}
+{% load experimentstats %}
+{% load humanize %}
+{% load bleach_tag %}
+{% load capture %}
+
+{% render_bundle 'publication_workflow' %}
+
+{% block content %}
+
+<div id="publication-workflow-app"></div>
+
+{% render_bundle 'publication_workflow' %}
+
+{% endblock %}

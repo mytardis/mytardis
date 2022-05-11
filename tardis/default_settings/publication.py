@@ -20,3 +20,41 @@ OAIPMH_PROVIDERS = [
     'tardis.apps.oaipmh.provider.experiment.DcExperimentProvider',
     'tardis.apps.oaipmh.provider.experiment.RifCsExperimentProvider',
 ]
+
+# Example settings for the publication form workflow. Also requires the
+# corresponding app in 'INSTALLED_APPS' and the corresponding task to be
+# enabled
+
+# Publication form settings #
+# PUBLICATION_NOTIFICATION_SENDER_EMAIL = 'emailsender@mytardisserver'
+
+# PUBLICATION_ADMIN_GROUP = 'publication-admin'
+
+# PUBLICATION_SCHEMA_ROOT = 'http://www.mytardis.org/schemas/publication/'
+
+# This schema holds bibliographic details including authors and
+# acknowledgements
+# PUBLICATION_DETAILS_SCHEMA = PUBLICATION_SCHEMA_ROOT + 'details/'
+
+# Any experiment with this schema is treated as a draft publication
+# This schema will be created automatically if not present
+# PUBLICATION_DRAFT_SCHEMA = PUBLICATION_SCHEMA_ROOT + 'draft/'
+
+# Any experiment with this schema is treated as a retracted publication
+# This schema will be created automatically if not present
+# PUBLICATION_RETRACTED_SCHEMA = PUBLICATION_SCHEMA_ROOT + 'retracted/'
+
+# Put your API_ID for the Monash DOI minting service here. For other DOI
+# minting, please contact the developers
+# MODC_DOI_ENABLED = False
+# MODC_DOI_API_ID = ''
+# MODC_DOI_API_PASSWORD = ''
+# MODC_DOI_MINT_DEFINITION = 'https://doiserver/modc/ws/MintDoiService.wsdl'
+# MODC_DOI_ACTIVATE_DEFINITION = 'https://doiserver/modc/ws/' \
+#     'ActivateDoiService.wsdl'
+# MODC_DOI_DEACTIVATE_DEFINITION = 'https://doiserver/modc/ws/' \
+#     'DeactivateDoiService.wsdl'
+# MODC_DOI_MINT_URL_ROOT = 'http://mytardisserver/'
+
+# Push-to app settings
+# PUSH_TO_FROM_EMAIL = 'noreply@example.com'
