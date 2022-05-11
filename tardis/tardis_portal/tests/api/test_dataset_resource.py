@@ -1,3 +1,4 @@
+# pylint: disable=C0302
 """
 Testing the Dataset resource in MyTardis's Tastypie-based REST API
 
@@ -389,18 +390,20 @@ class DatasetResourceAuthTest(MyTardisResourceTestCase):
         self.testds.save()
         self.testds.experiments.add(self.testexp)
 
-    def get_acl_credentials(self, username, password):
-        return self.create_basic(username=username, password=password)
-
-    @override_settings(ONLY_EXPERIMENT_ACLS=False)
-    def test_get_root_dir_nodes_micro(self):
-        self.setacl_user = DatasetACL(
+        # create Dataset ACL for self.user
+        self.ds_acl = DatasetACL(
             dataset=self.testds,
             user=self.user,
             canRead=True,
             aclOwnershipType=DatasetACL.OWNER_OWNED,
         )
-        self.setacl_user.save()
+        self.ds_acl.save()
+
+    def get_acl_credentials(self, username, password):
+        return self.create_basic(username=username, password=password)
+
+    @override_settings(ONLY_EXPERIMENT_ACLS=False)
+    def test_get_root_dir_nodes_micro(self):
         uri = "/api/v1/dataset/%d/root-dir-nodes/" % self.testds.id
         response = self.api_client.get(uri, authentication=self.get_credentials())
         returned_data = json.loads(response.content.decode())
@@ -505,14 +508,190 @@ class DatasetResourceAuthTest(MyTardisResourceTestCase):
         )
 
     @override_settings(ONLY_EXPERIMENT_ACLS=False)
-    def test_get_child_dir_nodes_no_files_in_root_dir_micro(self):
-        self.setacl_user = DatasetACL(
+    def test_get_child_dir_nodes_micro(self):
+
+        uri = "/api/v1/dataset/%d/child-dir-nodes/?dir_path=subdir" % self.testds.id
+        response = self.api_client.get(uri, authentication=self.get_credentials())
+        returned_data = json.loads(response.content.decode())
+        self.assertEqual(returned_data, [])
+
+        df1 = DataFile.objects.create(
             dataset=self.testds,
+            filename="filename1",
+            size=0,
+            md5sum="bogus",
+            directory="subdir",
+        )
+
+        response = self.api_client.get(uri, authentication=self.get_credentials())
+        returned_data = json.loads(response.content.decode())
+        self.assertEqual(returned_data, [])
+
+        # create Datafile ACL for self.user for df1
+        self.df1_acl = DatafileACL(
+            datafile=self.df1,
             user=self.user,
             canRead=True,
-            aclOwnershipType=DatasetACL.OWNER_OWNED,
+            aclOwnershipType=DatafileACL.OWNER_OWNED,
         )
-        self.setacl_user.save()
+        self.df1_acl.save()
+
+        response = self.api_client.get(uri, authentication=self.get_credentials())
+        returned_data = json.loads(response.content.decode())
+        self.assertEqual(
+            returned_data,
+            [
+                {
+                    "name": "filename1",
+                    "id": df1.id,
+                    "verified": False,
+                    "is_online": True,
+                    "recall_url": None,
+                }
+            ],
+        )
+
+        df2 = DataFile.objects.create(
+            dataset=self.testds,
+            filename="filename2",
+            size=0,
+            md5sum="bogus",
+            directory="subdir",
+        )
+
+        response = self.api_client.get(uri, authentication=self.get_credentials())
+        returned_data = json.loads(response.content.decode())
+        self.assertEqual(
+            returned_data,
+            [
+                {
+                    "name": "filename1",
+                    "id": df1.id,
+                    "verified": False,
+                    "is_online": True,
+                    "recall_url": None,
+                }
+            ],
+        )
+
+        # create Datafile ACL for self.user for df2
+        self.df2_acl = DatafileACL(
+            datafile=self.df2,
+            user=self.user,
+            canRead=True,
+            aclOwnershipType=DatafileACL.OWNER_OWNED,
+        )
+        self.df2_acl.save()
+
+        response = self.api_client.get(uri, authentication=self.get_credentials())
+        returned_data = json.loads(response.content.decode())
+        expected_data = [
+            {
+                "name": "filename1",
+                "id": df1.id,
+                "verified": False,
+                "is_online": True,
+                "recall_url": None,
+            },
+            {
+                "name": "filename2",
+                "id": df2.id,
+                "verified": False,
+                "is_online": True,
+                "recall_url": None,
+            },
+        ]
+        self.assertEqual(
+            sorted(returned_data, key=lambda x: x["name"]),
+            sorted(expected_data, key=lambda x: x["name"]),
+        )
+
+        DataFile.objects.create(
+            dataset=self.testds,
+            filename="filename3",
+            size=0,
+            md5sum="bogus",
+            directory="subdir2",
+        )
+
+        # create Datafile ACL for self.user for df3
+        self.df3_acl = DatafileACL(
+            datafile=self.df3,
+            user=self.user,
+            canRead=True,
+            aclOwnershipType=DatafileACL.OWNER_OWNED,
+        )
+        self.df3_acl.save()
+
+        response = self.api_client.get(uri, authentication=self.get_credentials())
+        returned_data = json.loads(response.content.decode())
+        # 'filename3' is not in the dir_path we are querying,
+        # so it shouldn't appear in the results:
+        expected_data = [
+            {
+                "name": "filename1",
+                "id": df1.id,
+                "verified": False,
+                "is_online": True,
+                "recall_url": None,
+            },
+            {
+                "name": "filename2",
+                "id": df2.id,
+                "verified": False,
+                "is_online": True,
+                "recall_url": None,
+            },
+        ]
+        self.assertEqual(
+            sorted(returned_data, key=lambda x: x["name"]),
+            sorted(expected_data, key=lambda x: x["name"]),
+        )
+
+        df4 = DataFile.objects.create(
+            dataset=self.testds,
+            filename="filename4",
+            size=0,
+            md5sum="bogus",
+            directory="subdir/subdir3",
+        )
+
+        uri = (
+            "/api/v1/dataset/%d/child-dir-nodes/?dir_path=subdir/subdir3"
+            % self.testds.id
+        )
+
+        response = self.api_client.get(uri, authentication=self.get_credentials())
+        returned_data = json.loads(response.content.decode())
+        self.assertEqual(returned_data, [])
+
+        # create Datafile ACL for self.user for df4
+        self.df4_acl = DatafileACL(
+            datafile=self.df4,
+            user=self.user,
+            canRead=True,
+            aclOwnershipType=DatafileACL.OWNER_OWNED,
+        )
+        self.df4_acl.save()
+
+        response = self.api_client.get(uri, authentication=self.get_credentials())
+        returned_data = json.loads(response.content.decode())
+        expected_data = [
+            {
+                "name": "filename4",
+                "id": df4.id,
+                "verified": False,
+                "is_online": True,
+                "recall_url": None,
+            },
+        ]
+        self.assertEqual(
+            sorted(returned_data, key=lambda x: x["name"]),
+            sorted(expected_data, key=lambda x: x["name"]),
+        )
+
+    @override_settings(ONLY_EXPERIMENT_ACLS=False)
+    def test_get_child_dir_nodes_no_files_in_root_dir_micro(self):
         encoded_subdir1 = quote("subdir#1")
         uri = "/api/v1/dataset/%d/child-dir-nodes/?dir_path=%s" % (
             self.testds.id,
@@ -724,15 +903,6 @@ class DatasetResourceAuthTest(MyTardisResourceTestCase):
     @override_settings(ONLY_EXPERIMENT_ACLS=False)
     def test_get_dataset_counts_micro(self):
         set_id = self.testds.id
-
-        # create Dataset ACL for self.user
-        self.ds_acl = DatasetACL(
-            dataset=self.testds,
-            user=self.user,
-            canRead=True,
-            aclOwnershipType=DatasetACL.OWNER_OWNED,
-        )
-        self.ds_acl.save()
 
         expected_output_blank = {
             "dataset_size": 0,
