@@ -504,6 +504,108 @@ class DatasetResourceAuthTest(MyTardisResourceTestCase):
             sorted(expected_data, key=lambda x: ("name" not in x, x.get("name", None))),
         )
 
+    @override_settings(ONLY_EXPERIMENT_ACLS=False)
+    def test_get_child_dir_nodes_no_files_in_root_dir(self):
+        self.setacl_user = DatasetACL(
+            dataset=self.testds,
+            user=self.user,
+            canRead=True,
+            aclOwnershipType=DatasetACL.OWNER_OWNED,
+        )
+        self.setacl_user.save()
+        encoded_subdir1 = quote("subdir#1")
+        uri = "/api/v1/dataset/%d/child-dir-nodes/?dir_path=%s" % (
+            self.testds.id,
+            encoded_subdir1,
+        )
+
+        df1 = DataFile.objects.create(
+            dataset=self.testds,
+            filename="filename1",
+            size=0,
+            md5sum="bogus",
+            directory="subdir#1",
+        )
+
+        response = self.api_client.get(uri, authentication=self.get_credentials())
+        returned_data = json.loads(response.content.decode())
+        self.assertEqual(returned_data, [{"next_page": False}])
+
+        self.fileacl_user = DatafileACL(
+            datafile=df1,
+            user=self.user,
+            canRead=True,
+            aclOwnershipType=DatafileACL.OWNER_OWNED,
+        )
+        self.fileacl_user.save()
+
+        response = self.api_client.get(uri, authentication=self.get_credentials())
+        returned_data = json.loads(response.content.decode())
+        self.assertEqual(
+            returned_data,
+            [
+                {
+                    "name": "filename1",
+                    "id": df1.id,
+                    "verified": False,
+                    "is_online": True,
+                    "recall_url": None,
+                }
+            ],
+        )
+
+        df2 = DataFile.objects.create(
+            dataset=self.testds,
+            filename="filename2",
+            size=0,
+            md5sum="bogus",
+            directory="subdir#1/subdir#2",
+        )
+        uri = "/api/v1/dataset/%d/child-dir-nodes/?dir_path=%s" % (
+            self.testds.id,
+            encoded_subdir1,
+        )
+
+        response = self.api_client.get(uri, authentication=self.get_credentials())
+        returned_data = json.loads(response.content.decode())
+        self.assertEqual(
+            returned_data,
+            [
+                {
+                    "name": "filename1",
+                    "id": df1.id,
+                    "verified": False,
+                    "is_online": True,
+                    "recall_url": None,
+                }
+            ],
+        )
+
+        self.fileacl_user2 = DatafileACL(
+            datafile=df2,
+            user=self.user,
+            canRead=True,
+            aclOwnershipType=DatafileACL.OWNER_OWNED,
+        )
+        self.fileacl_user2.save()
+
+        response = self.api_client.get(uri, authentication=self.get_credentials())
+        returned_data = json.loads(response.content.decode())
+        expected_data = [
+            {
+                "name": "filename1",
+                "id": df1.id,
+                "verified": False,
+                "is_online": True,
+                "recall_url": None,
+            },
+            {"name": "subdir#2", "path": "subdir#1/subdir#2", "children": []},
+        ]
+        self.assertEqual(
+            sorted(returned_data, key=lambda x: x["name"]),
+            sorted(expected_data, key=lambda x: x["name"]),
+        )
+
     def test_get_dataset_counts_macro(self):
         set_id = self.testds.id
         expected_output = {
