@@ -529,7 +529,7 @@ class DatasetResourceAuthTest(MyTardisResourceTestCase):
 
         # create Datafile ACL for self.user for df1
         self.df1_acl = DatafileACL(
-            datafile=self.df1,
+            datafile=df1,
             user=self.user,
             canRead=True,
             aclOwnershipType=DatafileACL.OWNER_OWNED,
@@ -576,7 +576,7 @@ class DatasetResourceAuthTest(MyTardisResourceTestCase):
 
         # create Datafile ACL for self.user for df2
         self.df2_acl = DatafileACL(
-            datafile=self.df2,
+            datafile=df2,
             user=self.user,
             canRead=True,
             aclOwnershipType=DatafileACL.OWNER_OWNED,
@@ -616,7 +616,7 @@ class DatasetResourceAuthTest(MyTardisResourceTestCase):
 
         # create Datafile ACL for self.user for df3
         self.df3_acl = DatafileACL(
-            datafile=self.df3,
+            datafile=df3,
             user=self.user,
             canRead=True,
             aclOwnershipType=DatafileACL.OWNER_OWNED,
@@ -667,7 +667,7 @@ class DatasetResourceAuthTest(MyTardisResourceTestCase):
 
         # create Datafile ACL for self.user for df4
         self.df4_acl = DatafileACL(
-            datafile=self.df4,
+            datafile=df4,
             user=self.user,
             canRead=True,
             aclOwnershipType=DatafileACL.OWNER_OWNED,
