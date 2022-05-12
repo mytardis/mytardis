@@ -11,6 +11,7 @@ import json
 from unittest import skipIf
 from urllib.parse import quote
 
+from django.conf import settings
 from django.contrib.auth.models import User
 
 from ...models.access_control import ExperimentACL, DatasetACL, DatafileACL

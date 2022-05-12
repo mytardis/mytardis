@@ -12,6 +12,7 @@ sensitive parameters are not exposed without correct permissions:
 import json
 from unittest import skipIf
 
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.test.client import Client
 
