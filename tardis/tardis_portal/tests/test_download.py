@@ -301,7 +301,7 @@ class DownloadTestCase(TestCase):
             datafile=self.datafile2,
             canRead=True,
             canDownload=True,
-            aclOwnershipType=ExperimentACL.OWNER_OWNED,
+            aclOwnershipType=DatafileACL.OWNER_OWNED,
         )
         self.file_acl.save()
 
@@ -322,7 +322,7 @@ class DownloadTestCase(TestCase):
             user=self.user2,
             datafile=self.datafile2,
             canRead=True,
-            aclOwnershipType=ExperimentACL.OWNER_OWNED,
+            aclOwnershipType=DatafileACL.OWNER_OWNED,
         )
         self.file_acl2.save()
 
@@ -533,6 +533,265 @@ class DownloadTestCase(TestCase):
         self.experiment2.save()
         response = client.get("/download/datafile/%i/" % self.datafile2.id)
         self.assertEqual(response.status_code, 200)
+        # This should be a TIFF (which often starts with "II\x2a\x00")
+        self.assertEqual(response["Content-Type"], "image/tiff")
+        response_content = b"".join(response.streaming_content)
+        self.assertEqual(response_content[0:4], b"II\x2a\x00")
+
+        # check experiment tar download with alternative organization
+        response = client.get("/download/experiment/%i/tar/" % self.experiment1.id)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response["Content-Disposition"],
+            'attachment; filename="%s-complete.tar"' % exp1_title,
+        )
+        self._check_tar_file(
+            response.streaming_content,
+            str(self.experiment1.id),
+            reduce(
+                lambda x, y: x + y,
+                [ds.datafile_set.all() for ds in self.experiment1.datasets.all()],
+            ),
+            simpleNames=True,
+        )
+
+        # check experiment1 download with '.txt' filtered out (none left)
+        response = client.get("/download/experiment/%i/tar/" % self.experiment1.id)
+        self.assertEqual(response.status_code, 200)
+
+        # check experiment2 download with '.txt' filtered out
+        if settings.EXP_SPACES_TO_UNDERSCORES:
+            exp2_title = self.experiment2.title.replace(" ", "_")
+        else:
+            exp2_title = self.experiment2.title
+        exp2_title = quote(exp2_title, safe=settings.SAFE_FILESYSTEM_CHARACTERS)
+        response = client.get("/download/experiment/%i/tar/" % self.experiment2.id)
+        self.assertEqual(response.status_code, 200)
+        self.assertNotEqual(mock_webpack_get_bundle.call_count, 0)
+        self.assertEqual(
+            response["Content-Disposition"],
+            'attachment; filename="%s-complete.tar"' % exp2_title,
+        )
+        self._check_tar_file(
+            response.streaming_content,
+            str(self.experiment2.id),
+            reduce(
+                lambda x, y: x + y,
+                [ds.datafile_set.all() for ds in self.experiment2.datasets.all()],
+            ),
+            simpleNames=True,
+            noTxt=True,
+        )
+
+    @override_settings(ONLY_EXPERIMENT_ACLS=False)
+    @patch("webpack_loader.loader.WebpackLoader.get_bundle")
+    def testDownload_micro(self, mock_webpack_get_bundle):
+        client = Client()
+
+        # check download for experiment1 as tar
+        response = client.get("/download/experiment/%i/tar/" % self.experiment1.id)
+        if settings.EXP_SPACES_TO_UNDERSCORES:
+            exp1_title = self.experiment1.title.replace(" ", "_")
+        else:
+            exp1_title = self.experiment1.title
+        exp1_title = quote(exp1_title, safe=settings.SAFE_FILESYSTEM_CHARACTERS)
+        self.assertEqual(
+            response["Content-Disposition"],
+            'attachment; filename="%s-complete.tar"' % exp1_title,
+        )
+
+        # Should be successful but empty without any public datafiles
+        print(
+            reduce(
+                lambda x, y: x + y,
+                [ds.datafile_set.all() for ds in self.experiment1.datasets.all()],
+            )
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self._check_tar_file(
+            response.streaming_content,
+            exp1_title,
+            reduce(
+                lambda x, y: x + y,
+                [ds.datafile_set.none() for ds in self.experiment1.datasets.all()],
+            ),
+        )
+
+        # check download of file1 Forbidden without datafile1 public
+        response = client.get("/download/datafile/%i/" % self.datafile1.id)
+        self.assertEqual(response.status_code, 403)
+
+        self.datafile1.public_access = DataFile.PUBLIC_ACCESS_FULL
+        self.datafile1.save()
+
+        # check download for experiment1 as tar
+        response = client.get("/download/experiment/%i/tar/" % self.experiment1.id)
+        if settings.EXP_SPACES_TO_UNDERSCORES:
+            exp1_title = self.experiment1.title.replace(" ", "_")
+        else:
+            exp1_title = self.experiment1.title
+        exp1_title = quote(exp1_title, safe=settings.SAFE_FILESYSTEM_CHARACTERS)
+        self.assertEqual(
+            response["Content-Disposition"],
+            'attachment; filename="%s-complete.tar"' % exp1_title,
+        )
+
+        # Should be successful and now contain df1
+        self.assertEqual(response.status_code, 200)
+        self._check_tar_file(
+            response.streaming_content,
+            exp1_title,
+            reduce(
+                lambda x, y: x + y,
+                [ds.datafile_set.all() for ds in self.experiment1.datasets.all()],
+            ),
+        )
+        # likewise this should now be allowed
+        response = client.get("/download/datafile/%i/" % self.datafile1.id)
+        self.assertEqual(
+            response["Content-Disposition"],
+            'attachment; filename="%s"' % self.datafile1.filename,
+        )
+        self.assertEqual(response.status_code, 200)
+        response_content = b"".join(response.streaming_content)
+        self.assertEqual(response_content, b"Hello World!\n")
+
+        # requesting file2 should be forbidden...
+        response = client.get("/download/datafile/%i/" % self.datafile2.id)
+        self.assertEqual(response.status_code, 403)
+
+        # test that created_by user can download file2
+        # Should be forbidden until DatafileACL created
+        client.login(username="DownloadTestUser", password="secret")
+        response = client.get("/download/datafile/%i/" % self.datafile2.id)
+        self.assertEqual(response.status_code, 403)
+        client.logout()
+
+        self.file_acl = DatafileACL(
+            user=self.user,
+            datafile=self.datafile2,
+            canRead=True,
+            canDownload=True,
+            aclOwnershipType=DatafileACL.OWNER_OWNED,
+        )
+        self.file_acl.save()
+
+        client.login(username="DownloadTestUser", password="secret")
+        response = client.get("/download/datafile/%i/" % self.datafile2.id)
+        self.assertEqual(response.status_code, 200)
+        client.logout()
+
+        self.exp_acl = ExperimentACL(
+            user=self.user2,
+            experiment=self.experiment2,
+            canRead=True,
+            canDownload=True,
+            aclOwnershipType=ExperimentACL.OWNER_OWNED,
+        )
+        self.exp_acl.save()
+        self.set_acl = DatasetACL(
+            user=self.user2,
+            dataset=self.dataset2,
+            canRead=True,
+            canDownload=True,
+            aclOwnershipType=DatasetACL.OWNER_OWNED,
+        )
+        self.file_acl.save()
+        self.file_acl = DatafileACL(
+            user=self.user2,
+            datafile=self.datafile2,
+            canRead=True,
+            aclOwnershipType=DatafileACL.OWNER_OWNED,
+        )
+        self.file_acl.save()
+
+        # test that ReadOnly user cannot download file2, even with canDownload exp/set
+        client.login(username="ReadOnlyTestUser", password="secret")
+        response = client.get("/download/datafile/%i/" % self.datafile2.id)
+        # Should be forbidden
+        self.assertEqual(response.status_code, 403)
+        client.logout()
+
+        # check dataset1 download as tar
+        response = client.post(
+            "/download/datafiles/",
+            {
+                "expid": self.experiment1.id,
+                "dataset": [self.dataset1.id],
+                "datafile": [],
+                "comptype": "tar",
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+        self._check_tar_file(
+            response.streaming_content,
+            "Experiment 1-selection",
+            self.dataset1.datafile_set.all(),
+        )
+
+        # check dataset2 download
+        response = client.post(
+            "/download/datafiles/",
+            {
+                "expid": self.experiment2.id,
+                "dataset": [self.dataset2.id],
+                "datafile": [],
+            },
+        )
+        self.assertEqual(response.status_code, 302)
+
+        # check datafile1 download via POST
+        response = client.post(
+            "/download/datafiles/",
+            {
+                "expid": self.experiment1.id,
+                "dataset": [],
+                "datafile": [self.datafile1.id],
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+        self._check_tar_file(
+            response.streaming_content, "Experiment 1-selection", [self.datafile1]
+        )
+
+        # check datafile2 download via POST
+        response = client.post(
+            "/download/datafiles/",
+            {
+                "expid": self.experiment2.id,
+                "dataset": [],
+                "datafile": [self.datafile2.id],
+            },
+        )
+        self.assertEqual(response.status_code, 302)
+
+        # Check datafile2 download with second experiment to "metadata only"
+        self.experiment2.public_access = Experiment.PUBLIC_ACCESS_METADATA
+        self.experiment2.save()
+        response = client.get("/download/datafile/%i/" % self.datafile2.id)
+        # Metadata-only means "no file access"!
+        self.assertEqual(response.status_code, 403)
+
+        # Check datafile2 download with second experiment to public
+        self.experiment2.public_access = Experiment.PUBLIC_ACCESS_FULL
+        self.experiment2.save()
+        response = client.get("/download/datafile/%i/" % self.datafile2.id)
+        # Should still be 403 as Datafile not public
+        self.assertEqual(response.status_code, 403)
+
+        # Check datafile2 download with datafile2 set to metadata only
+        self.datafile2.public_access = DataFile.PUBLIC_ACCESS_METADATA
+        self.datafile2.save()
+        response = client.get("/download/datafile/%i/" % self.datafile2.id)
+        self.assertEqual(response.status_code, 200)
+
+        # finally, Check datafile2 download with datafile2 set to public
+        self.datafile2.public_access = DataFile.PUBLIC_ACCESS_FULL
+        self.datafile2.save()
+        response = client.get("/download/datafile/%i/" % self.datafile2.id)
+        self.assertEqual(response.status_code, 200)
+
         # This should be a TIFF (which often starts with "II\x2a\x00")
         self.assertEqual(response["Content-Type"], "image/tiff")
         response_content = b"".join(response.streaming_content)
