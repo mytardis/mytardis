@@ -6,9 +6,9 @@ Testing the Experiment resource in MyTardis's Tastypie-based REST API
 .. moduleauthor:: Mike Laverick <mike.laverick@auckland.ac.nz>
 """
 import json
+from unittest import skipIf
 
 from django.contrib.auth.models import User
-from django.test import override_settings
 
 from ...models.access_control import ExperimentACL, DatasetACL, DatafileACL
 from ...models.experiment import Experiment, ExperimentAuthor
@@ -180,6 +180,7 @@ class ExperimentResourceCountsTest(MyTardisResourceTestCase):
     def get_acl_credentials(self, username, password):
         return self.create_basic(username=username, password=password)
 
+    @skipIf(settings.ONLY_EXPERIMENT_ACLS == False, "skipping Macro ACL specific test")
     def test_get_experiment_counts_macro(self):
         exp_id = Experiment.objects.first().id
         expected_output = {
@@ -295,7 +296,7 @@ class ExperimentResourceCountsTest(MyTardisResourceTestCase):
         self.testexp.public_access = 1
         self.testexp.save()
 
-    @override_settings(ONLY_EXPERIMENT_ACLS=False)
+    @skipIf(settings.ONLY_EXPERIMENT_ACLS == True, "skipping Micro ACL specific test")
     def test_get_experiment_counts_micro(self):
         exp_id = Experiment.objects.first().id
         expected_output_blank = {

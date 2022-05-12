@@ -11,7 +11,6 @@ import json
 from urllib.parse import quote
 
 from django.contrib.auth.models import User
-from django.test import override_settings
 
 from ...models.access_control import ExperimentACL, DatasetACL, DatafileACL
 from ...models.datafile import DataFile
@@ -22,6 +21,7 @@ from ...models.instrument import Instrument
 from . import MyTardisResourceTestCase
 
 
+@skipIf(settings.ONLY_EXPERIMENT_ACLS == False, "skipping Macro ACL specific test")
 class DatasetResourceTest(MyTardisResourceTestCase):
     def setUp(self):
         super().setUp()
@@ -402,7 +402,7 @@ class DatasetResourceAuthTest(MyTardisResourceTestCase):
     def get_acl_credentials(self, username, password):
         return self.create_basic(username=username, password=password)
 
-    @override_settings(ONLY_EXPERIMENT_ACLS=False)
+    @skipIf(settings.ONLY_EXPERIMENT_ACLS == True, "skipping Micro ACL specific test")
     def test_get_root_dir_nodes_micro(self):
         uri = "/api/v1/dataset/%d/root-dir-nodes/" % self.testds.id
         response = self.api_client.get(uri, authentication=self.get_credentials())
@@ -507,7 +507,7 @@ class DatasetResourceAuthTest(MyTardisResourceTestCase):
             sorted(expected_data, key=lambda x: ("name" not in x, x.get("name", None))),
         )
 
-    @override_settings(ONLY_EXPERIMENT_ACLS=False)
+    @skipIf(settings.ONLY_EXPERIMENT_ACLS == True, "skipping Micro ACL specific test")
     def test_get_child_dir_nodes_micro(self):
 
         uri = "/api/v1/dataset/%d/child-dir-nodes/?dir_path=subdir" % self.testds.id
@@ -690,7 +690,7 @@ class DatasetResourceAuthTest(MyTardisResourceTestCase):
             sorted(expected_data, key=lambda x: x["name"]),
         )
 
-    @override_settings(ONLY_EXPERIMENT_ACLS=False)
+    @skipIf(settings.ONLY_EXPERIMENT_ACLS == True, "skipping Micro ACL specific test")
     def test_get_child_dir_nodes_no_files_in_root_dir_micro(self):
         encoded_subdir1 = quote("subdir#1")
         uri = "/api/v1/dataset/%d/child-dir-nodes/?dir_path=%s" % (
@@ -785,7 +785,9 @@ class DatasetResourceAuthTest(MyTardisResourceTestCase):
             sorted(expected_data, key=lambda x: x["name"]),
         )
 
+    @skipIf(settings.ONLY_EXPERIMENT_ACLS == False, "skipping Macro ACL specific test")
     def test_get_dataset_counts_macro(self):
+        """This is actually a Macro test, but it fits here nicer due to setup objects"""
         set_id = self.testds.id
         expected_output = {
             "dataset_size": 0,
@@ -900,7 +902,7 @@ class DatasetResourceAuthTest(MyTardisResourceTestCase):
         self.testexp.public_access = 1
         self.testexp.save()
 
-    @override_settings(ONLY_EXPERIMENT_ACLS=False)
+    @skipIf(settings.ONLY_EXPERIMENT_ACLS == True, "skipping Micro ACL specific test")
     def test_get_dataset_counts_micro(self):
         set_id = self.testds.id
 

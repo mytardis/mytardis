@@ -14,17 +14,26 @@ if __name__ == "__main__":
     # Without this, coverage reporting starts after many modules have
     # already been imported, so module-level code is excluded from
     # coverage reports:
-    cov = coverage.coverage(source=['tardis'], omit=['*/tests/*'])
-    cov.set_option('report:show_missing', True)
+    cov = coverage.coverage(source=["tardis"], omit=["*/tests/*"])
+    cov.set_option("report:show_missing", True)
     if len(sys.argv) > 1 and sys.argv[1] == "behave":
-        cov.set_option('run:plugins', ['django_coverage_plugin'])
-        cov.set_option('report:include', ['*.html', '*.js'])
+        cov.set_option("run:plugins", ["django_coverage_plugin"])
+        cov.set_option("report:include", ["*.html", "*.js"])
     cov.erase()
     cov.start()
 
     if len(sys.argv) < 2:
-        execute_from_command_line(['./test.py', 'test'])
+        execute_from_command_line(["./test.py", "test"])
+        os.environ.setdefault(
+            "DJANGO_SETTINGS_MODULE", "tardis.test_settings_microacls"
+        )
+        execute_from_command_line(["./test.py", "test"])
+
     else:
+        execute_from_command_line(sys.argv)
+        os.environ.setdefault(
+            "DJANGO_SETTINGS_MODULE", "tardis.test_settings_microacls"
+        )
         execute_from_command_line(sys.argv)
 
     cov.stop()

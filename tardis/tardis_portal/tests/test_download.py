@@ -13,8 +13,8 @@ from tempfile import NamedTemporaryFile
 from urllib.parse import quote
 
 from unittest.mock import patch
+from unittest import skipIf
 
-from django.test import override_settings
 from django.test import TestCase
 from django.test.client import Client
 
@@ -175,6 +175,7 @@ class DownloadTestCase(TestCase):
         rmtree(self.dest1)
         rmtree(self.dest2)
 
+    @skipIf(settings.ONLY_EXPERIMENT_ACLS == False, "skipping Macro ACL specific test")
     @patch("webpack_loader.loader.WebpackLoader.get_bundle")
     def testView(self, mock_webpack_get_bundle):
         client = Client()
@@ -238,7 +239,7 @@ class DownloadTestCase(TestCase):
             tiff_signature = "II\x2a\x00"
             self.assertEqual(response.content[0:4], tiff_signature)
 
-    @override_settings(ONLY_EXPERIMENT_ACLS=False)
+    @skipIf(settings.ONLY_EXPERIMENT_ACLS == True, "skipping Micro ACL specific test")
     @patch("webpack_loader.loader.WebpackLoader.get_bundle")
     def testView_micro(self, mock_webpack_get_bundle):
         client = Client()
@@ -415,6 +416,7 @@ class DownloadTestCase(TestCase):
             self.assertFalse(pattern.search(name))
         self.assertEqual(len(names), len(datafiles))
 
+    @skipIf(settings.ONLY_EXPERIMENT_ACLS == False, "skipping Macro ACL specific test")
     @patch("webpack_loader.loader.WebpackLoader.get_bundle")
     def testDownload(self, mock_webpack_get_bundle):
         client = Client()
@@ -583,7 +585,7 @@ class DownloadTestCase(TestCase):
             noTxt=True,
         )
 
-    @override_settings(ONLY_EXPERIMENT_ACLS=False)
+    @skipIf(settings.ONLY_EXPERIMENT_ACLS == True, "skipping Micro ACL specific test")
     @patch("webpack_loader.loader.WebpackLoader.get_bundle")
     def testDownload_micro(self, mock_webpack_get_bundle):
         client = Client()

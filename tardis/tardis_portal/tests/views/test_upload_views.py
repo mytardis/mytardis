@@ -8,12 +8,12 @@ Tests for view methods relating to uploads
 .. moduleauthor::  James Wettenhall <james.wettenhall@monash.edu>
 .. moduleauthor:: Mike Laverick <mike.laverick@auckland.ac.nz>
 """
+from unittest import skipIf
 from urllib.parse import quote
 
 from django.conf import settings
 from django.test import TestCase
 from django.test.client import Client
-from django.test import override_settings
 from django.contrib.auth.models import User, Permission
 
 from ...models import (
@@ -102,6 +102,7 @@ class UploadTestCase(TestCase):
         rmtree(self.dataset_path)
         self.exp.delete()
 
+    @skipIf(settings.ONLY_EXPERIMENT_ACLS == False, "skipping Macro ACL specific test")
     def test_file_upload_macro(self):
         from os import path
 
@@ -127,7 +128,7 @@ class UploadTestCase(TestCase):
         )
         self.assertTrue(test_files_db[0].file_objects.all()[0].verified)
 
-    @override_settings(ONLY_EXPERIMENT_ACLS=False)
+    @skipIf(settings.ONLY_EXPERIMENT_ACLS == True, "skipping Micro ACL specific test")
     def test_file_upload_micro(self):
         from os import path
 

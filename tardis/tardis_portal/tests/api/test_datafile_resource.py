@@ -9,8 +9,8 @@ import hashlib
 import json
 import os
 import tempfile
+from unittest import skipIf
 
-from django.test import override_settings
 from django.test.client import Client
 
 import magic
@@ -24,6 +24,7 @@ from ...models.parameters import Schema
 from . import MyTardisResourceTestCase
 
 
+@skipIf(settings.ONLY_EXPERIMENT_ACLS == False, "skipping Macro ACL specific test")
 class DataFileResourceTest(MyTardisResourceTestCase):
     def setUp(self):
         super().setUp()
@@ -221,7 +222,7 @@ class DataFileResourceTest(MyTardisResourceTestCase):
         self.assertEqual(response.getvalue(), b"123test\n")
 
 
-@override_settings(ONLY_EXPERIMENT_ACLS=False)
+@skipIf(settings.ONLY_EXPERIMENT_ACLS == True, "skipping Micro ACL specific test")
 class DataFileResourceMicroTest(MyTardisResourceTestCase):
     """
     Test the DatafileResource authorisation for the MicroACL (all level ACLs) scenario
