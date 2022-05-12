@@ -259,12 +259,14 @@ class DownloadTestCase(TestCase):
         self.datafile1.public_access = DataFile.PUBLIC_ACCESS_FULL
         self.datafile1.save()
 
+        # check view of file1
+        response = client.get("/datafile/view/%i/" % self.datafile1.id)
         # Finally Datafile should now be public and visible
+        self.assertEqual(
+            response["Content-Disposition"],
+            'inline; filename="%s"' % self.datafile1.filename,
+        )
         self.assertEqual(response.status_code, 200)
-        # self.assertEqual(
-        #    response["Content-Disposition"],
-        #    'inline; filename="%s"' % self.datafile1.filename,
-        # )
         response_content = b"".join(response.streaming_content)
         self.assertEqual(response_content, b"Hello World!\n")
 
