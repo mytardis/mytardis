@@ -14,6 +14,7 @@ from urllib.parse import quote
 
 from unittest.mock import patch
 
+from django.test import override_settings
 from django.test import TestCase
 from django.test.client import Client
 
@@ -21,7 +22,7 @@ from django.conf import settings
 from django.contrib.auth.models import User
 
 from ..models.experiment import Experiment
-from ..models.access_control import ExperimentACL
+from ..models.access_control import ExperimentACL, DatasetACL, DatafileACL
 
 from ..models.dataset import Dataset
 from ..models.datafile import DataFile, DataFileObject
@@ -212,6 +213,137 @@ class DownloadTestCase(TestCase):
         # check view of file2 again
         response = client.get("/datafile/view/%i/" % self.datafile2.id)
         self.assertEqual(response.status_code, 200)
+
+        self.assertNotEqual(mock_webpack_get_bundle.call_count, 0)
+
+        # The following behaviour relies on ImageMagick
+        if IMAGEMAGICK_AVAILABLE:
+            # file2 should have a ".png" filename
+            self.assertEqual(
+                response["Content-Disposition"],
+                'inline; filename="%s"' % (self.datafile2.filename + ".png"),
+            )
+            # file2 should be a PNG
+            self.assertEqual(response["Content-Type"], "image/png")
+            png_signature = b"\x89PNG\r\n\x1a\n"
+            self.assertEqual(response.content[0:8], png_signature)
+        else:
+            # file2 should have a ".tiff" filename
+            self.assertEqual(
+                response["Content-Disposition"],
+                'inline; filename="%s"' % (self.datafile2.filename),
+            )
+            # file2 should be a TIFF
+            self.assertEqual(response["Content-Type"], "image/tiff")
+            tiff_signature = "II\x2a\x00"
+            self.assertEqual(response.content[0:4], tiff_signature)
+
+    @override_settings(ONLY_EXPERIMENT_ACLS=False)
+    @patch("webpack_loader.loader.WebpackLoader.get_bundle")
+    def testView_micro(self, mock_webpack_get_bundle):
+        client = Client()
+
+        # check view of file1
+        response = client.get("/datafile/view/%i/" % self.datafile1.id)
+        # Public Experiment does not imply public Dataset or Datafile
+        self.assertEqual(response.status_code, 403)
+
+        self.dataset1.public_access = Dataset.PUBLIC_ACCESS_FULL
+        self.dataset1.save()
+
+        # check view of file1
+        response = client.get("/datafile/view/%i/" % self.datafile1.id)
+        # Public Experiment and Dataset still does not imply public Datafile
+        self.assertEqual(response.status_code, 403)
+
+        self.datafile1.public_access = DataFile.PUBLIC_ACCESS_FULL
+        self.datafile1.save()
+
+        # Finally Datafile should now be public and visible
+        self.assertEqual(
+            response["Content-Disposition"],
+            'inline; filename="%s"' % self.datafile1.filename,
+        )
+        self.assertEqual(response.status_code, 200)
+        response_content = b"".join(response.streaming_content)
+        self.assertEqual(response_content, b"Hello World!\n")
+
+        # check view of file2
+        response = client.get("/datafile/view/%i/" % self.datafile2.id)
+        # Should be forbidden
+        self.assertEqual(response.status_code, 403)
+
+        # test that created_by user cannot view file2 despite ExperimentACL
+        client.login(username="DownloadTestUser", password="secret")
+        response = client.get("/datafile/view/%i/" % self.datafile2.id)
+        self.assertEqual(response.status_code, 403)
+        client.logout()
+
+        self.set_acl = DatasetACL(
+            user=self.user,
+            dataset=self.dataset2,
+            canRead=True,
+            canDownload=True,
+            aclOwnershipType=DatasetACL.OWNER_OWNED,
+        )
+        self.set_acl.save()
+
+        # test that created_by user still cannot view file2 despite DatasetACL
+        client.login(username="DownloadTestUser", password="secret")
+        response = client.get("/datafile/view/%i/" % self.datafile2.id)
+        self.assertEqual(response.status_code, 403)
+        client.logout()
+
+        self.file_acl = DatafileACL(
+            user=self.user,
+            datafile=self.datafile2,
+            canRead=True,
+            canDownload=True,
+            aclOwnershipType=ExperimentACL.OWNER_OWNED,
+        )
+        self.file_acl.save()
+
+        # test that created_by user can view file2
+        client.login(username="DownloadTestUser", password="secret")
+        response = client.get("/datafile/view/%i/" % self.datafile2.id)
+        self.assertEqual(response.status_code, 200)
+        client.logout()
+
+        self.set_acl2 = DatasetACL(
+            user=self.user2,
+            dataset=self.dataset2,
+            canRead=True,
+            aclOwnershipType=DatasetACL.OWNER_OWNED,
+        )
+        self.set_acl2.save()
+        self.file_acl2 = DatafileACL(
+            user=self.user2,
+            datafile=self.datafile2,
+            canRead=True,
+            aclOwnershipType=ExperimentACL.OWNER_OWNED,
+        )
+        self.file_acl2.save()
+
+        # test that ReadOnly user cannot view file2 (as it is effectively a download)
+        client.login(username="ReadOnlyTestUser", password="secret")
+        response = client.get("/datafile/view/%i/" % self.datafile2.id)
+        # Should be forbidden
+        self.assertEqual(response.status_code, 403)
+        client.logout()
+
+        self.experiment2.public_access = Experiment.PUBLIC_ACCESS_FULL
+        self.experiment2.save()
+
+        # check view of file2 again, should still be 403 as File not public
+        response = client.get("/datafile/view/%i/" % self.datafile2.id)
+        self.assertEqual(response.status_code, 403)
+
+        self.datafile2.public_access = DataFile.PUBLIC_ACCESS_FULL
+        self.datafile2.save()
+
+        # check view of file2 again, should now be 200 as File is public
+        response = client.get("/datafile/view/%i/" % self.datafile2.id)
+        self.assertEqual(response.status_code, 403)
 
         self.assertNotEqual(mock_webpack_get_bundle.call_count, 0)
 
