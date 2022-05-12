@@ -601,13 +601,6 @@ class DownloadTestCase(TestCase):
         )
 
         # Should be successful but empty without any public datafiles
-        print(
-            reduce(
-                lambda x, y: x + y,
-                [ds.datafile_set.all() for ds in self.experiment1.datasets.all()],
-            )
-        )
-
         self.assertEqual(response.status_code, 200)
         self._check_tar_file(
             response.streaming_content,
@@ -784,7 +777,7 @@ class DownloadTestCase(TestCase):
         self.datafile2.public_access = DataFile.PUBLIC_ACCESS_METADATA
         self.datafile2.save()
         response = client.get("/download/datafile/%i/" % self.datafile2.id)
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 403)
 
         # finally, Check datafile2 download with datafile2 set to public
         self.datafile2.public_access = DataFile.PUBLIC_ACCESS_FULL
