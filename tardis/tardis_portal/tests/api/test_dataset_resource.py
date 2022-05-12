@@ -8,6 +8,7 @@ Testing the Dataset resource in MyTardis's Tastypie-based REST API
 """
 
 import json
+from unittest import skipIf
 from urllib.parse import quote
 
 from django.contrib.auth.models import User

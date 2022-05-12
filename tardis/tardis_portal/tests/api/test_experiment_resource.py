@@ -8,6 +8,7 @@ Testing the Experiment resource in MyTardis's Tastypie-based REST API
 import json
 from unittest import skipIf
 
+from django.conf import settings
 from django.contrib.auth.models import User
 
 from ...models.access_control import ExperimentACL, DatasetACL, DatafileACL

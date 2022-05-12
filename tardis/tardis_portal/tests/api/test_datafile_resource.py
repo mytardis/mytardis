@@ -11,6 +11,7 @@ import os
 import tempfile
 from unittest import skipIf
 
+from django.conf import settings
 from django.test.client import Client
 
 import magic

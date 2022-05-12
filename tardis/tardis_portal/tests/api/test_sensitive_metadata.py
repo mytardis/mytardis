@@ -10,6 +10,7 @@ sensitive parameters are not exposed without correct permissions:
 .. moduleauthor:: Mike Laverick <mike.laverick@auckland.ac.nz>
 """
 import json
+from unittest import skipIf
 
 from django.contrib.auth.models import User
 from django.test.client import Client
