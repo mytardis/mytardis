@@ -34,7 +34,7 @@ requests==2.26.0
 uritemplate==3.0.1
 # GraphQL
 graphene==2.1.9
-pyjwt==2.1.0
+pyjwt==2.4.0
 django-graphql-jwt==0.3.4
 graphene-django==2.15.0
 graphene-django-plus==2.3.2
