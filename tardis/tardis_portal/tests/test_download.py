@@ -345,7 +345,7 @@ class DownloadTestCase(TestCase):
 
         # check view of file2 again, should now be 200 as File is public
         response = client.get("/datafile/view/%i/" % self.datafile2.id)
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 200)
 
         self.assertNotEqual(mock_webpack_get_bundle.call_count, 0)
 
