@@ -193,4 +193,4 @@ RECALL_URI_TEMPLATES = {
     "tardis.apps.hsm.storage.HsmFileSystemStorage": "/api/v1/hsm_replica/{dfo_id}/recall/"
 }
 
-ONLY_EXPERIMENT_ACLS = True
+ONLY_EXPERIMENT_ACLS = False
