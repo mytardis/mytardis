@@ -23,7 +23,7 @@ html2text==2020.1.16
 html5lib==1.1
 isodate==0.6.0
 lxml==4.6.3
-paramiko==2.7.2
+paramiko==2.11.0
 pillow==8.3.2
 pyoai==2.5.0
 python-dateutil==2.8.2
