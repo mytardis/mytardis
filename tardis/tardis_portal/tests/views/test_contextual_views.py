@@ -106,17 +106,6 @@ class ContextualViewTest(TestCase):
         """
         from ...views.ajax_pages import display_datafile_details
 
-        request = flexmock(user=self.user, groups=[("testgroup", flexmock())])
-        with self.settings(
-            DATAFILE_VIEWS=[
-                ("http://test.com/test/schema", "/test/url"),
-                ("http://does.not.exist", "/false/url"),
-            ]
-        ):
-            response = display_datafile_details(request, datafile_id=self.datafile.id)
-            # Should fail without explicit DataFile ACL
-            self.assertEqual(response.status_code, 403)
-
         self.set_acl = DatasetACL(
             user=self.user,
             dataset=self.dataset,
@@ -125,17 +114,6 @@ class ContextualViewTest(TestCase):
             aclOwnershipType=DatasetACL.OWNER_OWNED,
         )
         self.set_acl.save()
-
-        request = flexmock(user=self.user, groups=[("testgroup", flexmock())])
-        with self.settings(
-            DATAFILE_VIEWS=[
-                ("http://test.com/test/schema", "/test/url"),
-                ("http://does.not.exist", "/false/url"),
-            ]
-        ):
-            response = display_datafile_details(request, datafile_id=self.datafile.id)
-            # Again, should fail without explicit DataFile ACL
-            self.assertEqual(response.status_code, 403)
 
         self.file_acl = DatafileACL(
             user=self.user,
