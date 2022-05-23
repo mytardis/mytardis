@@ -68,7 +68,7 @@ def _create_test_experiment(user, license_):
     return experiment
 
 
-def _create_test_dataset(nosDatafiles):
+def _create_test_dataset(user, nosDatafiles):
     ds_ = Dataset(description="happy snaps of plumage")
     ds_.save()
     if not settings.ONLY_EXPERIMENT_ACLS:
@@ -113,9 +113,9 @@ def _create_test_data():
     license_ = _create_license()
     exp1_ = _create_test_experiment(user_, license_)
     exp2_ = _create_test_experiment(user_, license_)
-    ds1_ = _create_test_dataset(1)
-    ds2_ = _create_test_dataset(2)
-    ds3_ = _create_test_dataset(3)
+    ds1_ = _create_test_dataset(user_, 1)
+    ds2_ = _create_test_dataset(user_, 2)
+    ds3_ = _create_test_dataset(user_, 3)
     ds1_.experiments.add(exp1_)
     ds2_.experiments.add(exp1_)
     ds2_.experiments.add(exp2_)

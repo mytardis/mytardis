@@ -155,6 +155,8 @@ class HsmAppApiTestCase(MyTardisResourceTestCase):
         """
         # Test 403 forbidden (no ExperimentACL access to dataset):
         self.dataset.experiments.remove(self.testexp)
+        if not settings.ONLY_EXPERIMENT_ACLS:
+            self.file_acl.delete()
         self.assertHttpForbidden(
             self.api_client.get(
                 "/api/v1/hsm_replica/%s/online/" % self.dfo.id,
@@ -260,6 +262,8 @@ class HsmAppApiTestCase(MyTardisResourceTestCase):
 
         # Test 403 forbidden (no ExperimentACL access to dataset):
         self.dataset.experiments.remove(self.testexp)
+        if not settings.ONLY_EXPERIMENT_ACLS:
+            self.file_acl.delete()
         self.assertHttpForbidden(
             self.api_client.get(
                 "/api/v1/hsm_replica/%s/recall/" % self.dfo.id,

@@ -618,33 +618,6 @@ class EditParameterSetTestCase(TestCase):
 
         if not settings.ONLY_EXPERIMENT_ACLS:
 
-            request = factory.get(
-                "/ajax/edit_dataset_parameters/%s/" % self.datasetparameterset.id
-            )
-            request.user = self.user
-            response = edit_dataset_par(request, self.datasetparameterset.id)
-            self.assertEqual(response.status_code, 403)
-            # Check that parameters could not be updated
-            request = factory.post(
-                "/ajax/edit_dataset_parameters/%s/" % self.datasetparameterset.id,
-                data={
-                    "csrfmiddlewaretoken": "bogus",
-                    "parameter1__1": "parameter1 value",
-                    "parameter_sens__2": "new sensitive info",
-                },
-            )
-            request.user = self.user
-            response = edit_dataset_par(request, self.datasetparameterset.id)
-            self.assertEqual(response.status_code, 403)
-            self.assertEqual(
-                DatasetParameter.objects.get(id=self.set_param.id).string_value,
-                "parameter1 value",
-            )
-            self.assertEqual(
-                DatasetParameter.objects.get(id=self.set_param_sens.id).string_value,
-                "sensitive info",
-            )
-
             # Create ACLs to allow further edits
             DatasetACL(
                 dataset=self.dataset,
@@ -718,33 +691,6 @@ class EditParameterSetTestCase(TestCase):
 
         if not settings.ONLY_EXPERIMENT_ACLS:
 
-            request = factory.get(
-                "/ajax/edit_dataset_parameters/%s/" % self.datasetparameterset.id
-            )
-            request.user = self.user
-            response = edit_dataset_par(request, self.datasetparameterset.id)
-            self.assertEqual(response.status_code, 403)
-            # Check that parameters could not be updated
-            request = factory.post(
-                "/ajax/edit_dataset_parameters/%s/" % self.datasetparameterset.id,
-                data={
-                    "csrfmiddlewaretoken": "bogus",
-                    "parameter1__1": "parameter1 value",
-                    "parameter_sens__2": "new sensitive info",
-                },
-            )
-            request.user = self.user
-            response = edit_dataset_par(request, self.datasetparameterset.id)
-            self.assertEqual(response.status_code, 403)
-            self.assertEqual(
-                DatasetParameter.objects.get(id=self.set_param.id).string_value,
-                "parameter1 value",
-            )
-            self.assertEqual(
-                DatasetParameter.objects.get(id=self.set_param_sens.id).string_value,
-                "sensitive info",
-            )
-
             # Create ACLs to allow further edits
             DatasetACL(
                 dataset=self.dataset,
@@ -791,34 +737,6 @@ class EditParameterSetTestCase(TestCase):
         factory = RequestFactory()
 
         if not settings.ONLY_EXPERIMENT_ACLS:
-
-            request = factory.get(
-                "/ajax/edit_datafile_parameters/%s/" % self.datafileparameterset.id
-            )
-            request.user = self.user
-            response = edit_datafile_par(request, self.datafileparameterset.id)
-            self.assertEqual(response.status_code, 403)
-            # Check that parameters could not be updated
-            request = factory.post(
-                "/ajax/edit_datafile_parameters/%s/" % self.datafileparameterset.id,
-                data={
-                    "csrfmiddlewaretoken": "bogus",
-                    "parameter1__1": "parameter1 value",
-                    "parameter_sens__2": "new sensitive info",
-                },
-            )
-            request.user = self.user
-            response = edit_datafile_par(request, self.datafileparameterset.id)
-            self.assertEqual(response.status_code, 403)
-            self.assertEqual(
-                DatafileParameter.objects.get(id=self.file_param.id).string_value,
-                "parameter1 value",
-            )
-            self.assertEqual(
-                DatafileParameter.objects.get(id=self.file_param_sens.id).string_value,
-                "sensitive info",
-            )
-
             # Create ACLs to allow further edits
             DatafileACL(
                 datafile=self.datafile,
@@ -891,34 +809,6 @@ class EditParameterSetTestCase(TestCase):
         factory = RequestFactory()
 
         if not settings.ONLY_EXPERIMENT_ACLS:
-
-            request = factory.get(
-                "/ajax/edit_datafile_parameters/%s/" % self.datafileparameterset.id
-            )
-            request.user = self.user
-            response = edit_datafile_par(request, self.datafileparameterset.id)
-            self.assertEqual(response.status_code, 403)
-            # Check that parameters could not be updated
-            request = factory.post(
-                "/ajax/edit_datafile_parameters/%s/" % self.datafileparameterset.id,
-                data={
-                    "csrfmiddlewaretoken": "bogus",
-                    "parameter1__1": "parameter1 value",
-                    "parameter_sens__2": "new sensitive info",
-                },
-            )
-            request.user = self.user
-            response = edit_datafile_par(request, self.datafileparameterset.id)
-            self.assertEqual(response.status_code, 403)
-            self.assertEqual(
-                DatafileParameter.objects.get(id=self.file_param.id).string_value,
-                "parameter1 value",
-            )
-            self.assertEqual(
-                DatafileParameter.objects.get(id=self.file_param_sens.id).string_value,
-                "sensitive info",
-            )
-
             # Create ACLs to allow further edits
             DatafileACL(
                 datafile=self.datafile,

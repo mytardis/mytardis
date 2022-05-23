@@ -590,29 +590,6 @@ class DownloadTestCase(TestCase):
     def testDownload_micro(self, mock_webpack_get_bundle):
         client = Client()
 
-        # check download for experiment1 as tar
-        response = client.get("/download/experiment/%i/tar/" % self.experiment1.id)
-        if settings.EXP_SPACES_TO_UNDERSCORES:
-            exp1_title = self.experiment1.title.replace(" ", "_")
-        else:
-            exp1_title = self.experiment1.title
-        exp1_title = quote(exp1_title, safe=settings.SAFE_FILESYSTEM_CHARACTERS)
-        self.assertEqual(
-            response["Content-Disposition"],
-            'attachment; filename="%s-complete.tar"' % exp1_title,
-        )
-
-        # Should be successful but empty without any public datafiles
-        self.assertEqual(response.status_code, 200)
-        self._check_tar_file(
-            response.streaming_content,
-            exp1_title,
-            reduce(
-                lambda x, y: x + y,
-                [ds.datafile_set.none() for ds in self.experiment1.datasets.all()],
-            ),
-        )
-
         # check download of file1 Forbidden without datafile1 public
         response = client.get("/download/datafile/%i/" % self.datafile1.id)
         self.assertEqual(response.status_code, 403)

@@ -48,6 +48,8 @@ def _create_datafile():
     dataset.save()
     dataset.experiments.add(experiment)
     dataset.save()
+    dataset.public_access = Dataset.PUBLIC_ACCESS_FULL
+    dataset.save()
 
     if not settings.ONLY_EXPERIMENT_ACLS:
         DatasetACL(
@@ -85,6 +87,8 @@ def _create_datafile():
         datafile.md5sum = checksums["md5sum"]
     if compute_sha512:
         datafile.sha512sum = checksums["sha512sum"]
+    datafile.save()
+    datafile.public_access = DataFile.PUBLIC_ACCESS_FULL
     datafile.save()
 
     if not settings.ONLY_EXPERIMENT_ACLS:

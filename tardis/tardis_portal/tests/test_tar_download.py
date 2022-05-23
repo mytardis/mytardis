@@ -14,6 +14,7 @@ from django.urls import reverse
 from django.test import Client, TestCase
 
 from ..models.experiment import Experiment
+from ..models.dataset import Dataset
 from ..models.datafile import DataFile
 
 
