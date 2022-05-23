@@ -162,9 +162,7 @@ def _get_mapper_makers():
                     def mapper(datafile):
                         # TODO: remove this complex code. warning silenced for
                         # now because no time to investigate
-                        return mapper_fn(
-                            datafile, **myKwarg
-                        )  # pylint: disable=cell-var-from-loop
+                        return mapper_fn(datafile, **myKwarg)
 
                     return mapper
 
