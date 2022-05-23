@@ -5,8 +5,10 @@ MyTardis's Tastypie-based REST API
 .. moduleauthor:: Grischa Meyer <grischa@gmail.com>
 .. moduleauthor:: James Wettenhall <james.wettenhall@monash.edu>
 """
+from django.conf import settings
 from django.contrib.auth.models import Permission
 
+from ...models.access_control import DatasetACL, DatafileACL
 from ...models.dataset import Dataset
 from ...models.parameters import (
     Schema,
@@ -31,6 +33,16 @@ class DatasetParameterSetResourceTest(MyTardisResourceTestCase):
         # Add to experiment with ObjectACL granting access to self.user
         # so auth with self.get_credentials() will succeed:
         self.test_dataset.experiments.add(self.testexp)
+        if not settings.settings.ONLY_EXPERIMENT_ACLS:
+            self.set_acl = DatasetACL(
+                user=self.user,
+                dataset=self.test_dataset,
+                isOwner=True,
+                canRead=True,
+                canDownload=True,
+                aclOwnershipType=DatasetACL.OWNER_OWNED,
+            )
+            self.set_acl.save()
 
     def tearDown(self):
         self.test_schema.delete()

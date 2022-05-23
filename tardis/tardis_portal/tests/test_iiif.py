@@ -7,13 +7,12 @@ from django.urls import reverse
 from django.core.files.uploadedfile import TemporaryUploadedFile
 from django.test import TestCase
 from django.test.client import Client
-# from nose.plugins.skip import SkipTest
 
 from wand.image import Image
 from lxml import etree
 
 from ..models.experiment import Experiment
-from ..models.access_control import ExperimentACL
+from ..models.access_control import ExperimentACL, DatasetACL, DatafileACL
 from ..models.dataset import Dataset
 from ..models.datafile import DataFile, compute_checksums
 
@@ -26,49 +25,81 @@ http://library.stanford.edu/iiif/image-api/
 
 
 def _create_datafile():
-    user = User.objects.create_user('testuser', 'user@email.test', 'pwd')
+    user = User.objects.create_user("testuser", "user@email.test", "pwd")
     user.save()
 
     full_access = Experiment.PUBLIC_ACCESS_FULL
-    experiment = Experiment.objects.create(title="IIIF Test",
-                                           created_by=user,
-                                           public_access=full_access)
+    experiment = Experiment.objects.create(
+        title="IIIF Test", created_by=user, public_access=full_access
+    )
     experiment.save()
-    ExperimentACL(experiment=experiment,
-              user=user,
-              isOwner=True,
-              canRead=True,
-              canDownload=True,
-              canWrite=True,
-              canDelete=True,
-              canSensitive=True,
-              aclOwnershipType=ExperimentACL.OWNER_OWNED).save()
+    ExperimentACL(
+        experiment=experiment,
+        user=user,
+        isOwner=True,
+        canRead=True,
+        canDownload=True,
+        canWrite=True,
+        canDelete=True,
+        canSensitive=True,
+        aclOwnershipType=ExperimentACL.OWNER_OWNED,
+    ).save()
     dataset = Dataset()
     dataset.save()
     dataset.experiments.add(experiment)
     dataset.save()
 
+    if not settings.ONLY_EXPERIMENT_ACLS:
+        DatasetACL(
+            dataset=dataset,
+            user=user,
+            isOwner=True,
+            canRead=True,
+            canDownload=True,
+            canWrite=True,
+            canDelete=True,
+            canSensitive=True,
+            aclOwnershipType=DatasetACL.OWNER_OWNED,
+        ).save()
+
     # Create new Datafile
-    tempfile = TemporaryUploadedFile('iiif_stored_file', None, None, None)
-    with Image(filename='magick:rose') as img:
-        img.format = 'tiff'
+    tempfile = TemporaryUploadedFile("iiif_stored_file", None, None, None)
+    with Image(filename="magick:rose") as img:
+        img.format = "tiff"
         img.save(file=tempfile.file)
         tempfile.file.flush()
-    datafile = DataFile(dataset=dataset,
-                        size=os.path.getsize(tempfile.file.name),
-                        filename='iiif_named_file',
-                        mimetype='image/tiff')
-    compute_md5 = getattr(settings, 'COMPUTE_MD5', True)
-    compute_sha512 = getattr(settings, 'COMPUTE_SHA512', False)
+    datafile = DataFile(
+        dataset=dataset,
+        size=os.path.getsize(tempfile.file.name),
+        filename="iiif_named_file",
+        mimetype="image/tiff",
+    )
+    compute_md5 = getattr(settings, "COMPUTE_MD5", True)
+    compute_sha512 = getattr(settings, "COMPUTE_SHA512", False)
     checksums = compute_checksums(
-        open(tempfile.file.name, 'rb'),
+        open(tempfile.file.name, "rb"),
         compute_md5=compute_md5,
-        compute_sha512=compute_sha512)
+        compute_sha512=compute_sha512,
+    )
     if compute_md5:
-        datafile.md5sum = checksums['md5sum']
+        datafile.md5sum = checksums["md5sum"]
     if compute_sha512:
-        datafile.sha512sum = checksums['sha512sum']
+        datafile.sha512sum = checksums["sha512sum"]
     datafile.save()
+
+    if not settings.ONLY_EXPERIMENT_ACLS:
+        DatafileACL(
+            datafile=datafile,
+            user=user,
+            isOwner=True,
+            canRead=True,
+            canDownload=True,
+            canWrite=True,
+            canDelete=True,
+            canSensitive=True,
+            aclOwnershipType=DatafileACL.OWNER_OWNED,
+        ).save()
+
     datafile.file_object = tempfile
     return datafile
 
@@ -78,17 +109,18 @@ def _check_compliance_level(testCase, response):
     Current complies with Level 1 API, so should assert no more.
     """
     testCase.assertRegex(
-        response['Link'],
-        r'\<http:\/\/library.stanford.edu\/iiif\/image-api\/' +
-        r'compliance.html#level[01]\>;rel="compliesTo"',
-        "Compliance header missing")
+        response["Link"],
+        r"\<http:\/\/library.stanford.edu\/iiif\/image-api\/"
+        + r'compliance.html#level[01]\>;rel="compliesTo"',
+        "Compliance header missing",
+    )
 
 
 class Level0TestCase(TestCase):
-    """ As per: http://library.stanford.edu/iiif/image-api/compliance.html """
+    """As per: http://library.stanford.edu/iiif/image-api/compliance.html"""
 
     def setUp(self):
-        self.PUBLIC_USER = User.objects.create_user(username='PUBLIC_USER_TEST')
+        self.PUBLIC_USER = User.objects.create_user(username="PUBLIC_USER_TEST")
         self.assertEqual(self.PUBLIC_USER.id, settings.PUBLIC_USER_ID)
         self.datafile = _create_datafile()
         self.width = 70
@@ -96,53 +128,53 @@ class Level0TestCase(TestCase):
 
     def testCanGetInfoAsXML(self):
         client = Client()
-        kwargs = {'datafile_id': self.datafile.id,
-                  'format': 'xml'}
+        kwargs = {"datafile_id": self.datafile.id, "format": "xml"}
         response = client.get(
-            reverse('tardis.tardis_portal.iiif.download_info',
-                    kwargs=kwargs))
+            reverse("tardis.tardis_portal.iiif.download_info", kwargs=kwargs)
+        )
         self.assertEqual(response.status_code, 200)
         # Check the response content is good
-        nsmap = {'i': 'http://library.stanford.edu/iiif/image-api/ns/'}
+        nsmap = {"i": "http://library.stanford.edu/iiif/image-api/ns/"}
         xml = etree.fromstring(response.content.decode())
-        identifier = xml.xpath('/i:info/i:identifier', namespaces=nsmap)[0]
+        identifier = xml.xpath("/i:info/i:identifier", namespaces=nsmap)[0]
         self.assertEqual(int(identifier.text), self.datafile.id)
-        height = xml.xpath('/i:info/i:height', namespaces=nsmap)[0]
+        height = xml.xpath("/i:info/i:height", namespaces=nsmap)[0]
         self.assertEqual(int(height.text), self.height)
-        width = xml.xpath('/i:info/i:width', namespaces=nsmap)[0]
+        width = xml.xpath("/i:info/i:width", namespaces=nsmap)[0]
         self.assertEqual(int(width.text), self.width)
         # Check compliance level
         _check_compliance_level(self, response)
 
     def testCanGetInfoAsJSON(self):
         client = Client()
-        kwargs = {'datafile_id': self.datafile.id,
-                  'format': 'json'}
+        kwargs = {"datafile_id": self.datafile.id, "format": "json"}
         response = client.get(
-            reverse('tardis.tardis_portal.iiif.download_info',
-                    kwargs=kwargs))
+            reverse("tardis.tardis_portal.iiif.download_info", kwargs=kwargs)
+        )
         self.assertEqual(response.status_code, 200)
         # Check the response content is good
         data = json.loads(response.content.decode())
-        self.assertEqual(data['identifier'], self.datafile.id)
-        self.assertEqual(data['height'], self.height)
-        self.assertEqual(data['width'], self.width)
+        self.assertEqual(data["identifier"], self.datafile.id)
+        self.assertEqual(data["height"], self.height)
+        self.assertEqual(data["width"], self.width)
         # Check compliance level
         _check_compliance_level(self, response)
 
     def testCanGetOriginalImage(self):
         client = Client()
-        kwargs = {'datafile_id': self.datafile.id,
-                  'region': 'full',
-                  'size': 'full',
-                  'rotation': '0',
-                  'quality': 'native'}
+        kwargs = {
+            "datafile_id": self.datafile.id,
+            "region": "full",
+            "size": "full",
+            "rotation": "0",
+            "quality": "native",
+        }
         response = client.get(
-            reverse('tardis.tardis_portal.iiif.download_image',
-                    kwargs=kwargs))
+            reverse("tardis.tardis_portal.iiif.download_image", kwargs=kwargs)
+        )
         self.assertEqual(response.status_code, 200)
         with Image(blob=response.content) as img:
-            self.assertEqual(img.format, 'TIFF')
+            self.assertEqual(img.format, "TIFF")
             self.assertEqual(img.width, self.width)
             self.assertEqual(img.height, self.height)
         # Check compliance level
@@ -150,10 +182,10 @@ class Level0TestCase(TestCase):
 
 
 class Level1TestCase(TestCase):
-    """ As per: http://library.stanford.edu/iiif/image-api/compliance.html """
+    """As per: http://library.stanford.edu/iiif/image-api/compliance.html"""
 
     def setUp(self):
-        self.PUBLIC_USER = User.objects.create_user(username='PUBLIC_USER_TEST')
+        self.PUBLIC_USER = User.objects.create_user(username="PUBLIC_USER_TEST")
         self.assertEqual(self.PUBLIC_USER.id, settings.PUBLIC_USER_ID)
         self.datafile = _create_datafile()
         self.width = 70
@@ -161,18 +193,20 @@ class Level1TestCase(TestCase):
 
     def testCanGetJpegFormat(self):
         client = Client()
-        kwargs = {'datafile_id': self.datafile.id,
-                  'region': 'full',
-                  'size': 'full',
-                  'rotation': '0',
-                  'quality': 'native',
-                  'format': 'jpg'}
+        kwargs = {
+            "datafile_id": self.datafile.id,
+            "region": "full",
+            "size": "full",
+            "rotation": "0",
+            "quality": "native",
+            "format": "jpg",
+        }
         response = client.get(
-            reverse('tardis.tardis_portal.iiif.download_image',
-                    kwargs=kwargs))
+            reverse("tardis.tardis_portal.iiif.download_image", kwargs=kwargs)
+        )
         self.assertEqual(response.status_code, 200)
         with Image(blob=response.content) as img:
-            self.assertEqual(img.format, 'JPEG')
+            self.assertEqual(img.format, "JPEG")
             self.assertEqual(img.width, self.width)
             self.assertEqual(img.height, self.height)
         # Check compliance level
@@ -181,29 +215,33 @@ class Level1TestCase(TestCase):
     def testHandleRegions(self):
         client = Client()
         # Inside box
-        kwargs = {'datafile_id': self.datafile.id,
-                  'region': '15,10,25,20',
-                  'size': 'full',
-                  'rotation': '0',
-                  'quality': 'native',
-                  'format': 'jpg'}
+        kwargs = {
+            "datafile_id": self.datafile.id,
+            "region": "15,10,25,20",
+            "size": "full",
+            "rotation": "0",
+            "quality": "native",
+            "format": "jpg",
+        }
         response = client.get(
-            reverse('tardis.tardis_portal.iiif.download_image',
-                    kwargs=kwargs))
+            reverse("tardis.tardis_portal.iiif.download_image", kwargs=kwargs)
+        )
         self.assertEqual(response.status_code, 200)
         with Image(blob=response.content) as img:
             self.assertEqual(img.width, 25)
             self.assertEqual(img.height, 20)
         # Partly outside box
-        kwargs = {'datafile_id': self.datafile.id,
-                  'region': '60,41,20,20',
-                  'size': 'full',
-                  'rotation': '0',
-                  'quality': 'native',
-                  'format': 'jpg'}
+        kwargs = {
+            "datafile_id": self.datafile.id,
+            "region": "60,41,20,20",
+            "size": "full",
+            "rotation": "0",
+            "quality": "native",
+            "format": "jpg",
+        }
         response = client.get(
-            reverse('tardis.tardis_portal.iiif.download_image',
-                    kwargs=kwargs))
+            reverse("tardis.tardis_portal.iiif.download_image", kwargs=kwargs)
+        )
         self.assertEqual(response.status_code, 200)
         with Image(blob=response.content) as img:
             self.assertEqual(img.width, 10)
@@ -215,45 +253,49 @@ class Level1TestCase(TestCase):
         client = Client()
 
         def get_with_size(sizearg):
-            kwargs = {'datafile_id': self.datafile.id,
-                      'region': 'full',
-                      'size': sizearg,
-                      'rotation': '0',
-                      'quality': 'native',
-                      'format': 'jpg'}
+            kwargs = {
+                "datafile_id": self.datafile.id,
+                "region": "full",
+                "size": sizearg,
+                "rotation": "0",
+                "quality": "native",
+                "format": "jpg",
+            }
             response = client.get(
-                reverse('tardis.tardis_portal.iiif.download_image',
-                        kwargs=kwargs))
+                reverse("tardis.tardis_portal.iiif.download_image", kwargs=kwargs)
+            )
             self.assertEqual(response.status_code, 200)
             return response
 
         permutations = [
             # Width (aspect ratio preserved)
-            {'arg': '50,', 'width': 50, 'height': 33},
+            {"arg": "50,", "width": 50, "height": 33},
             # Height (aspect ratio preserved)
-            {'arg': ',30', 'width': 46, 'height': 30},
+            {"arg": ",30", "width": 46, "height": 30},
             # Percent size (aspect ratio preserved)
-            {'arg': 'pct:50', 'width': 35, 'height': 23},
+            {"arg": "pct:50", "width": 35, "height": 23},
         ]
         for data in permutations:
-            response = get_with_size(data['arg'])
+            response = get_with_size(data["arg"])
             with Image(blob=response.content) as img:
-                self.assertEqual(img.width, data['width'])
-                self.assertEqual(img.height, data['height'])
+                self.assertEqual(img.width, data["width"])
+                self.assertEqual(img.height, data["height"])
 
     def testHandleRotation(self):
         client = Client()
 
         def get_with_rotation(rotation):
-            kwargs = {'datafile_id': self.datafile.id,
-                      'region': 'full',
-                      'size': 'full',
-                      'rotation': rotation,
-                      'quality': 'native',
-                      'format': 'jpg'}
+            kwargs = {
+                "datafile_id": self.datafile.id,
+                "region": "full",
+                "size": "full",
+                "rotation": rotation,
+                "quality": "native",
+                "format": "jpg",
+            }
             response = client.get(
-                reverse('tardis.tardis_portal.iiif.download_image',
-                        kwargs=kwargs))
+                reverse("tardis.tardis_portal.iiif.download_image", kwargs=kwargs)
+            )
             self.assertEqual(response.status_code, 200)
             return response
 
@@ -269,10 +311,10 @@ class Level1TestCase(TestCase):
 
 
 class Level2TestCase(TestCase):
-    """ As per: http://library.stanford.edu/iiif/image-api/compliance.html """
+    """As per: http://library.stanford.edu/iiif/image-api/compliance.html"""
 
     def setUp(self):
-        self.PUBLIC_USER = User.objects.create_user(username='PUBLIC_USER_TEST')
+        self.PUBLIC_USER = User.objects.create_user(username="PUBLIC_USER_TEST")
         self.assertEqual(self.PUBLIC_USER.id, settings.PUBLIC_USER_ID)
         self.datafile = _create_datafile()
         self.width = 70
@@ -281,16 +323,18 @@ class Level2TestCase(TestCase):
     def testCanGetRequiredFormats(self):
         client = Client()
         # not testing jp2, as this does not work on all platforms
-        for ext, format in [('jpg', 'JPEG'), ('png', 'PNG')]:
-            kwargs = {'datafile_id': self.datafile.id,
-                      'region': 'full',
-                      'size': 'full',
-                      'rotation': '0',
-                      'quality': 'native',
-                      'format': ext}
-            response = client.get(reverse('tardis.tardis_portal.iiif.' +
-                                          'download_image',
-                                          kwargs=kwargs))
+        for ext, format in [("jpg", "JPEG"), ("png", "PNG")]:
+            kwargs = {
+                "datafile_id": self.datafile.id,
+                "region": "full",
+                "size": "full",
+                "rotation": "0",
+                "quality": "native",
+                "format": ext,
+            }
+            response = client.get(
+                reverse("tardis.tardis_portal.iiif." + "download_image", kwargs=kwargs)
+            )
             self.assertEqual(response.status_code, 200)
             with Image(blob=response.content) as img:
                 self.assertEqual(img.format, format)
@@ -303,31 +347,33 @@ class Level2TestCase(TestCase):
         client = Client()
 
         def get_with_size(sizearg):
-            kwargs = {'datafile_id': self.datafile.id,
-                      'region': 'full',
-                      'size': sizearg,
-                      'rotation': '0',
-                      'quality': 'native',
-                      'format': 'jpg'}
+            kwargs = {
+                "datafile_id": self.datafile.id,
+                "region": "full",
+                "size": sizearg,
+                "rotation": "0",
+                "quality": "native",
+                "format": "jpg",
+            }
             response = client.get(
-                reverse('tardis.tardis_portal.iiif.download_image',
-                        kwargs=kwargs))
+                reverse("tardis.tardis_portal.iiif.download_image", kwargs=kwargs)
+            )
             self.assertEqual(response.status_code, 200)
             return response
 
         permutations = [
             # Exact dimensions *without* aspect ratio preserved
-            {'arg': '16,16', 'width': 16, 'height': 16},
+            {"arg": "16,16", "width": 16, "height": 16},
             # Maximum dimensions (aspect ratio preserved)
-            {'arg': '!16,16', 'width': 16, 'height': 11},
-            {'arg': '!90,11', 'width': 17, 'height': 11},
-            {'arg': '!16,10', 'width': 15, 'height': 10},
+            {"arg": "!16,16", "width": 16, "height": 11},
+            {"arg": "!90,11", "width": 17, "height": 11},
+            {"arg": "!16,10", "width": 15, "height": 10},
         ]
         for data in permutations:
-            response = get_with_size(data['arg'])
+            response = get_with_size(data["arg"])
             with Image(blob=response.content) as img:
-                self.assertEqual(img.width, data['width'])
-                self.assertEqual(img.height, data['height'])
+                self.assertEqual(img.width, data["width"])
+                self.assertEqual(img.height, data["height"])
 
     # def testCanGetRequiredQualities(self):
     #     client = Client()
@@ -340,10 +386,10 @@ class Level2TestCase(TestCase):
 
 
 class ExtraTestCases(TestCase):
-    """ As per: http://library.stanford.edu/iiif/image-api/compliance.html """
+    """As per: http://library.stanford.edu/iiif/image-api/compliance.html"""
 
     def setUp(self):
-        self.PUBLIC_USER = User.objects.create_user(username='PUBLIC_USER_TEST')
+        self.PUBLIC_USER = User.objects.create_user(username="PUBLIC_USER_TEST")
         self.assertEqual(self.PUBLIC_USER.id, settings.PUBLIC_USER_ID)
         self.datafile = _create_datafile()
         self.width = 70
@@ -351,72 +397,79 @@ class ExtraTestCases(TestCase):
 
     def testInfoHasEtags(self):
         client = Client()
-        for format_ in ('json', 'xml'):
-            kwargs = {'datafile_id': self.datafile.id,
-                      'format': format_}
-            url = reverse('tardis.tardis_portal.iiif.download_info',
-                          kwargs=kwargs)
+        for format_ in ("json", "xml"):
+            kwargs = {"datafile_id": self.datafile.id, "format": format_}
+            url = reverse("tardis.tardis_portal.iiif.download_info", kwargs=kwargs)
             response = client.get(url)
             self.assertEqual(response.status_code, 200)
             # Check etag exists
-            self.assertIn('Etag', response, "Info should have an etag")
+            self.assertIn("Etag", response, "Info should have an etag")
 
     def testImageHasEtags(self):
         client = Client()
-        kwargs = {'datafile_id': self.datafile.id,
-                  'region': 'full',
-                  'size': 'full',
-                  'rotation': '0',
-                  'quality': 'native'}
-        url = reverse('tardis.tardis_portal.iiif.download_image',
-                      kwargs=kwargs)
+        kwargs = {
+            "datafile_id": self.datafile.id,
+            "region": "full",
+            "size": "full",
+            "rotation": "0",
+            "quality": "native",
+        }
+        url = reverse("tardis.tardis_portal.iiif.download_image", kwargs=kwargs)
         response = client.get(url)
         self.assertEqual(response.status_code, 200)
         # Check etag exists
-        self.assertIn('Etag', response, "Image should have an etag")
+        self.assertIn("Etag", response, "Image should have an etag")
 
     def testImageCacheControl(self):
         client = Client()
-        kwargs = {'datafile_id': self.datafile.id,
-                  'region': 'full',
-                  'size': 'full',
-                  'rotation': '0',
-                  'quality': 'native'}
-        url = reverse('tardis.tardis_portal.iiif.download_image',
-                      kwargs=kwargs)
+        kwargs = {
+            "datafile_id": self.datafile.id,
+            "region": "full",
+            "size": "full",
+            "rotation": "0",
+            "quality": "native",
+        }
+        url = reverse("tardis.tardis_portal.iiif.download_image", kwargs=kwargs)
         response = client.get(url)
         self.assertEqual(response.status_code, 200)
         # Check etag exists
         self.assertIn(
-            'Cache-Control', response,
-            "Image should have a Cache-Control header")
+            "Cache-Control", response, "Image should have a Cache-Control header"
+        )
         self.assertIn(
-            'max-age', response['Cache-Control'],
-            "Image should have a Cache-Control header")
+            "max-age",
+            response["Cache-Control"],
+            "Image should have a Cache-Control header",
+        )
         # By default the image is public, so
         self.assertIn(
-            'public', response['Cache-Control'],
-            "Image should have a Cache-Control header")
+            "public",
+            response["Cache-Control"],
+            "Image should have a Cache-Control header",
+        )
 
-        is_logged_in = client.login(username='testuser', password='pwd')
+        is_logged_in = client.login(username="testuser", password="pwd")
         self.assertTrue(is_logged_in)
 
         experiment = self.datafile.dataset.get_first_experiment()
         experiment.public_access = Experiment.PUBLIC_ACCESS_NONE
         experiment.save()
 
-        url = reverse('tardis.tardis_portal.iiif.download_image',
-                      kwargs=kwargs)
+        url = reverse("tardis.tardis_portal.iiif.download_image", kwargs=kwargs)
         response = client.get(url)
         self.assertEqual(response.status_code, 200)
         # Check etag exists
         self.assertIn(
-            'Cache-Control', response,
-            "Image should have a Cache-Control header")
+            "Cache-Control", response, "Image should have a Cache-Control header"
+        )
         self.assertIn(
-            'max-age', response['Cache-Control'],
-            "Image should have a Cache-Control header")
+            "max-age",
+            response["Cache-Control"],
+            "Image should have a Cache-Control header",
+        )
         # By default the image is now private, so
         self.assertIn(
-            'private', response['Cache-Control'],
-            "Image should have a Cache-Control header")
+            "private",
+            response["Cache-Control"],
+            "Image should have a Cache-Control header",
+        )
