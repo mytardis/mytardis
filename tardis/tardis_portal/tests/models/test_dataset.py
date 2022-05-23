@@ -48,7 +48,7 @@ class DatasetTestCase(ModelTestCase):
         dataset.save()
         dataset.experiments.set([exp, exp2])
         dataset.save()
-        if not settings.settings.ONLY_EXPERIMENT_ACLS:
+        if not settings.ONLY_EXPERIMENT_ACLS:
             self.set_acl = DatasetACL(
                 user=self.user,
                 dataset=dataset,
@@ -105,7 +105,7 @@ class DatasetTestCase(ModelTestCase):
             dataset=dataset, filename="filename1", size=0, md5sum="bogus"
         )
         basedir = ""
-        if not settings.settings.ONLY_EXPERIMENT_ACLS:
+        if not settings.ONLY_EXPERIMENT_ACLS:
             self.file_acl = DatafileACL(
                 user=self.user,
                 datafile=df1,
@@ -125,7 +125,7 @@ class DatasetTestCase(ModelTestCase):
             md5sum="bogus",
             directory=None,
         )
-        if not settings.settings.ONLY_EXPERIMENT_ACLS:
+        if not settings.ONLY_EXPERIMENT_ACLS:
             self.file_acl = DatafileACL(
                 user=self.user,
                 datafile=df2,
@@ -142,7 +142,7 @@ class DatasetTestCase(ModelTestCase):
         df3 = DataFile.objects.create(
             dataset=dataset, filename="filename3", size=0, md5sum="bogus", directory=""
         )
-        if not settings.settings.ONLY_EXPERIMENT_ACLS:
+        if not settings.ONLY_EXPERIMENT_ACLS:
             self.file_acl = DatafileACL(
                 user=self.user,
                 datafile=df3,
@@ -163,7 +163,7 @@ class DatasetTestCase(ModelTestCase):
             md5sum="bogus",
             directory="dir1",
         )
-        if not settings.settings.ONLY_EXPERIMENT_ACLS:
+        if not settings.ONLY_EXPERIMENT_ACLS:
             self.file_acl = DatafileACL(
                 user=self.user,
                 datafile=df4,
@@ -187,7 +187,7 @@ class DatasetTestCase(ModelTestCase):
             md5sum="bogus",
             directory="dir1/subdir1",
         )
-        if not settings.settings.ONLY_EXPERIMENT_ACLS:
+        if not settings.ONLY_EXPERIMENT_ACLS:
             self.file_acl = DatafileACL(
                 user=self.user,
                 datafile=df5,
@@ -215,7 +215,7 @@ class DatasetTestCase(ModelTestCase):
             md5sum="bogus",
             directory="dir2/subdir2",
         )
-        if not settings.settings.ONLY_EXPERIMENT_ACLS:
+        if not settings.ONLY_EXPERIMENT_ACLS:
             self.file_acl = DatafileACL(
                 user=self.user,
                 datafile=df6,

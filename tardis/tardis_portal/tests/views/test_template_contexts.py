@@ -140,7 +140,7 @@ class ViewTemplateContextsTest(TestCase):
         )
         view_fn = DatasetView.as_view()
         response = view_fn(request, dataset_id=self.dataset.id)
-        if settings.settings.ONLY_EXPERIMENT_ACLS:
+        if settings.ONLY_EXPERIMENT_ACLS:
             self.assertEqual(response.status_code, 200)
             self.assertNotEqual(mock_webpack_get_bundle.call_count, 0)
         else:

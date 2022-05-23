@@ -24,7 +24,7 @@ class HsmAppApiTestCase(MyTardisResourceTestCase):
         # self.testexp is defined in MyTardisResourceTestCase
         # and is accessible using self.get_credentials()
         self.dataset.experiments.add(self.testexp)
-        if not settings.settings.ONLY_EXPERIMENT_ACLS:
+        if not settings.ONLY_EXPERIMENT_ACLS:
             self.set_acl = DatasetACL(
                 user=self.user,
                 dataset=self.dataset,
@@ -40,7 +40,7 @@ class HsmAppApiTestCase(MyTardisResourceTestCase):
             size=8,
             md5sum="930e419034038dfad994f0d2e602146c",
         )
-        if not settings.settings.ONLY_EXPERIMENT_ACLS:
+        if not settings.ONLY_EXPERIMENT_ACLS:
             self.file_acl = DatafileACL(
                 user=self.user,
                 datafile=self.datafile,

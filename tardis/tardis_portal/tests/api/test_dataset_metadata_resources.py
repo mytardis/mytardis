@@ -33,7 +33,7 @@ class DatasetParameterSetResourceTest(MyTardisResourceTestCase):
         # Add to experiment with ObjectACL granting access to self.user
         # so auth with self.get_credentials() will succeed:
         self.test_dataset.experiments.add(self.testexp)
-        if not settings.settings.ONLY_EXPERIMENT_ACLS:
+        if not settings.ONLY_EXPERIMENT_ACLS:
             self.set_acl = DatasetACL(
                 user=self.user,
                 dataset=self.test_dataset,
