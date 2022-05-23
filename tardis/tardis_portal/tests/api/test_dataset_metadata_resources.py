@@ -8,7 +8,7 @@ MyTardis's Tastypie-based REST API
 from django.conf import settings
 from django.contrib.auth.models import Permission
 
-from ...models.access_control import DatasetACL, DatafileACL
+from ...models.access_control import DatasetACL
 from ...models.dataset import Dataset
 from ...models.parameters import (
     Schema,

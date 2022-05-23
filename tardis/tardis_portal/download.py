@@ -1,3 +1,4 @@
+# pylint: disable=W0640
 # -*- coding: utf-8 -*-
 """
 download.py

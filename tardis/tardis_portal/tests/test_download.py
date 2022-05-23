@@ -175,7 +175,7 @@ class DownloadTestCase(TestCase):
         rmtree(self.dest1)
         rmtree(self.dest2)
 
-    @skipIf(settings.ONLY_EXPERIMENT_ACLS == False, "skipping Macro ACL specific test")
+    @skipIf(settings.ONLY_EXPERIMENT_ACLS is False, "skipping Macro ACL specific test")
     @patch("webpack_loader.loader.WebpackLoader.get_bundle")
     def testView(self, mock_webpack_get_bundle):
         client = Client()
@@ -239,7 +239,7 @@ class DownloadTestCase(TestCase):
             tiff_signature = "II\x2a\x00"
             self.assertEqual(response.content[0:4], tiff_signature)
 
-    @skipIf(settings.ONLY_EXPERIMENT_ACLS == True, "skipping Micro ACL specific test")
+    @skipIf(settings.ONLY_EXPERIMENT_ACLS is True, "skipping Micro ACL specific test")
     @patch("webpack_loader.loader.WebpackLoader.get_bundle")
     def testView_micro(self, mock_webpack_get_bundle):
         client = Client()
@@ -416,7 +416,7 @@ class DownloadTestCase(TestCase):
             self.assertFalse(pattern.search(name))
         self.assertEqual(len(names), len(datafiles))
 
-    @skipIf(settings.ONLY_EXPERIMENT_ACLS == False, "skipping Macro ACL specific test")
+    @skipIf(settings.ONLY_EXPERIMENT_ACLS is False, "skipping Macro ACL specific test")
     @patch("webpack_loader.loader.WebpackLoader.get_bundle")
     def testDownload(self, mock_webpack_get_bundle):
         client = Client()
@@ -585,7 +585,7 @@ class DownloadTestCase(TestCase):
             noTxt=True,
         )
 
-    @skipIf(settings.ONLY_EXPERIMENT_ACLS == True, "skipping Micro ACL specific test")
+    @skipIf(settings.ONLY_EXPERIMENT_ACLS is True, "skipping Micro ACL specific test")
     @patch("webpack_loader.loader.WebpackLoader.get_bundle")
     def testDownload_micro(self, mock_webpack_get_bundle):
         client = Client()

@@ -25,7 +25,7 @@ from ...models.parameters import Schema
 from . import MyTardisResourceTestCase
 
 
-@skipIf(settings.ONLY_EXPERIMENT_ACLS == False, "skipping Macro ACL specific test")
+@skipIf(settings.ONLY_EXPERIMENT_ACLS is False, "skipping Macro ACL specific test")
 class DataFileResourceTest(MyTardisResourceTestCase):
     def setUp(self):
         super().setUp()
@@ -223,7 +223,7 @@ class DataFileResourceTest(MyTardisResourceTestCase):
         self.assertEqual(response.getvalue(), b"123test\n")
 
 
-@skipIf(settings.ONLY_EXPERIMENT_ACLS == True, "skipping Micro ACL specific test")
+@skipIf(settings.ONLY_EXPERIMENT_ACLS is True, "skipping Micro ACL specific test")
 class DataFileResourceMicroTest(MyTardisResourceTestCase):
     """
     Test the DatafileResource authorisation for the MicroACL (all level ACLs) scenario

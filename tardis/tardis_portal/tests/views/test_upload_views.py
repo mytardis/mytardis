@@ -102,7 +102,7 @@ class UploadTestCase(TestCase):
         rmtree(self.dataset_path)
         self.exp.delete()
 
-    @skipIf(settings.ONLY_EXPERIMENT_ACLS == False, "skipping Macro ACL specific test")
+    @skipIf(settings.ONLY_EXPERIMENT_ACLS is False, "skipping Macro ACL specific test")
     def test_file_upload_macro(self):
         from os import path
 
@@ -128,7 +128,7 @@ class UploadTestCase(TestCase):
         )
         self.assertTrue(test_files_db[0].file_objects.all()[0].verified)
 
-    @skipIf(settings.ONLY_EXPERIMENT_ACLS == True, "skipping Micro ACL specific test")
+    @skipIf(settings.ONLY_EXPERIMENT_ACLS is True, "skipping Micro ACL specific test")
     def test_file_upload_micro(self):
         from os import path
 

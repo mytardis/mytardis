@@ -247,7 +247,7 @@ class SensitiveMetadataTest(MyTardisResourceTestCase):
         returned_data = json.loads(response.content.decode())
         self.assert_obj_detail(returned_data, ["normal data"])
 
-    @skipIf(settings.ONLY_EXPERIMENT_ACLS == False, "skipping Macro ACL specific test")
+    @skipIf(settings.ONLY_EXPERIMENT_ACLS is False, "skipping Macro ACL specific test")
     def test_dataset_list_api_macro(self):
         response = self.django_client.get("/api/v1/dataset/")
         self.assertEqual(response.status_code, 200)
@@ -259,7 +259,7 @@ class SensitiveMetadataTest(MyTardisResourceTestCase):
         returned_data = json.loads(response.content.decode())
         self.assert_obj_list(returned_data, ["normal data"])
 
-    @skipIf(settings.ONLY_EXPERIMENT_ACLS == True, "skipping Micro ACL specific test")
+    @skipIf(settings.ONLY_EXPERIMENT_ACLS is True, "skipping Micro ACL specific test")
     def test_dataset_list_api_micro(self):
         # User2 shouldnt be able to see the sensitive metadata without a sens datasetACL
         self.create_acl(self.user2, self.exp_sens, True, "exp")
@@ -276,7 +276,7 @@ class SensitiveMetadataTest(MyTardisResourceTestCase):
         returned_data = json.loads(response.content.decode())
         self.assert_obj_list(returned_data, ["normal data", "sensitive"])
 
-    @skipIf(settings.ONLY_EXPERIMENT_ACLS == False, "skipping Macro ACL specific test")
+    @skipIf(settings.ONLY_EXPERIMENT_ACLS is False, "skipping Macro ACL specific test")
     def test_dataset_detail_api_macro(self):
         response = self.django_client.get("/api/v1/dataset/%s/" % self.set_sens.id)
         self.assertEqual(response.status_code, 200)
@@ -290,7 +290,7 @@ class SensitiveMetadataTest(MyTardisResourceTestCase):
         returned_data = json.loads(response.content.decode())
         self.assert_obj_detail(returned_data, ["normal data"])
 
-    @skipIf(settings.ONLY_EXPERIMENT_ACLS == True, "skipping Micro ACL specific test")
+    @skipIf(settings.ONLY_EXPERIMENT_ACLS is True, "skipping Micro ACL specific test")
     def test_dataset_detail_api_micro(self):
         # User2 shouldnt be able to see the sensitive metadata without a sens datasetACL
         self.create_acl(self.user2, self.exp_sens, True, "exp")
@@ -311,7 +311,7 @@ class SensitiveMetadataTest(MyTardisResourceTestCase):
         returned_data = json.loads(response.content.decode())
         self.assert_obj_detail(returned_data, ["normal data", "sensitive"])
 
-    @skipIf(settings.ONLY_EXPERIMENT_ACLS == False, "skipping Macro ACL specific test")
+    @skipIf(settings.ONLY_EXPERIMENT_ACLS is False, "skipping Macro ACL specific test")
     def test_datafile_list_api_macro(self):
         response = self.django_client.get("/api/v1/dataset_file/")
         self.assertEqual(response.status_code, 200)
@@ -323,7 +323,7 @@ class SensitiveMetadataTest(MyTardisResourceTestCase):
         returned_data = json.loads(response.content.decode())
         self.assert_obj_list(returned_data, ["normal data"])
 
-    @skipIf(settings.ONLY_EXPERIMENT_ACLS == True, "skipping Micro ACL specific test")
+    @skipIf(settings.ONLY_EXPERIMENT_ACLS is True, "skipping Micro ACL specific test")
     def test_datafile_list_api_micro(self):
         # User2 shouldnt be able to see the sensitive metadata without a sens datafileACL
         self.create_acl(self.user2, self.exp_sens, True, "exp")
@@ -341,7 +341,7 @@ class SensitiveMetadataTest(MyTardisResourceTestCase):
         returned_data = json.loads(response.content.decode())
         self.assert_obj_list(returned_data, ["normal data", "sensitive"])
 
-    @skipIf(settings.ONLY_EXPERIMENT_ACLS == False, "skipping Macro ACL specific test")
+    @skipIf(settings.ONLY_EXPERIMENT_ACLS is False, "skipping Macro ACL specific test")
     def test_datafile_detail_api_macro(self):
         response = self.django_client.get(
             "/api/v1/dataset_file/%s/" % self.file_sens.id
@@ -357,7 +357,7 @@ class SensitiveMetadataTest(MyTardisResourceTestCase):
         returned_data = json.loads(response.content.decode())
         self.assert_obj_detail(returned_data, ["normal data"])
 
-    @skipIf(settings.ONLY_EXPERIMENT_ACLS == True, "skipping Micro ACL specific test")
+    @skipIf(settings.ONLY_EXPERIMENT_ACLS is True, "skipping Micro ACL specific test")
     def test_datafile_detail_api_micro(self):
         # User2 shouldnt be able to see the sensitive metadata without a sens datasetACL
         self.create_acl(self.user2, self.exp_sens, True, "exp")
@@ -379,7 +379,7 @@ class SensitiveMetadataTest(MyTardisResourceTestCase):
         returned_data = json.loads(response.content.decode())
         self.assert_obj_detail(returned_data, ["normal data", "sensitive"])
 
-    @skipIf(settings.ONLY_EXPERIMENT_ACLS == False, "skipping Macro ACL specific test")
+    @skipIf(settings.ONLY_EXPERIMENT_ACLS is False, "skipping Macro ACL specific test")
     def test_experimentparameter_list_api(self):
         response = self.django_client.get("/api/v1/experimentparameter/")
         self.assertEqual(response.status_code, 200)
@@ -409,7 +409,7 @@ class SensitiveMetadataTest(MyTardisResourceTestCase):
         )
         self.assertEqual(response.status_code, 401)
 
-    @skipIf(settings.ONLY_EXPERIMENT_ACLS == False, "skipping Macro ACL specific test")
+    @skipIf(settings.ONLY_EXPERIMENT_ACLS is False, "skipping Macro ACL specific test")
     def test_datasetparameter_list_api_macro(self):
         response = self.django_client.get("/api/v1/datasetparameter/")
         self.assertEqual(response.status_code, 200)
@@ -421,7 +421,7 @@ class SensitiveMetadataTest(MyTardisResourceTestCase):
         returned_data = json.loads(response.content.decode())
         self.assert_param_list(returned_data, [self.set_par.id])
 
-    @skipIf(settings.ONLY_EXPERIMENT_ACLS == True, "skipping Micro ACL specific test")
+    @skipIf(settings.ONLY_EXPERIMENT_ACLS is True, "skipping Micro ACL specific test")
     def test_datasetparameter_list_api_micro(self):
         # User2 shouldnt be able to see the sensitive metadata without a sens datasetACL
         self.create_acl(self.user2, self.exp_sens, True, "exp")
@@ -437,7 +437,7 @@ class SensitiveMetadataTest(MyTardisResourceTestCase):
         returned_data = json.loads(response.content.decode())
         self.assert_param_list(returned_data, [self.set_par.id, self.set_par_sens.id])
 
-    @skipIf(settings.ONLY_EXPERIMENT_ACLS == False, "skipping Macro ACL specific test")
+    @skipIf(settings.ONLY_EXPERIMENT_ACLS is False, "skipping Macro ACL specific test")
     def test_datasetparameter_detail_api_macro(self):
         response = self.django_client.get(
             "/api/v1/datasetparameter/%s/" % self.set_par.id
@@ -456,7 +456,7 @@ class SensitiveMetadataTest(MyTardisResourceTestCase):
         )
         self.assertEqual(response.status_code, 401)
 
-    @skipIf(settings.ONLY_EXPERIMENT_ACLS == True, "skipping Micro ACL specific test")
+    @skipIf(settings.ONLY_EXPERIMENT_ACLS is True, "skipping Micro ACL specific test")
     def test_datasetparameter_detail_api_micro(self):
         # User2 shouldnt be able to see the sensitive metadata without a sens datasetACL
         self.create_acl(self.user2, self.exp_sens, True, "exp")
@@ -476,7 +476,7 @@ class SensitiveMetadataTest(MyTardisResourceTestCase):
         )
         self.assertEqual(response.status_code, 200)
 
-    @skipIf(settings.ONLY_EXPERIMENT_ACLS == False, "skipping Macro ACL specific test")
+    @skipIf(settings.ONLY_EXPERIMENT_ACLS is False, "skipping Macro ACL specific test")
     def test_datafileparameter_list_api_macro(self):
         response = self.django_client.get("/api/v1/datafileparameter/")
         self.assertEqual(response.status_code, 200)
@@ -488,7 +488,7 @@ class SensitiveMetadataTest(MyTardisResourceTestCase):
         returned_data = json.loads(response.content.decode())
         self.assert_param_list(returned_data, [self.file_par.id])
 
-    @skipIf(settings.ONLY_EXPERIMENT_ACLS == True, "skipping Micro ACL specific test")
+    @skipIf(settings.ONLY_EXPERIMENT_ACLS is True, "skipping Micro ACL specific test")
     def test_datafileparameter_list_api_micro(self):
         # User2 shouldnt be able to see the sensitive metadata without a sens datafileACL
         self.create_acl(self.user2, self.exp_sens, True, "exp")
@@ -505,7 +505,7 @@ class SensitiveMetadataTest(MyTardisResourceTestCase):
         returned_data = json.loads(response.content.decode())
         self.assert_param_list(returned_data, [self.file_par.id, self.file_par_sens.id])
 
-    @skipIf(settings.ONLY_EXPERIMENT_ACLS == False, "skipping Macro ACL specific test")
+    @skipIf(settings.ONLY_EXPERIMENT_ACLS is False, "skipping Macro ACL specific test")
     def test_datafileparameter_detail_api_macro(self):
         response = self.django_client.get(
             "/api/v1/datafileparameter/%s/" % self.file_par.id
@@ -524,7 +524,7 @@ class SensitiveMetadataTest(MyTardisResourceTestCase):
         )
         self.assertEqual(response.status_code, 401)
 
-    @skipIf(settings.ONLY_EXPERIMENT_ACLS == True, "skipping Micro ACL specific test")
+    @skipIf(settings.ONLY_EXPERIMENT_ACLS is True, "skipping Micro ACL specific test")
     def test_datafileparameter_detail_api_micro(self):
         # User2 shouldnt be able to see the sensitive metadata without a sens datafileACL
         self.create_acl(self.user2, self.exp_sens, True, "exp")
@@ -571,7 +571,7 @@ class SensitiveMetadataTest(MyTardisResourceTestCase):
         returned_data = json.loads(response.content.decode())
         self.assert_paramset_detail(returned_data, ["normal data"])
 
-    @skipIf(settings.ONLY_EXPERIMENT_ACLS == False, "skipping Macro ACL specific test")
+    @skipIf(settings.ONLY_EXPERIMENT_ACLS is False, "skipping Macro ACL specific test")
     def test_datasetparameterset_list_api_macro(self):
         response = self.django_client.get("/api/v1/datasetparameterset/")
         self.assertEqual(response.status_code, 200)
@@ -583,7 +583,7 @@ class SensitiveMetadataTest(MyTardisResourceTestCase):
         returned_data = json.loads(response.content.decode())
         self.assert_paramset_list(returned_data, ["normal data"])
 
-    @skipIf(settings.ONLY_EXPERIMENT_ACLS == True, "skipping Micro ACL specific test")
+    @skipIf(settings.ONLY_EXPERIMENT_ACLS is True, "skipping Micro ACL specific test")
     def test_datasetparameterset_list_api_micro(self):
         # User2 shouldnt be able to see the sensitive metadata without a sens datasetACL
         self.create_acl(self.user2, self.exp_sens, True, "exp")
@@ -600,7 +600,7 @@ class SensitiveMetadataTest(MyTardisResourceTestCase):
         returned_data = json.loads(response.content.decode())
         self.assert_paramset_list(returned_data, ["normal data", "sensitive"])
 
-    @skipIf(settings.ONLY_EXPERIMENT_ACLS == False, "skipping Macro ACL specific test")
+    @skipIf(settings.ONLY_EXPERIMENT_ACLS is False, "skipping Macro ACL specific test")
     def test_datasetparameterset_detail_api_macro(self):
         response = self.django_client.get(
             "/api/v1/datasetparameterset/%s/" % self.set_paramset.id
@@ -616,7 +616,7 @@ class SensitiveMetadataTest(MyTardisResourceTestCase):
         returned_data = json.loads(response.content.decode())
         self.assert_paramset_detail(returned_data, ["normal data"])
 
-    @skipIf(settings.ONLY_EXPERIMENT_ACLS == True, "skipping Micro ACL specific test")
+    @skipIf(settings.ONLY_EXPERIMENT_ACLS is True, "skipping Micro ACL specific test")
     def test_datasetparameterset_detail_api_micro(self):
         # User2 shouldnt be able to see the sensitive metadata without a sens datasetACL
         self.create_acl(self.user2, self.exp_sens, True, "exp")
@@ -637,7 +637,7 @@ class SensitiveMetadataTest(MyTardisResourceTestCase):
         returned_data = json.loads(response.content.decode())
         self.assert_paramset_detail(returned_data, ["normal data", "sensitive"])
 
-    @skipIf(settings.ONLY_EXPERIMENT_ACLS == False, "skipping Macro ACL specific test")
+    @skipIf(settings.ONLY_EXPERIMENT_ACLS is False, "skipping Macro ACL specific test")
     def test_datafileparameterset_list_api_macro(self):
         response = self.django_client.get("/api/v1/datafileparameterset/")
         self.assertEqual(response.status_code, 200)
@@ -649,7 +649,7 @@ class SensitiveMetadataTest(MyTardisResourceTestCase):
         returned_data = json.loads(response.content.decode())
         self.assert_paramset_list(returned_data, ["normal data"])
 
-    @skipIf(settings.ONLY_EXPERIMENT_ACLS == True, "skipping Micro ACL specific test")
+    @skipIf(settings.ONLY_EXPERIMENT_ACLS is True, "skipping Micro ACL specific test")
     def test_datafileparameterset_list_api_micro(self):
         # User2 shouldnt be able to see the sensitive metadata without a sens datafileACL
         self.create_acl(self.user2, self.exp_sens, True, "exp")
@@ -667,7 +667,7 @@ class SensitiveMetadataTest(MyTardisResourceTestCase):
         returned_data = json.loads(response.content.decode())
         self.assert_paramset_list(returned_data, ["normal data", "sensitive"])
 
-    @skipIf(settings.ONLY_EXPERIMENT_ACLS == False, "skipping Macro ACL specific test")
+    @skipIf(settings.ONLY_EXPERIMENT_ACLS is False, "skipping Macro ACL specific test")
     def test_datafileparameterset_detail_api_macro(self):
         response = self.django_client.get(
             "/api/v1/datafileparameterset/%s/" % self.file_paramset.id
@@ -683,7 +683,7 @@ class SensitiveMetadataTest(MyTardisResourceTestCase):
         returned_data = json.loads(response.content.decode())
         self.assert_paramset_detail(returned_data, ["normal data"])
 
-    @skipIf(settings.ONLY_EXPERIMENT_ACLS == True, "skipping Micro ACL specific test")
+    @skipIf(settings.ONLY_EXPERIMENT_ACLS is True, "skipping Micro ACL specific test")
     def test_datafileparameterset_detail_api_micro(self):
         # User2 shouldnt be able to see the sensitive metadata without a sens datafileACL
         self.create_acl(self.user2, self.exp_sens, True, "exp")

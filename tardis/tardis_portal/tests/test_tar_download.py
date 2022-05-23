@@ -67,7 +67,7 @@ class TarDownloadTestCase(TestCase):
         [ds.delete() for ds in self.exp.datasets.all()]
         self.exp.delete()
 
-    @skipIf(settings.ONLY_EXPERIMENT_ACLS == False, "skipping Macro ACL specific test")
+    @skipIf(settings.ONLY_EXPERIMENT_ACLS is False, "skipping Macro ACL specific test")
     def test_tar_experiment_download_macro(self):
         self.assertTrue(all(df.verified for df in self.dfs))
         response = self.client.get(
@@ -107,7 +107,7 @@ class TarDownloadTestCase(TestCase):
                             int(df.size),
                         )
 
-    @skipIf(settings.ONLY_EXPERIMENT_ACLS == True, "skipping Micro ACL specific test")
+    @skipIf(settings.ONLY_EXPERIMENT_ACLS is True, "skipping Micro ACL specific test")
     def test_tar_experiment_download_micro(self):
         self.assertTrue(all(df.verified for df in self.dfs))
         response = self.client.get(

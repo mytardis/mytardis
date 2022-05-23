@@ -8,8 +8,9 @@ Tests for view methods supplying context data to templates
 .. moduleauthor::  James Wettenhall <james.wettenhall@monash.edu>
 
 """
-from flexmock import flexmock
 from unittest import skipIf
+
+from flexmock import flexmock
 
 from django.conf import settings
 from django.test import TestCase
@@ -77,7 +78,7 @@ class ContextualViewTest(TestCase):
         self.dfps.delete()
         self.acl.delete()
 
-    @skipIf(settings.ONLY_EXPERIMENT_ACLS == False, "skipping Macro ACL specific test")
+    @skipIf(settings.ONLY_EXPERIMENT_ACLS is False, "skipping Macro ACL specific test")
     def test_details_display_macro(self):
         """
         test display of view for an existing schema and no display for an
@@ -98,7 +99,7 @@ class ContextualViewTest(TestCase):
             self.assertTrue(b"/test/url" in response.content)
             self.assertFalse(b"/false/url" in response.content)
 
-    @skipIf(settings.ONLY_EXPERIMENT_ACLS == True, "skipping Micro ACL specific test")
+    @skipIf(settings.ONLY_EXPERIMENT_ACLS is True, "skipping Micro ACL specific test")
     def test_details_display_micro(self):
         """
         test display of view for an existing schema and no display for an

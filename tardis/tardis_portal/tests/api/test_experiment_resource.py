@@ -181,7 +181,7 @@ class ExperimentResourceCountsTest(MyTardisResourceTestCase):
     def get_acl_credentials(self, username, password):
         return self.create_basic(username=username, password=password)
 
-    @skipIf(settings.ONLY_EXPERIMENT_ACLS == False, "skipping Macro ACL specific test")
+    @skipIf(settings.ONLY_EXPERIMENT_ACLS is False, "skipping Macro ACL specific test")
     def test_get_experiment_counts_macro(self):
         exp_id = Experiment.objects.first().id
         expected_output = {
@@ -297,7 +297,7 @@ class ExperimentResourceCountsTest(MyTardisResourceTestCase):
         self.testexp.public_access = 1
         self.testexp.save()
 
-    @skipIf(settings.ONLY_EXPERIMENT_ACLS == True, "skipping Micro ACL specific test")
+    @skipIf(settings.ONLY_EXPERIMENT_ACLS is True, "skipping Micro ACL specific test")
     def test_get_experiment_counts_micro(self):
         exp_id = Experiment.objects.first().id
         expected_output_blank = {
