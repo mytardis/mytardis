@@ -458,10 +458,11 @@ class ExtraTestCases(TestCase):
         experiment = self.datafile.dataset.get_first_experiment()
         experiment.public_access = Experiment.PUBLIC_ACCESS_NONE
         experiment.save()
+        dataset = self.datafile.dataset
         dataset.public_access = Dataset.PUBLIC_ACCESS_NONE
         dataset.save()
-        datafile.public_access = DataFile.PUBLIC_ACCESS_NONE
-        datafile.save()
+        self.datafile.public_access = DataFile.PUBLIC_ACCESS_NONE
+        self.datafile.save()
 
         url = reverse("tardis.tardis_portal.iiif.download_image", kwargs=kwargs)
         response = client.get(url)
