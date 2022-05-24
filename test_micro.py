@@ -19,7 +19,7 @@ if __name__ == "__main__":
     if len(sys.argv) > 1 and sys.argv[1] == "behave":
         cov.set_option("run:plugins", ["django_coverage_plugin"])
         cov.set_option("report:include", ["*.html", "*.js"])
-    cov.erase()
+    cov.load()
     cov.start()
 
     if len(sys.argv) < 2:
