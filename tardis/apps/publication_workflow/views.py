@@ -113,6 +113,7 @@ def process_form(request):
 
     return JsonResponse(form_state)
 
+
 def update_dataset_basic_info(request, form_state, publication):
     # Update the publication title/description if changed.
     # Must not be blank.
@@ -129,6 +130,7 @@ def update_dataset_basic_info(request, form_state, publication):
 
     # No need to return an HttpResponse yet, continue processing form:
     return None
+
 
 def update_data_selection(request, form_state, publication):
     # Update associated datasets
@@ -157,6 +159,7 @@ def update_data_selection(request, form_state, publication):
                 form_state['disciplineSpecificFormTemplates']):
             form_state['extraInfo'] = {}
     form_state['disciplineSpecificFormTemplates'] = selected_forms
+
 
 def update_extra_info(request, form_state, publication):
     # Loop through form data and create associates parameter sets
@@ -190,7 +193,6 @@ def update_extra_info(request, form_state, publication):
 
 
 def update_attribution_and_licensing(request, form_state, publication):
-
     set_publication_authors(form_state['authors'], publication)
     # pylint: disable=R1718
     institutions = '; '.join(
@@ -491,7 +493,7 @@ def retrieve_draft_pubs_list(request):
     json list of draft pubs accessible by the current user
     '''
     draft_pubs_data = []
-    draft_publications = Publication.safe.draft_publications(request.user)\
+    draft_publications = Publication.safe.draft_publications(request.user) \
         .order_by('-update_time')
     pub_details_schema = Publication.get_details_schema()
     doi_pname = ParameterName.objects.get(name='doi', schema=pub_details_schema)
@@ -507,7 +509,7 @@ def retrieve_draft_pubs_list(request):
         except (ObjectDoesNotExist, KeyError):
             release_date = None
         doi_param = ExperimentParameter.objects.filter(
-                parameterset__experiment=draft_pub, name=doi_pname).first()
+            parameterset__experiment=draft_pub, name=doi_pname).first()
         doi = doi_param.string_value if doi_param else None
         draft_pubs_data.append(
             {
@@ -528,13 +530,13 @@ def retrieve_scheduled_pubs_list(request):
     json list of scheduled pubs accessible by the current user
     '''
     scheduled_pubs_data = []
-    scheduled_publications = Publication.safe.scheduled_publications(request.user)\
+    scheduled_publications = Publication.safe.scheduled_publications(request.user) \
         .order_by('-update_time')
     pub_details_schema = Publication.get_details_schema()
     doi_pname = ParameterName.objects.get(name='doi', schema=pub_details_schema)
     for scheduled_pub in scheduled_publications:
         doi_param = ExperimentParameter.objects.filter(
-                parameterset__experiment=scheduled_pub, name=doi_pname).first()
+            parameterset__experiment=scheduled_pub, name=doi_pname).first()
         doi = doi_param.string_value if doi_param else None
         scheduled_pubs_data.append(
             {
@@ -555,13 +557,13 @@ def retrieve_released_pubs_list(request):
     json list of released pubs accessible by the current user
     '''
     released_pubs_data = []
-    released_publications = Publication.safe.released_publications(request.user)\
+    released_publications = Publication.safe.released_publications(request.user) \
         .order_by('-update_time')
     pub_details_schema = Publication.get_details_schema()
     doi_pname = ParameterName.objects.get(name='doi', schema=pub_details_schema)
     for released_pub in released_publications:
         doi_param = ExperimentParameter.objects.filter(
-                parameterset__experiment=released_pub, name=doi_pname).first()
+            parameterset__experiment=released_pub, name=doi_pname).first()
         doi = doi_param.string_value if doi_param else None
         released_pubs_data.append(
             {
@@ -582,17 +584,17 @@ def retrieve_retracted_pubs_list(request):
     json list of retracted pubs accessible by the current user
     '''
     retracted_pubs_data = []
-    retracted_publications = Publication.safe.retracted_publications(request.user)\
+    retracted_publications = Publication.safe.retracted_publications(request.user) \
         .order_by('-update_time')
     pub_details_schema = Publication.get_details_schema()
     doi_pname = ParameterName.objects.get(name='doi', schema=pub_details_schema)
     for retracted_pub in retracted_publications:
         doi_param = ExperimentParameter.objects.filter(
-                parameterset__experiment=retracted_pub, name=doi_pname).first()
+            parameterset__experiment=retracted_pub, name=doi_pname).first()
         doi = doi_param.string_value if doi_param else None
         try:
             retracted_schema_ns = getattr(settings, 'PUBLICATION_RETRACTED_SCHEMA',
-                                      default_settings.PUBLICATION_RETRACTED_SCHEMA)
+                                          default_settings.PUBLICATION_RETRACTED_SCHEMA)
             retracted_publication_schema = Schema.objects.get(
                 namespace=retracted_schema_ns)
             retracted_pset = ExperimentParameterSet.objects.get(
@@ -652,12 +654,12 @@ def retrieve_access_list_tokens_json(request, experiment_id):
                 'url': request.build_absolute_uri(
                     token_url(exp.get_absolute_url(), token)),
                 'download_url': request.build_absolute_uri(
-                   token_url(download_urls.get('tar', None), token)),
+                    token_url(download_urls.get('tar', None), token)),
                 'id': token.id,
                 'experiment_id': experiment_id,
                 'is_owner': request.user.has_perm(
                     'tardis_acls.owns_experiment', token.experiment),
-               })
+            })
 
     return JsonResponse(token_data, safe=False)
 
