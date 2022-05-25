@@ -13,7 +13,8 @@ from django.http import JsonResponse
 from django.conf import settings
 from django.utils import timezone
 
-import dateutil.parser  # pylint: disable=E0401
+# pylint: disable=E0401
+import dateutil.parser
 from requests.exceptions import SSLError
 
 from tardis.tardis_portal.auth import decorators as authz
