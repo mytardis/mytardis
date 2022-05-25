@@ -148,9 +148,9 @@ const LicenseModal = ({ experimentId, container, onLicenseUpdate }) => {
                     ) : null
                   }
                   <form method="POST" onSubmit={handleSubmit} className="experiment-rights">
-                    <input type="hidden" name="csrfmiddlewaretoken" value={csrfToken} />
-                    <input type="hidden" name="license" value={selectedLicenseId} />
-                    <input type="hidden" name="legal_text" value={modalData.legal_text} />
+                    <input type="hidden" name="csrfmiddlewaretoken" value={csrfToken || ''} />
+                    <input type="hidden" name="license" value={selectedLicenseId || ''} />
+                    <input type="hidden" name="legal_text" value={modalData.legal_text || ''} />
 
                     <h3>Step 1: Change Public Access:</h3>
                     <div className="row">

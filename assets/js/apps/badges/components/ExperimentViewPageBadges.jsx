@@ -61,7 +61,7 @@ const ExperimentViewPageBadges = ({ experimentID, container, licenseUpdatedCount
 };
 
 ExperimentViewPageBadges.propTypes = {
-  experimentID: PropTypes.string.isRequired,
+  experimentID: PropTypes.number.isRequired,
   licenseUpdatedCount: PropTypes.number.isRequired,
   container: PropTypes.object.isRequired,
 };

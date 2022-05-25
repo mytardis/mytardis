@@ -17,7 +17,7 @@ const LicenseSelector = ({
       <Licenses
         licenses={licenses}
         onLicenseChange={onLicenseChange}
-        selectedLicenseId={selectedLicense || ''}
+        selectedLicenseId={selectedLicense || null}
       />
     );
   }
@@ -68,7 +68,7 @@ const LicenseSelector = ({
 LicenseSelector.propTypes = {
   selectedAccessTypeId: PropTypes.number.isRequired,
   onLicenseChange: PropTypes.func.isRequired,
-  selectedLicense: PropTypes.number.isRequired,
+  selectedLicense: PropTypes.number,
   showSelectedLicense: PropTypes.bool.isRequired,
   handleReselectChange: PropTypes.func.isRequired,
 };

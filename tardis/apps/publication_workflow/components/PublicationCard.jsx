@@ -4,7 +4,7 @@ import styled from '@emotion/styled';
 import { Button } from 'react-bootstrap';
 import moment from 'moment';
 
-const Hover = styled.card({
+const Hover = styled.div({
   ':hover': {
     transform: 'scale(1.01)',
     boxShadow: '0 10px 20px rgba(0,0,0,.12), 0 4px 8px rgba(0,0,0,.06)',

@@ -5,7 +5,7 @@ const Licenses = ({ licenses, onLicenseChange, selectedLicenseId }) => (
   <Fragment>
     {licenses.map(
       license => (
-        <div className="license-option">
+        <div key={license.id} className="license-option">
           <div className="row">
             <div className="col-md-2">
               <input
@@ -53,7 +53,7 @@ Licenses.defaultProps = {
 };
 Licenses.propTypes = {
   onLicenseChange: PropTypes.func.isRequired,
-  licenses: PropTypes.object.isRequired,
+  licenses: PropTypes.array.isRequired,
   selectedLicenseId: PropTypes.number,
 };
 export default Licenses;

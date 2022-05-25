@@ -16,7 +16,7 @@ const Stepper = ({
   children, initialValues, onSubmit,
 }) => {
   const [stepNumber, setStepNumber] = useState(0);
-  const steps = React.Children.toArray(children);
+  const steps = React.Children.toArray(children.props.children);
   const [snapshot, setSnapshot] = useState(initialValues);
 
   const step = steps[stepNumber];

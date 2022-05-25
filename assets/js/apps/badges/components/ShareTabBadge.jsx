@@ -32,7 +32,7 @@ const ShareTabBadge = ({ experimentID, licenseUpdatedCount }) => {
 };
 
 ShareTabBadge.propTypes = {
-  experimentID: PropTypes.string.isRequired,
+  experimentID: PropTypes.number.isRequired,
   licenseUpdatedCount: PropTypes.number.isRequired,
 };
 export default ShareTabBadge;

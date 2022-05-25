@@ -185,7 +185,7 @@ const DatasetTilesLists = ({ shareContainer, experimentId, hsmEnabled }) => {
                             experimentListData={expListData}
                           />
                         ) : <span />
-              }
+                      }
                       <DatasetTiles data={shareListData} hsmEnabled={hsmEnabled} listName="share-list" />
                       {provided.placeholder}
                     </div>

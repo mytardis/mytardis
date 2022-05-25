@@ -17,7 +17,7 @@ const DatasetTiles = ({
               (dataset, index) => (
                 <DatasetTile
                   data={dataset}
-                  key={data.id}
+                  key={index}
                   index={index}
                   listName={listName}
                   showDownloadCheckbox={false}
@@ -33,7 +33,7 @@ const DatasetTiles = ({
               (dataset, index) => (
                 <DatasetTile
                   data={dataset}
-                  key={data.id}
+                  key={index}
                   index={index}
                   listName={listName}
                   onDownloadSelect={onCheckboxSelected}

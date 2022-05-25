@@ -26,7 +26,7 @@ INSTALLED_APPS = (
     'tardis.tardis_portal.templatetags',
     'tardis.analytics',
     # these optional apps, may require extra settings
-    # 'tardis.apps.publication_workflow',
+    'tardis.apps.publication_workflow',
     'tardis.apps.oaipmh',
     'tardis.apps.sftp',
     # 'tardis.apps.push_to',

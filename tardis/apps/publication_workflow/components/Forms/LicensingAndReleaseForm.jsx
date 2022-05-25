@@ -30,14 +30,21 @@ const LicensingAndReleaseForm = ({ formik }) => {
     formik.setFieldTouched('releaseDate', true);
   };
   useEffect(() => {
+    let currentLicenseId = formik.values?.license
+    let isMounted = false;
     fetchLicenses().then((data) => {
       const licenseArray = [];
       licenseArray.push({ id: '-1', name: 'Select a license' });
       data.map(item => licenseArray.push(item));
       setLicenses(licenseArray);
-      // setSelectedLicense(data[0]);
+      if (!isMounted && currentLicenseId) {
+        setSelectedLicense(data[currentLicenseId - 1])
+      }
     });
-  }, [selectedLicense]);
+    return () => {
+      isMounted = true
+    }
+  }, []);
   return (
     <>
       <Card>
@@ -51,24 +58,25 @@ const LicensingAndReleaseForm = ({ formik }) => {
                   onChange={handleLicenseChange}
                   isValid={formik.touched.license && !formik.errors.license}
                   isInvalid={!!formik.errors.license}
+                  value = {formik.values?.license ? formik.values?.license : "-1"}
                 >
                   {licenses
-                    .map(value => <option id={value.id} value={value.id}>{value.name}</option>)}
+                    .map(value => <option id={value.id} key={value.id} value={value.id}>{value.name}</option>)}
                 </Form.Control>
                 <Form.Control.Feedback type="invalid">
                   {formik.errors.license}
                 </Form.Control.Feedback>
               </Form.Group>
               <div>
-                <h6>{selectedLicense.name}</h6>
+                <h6>{selectedLicense?.name}</h6>
                 <img
-                  alt={selectedLicense.name}
-                  src={selectedLicense.image}
-                  title={selectedLicense.name}
+                  alt={selectedLicense?.name}
+                  src={selectedLicense?.image}
+                  title={selectedLicense?.name}
                   className="mr-2"
                 />
-                {selectedLicense.description}
-                <a href={selectedLicense.url}>Read the full license here.</a>
+                {selectedLicense?.description}
+                <a href={selectedLicense?.url}>Read the full license here.</a>
               </div>
             </Card.Body>
           </Card>

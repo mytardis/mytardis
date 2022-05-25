@@ -86,7 +86,8 @@ def process_form(request):
         return JsonResponse(form_state)
 
     if form_state['action'] == 'update-dataset-selection':
-        response = update_dataset_selection(request, form_state, publication)
+        response = update_dataset_basic_info(request, form_state, publication)
+        # trigger only if an error occurred 
         if response:
             return response
     elif form_state['action'] == 'update-extra-info':
@@ -95,6 +96,7 @@ def process_form(request):
         update_attribution_and_licensing(request, form_state, publication)
     elif form_state['action'] == 'submit':
         response = submit_form(request, form_state, publication)
+        # trigger only if an error occurred
         if response:
             return response
 
@@ -107,11 +109,11 @@ def process_form(request):
     # because we want to be able to mint DOIs for draft publications
     # so they need to have at least one author:
     set_publication_authors(form_state['authors'], publication)
+    update_data_selection(request, form_state, publication)
 
     return JsonResponse(form_state)
 
-
-def update_dataset_selection(request, form_state, publication):
+def update_dataset_basic_info(request, form_state, publication):
     # Update the publication title/description if changed.
     # Must not be blank.
     if not form_state['publicationTitle'].strip() or \
@@ -125,6 +127,10 @@ def update_dataset_selection(request, form_state, publication):
         publication.description = form_state['publicationDescription']
         publication.save()
 
+    # No need to return an HttpResponse yet, continue processing form:
+    return None
+
+def update_data_selection(request, form_state, publication):
     # Update associated datasets
     # (note: might not be efficient re: db queries)
     # ... first clear all current associations
@@ -151,10 +157,6 @@ def update_dataset_selection(request, form_state, publication):
                 form_state['disciplineSpecificFormTemplates']):
             form_state['extraInfo'] = {}
     form_state['disciplineSpecificFormTemplates'] = selected_forms
-
-    # No need to return an HttpResponse yet, continue processing form:
-    return None
-
 
 def update_extra_info(request, form_state, publication):
     # Loop through form data and create associates parameter sets
@@ -247,7 +249,8 @@ def submit_form(request, form_state, publication):
 
     finalize_publication(request, publication, send_email=False)
     form_state['action'] = ''
-    return JsonResponse(form_state)
+    # return JsonResponse(form_state)
+    return None
 
 
 def map_form_to_schemas(extraInfo, publication):

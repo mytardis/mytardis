@@ -67,7 +67,6 @@
     "underscore.string": "^3.3.5",
     "url-loader": "^4.1.1",
     "webpack": "^5.51.2",
-    "webpack-bundle-tracker": "^1.1.0",
     "webpack-cli": "^4.8.0",
     "yup": "^0.32.9"
   },
@@ -94,7 +93,8 @@
     "js-yaml": "^4.1.0",
     "jscpd": "^3.3.26",
     "qunit": "^2.16.0",
-    "react-test-renderer": "^16.14.0"
+    "react-test-renderer": "^16.14.0",
+    "webpack-bundle-tracker": "^1.1.0"
   },
   "scripts": {
     "eslint.jquery": "eslint -c .eslintrc --ext .js assets/js/tardis_portal js_tests/tardis_portal/ tardis/apps/sftp/static/js/sftp/sftp.js tardis/apps/openid_migration/static/js/openid_migration/migrate_accounts.js",
@@ -105,6 +105,6 @@
     "test-react": "jest --collectCoverage=true --testMatch=\"<rootDir>/assets/js/apps/**/__tests__/*.spec.jsx\" --config jest.config.js",
     "test": "grunt test --verbose && npm run test-react",
     "dev": "webpack --config webpack.config.js --progress --color --watch --mode development",
-    "build": "webpack --config webpack.config.js --mode production"
+    "build": "webpack --config webpack.config.js --progress --color --mode production"
   }
 }

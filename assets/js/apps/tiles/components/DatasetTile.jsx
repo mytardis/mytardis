@@ -99,7 +99,7 @@ DatasetTile.propTypes = {
   data: PropTypes.object.isRequired,
   listName: PropTypes.string.isRequired,
   index: PropTypes.number.isRequired,
-  onDownloadSelect: PropTypes.func.isRequired,
+  onDownloadSelect: PropTypes.func,
   showDownloadCheckbox: PropTypes.bool,
   hsmEnabled: PropTypes.bool.isRequired,
 };

@@ -63,7 +63,7 @@ const CurrentLicense = ({ experimentId, licenseUpdatedCount }) => {
 };
 
 CurrentLicense.propTypes = {
-  experimentId: PropTypes.string.isRequired,
+  experimentId: PropTypes.number.isRequired,
   licenseUpdatedCount: PropTypes.number.isRequired,
 };
 
