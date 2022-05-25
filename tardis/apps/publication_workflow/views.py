@@ -88,7 +88,7 @@ def process_form(request):
 
     if form_state['action'] == 'update-dataset-selection':
         response = update_dataset_basic_info(request, form_state, publication)
-        # trigger only if an error occurred 
+        # trigger only if an error occurred
         if response:
             return response
     elif form_state['action'] == 'update-extra-info':
