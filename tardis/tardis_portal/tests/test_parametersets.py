@@ -39,6 +39,7 @@ http://docs.djangoproject.com/en/dev/topics/testing/
 
 from datetime import datetime
 
+from django.conf import settings
 from django.contrib.auth.models import Permission
 from django.contrib.auth.models import User
 from django.core.exceptions import SuspiciousOperation
@@ -57,10 +58,11 @@ from ..models.parameters import (
     DatafileParameterSet,
     DatafileParameter,
     DatasetParameterSet,
+    DatasetParameter,
     ExperimentParameterSet,
     ExperimentParameter,
 )
-from ..models.access_control import ExperimentACL
+from ..models.access_control import ExperimentACL, DatasetACL, DatafileACL
 from ..ParameterSetManager import ParameterSetManager
 from ..views.parameters import edit_datafile_par
 from ..views.parameters import edit_dataset_par
@@ -383,7 +385,10 @@ class EditParameterSetTestCase(TestCase):
         self.user.user_permissions.add(
             Permission.objects.get(codename="change_experiment")
         )
-
+        self.user2 = User.objects.create_user("no_sensitive", "no@sens.com", "access")
+        self.user2.user_permissions.add(
+            Permission.objects.get(codename="change_experiment")
+        )
         self.schema = Schema(
             namespace="http://localhost/psmtest/df/",
             name="Parameter Set Manager",
@@ -416,6 +421,14 @@ class EditParameterSetTestCase(TestCase):
         )
         self.parametername3.save()
 
+        self.parametername_sens = ParameterName(
+            schema=self.schema,
+            name="parameter_sens",
+            full_name="Parameter Sensitive",
+            sensitive=True,
+        )
+        self.parametername_sens.save()
+
         self.experiment = Experiment(
             title="test exp1", institution_name="monash", created_by=self.user
         )
@@ -430,10 +443,20 @@ class EditParameterSetTestCase(TestCase):
             user=self.user,
             experiment=self.experiment,
             canRead=True,
+            canSensitive=True,
             isOwner=True,
             aclOwnershipType=ExperimentACL.OWNER_OWNED,
         )
         self.acl.save()
+
+        self.acl2 = ExperimentACL(
+            user=self.user2,
+            experiment=self.experiment,
+            canRead=True,
+            canWrite=True,  # Write but no Sensitive
+            aclOwnershipType=ExperimentACL.OWNER_OWNED,
+        )
+        self.acl2.save()
 
         self.experimentparameterset = ExperimentParameterSet(
             schema=self.schema, experiment=self.experiment
@@ -458,10 +481,28 @@ class EditParameterSetTestCase(TestCase):
             datetime_value=timezone.now(),
         )
 
+        self.exp_param_sens = ExperimentParameter.objects.create(
+            parameterset=self.experimentparameterset,
+            name=self.parametername_sens,
+            string_value="sensitive info",
+        )
+
         self.datasetparameterset = DatasetParameterSet(
             schema=self.schema, dataset=self.dataset
         )
         self.datasetparameterset.save()
+
+        self.set_param = DatasetParameter.objects.create(
+            parameterset=self.datasetparameterset,
+            name=self.parametername1,
+            string_value="value1",
+        )
+
+        self.set_param_sens = DatasetParameter.objects.create(
+            parameterset=self.datasetparameterset,
+            name=self.parametername_sens,
+            string_value="sensitive info",
+        )
 
         self.datafile = DataFile(
             dataset=self.dataset, filename="testfile.txt", size="42", md5sum="bogus"
@@ -472,6 +513,18 @@ class EditParameterSetTestCase(TestCase):
             schema=self.schema, datafile=self.datafile
         )
         self.datafileparameterset.save()
+
+        self.file_param = DatafileParameter.objects.create(
+            parameterset=self.datafileparameterset,
+            name=self.parametername1,
+            string_value="value1",
+        )
+
+        self.file_param_sens = DatafileParameter.objects.create(
+            parameterset=self.datafileparameterset,
+            name=self.parametername_sens,
+            string_value="sensitive info",
+        )
 
     def test_edit_experiment_params(self):
         factory = RequestFactory()
@@ -489,11 +542,49 @@ class EditParameterSetTestCase(TestCase):
                 "csrfmiddlewaretoken": "bogus",
                 "parameter1__1": "parameter1 value",
                 "parameter2__2": 123,
+                "parameter_sens__3": "new sensitive info",
             },
         )
+        # Check that parameters were actually updated
         request.user = self.user
         response = edit_experiment_par(request, self.experimentparameterset.id)
         self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            ExperimentParameter.objects.get(id=self.exp_param1.id).string_value,
+            "parameter1 value",
+        )
+        self.assertEqual(
+            ExperimentParameter.objects.get(id=self.exp_param2.id).numerical_value, 123
+        )
+        self.assertEqual(
+            ExperimentParameter.objects.get(id=self.exp_param_sens.id).string_value,
+            "new sensitive info",
+        )
+
+        request = factory.post(
+            "/ajax/edit_experiment_parameters/%s/" % self.experimentparameterset.id,
+            data={
+                "csrfmiddlewaretoken": "bogus",
+                "parameter1__1": "parameter1",
+                "parameter2__2": 1234,
+                "parameter_sens__3": "Forbidden update",
+            },
+        )
+        # Check that parameters 1, 2, were actually updated but not the sensitive one
+        request.user = self.user2
+        response = edit_experiment_par(request, self.experimentparameterset.id)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            ExperimentParameter.objects.get(id=self.exp_param1.id).string_value,
+            "parameter1",
+        )
+        self.assertEqual(
+            ExperimentParameter.objects.get(id=self.exp_param2.id).numerical_value, 1234
+        )
+        self.assertEqual(
+            ExperimentParameter.objects.get(id=self.exp_param_sens.id).string_value,
+            "new sensitive info",
+        )
 
     def test_add_experiment_params(self):
         factory = RequestFactory()
@@ -525,23 +616,100 @@ class EditParameterSetTestCase(TestCase):
     def test_edit_dataset_params(self):
         factory = RequestFactory()
 
+        if not settings.ONLY_EXPERIMENT_ACLS:
+
+            # Create ACLs to allow further edits
+            DatasetACL(
+                dataset=self.dataset,
+                user=self.user,
+                isOwner=True,
+                canRead=True,
+                canWrite=True,
+                canSensitive=True,
+                aclOwnershipType=DatasetACL.OWNER_OWNED,
+            ).save()
+            # Create ACLs to allow further edits
+            DatasetACL(
+                dataset=self.dataset,
+                user=self.user2,
+                canRead=True,
+                canWrite=True,
+                canSensitive=False,
+                aclOwnershipType=DatasetACL.OWNER_OWNED,
+            ).save()
+
         request = factory.get(
             "/ajax/edit_dataset_parameters/%s/" % self.datasetparameterset.id
         )
         request.user = self.user
         response = edit_dataset_par(request, self.datasetparameterset.id)
         self.assertEqual(response.status_code, 200)
-
+        # Check that parameters were actually updated
         request = factory.post(
             "/ajax/edit_dataset_parameters/%s/" % self.datasetparameterset.id,
-            data={"csrfmiddlewaretoken": "bogus"},
+            data={
+                "csrfmiddlewaretoken": "bogus",
+                "parameter1__1": "parameter1 value",
+                "parameter_sens__2": "new sensitive info",
+            },
         )
         request.user = self.user
         response = edit_dataset_par(request, self.datasetparameterset.id)
         self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            DatasetParameter.objects.get(id=self.set_param.id).string_value,
+            "parameter1 value",
+        )
+        self.assertEqual(
+            DatasetParameter.objects.get(id=self.set_param_sens.id).string_value,
+            "new sensitive info",
+        )
+
+        request = factory.post(
+            "/ajax/edit_dataset_parameters/%s/" % self.datasetparameterset.id,
+            data={
+                "csrfmiddlewaretoken": "bogus",
+                "parameter1__1": "parameter1",
+                "parameter_sens__2": "Forbidden update",
+            },
+        )
+        # Check that parameters 1 was actually updated but not the sensitive one
+        request.user = self.user2
+        response = edit_dataset_par(request, self.datasetparameterset.id)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            DatasetParameter.objects.get(id=self.set_param.id).string_value,
+            "parameter1",
+        )
+        self.assertEqual(
+            DatasetParameter.objects.get(id=self.set_param_sens.id).string_value,
+            "new sensitive info",
+        )
 
     def test_add_dataset_params(self):
         factory = RequestFactory()
+
+        if not settings.ONLY_EXPERIMENT_ACLS:
+
+            # Create ACLs to allow further edits
+            DatasetACL(
+                dataset=self.dataset,
+                user=self.user,
+                isOwner=True,
+                canRead=True,
+                canWrite=True,
+                canSensitive=True,
+                aclOwnershipType=DatasetACL.OWNER_OWNED,
+            ).save()
+            # Create ACLs to allow further edits
+            DatasetACL(
+                dataset=self.dataset,
+                user=self.user2,
+                canRead=True,
+                canWrite=True,
+                canSensitive=False,
+                aclOwnershipType=DatasetACL.OWNER_OWNED,
+            ).save()
 
         request = factory.get("/ajax/add_dataset_parameters/%s/" % self.dataset.id)
         request.user = self.user
@@ -568,6 +736,27 @@ class EditParameterSetTestCase(TestCase):
     def test_edit_datafile_params(self):
         factory = RequestFactory()
 
+        if not settings.ONLY_EXPERIMENT_ACLS:
+            # Create ACLs to allow further edits
+            DatafileACL(
+                datafile=self.datafile,
+                user=self.user,
+                isOwner=True,
+                canRead=True,
+                canWrite=True,
+                canSensitive=True,
+                aclOwnershipType=DatafileACL.OWNER_OWNED,
+            ).save()
+            # Create ACLs to allow further edits
+            DatafileACL(
+                datafile=self.datafile,
+                user=self.user2,
+                canRead=True,
+                canWrite=True,
+                canSensitive=False,
+                aclOwnershipType=DatafileACL.OWNER_OWNED,
+            ).save()
+
         request = factory.get(
             "/ajax/edit_datafile_parameters/%s/" % self.datafileparameterset.id
         )
@@ -577,14 +766,68 @@ class EditParameterSetTestCase(TestCase):
 
         request = factory.post(
             "/ajax/edit_datafile_parameters/%s/" % self.datafileparameterset.id,
-            data={"csrfmiddlewaretoken": "bogus"},
+            data={
+                "csrfmiddlewaretoken": "bogus",
+                "parameter1__1": "parameter1 value",
+                "parameter_sens__2": "new sensitive info",
+            },
         )
         request.user = self.user
         response = edit_datafile_par(request, self.datafileparameterset.id)
         self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            DatafileParameter.objects.get(id=self.file_param.id).string_value,
+            "parameter1 value",
+        )
+        self.assertEqual(
+            DatafileParameter.objects.get(id=self.file_param_sens.id).string_value,
+            "new sensitive info",
+        )
+
+        request = factory.post(
+            "/ajax/edit_datafile_parameters/%s/" % self.datafileparameterset.id,
+            data={
+                "csrfmiddlewaretoken": "bogus",
+                "parameter1__1": "parameter1",
+                "parameter_sens__2": "Forbidden update",
+            },
+        )
+        # Check that parameters 1 was actually updated but not the sensitive one
+        request.user = self.user2
+        response = edit_datafile_par(request, self.datafileparameterset.id)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            DatafileParameter.objects.get(id=self.file_param.id).string_value,
+            "parameter1",
+        )
+        self.assertEqual(
+            DatafileParameter.objects.get(id=self.file_param_sens.id).string_value,
+            "new sensitive info",
+        )
 
     def test_add_datafile_params(self):
         factory = RequestFactory()
+
+        if not settings.ONLY_EXPERIMENT_ACLS:
+            # Create ACLs to allow further edits
+            DatafileACL(
+                datafile=self.datafile,
+                user=self.user,
+                isOwner=True,
+                canRead=True,
+                canWrite=True,
+                canSensitive=True,
+                aclOwnershipType=DatafileACL.OWNER_OWNED,
+            ).save()
+            # Create ACLs to allow further edits
+            DatafileACL(
+                datafile=self.datafile,
+                user=self.user2,
+                canRead=True,
+                canWrite=True,
+                canSensitive=False,
+                aclOwnershipType=DatafileACL.OWNER_OWNED,
+            ).save()
 
         request = factory.get("/ajax/add_datafile_parameters/%s/" % self.datafile.id)
         request.user = self.user
@@ -612,4 +855,5 @@ class EditParameterSetTestCase(TestCase):
         self.experiment.delete()
         self.dataset.delete()
         self.user.delete()
+        self.user2.delete()
         self.schema.delete()

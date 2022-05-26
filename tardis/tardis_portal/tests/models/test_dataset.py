@@ -6,6 +6,7 @@ test_dataset.py
 .. moduleauthor::  James Wettenhall <james.wettenhall@monash.edu>
 
 """
+from django.conf import settings
 from django.contrib.auth.models import Group
 
 from tardis.tardis_portal.models import (
@@ -15,6 +16,8 @@ from tardis.tardis_portal.models import (
     ExperimentACL,
     Facility,
     Instrument,
+    DatasetACL,
+    DatafileACL,
 )
 
 from . import ModelTestCase
@@ -45,6 +48,15 @@ class DatasetTestCase(ModelTestCase):
         dataset.save()
         dataset.experiments.set([exp, exp2])
         dataset.save()
+        if not settings.ONLY_EXPERIMENT_ACLS:
+            self.set_acl = DatasetACL(
+                user=self.user,
+                dataset=dataset,
+                isOwner=True,
+                canRead=True,
+                aclOwnershipType=DatasetACL.OWNER_OWNED,
+            )
+            self.set_acl.save()
         dataset_id = dataset.id
 
         del dataset
@@ -89,41 +101,77 @@ class DatasetTestCase(ModelTestCase):
         self.assertEqual(dir_tuples, [])
         self.assertEqual(dataset.get_dir_nodes(dir_tuples), [])
 
-        DataFile.objects.create(
+        df1 = DataFile.objects.create(
             dataset=dataset, filename="filename1", size=0, md5sum="bogus"
         )
         basedir = ""
+        if not settings.ONLY_EXPERIMENT_ACLS:
+            self.file_acl = DatafileACL(
+                user=self.user,
+                datafile=df1,
+                isOwner=True,
+                canRead=True,
+                aclOwnershipType=DatafileACL.OWNER_OWNED,
+            )
+            self.file_acl.save()
         dir_tuples = dataset.get_dir_tuples(self.user, basedir)
         self.assertEqual(dir_tuples, [])
         self.assertEqual(dataset.get_dir_nodes(dir_tuples), [])
 
-        DataFile.objects.create(
+        df2 = DataFile.objects.create(
             dataset=dataset,
             filename="filename2",
             size=0,
             md5sum="bogus",
             directory=None,
         )
+        if not settings.ONLY_EXPERIMENT_ACLS:
+            self.file_acl = DatafileACL(
+                user=self.user,
+                datafile=df2,
+                isOwner=True,
+                canRead=True,
+                aclOwnershipType=DatafileACL.OWNER_OWNED,
+            )
+            self.file_acl.save()
         basedir = ""
         dir_tuples = dataset.get_dir_tuples(self.user, basedir)
         self.assertEqual(dir_tuples, [])
         self.assertEqual(dataset.get_dir_nodes(dir_tuples), [])
 
-        DataFile.objects.create(
+        df3 = DataFile.objects.create(
             dataset=dataset, filename="filename3", size=0, md5sum="bogus", directory=""
         )
+        if not settings.ONLY_EXPERIMENT_ACLS:
+            self.file_acl = DatafileACL(
+                user=self.user,
+                datafile=df3,
+                isOwner=True,
+                canRead=True,
+                aclOwnershipType=DatafileACL.OWNER_OWNED,
+            )
+            self.file_acl.save()
         basedir = ""
         dir_tuples = dataset.get_dir_tuples(self.user, basedir)
         self.assertEqual(dir_tuples, [])
         self.assertEqual(dataset.get_dir_nodes(dir_tuples), [])
 
-        DataFile.objects.create(
+        df4 = DataFile.objects.create(
             dataset=dataset,
             filename="filename4",
             size=0,
             md5sum="bogus",
             directory="dir1",
         )
+        if not settings.ONLY_EXPERIMENT_ACLS:
+            self.file_acl = DatafileACL(
+                user=self.user,
+                datafile=df4,
+                isOwner=True,
+                canRead=True,
+                aclOwnershipType=DatafileACL.OWNER_OWNED,
+            )
+            self.file_acl.save()
         basedir = ""
         dir_tuples = dataset.get_dir_tuples(self.user, basedir)
         self.assertEqual(dir_tuples, [("dir1", "dir1")])
@@ -132,13 +180,22 @@ class DatasetTestCase(ModelTestCase):
             [{"name": "dir1", "path": "dir1", "children": []}],
         )
 
-        DataFile.objects.create(
+        df5 = DataFile.objects.create(
             dataset=dataset,
             filename="filename5",
             size=0,
             md5sum="bogus",
             directory="dir1/subdir1",
         )
+        if not settings.ONLY_EXPERIMENT_ACLS:
+            self.file_acl = DatafileACL(
+                user=self.user,
+                datafile=df5,
+                isOwner=True,
+                canRead=True,
+                aclOwnershipType=DatafileACL.OWNER_OWNED,
+            )
+            self.file_acl.save()
         basedir = "dir1"
         dir_tuples = dataset.get_dir_tuples(self.user, basedir)
         self.assertEqual(dir_tuples, [("..", "dir1"), ("subdir1", "dir1/subdir1")])
@@ -151,13 +208,22 @@ class DatasetTestCase(ModelTestCase):
         self.assertEqual(dir_tuples, [("..", "dir1/subdir1")])
         self.assertEqual(dataset.get_dir_nodes(dir_tuples), [])
 
-        DataFile.objects.create(
+        df6 = DataFile.objects.create(
             dataset=dataset,
             filename="filename6",
             size=0,
             md5sum="bogus",
             directory="dir2/subdir2",
         )
+        if not settings.ONLY_EXPERIMENT_ACLS:
+            self.file_acl = DatafileACL(
+                user=self.user,
+                datafile=df6,
+                isOwner=True,
+                canRead=True,
+                aclOwnershipType=DatafileACL.OWNER_OWNED,
+            )
+            self.file_acl.save()
         basedir = ""
         dir_tuples = dataset.get_dir_tuples(self.user, basedir)
         self.assertEqual(dir_tuples, [("dir1", "dir1"), ("dir2", "dir2")])
