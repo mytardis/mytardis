@@ -320,6 +320,8 @@ class DataFileResourceMicroTest(MyTardisResourceTestCase):
         uploaded_file = DataFile.objects.order_by("-pk")[0]
         uploaded_file_acl = DatafileACL.objects.order_by("-pk")[0]
         uploaded_file_acl.delete()  # Delete the isOwner ACL created by previous upload
+        uploaded_file_inherit_acl = DatafileACL.objects.order_by("-pk")[0]
+        uploaded_file_inherit_acl.delete()  # Delete the "inherited" ACL created by previous upload
         response = self.api_client.get(
             "/api/v1/dataset_file/%d/download/" % uploaded_file.id,
             authentication=self.get_credentials(),
