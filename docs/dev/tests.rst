@@ -6,9 +6,10 @@ Running the Test Suite
 ----------------------
 Run this command to run the unit tests::
 
-    ./test.py
+    ./test.py (Macro Mode tests)
+    ./test_micro.py (Micro Mode tests)
 
-If you want to speciy any options or specific tests to run, the test argument
+If you want to specify any options or specific tests to run, the test argument
 is required first:
 
     ./test.py test --some-argument

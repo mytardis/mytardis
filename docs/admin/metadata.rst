@@ -11,7 +11,7 @@ Sets*, which are defined by a *Schema*.
 Managing Schema
 ---------------
 
-Schema are managed through the Django administrative interface. 
+Schema are managed through the Django administrative interface.
 The administrative interface is normally accesible from a link similar to::
 
    http://domain.com:8000/admin/
@@ -76,6 +76,11 @@ Immutable
 Comparison Type
    The type of search to be performed with Forms Based Search.
    Not used by Advanced Search.
+
+Sensitive
+   Flag whether this parameter is considered Sensitive. Sensitive metadata can only
+   be interacted with (viewed/changed/deleted) if a user has sensitive_permission access
+   on the Experiment(/dataset/datafile).
 
 Is Searchable
    Flag whether this parameter is searchable.
