@@ -46,23 +46,44 @@ Object Level Permissions and Access Control Lists
 =================================================
 
 
-The main purpose of the ACL system is to manage per
-experiment permissions. The architecture allows for future expansion to more
-find grained permission management. However, at this stage only the Experiment
-level is supported by the user interface.
+The main purpose of the ACL system is to manage permissions at the experiment, dataset,
+and datafile level. Two modes are available: Macro-level ACLs (experiment only ACLs) or
+Micro-level ACLs (experiment, dataset, datafile).
+
+In Macro mode you set permissions for users/groups/tokens for a given experiment, and
+all children datasets and datafiles defer to the parent Experiment access. i.e. read
+access for the parent experiment will grant read access to all children datasets and datafiles.
+
+In Micro mode you set permissions for users/groups/tokens for each experiment, dataset, and datafile.
+Any child relations (datasets, datafiles) will require their own permissions to be accessible and will
+not inherit access from their parents. i.e. read access for a parent experiment will NOT grant read
+access to any children datasets and datafiles, the children require their own permissions to be specified.
+
+Micro-level permissions will result in far larger ACL database tables, with the DatafileACL table potentially
+rivalling the DatafileParameter if Datafiles tend to have complicated access requirements. It is recommended
+to use and encourage Group permissions where possible to reduce the number of similar ACL entries.
 
 Permissions are applied with a few predefined roles:
 
 **read**
    read permission allows individuals and groups access to view an
-   experiment.
+   experiment/dataset/datafile.
+
+**Download (New)**
+   download permission allows individuals and groups access to download an
+   experiment/dataset/datafile.
 
 **write**
-   write permissions cover addition of new datasets and datafiles
-   and also deletion of datafile.
+   write permissions cover the change of model data (titles/descriptions/etc),
+   metadata additions or changes, and the addition of children datasets and datafiles,
+   for an experiment/dataset/datafile.
+
+**Sensitive (New)**
+   sensitive permission allows individuals and groups access to view sensitive metadata
+   attached to an experiment/dataset/datafile.
 
 **delete**
-   delete permission allows deletion of datasets and experiments.
+   delete permission allows deletion of experiments/datasets/datafiles.
 
 Roles are applied through the web using the *Control Panel* and can be
 applied to either users or groups.

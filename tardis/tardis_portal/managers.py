@@ -362,6 +362,8 @@ class SafeManager(models.Manager):
         :returns: QuerySet of ACLs
         :rtype: QuerySet
         """
+        from .models.access_control import ExperimentACL, DatasetACL, DatafileACL
+
         obj = super().get(pk=obj_id)
         if self.model.get_ct(self.model).model == "project":
             from tardis.apps.projects.models import ProjectACL
@@ -370,20 +372,14 @@ class SafeManager(models.Manager):
                 group__isnull=False, aclOwnershipType=ProjectACL.OWNER_OWNED
             )
         if self.model.get_ct(self.model).model == "experiment":
-            from .models.access_control import ExperimentACL
-
             return obj.experimentacl_set.select_related("group").filter(
                 group__isnull=False, aclOwnershipType=ExperimentACL.OWNER_OWNED
             )
         if self.model.get_ct(self.model).model == "dataset":
-            from .models.access_control import DatasetACL
-
             return obj.datasetacl_set.select_related("group").filter(
                 group__isnull=False, aclOwnershipType=DatasetACL.OWNER_OWNED
             )
         if self.model.get_ct(self.model).model.replace(" ", "") == "datafile":
-            from .models.access_control import DatafileACL
-
             return obj.datafileacl_set.select_related("group").filter(
                 group__isnull=False, aclOwnershipType=DatafileACL.OWNER_OWNED
             )
@@ -409,6 +405,8 @@ class SafeManager(models.Manager):
         :returns: QuerySet of non system Groups
         :rtype: QuerySet
         """
+        from .models.access_control import ExperimentACL, DatasetACL, DatafileACL
+
         obj = super().get(pk=obj_id)
         if self.model.get_ct(self.model).model == "project":
             from tardis.apps.projects.models import ProjectACL
@@ -417,20 +415,14 @@ class SafeManager(models.Manager):
                 group__isnull=False, aclOwnershipType=ProjectACL.OWNER_OWNED
             )
         if self.model.get_ct(self.model).model == "experiment":
-            from .models.access_control import ExperimentACL
-
             acl = obj.experimentacl_set.select_related("group").filter(
                 group__isnull=False, aclOwnershipType=ExperimentACL.OWNER_OWNED
             )
         if self.model.get_ct(self.model).model == "dataset":
-            from .models.access_control import DatasetACL
-
             acl = obj.datasetacl_set.select_related("group").filter(
                 group__isnull=False, aclOwnershipType=DatasetACL.OWNER_OWNED
             )
         if self.model.get_ct(self.model).model.replace(" ", "") == "datafile":
-            from .models.access_control import DatafileACL
-
             acl = obj.datafileacl_set.select_related("group").filter(
                 group__isnull=False, aclOwnershipType=DatafileACL.OWNER_OWNED
             )
@@ -444,6 +436,8 @@ class SafeManager(models.Manager):
         :returns: QuerySet of ACLs
         :rtype: QuerySet
         """
+        from .models.access_control import ExperimentACL, DatasetACL, DatafileACL
+
         obj = super().get(pk=obj_id)
         if self.model.get_ct(self.model).model == "project":
             from tardis.apps.projects.models import ProjectACL
@@ -452,20 +446,14 @@ class SafeManager(models.Manager):
                 group__isnull=False, aclOwnershipType=ProjectACL.OWNER_OWNED
             )
         if self.model.get_ct(self.model).model == "experiment":
-            from .models.access_control import ExperimentACL
-
             return obj.experimentacl_set.select_related("group").filter(
                 group__isnull=False, aclOwnershipType=ExperimentACL.OWNER_OWNED
             )
         if self.model.get_ct(self.model).model == "dataset":
-            from .models.access_control import DatasetACL
-
             return obj.datasetacl_set.select_related("group").filter(
                 group__isnull=False, aclOwnershipType=DatasetACL.OWNER_OWNED
             )
         if self.model.get_ct(self.model).model.replace(" ", "") == "datafile":
-            from .models.access_control import DatafileACL
-
             return obj.datafileacl_set.select_related("group").filter(
                 group__isnull=False, aclOwnershipType=DatafileACL.OWNER_OWNED
             )
@@ -488,20 +476,14 @@ class SafeManager(models.Manager):
                 group__isnull=False, aclOwnershipType=ProjectACL.SYSTEM_OWNED
             )
         if self.model.get_ct(self.model).model == "experiment":
-            from .models.access_control import ExperimentACL
-
             return obj.experimentacl_set.select_related("group").filter(
                 group__isnull=False, aclOwnershipType=ExperimentACL.SYSTEM_OWNED
             )
         if self.model.get_ct(self.model).model == "dataset":
-            from .models.access_control import DatasetACL
-
             return obj.datasetacl_set.select_related("group").filter(
                 group__isnull=False, aclOwnershipType=DatasetACL.SYSTEM_OWNED
             )
         if self.model.get_ct(self.model).model.replace(" ", "") == "datafile":
-            from .models.access_control import DatafileACL
-
             return obj.datafileacl_set.select_related("group").filter(
                 group__isnull=False, aclOwnershipType=DatafileACL.SYSTEM_OWNED
             )
@@ -516,6 +498,8 @@ class SafeManager(models.Manager):
         :returns: system owned groups for proj/exp/set/file
         :rtype: QuerySet
         """
+        from .models.access_control import ExperimentACL, DatasetACL, DatafileACL
+
         obj = super().get(pk=obj_id)
         if self.model.get_ct(self.model).model == "project":
             from tardis.apps.projects.models import ProjectACL
@@ -524,20 +508,14 @@ class SafeManager(models.Manager):
                 group__isnull=False, aclOwnershipType=ProjectACL.SYSTEM_OWNED
             )
         if self.model.get_ct(self.model).model == "experiment":
-            from .models.access_control import ExperimentACL
-
             acl = obj.experimentacl_set.select_related("group").filter(
                 group__isnull=False, aclOwnershipType=ExperimentACL.SYSTEM_OWNED
             )
         if self.model.get_ct(self.model).model == "dataset":
-            from .models.access_control import DatasetACL
-
             acl = obj.datasetacl_set.select_related("group").filter(
                 group__isnull=False, aclOwnershipType=DatasetACL.SYSTEM_OWNED
             )
         if self.model.get_ct(self.model).model.replace(" ", "") == "datafile":
-            from .models.access_control import DatafileACL
-
             acl = obj.datafileacl_set.select_related("group").filter(
                 group__isnull=False, aclOwnershipType=DatafileACL.SYSTEM_OWNED
             )

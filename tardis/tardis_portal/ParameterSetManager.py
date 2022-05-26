@@ -14,7 +14,7 @@ LOCAL_TZ = pytz.timezone(settings.TIME_ZONE)
 class ParameterSetManager(object):
 
     parameterset = None
-    parameters = None       # queryset of parameters
+    parameters = None  # queryset of parameters
     blank_param = None
 
     # parameterset OR schema / datafile / dataset / experiment
@@ -31,8 +31,7 @@ class ParameterSetManager(object):
     # When using deferred fields, a subclass is used, so the class name
     # will not match when using type(self.parameterset).__name__
     # isinstance deals with inheritance appropriately here
-    def __init__(self, parameterset=None, parentObject=None,
-                 schema=None):
+    def __init__(self, parameterset=None, parentObject=None, schema=None):
         """
         instantiate new task or existing ParameterSet
         :param ParameterSet parameterset: optional parameter to instanciate
@@ -49,7 +48,8 @@ class ParameterSetManager(object):
             DatasetParameter,
             DatafileParameter,
             ExperimentParameter,
-            ParameterSet)
+            ParameterSet,
+        )
 
         if issubclass(type(self), ParameterSet):
             pass
@@ -60,19 +60,22 @@ class ParameterSetManager(object):
 
             if isinstance(self.parameterset, DatafileParameterSet):
                 self.parameters = DatafileParameter.objects.filter(
-                    parameterset=self.parameterset).order_by('name__full_name')
+                    parameterset=self.parameterset
+                ).order_by("name__full_name")
 
                 self.blank_param = DatafileParameter
 
             elif isinstance(self.parameterset, DatasetParameterSet):
                 self.parameters = DatasetParameter.objects.filter(
-                    parameterset=self.parameterset).order_by('name__full_name')
+                    parameterset=self.parameterset
+                ).order_by("name__full_name")
 
                 self.blank_param = DatasetParameter
 
             elif isinstance(self.parameterset, ExperimentParameterSet):
                 self.parameters = ExperimentParameter.objects.filter(
-                    parameterset=self.parameterset).order_by('name__full_name')
+                    parameterset=self.parameterset
+                ).order_by("name__full_name")
 
                 self.blank_param = ExperimentParameter
 
@@ -85,50 +88,58 @@ class ParameterSetManager(object):
 
             if isinstance(parentObject, DataFile):
                 self.parameterset = DatafileParameterSet(
-                    schema=self.get_schema(), datafile=parentObject)
+                    schema=self.get_schema(), datafile=parentObject
+                )
 
                 self.parameterset.save()
 
                 self.parameters = DatafileParameter.objects.filter(
-                    parameterset=self.parameterset)
+                    parameterset=self.parameterset
+                )
 
                 self.blank_param = DatafileParameter
 
             elif isinstance(parentObject, Dataset):
                 self.parameterset = DatasetParameterSet(
-                    schema=self.get_schema(), dataset=parentObject)
+                    schema=self.get_schema(), dataset=parentObject
+                )
 
                 self.parameterset.save()
 
                 self.parameters = DatasetParameter.objects.filter(
-                    parameterset=self.parameterset)
+                    parameterset=self.parameterset
+                )
 
                 self.blank_param = DatasetParameter
 
             elif isinstance(parentObject, Experiment):
                 self.parameterset = ExperimentParameterSet(
-                    schema=self.get_schema(), experiment=parentObject)
+                    schema=self.get_schema(), experiment=parentObject
+                )
 
                 self.parameterset.save()
 
                 self.parameters = ExperimentParameter.objects.filter(
-                    parameterset=self.parameterset)
+                    parameterset=self.parameterset
+                )
 
                 self.blank_param = ExperimentParameter
 
             else:
-                raise TypeError("Invalid parent object." +
-                                "Must be an experiment/dataset/datafile not "
-                                + str(type(parentObject)))
+                raise TypeError(
+                    "Invalid parent object."
+                    + "Must be an experiment/dataset/datafile not "
+                    + str(type(parentObject))
+                )
 
         else:
             raise TypeError("Missing arguments")
 
     def get_schema(self):
         from .models.parameters import Schema
+
         try:
-            schema = Schema.objects.get(
-                namespace=self.namespace)
+            schema = Schema.objects.get(namespace=self.namespace)
         except ObjectDoesNotExist:
             schema = Schema()
             schema.namespace = self.namespace
@@ -148,25 +159,27 @@ class ParameterSetManager(object):
             return par.string_value
         return par
 
+    def get_param_sens_flag(self, parname):
+        par_flag = self.parameters.get(name__name=parname).name.sensitive
+        return par_flag
+
     def get_params(self, parname, value=False):
         pars = self.parameters.filter(name__name=parname)
         if value:
             if pars and pars[0].name.isNumeric():
-                return [par.numerical_value
-                        for par in pars]
-            return [par.string_value
-                    for par in pars]
+                return [par.numerical_value for par in pars]
+            return [par.string_value for par in pars]
         return pars
 
-    def set_param(self, parname, value, fullparname=None,
-                  example_value=None):
+    def set_param(self, parname, value, fullparname=None, example_value=None):
         try:
             param = self.get_param(parname)
         except ObjectDoesNotExist:
             param = self.blank_param()
             param.parameterset = self.parameterset
-            param.name = self._get_create_parname(parname, fullparname,
-                                                  example_value=example_value)
+            param.name = self._get_create_parname(
+                parname, fullparname, example_value=example_value
+            )
         param.set_value(value)
         param.save()
         return param.id
@@ -182,6 +195,7 @@ class ParameterSetManager(object):
         return param.id
 
         # use this one from post data
+
     def set_param_list(self, parname, value_list, fullparname=None):
         self.delete_params(parname)
         for value in value_list:
@@ -206,12 +220,13 @@ class ParameterSetManager(object):
         for param in self.parameters:
             param.delete()
 
-    def _get_create_parname(self, parname,
-                            fullparname=None, example_value=None):
+    def _get_create_parname(self, parname, fullparname=None, example_value=None):
         from .models.parameters import ParameterName
+
         try:
             paramName = ParameterName.objects.get(
-                name=parname, schema__id=self.get_schema().id)
+                name=parname, schema__id=self.get_schema().id
+            )
         except ObjectDoesNotExist:
             paramName = ParameterName()
             paramName.schema = self.get_schema()
