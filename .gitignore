@@ -51,7 +51,4 @@ tardis/apps/*
 !tardis/apps/social_auth
 !tardis/apps/search
 !tardis/apps/eventlog
-
-*.old
-
-*.txt~
+venv/
