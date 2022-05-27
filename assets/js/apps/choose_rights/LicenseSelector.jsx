@@ -73,4 +73,8 @@ LicenseSelector.propTypes = {
   handleReselectChange: PropTypes.func.isRequired,
 };
 
+LicenseSelector.defaultProps = {
+  selectedLicense: null,
+};
+
 export default LicenseSelector;

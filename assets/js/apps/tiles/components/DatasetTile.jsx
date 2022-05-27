@@ -104,4 +104,8 @@ DatasetTile.propTypes = {
   hsmEnabled: PropTypes.bool.isRequired,
 };
 
+DatasetTile.defaultProps = {
+  onDownloadSelect: null,
+};
+
 export default DatasetTile;

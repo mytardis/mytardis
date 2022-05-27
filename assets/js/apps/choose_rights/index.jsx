@@ -6,7 +6,7 @@ import CurrentLicense from './CurrentLicense';
 import ExperimentViewPageBadges from '../badges/components/ExperimentViewPageBadges';
 
 const modalContainer = document.getElementsByClassName('choose-rights')[0];
-const experimentId = parseInt(modalContainer.id.split('-')[2]);
+const experimentId = parseInt(modalContainer.id.split('-')[2], 10);
 const badgeContainer = document.getElementsByClassName('public-content')[0];
 const headerBadgeContainer = document.querySelector('.badges');
 

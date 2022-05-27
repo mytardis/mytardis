@@ -8,21 +8,21 @@ from kombu import Exchange, Queue
 
 # Using Celery for asynchronous task processing requires a broker e.g. RabbitMQ
 # Use a strong password for production
-CELERY_BROKER_URL = 'amqp://%(user)s:%(password)s@%(host)s:%(port)s/%(vhost)s' % {
-    'host': 'localhost',
-    'port': 5672,
-    'user': 'guest',
-    'password': 'guest',
-    'vhost': '/'
-}
-
-# Make sure the username and password is created in RabbitMQ and also give permission: https://stackoverflow.com/a/52836172
-# CELERY_BROKER_URL = 'amqp://%(user)s:%(password)s@%(host)s:%(port)s' % {
-#     'host': 'rabbitmq',
+# CELERY_BROKER_URL = 'amqp://%(user)s:%(password)s@%(host)s:%(port)s/%(vhost)s' % {
+#     'host': 'localhost',
 #     'port': 5672,
 #     'user': 'guest',
 #     'password': 'guest',
+#     'vhost': '/'
 # }
+
+# Make sure the username and password is created in RabbitMQ and also give permission: https://stackoverflow.com/a/52836172
+CELERY_BROKER_URL = 'amqp://%(user)s:%(password)s@%(host)s:%(port)s' % {
+    'host': 'rabbitmq',
+    'port': 5672,
+    'user': 'guest',
+    'password': 'guest',
+}
 
 # Where to send task state and results
 CELERY_RESULT_BACKEND = 'rpc://'

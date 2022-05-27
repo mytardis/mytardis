@@ -3,12 +3,13 @@ import React from 'react';
 import styled from '@emotion/styled';
 
 const ProgressBar = ({ activeStep }) => {
-    const ProgressBarList = styled.ul`
-        margin-bottom: 30px;
-        overflow: hidden;
-        counter-reset: step;`;
+  const ProgressBarList = styled.ul`
+    margin-bottom: 30px;
+    overflow: hidden;
+    counter-reset: step;
+  `;
 
-    const ProgressBarListItem = styled.li`
+  const ProgressBarListItem = styled.li`
         list-style-type: none;
         text-transform: uppercase;
         width: 23.3%;
@@ -48,25 +49,42 @@ const ProgressBar = ({ activeStep }) => {
             content: none;
         }
   `;
-    const items = ["Select Dataset", "Extra Information", "Attribution", "License and Release"];
-    return (
+  const items = [
+    'Select Dataset',
+    'Extra Information',
+    'Attribution',
+    'License and Release',
+  ];
+  return (
     <>
       <ProgressBarList id="progressbar">
-          { items.map((value, index) => {
-              if (index + 1 < activeStep) {
-                  return <ProgressBarListItem key={index} className="active">{value}</ProgressBarListItem>;
-              }
-              if (index + 1 === activeStep) {
-                  return <ProgressBarListItem key={index} className="active" style={{ fontWeight: 'bold' }}>{value}</ProgressBarListItem>;
-              }
-              return <ProgressBarListItem key={index}>{value}</ProgressBarListItem>;
-          })}
+        {items.map((value, index) => {
+          if (index + 1 < activeStep) {
+            return (
+              <ProgressBarListItem key={value} className="active">
+                {value}
+              </ProgressBarListItem>
+            );
+          }
+          if (index + 1 === activeStep) {
+            return (
+              <ProgressBarListItem
+                key={value}
+                className="active"
+                style={{ fontWeight: 'bold' }}
+              >
+                {value}
+              </ProgressBarListItem>
+            );
+          }
+          return <ProgressBarListItem key={value}>{value}</ProgressBarListItem>;
+        })}
       </ProgressBarList>
     </>
-    );
+  );
 };
 export default ProgressBar;
 
 ProgressBar.propTypes = {
-    activeStep: PropTypes.number.isRequired,
+  activeStep: PropTypes.number.isRequired,
 };

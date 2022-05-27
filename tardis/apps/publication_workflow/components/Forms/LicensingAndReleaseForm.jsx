@@ -6,7 +6,6 @@ import moment from 'moment';
 import 'react-datetime/css/react-datetime.css';
 import { ErrorMessage, Field } from 'formik';
 
-
 const LicensingAndReleaseForm = ({ formik }) => {
   const [licenses, setLicenses] = useState([]);
   const [selectedLicense, setSelectedLicense] = useState({});
@@ -16,21 +15,28 @@ const LicensingAndReleaseForm = ({ formik }) => {
     return response.json();
   };
   const handleLicenseChange = (e) => {
-    const currentSelectedLicense = licenses
-      .find(license => license.id.toString() === e.target.value);
+    const currentSelectedLicense = licenses.find(
+      license => license.id.toString() === e.target.value,
+    );
     setSelectedLicense(currentSelectedLicense);
     formik.setFieldValue('license', currentSelectedLicense.id, true);
   };
   const validDate = current => current.isSameOrAfter(DateTime.moment(), 'day');
   const handlePublicationDateChange = (value) => {
-    setPublicationDate(moment(value, 'DD-MM-YYYY', true).isValid() ? value.toDate() : '');
-    formik.setFieldValue('releaseDate', moment(value, 'DD-MM-YYYY', true).isValid() ? value.toDate() : '', true);
+    setPublicationDate(
+      moment(value, 'DD-MM-YYYY', true).isValid() ? value.toDate() : '',
+    );
+    formik.setFieldValue(
+      'releaseDate',
+      moment(value, 'DD-MM-YYYY', true).isValid() ? value.toDate() : '',
+      true,
+    );
   };
   const handlePublicationDateBlur = () => {
     formik.setFieldTouched('releaseDate', true);
   };
   useEffect(() => {
-    let currentLicenseId = formik.values?.license
+    const currentLicenseId = formik.values?.license;
     let isMounted = false;
     fetchLicenses().then((data) => {
       const licenseArray = [];
@@ -38,12 +44,12 @@ const LicensingAndReleaseForm = ({ formik }) => {
       data.map(item => licenseArray.push(item));
       setLicenses(licenseArray);
       if (!isMounted && currentLicenseId) {
-        setSelectedLicense(data[currentLicenseId - 1])
+        setSelectedLicense(data[currentLicenseId - 1]);
       }
     });
     return () => {
-      isMounted = true
-    }
+      isMounted = true;
+    };
   }, []);
   return (
     <>
@@ -58,10 +64,13 @@ const LicensingAndReleaseForm = ({ formik }) => {
                   onChange={handleLicenseChange}
                   isValid={formik.touched.license && !formik.errors.license}
                   isInvalid={!!formik.errors.license}
-                  value = {formik.values?.license ? formik.values?.license : "-1"}
+                  value={formik.values?.license ? formik.values?.license : '-1'}
                 >
-                  {licenses
-                    .map(value => <option id={value.id} key={value.id} value={value.id}>{value.name}</option>)}
+                  {licenses.map(value => (
+                    <option id={value.id} key={value.id} value={value.id}>
+                      {value.name}
+                    </option>
+                  ))}
                 </Form.Control>
                 <Form.Control.Feedback type="invalid">
                   {formik.errors.license}
@@ -85,16 +94,18 @@ const LicensingAndReleaseForm = ({ formik }) => {
               <Form.Group>
                 <h4>Release date</h4>
                 <p>
-                  What is the earliest date that this publication may be released,
-                  subject to any additional restrictions?
+                  What is the earliest date that this publication may be
+                  released, subject to any additional restrictions?
                 </p>
-                <Field
-                  name="releaseDate"
-                >
+                <Field name="releaseDate">
                   {() => (
                     <DateTime
                       id="select-release-date"
-                      inputProps={{ placeholder: 'Select release date', name: 'releaseDate', onBlur: handlePublicationDateBlur }}
+                      inputProps={{
+                        placeholder: 'Select release date',
+                        name: 'releaseDate',
+                        onBlur: handlePublicationDateBlur,
+                      }}
                       timeFormat={false}
                       dateFormat="DD-MM-YYYY"
                       isValidDate={validDate}
@@ -105,7 +116,6 @@ const LicensingAndReleaseForm = ({ formik }) => {
                 </Field>
                 <ErrorMessage name="releaseDate" />
               </Form.Group>
-
             </Card.Body>
           </Card>
           <Card>
@@ -126,10 +136,8 @@ const LicensingAndReleaseForm = ({ formik }) => {
               </Form.Group>
             </Card.Body>
           </Card>
-
         </Card.Body>
       </Card>
-
     </>
   );
 };

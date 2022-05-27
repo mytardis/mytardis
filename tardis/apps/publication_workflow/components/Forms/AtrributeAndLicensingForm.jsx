@@ -5,11 +5,10 @@ import {
   Button, Card, Form, FormGroup, Row, Table,
 } from 'react-bootstrap';
 
-
 const AtrributeAndLicensingForm = ({ formik }) => {
   const [authorRows, setAuthorRows] = useState(
     formik.values.authors ? formik.values.authors
-      : [{ name: '', institution: '', email: '' }]
+      : [{ name: '', institution: '', email: '' }],
   );
   const [ackValue, setAckValue] = useState(0);
   const exampleAcknowledgements = [
@@ -35,18 +34,20 @@ const AtrributeAndLicensingForm = ({ formik }) => {
     },
     {
       id: 4,
-      agency: 'Multi-modal Australian ScienceS Imaging and Visualisation Environment',
+      agency:
+        'Multi-modal Australian ScienceS Imaging and Visualisation Environment',
       text: 'This work was supported by the Multi-modal Australian ScienceS Imaging and Visualisation Environment (MASSIVE) (www.massive.org.au).',
-    }];
+    },
+  ];
   const handleAddAuthor = () => {
     const newAuthRow = { name: '', institution: '', email: '' };
-    const allAuthors = formik.values.authors
+    const allAuthors = formik.values.authors;
     formik.setFieldValue('authors', [...allAuthors]);
     setAuthorRows([...authorRows, newAuthRow]);
   };
   const handleAuthorDelete = idx => () => {
     // remove specific row
-    const allAuthors = [...formik.values.authors]
+    const allAuthors = [...formik.values.authors];
     allAuthors.splice(idx, 1);
     // set author field values
     formik.setFieldValue('authors', allAuthors, true);
@@ -54,12 +55,19 @@ const AtrributeAndLicensingForm = ({ formik }) => {
   };
   const handleAckChange = (e) => {
     setAckValue(e.target.value);
-    formik.setFieldValue('acknowledgements', exampleAcknowledgements[e.target.value].text);
+    formik.setFieldValue(
+      'acknowledgements',
+      exampleAcknowledgements[e.target.value].text,
+    );
   };
+  /* eslint-disable */
   useEffect(() => {
-    let selectedAck = exampleAcknowledgements.find((o) => o.text === formik.values?.acknowledgements)
-    selectedAck ? setAckValue(selectedAck.id) : setAckValue(0)
-  },[ackValue])
+    const selectedAck = exampleAcknowledgements.find(
+      o => o.text === formik.values?.acknowledgements,
+    );
+    selectedAck ? setAckValue(selectedAck.id) : setAckValue(0);
+  }, [ackValue]);
+  /* eslint-enable */
   return (
     <>
       <Card>
@@ -78,13 +86,16 @@ const AtrributeAndLicensingForm = ({ formik }) => {
                 </thead>
                 <tbody>
                   <FieldArray name="authors">
-                    {() => authorRows.map((item, idx) => {
-                      const authorErrors = formik.errors.authors?.length
-                        // eslint-disable-next-line no-mixed-operators
-                  && formik.errors.authors[idx] || {};
-                      const authorTouched = formik.touched.authors?.length
-                        // eslint-disable-next-line no-mixed-operators
-                  && formik.touched.authors[idx] || {};
+                    {() => authorRows.map((item, idx) =>
+                    /* eslint-disable */
+                    {
+                      const authorErrors = (formik.errors.authors?.length &&
+                          formik.errors.authors[idx]) ||
+                        {};
+                      const authorTouched =
+                        (formik.touched.authors?.length &&
+                          formik.touched.authors[idx]) ||
+                        {};
                       return (
                         <tr key={idx}>
                           <th>
@@ -94,9 +105,16 @@ const AtrributeAndLicensingForm = ({ formik }) => {
                               key={`${idx}.name`}
                               name={`authors.${idx}.name`}
                               autoComplete="name"
-                              className={`form-control${authorErrors.name && authorTouched.name ? ' is-invalid' : ''}`}
+                              className={`form-control${authorErrors.name && authorTouched.name
+                                ? ' is-invalid'
+                                : ''
+                                }`}
                             />
-                            <ErrorMessage name={`authors.${idx}.name`} component="div" className="invalid-feedback" />
+                            <ErrorMessage
+                              name={`authors.${idx}.name`}
+                              component="div"
+                              className="invalid-feedback"
+                            />
                           </th>
                           <th>
                             <Field
@@ -105,9 +123,17 @@ const AtrributeAndLicensingForm = ({ formik }) => {
                               key={`${idx}.institution`}
                               name={`authors.${idx}.institution`}
                               autoComplete="institution"
-                              className={`form-control${authorErrors.institution && authorTouched.institution ? ' is-invalid' : ''}`}
+                              className={`form-control${authorErrors.institution &&
+                                authorTouched.institution
+                                ? ' is-invalid'
+                                : ''
+                                }`}
                             />
-                            <ErrorMessage name={`authors.${idx}.institution`} component="div" className="invalid-feedback" />
+                            <ErrorMessage
+                              name={`authors.${idx}.institution`}
+                              component="div"
+                              className="invalid-feedback"
+                            />
                           </th>
                           <th>
                             <Field
@@ -116,20 +142,33 @@ const AtrributeAndLicensingForm = ({ formik }) => {
                               key={`${idx}.email`}
                               name={`authors.${idx}.email`}
                               autoComplete="email"
-                              className={`form-control${authorErrors.email && authorTouched.email ? ' is-invalid' : ''}`}
+                              className={`form-control${authorErrors.email && authorTouched.email
+                                ? ' is-invalid'
+                                : ''
+                                }`}
                             />
-                            <ErrorMessage name={`authors.${idx}.email`} component="div" className="invalid-feedback" />
+                            <ErrorMessage
+                              name={`authors.${idx}.email`}
+                              component="div"
+                              className="invalid-feedback"
+                            />
                           </th>
                           <th>
-                            <span style={{ color: 'red' }} onClick={handleAuthorDelete(idx)} onKeyDown={handleAuthorDelete(idx)} role="button" tabIndex={0}>
+                            <span
+                              style={{ color: 'red' }}
+                              onClick={handleAuthorDelete(idx)}
+                              onKeyDown={handleAuthorDelete(idx)}
+                              role="button"
+                              tabIndex={0}
+                            >
                               <i className="fa fa-trash" />
                             </span>
                           </th>
                         </tr>
                       );
-                    })}
+                     }/* eslint-disable */)
+                    }
                   </FieldArray>
-
                 </tbody>
               </Table>
               <FormGroup className="mb-3" controlId="formGroupAuthors">
@@ -153,17 +192,25 @@ const AtrributeAndLicensingForm = ({ formik }) => {
               <h4>Acknowledgements</h4>
               <h6>Example acknowledgements</h6>
               <Form.Group className="mb-3" controlId="formGroupAcknowledgement">
-                <Form.Control 
-                  as="select" 
+                <Form.Control
+                  as="select"
                   onChange={handleAckChange}
                   value={ackValue}
                 >
-                  {exampleAcknowledgements
-                    .map((value, idx) => <option key={idx} id={idx} value={idx}>{value.agency}</option>)}
+                  {exampleAcknowledgements.map((value, idx) => (
+                    <option key={idx} id={idx} value={idx}>
+                      {value.agency}
+                    </option>
+                  ))}
                 </Form.Control>
               </Form.Group>
-              <span className="small">Select an option from the list above for example text.</span>
-              <Form.Group className="mb-3" controlId="formGroupDatasetDescription">
+              <span className="small">
+                Select an option from the list above for example text.
+              </span>
+              <Form.Group
+                className="mb-3"
+                controlId="formGroupDatasetDescription"
+              >
                 <Form.Control
                   as="textarea"
                   rows={5}
