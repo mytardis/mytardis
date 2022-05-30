@@ -33,7 +33,7 @@ pytz==2021.1
 requests==2.26.0
 uritemplate==3.0.1
 # GraphQL
-graphene==2.1.9
+graphene==3.1
 pyjwt==2.1.0
 django-graphql-jwt==0.3.4
 graphene-django==2.15.0
