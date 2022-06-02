@@ -2,7 +2,7 @@ import logging
 from django.conf import settings
 
 from django.contrib.auth.models import User
-from elasticsearch_dsl import analyzer
+from elasticsearch_dsl import analyzer, token_filter
 from django_elasticsearch_dsl import Document, fields
 from django_elasticsearch_dsl.registries import registry
 
@@ -45,10 +45,16 @@ elasticsearch_parallel_index_settings = getattr(
     settings, "ELASTICSEARCH_PARALLEL_INDEX_SETTINGS", {}
 )
 
+# custom word_delimiter_graph filter to remove "split on numerics" behaviour
+# i.e. XL500XA2 will no longer be split into XL,500,XA,2
+word_delim_graph_custom = token_filter(
+    "custom_word_delim_graph", type="word_delimiter_graph", split_on_numerics=False
+)
+
 analyzer = analyzer(
     "analyzer",
     tokenizer="standard",
-    filter=["lowercase", "stop", "word_delimiter_graph"],
+    filter=["lowercase", "stop", word_delim_graph_custom],
 )
 
 
