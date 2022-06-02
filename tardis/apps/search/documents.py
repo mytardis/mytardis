@@ -385,8 +385,8 @@ class DataFileDocument(Document):
     def prepare_file_extension(self, instance):
         """
         Retrieve file extensions from filename - File extension taken as the
-        entire string after first full stop.
-        i.e. 'filename.tar.gz' has an extension of 'tar.gz'
+        string after last full stop.
+        i.e. 'filename.tar.gz' has an extension of 'gz' not 'tar.gz'
         """
         try:
             extension = instance.filename.split(".")[-1]
