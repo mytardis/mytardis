@@ -389,7 +389,7 @@ class DataFileDocument(Document):
         i.e. 'filename.tar.gz' has an extension of 'tar.gz'
         """
         try:
-            extension = instance.filename.split(".", 1)[1]
+            extension = instance.filename.split(".")[-1]
         except (IndexError):
             extension = ""
         return extension
