@@ -206,7 +206,7 @@ def my_projects(request):
 
     if settings.ONLY_EXPERIMENT_ACLS:
         owned_projects = Project.objects.filter(
-            experiments_in=Experiment.safe.owned_and_shared(request.user)
+            experiments__in=Experiment.safe.owned_and_shared(request.user)
         ).order_by("-start_time")
     else:
         owned_projects = Project.safe.owned_and_shared(request.user).order_by(
@@ -231,7 +231,7 @@ def retrieve_owned_proj_list(request, template_name="ajax/proj_list.html"):
 
     if settings.ONLY_EXPERIMENT_ACLS:
         projects = Project.objects.filter(
-            experiments_in=Experiment.safe.owned_and_shared(request.user)
+            experiments__in=Experiment.safe.owned_and_shared(request.user)
         ).order_by("-start_time")
     else:
         projects = Project.safe.owned_and_shared(request.user).order_by("-start_time")
