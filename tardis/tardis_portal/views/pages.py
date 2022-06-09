@@ -164,11 +164,8 @@ class IndexView(TemplateView):
             if request.user.is_authenticated:
 
                 if settings.ONLY_EXPERIMENT_ACLS:
-                    private_projects = Project.objects.prefetch_related(
-                        Prefetch(
-                            "experiments",
-                            queryset=Experiment.safe.owned_and_shared(request.user),
-                        )
+                    private_projects = Project.objects.filter(
+                        experiments_in=Experiment.safe.owned_and_shared(request.user)
                     ).order_by("-start_time")[:project_limit]
                 else:
                     private_projects = Project.safe.owned_and_shared(
