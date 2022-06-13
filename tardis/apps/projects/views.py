@@ -9,7 +9,6 @@ from django.conf import settings
 from django.contrib.auth.decorators import login_required, permission_required
 from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator
-from django.db.models import Prefetch
 from django.views.decorators.cache import never_cache
 from django.views.generic.base import TemplateView
 

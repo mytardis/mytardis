@@ -15,6 +15,7 @@ from .dataset import Dataset
 from .datafile import DataFile
 from .token import Token
 
+
 class UserProfile(models.Model):
     """
     UserProfile class is an extension to the Django standard user model.
@@ -23,6 +24,7 @@ class UserProfile(models.Model):
     :attribute user: a foreign key to the
        :class:`django.contrib.auth.models.User`
     """
+
     user = models.OneToOneField(User, on_delete=models.CASCADE)
 
     # This flag will tell us if the main User account was created using any
@@ -30,15 +32,15 @@ class UserProfile(models.Model):
     # to the system using the ldap auth method, an account will be created for
     # him, say "ldap_user001" and the field isDjangoAccount will be set to
     # False.
-    isDjangoAccount = models.BooleanField(
-        null=False, blank=False, default=True)
+    isDjangoAccount = models.BooleanField(null=False, blank=False, default=True)
 
     # This field is supplied by AAF's Rapid Connect service.
     rapidConnectEduPersonTargetedID = models.CharField(
-        max_length=400, null=True, blank=True)
+        max_length=400, null=True, blank=True
+    )
 
     class Meta:
-        app_label = 'tardis_portal'
+        app_label = "tardis_portal"
 
     def __str__(self):
         return self.user.username
@@ -47,14 +49,14 @@ class UserProfile(models.Model):
         return self.userAuthentication_set.all()
 
     def isValidPublicContact(self):
-        '''
+        """
         Checks if there's enough information on the user for it to be used as
         a public contact.
 
         Note: Last name can't be required, because people don't necessarilly
         have a last (or family) name.
-        '''
-        required_fields = ['email', 'first_name']
+        """
+        required_fields = ["email", "first_name"]
         return all(map(lambda f: bool(getattr(self.user, f)), required_fields))
 
     @property
@@ -62,7 +64,7 @@ class UserProfile(models.Model):
 
         from ..auth import fix_circular
 
-        if not hasattr(self, '_cached_groups'):
+        if not hasattr(self, "_cached_groups"):
             self._cached_groups = fix_circular.getGroups(self.user)
         return self._cached_groups
 
@@ -84,11 +86,19 @@ class GroupAdmin(models.Model):
     """
 
     group = models.ForeignKey(Group, on_delete=models.CASCADE)
-    admin_user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
-    admin_group = models.ForeignKey(Group, on_delete=models.CASCADE, null=True, blank=True, related_name="admin_group")
+    admin_user = models.ForeignKey(
+        User, on_delete=models.CASCADE, null=True, blank=True
+    )
+    admin_group = models.ForeignKey(
+        Group,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="admin_group",
+    )
 
     class Meta:
-        app_label = 'tardis_portal'
+        app_label = "tardis_portal"
 
     def __str__(self):
         return str(self.group.name) + " Admins"
@@ -98,9 +108,13 @@ class GroupAdmin(models.Model):
         Only save GroupAdmin if at least one admin_user or admin_group
         """
         if sum(x is not None for x in [self.admin_user, self.admin_group]) < 1:
-            raise AssertionError("GroupAdmin must have one of the following fields: admin_user or an admin_group")
+            raise AssertionError(
+                "GroupAdmin must have one of the following fields: admin_user or an admin_group"
+            )
         if sum(x is not None for x in [self.admin_user, self.admin_group]) > 1:
-            raise AssertionError("GroupAdmin must not have both an admin_user and an admin_group")
+            raise AssertionError(
+                "GroupAdmin must not have both an admin_user and an admin_group"
+            )
         if self.group == self.admin_group:
             raise AssertionError("GroupAdmin admin_group cannot be the Group itself!")
         super().save(*args, **kwargs)
@@ -118,13 +132,13 @@ class UserAuthentication(models.Model):
     userProfile = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
     username = models.CharField(max_length=50)
     authenticationMethod = models.CharField(
-        max_length=30,
-        choices=lazy(get_auth_method_choices, tuple)())
+        max_length=30, choices=lazy(get_auth_method_choices, tuple)()
+    )
     approved = models.BooleanField(default=True)
     __original_approved = None
 
     class Meta:
-        app_label = 'tardis_portal'
+        app_label = "tardis_portal"
 
     def __init__(self, *args, **kwargs):
         # instantiate comparisonChoices based on settings.AUTH PROVIDERS
@@ -137,40 +151,56 @@ class UserAuthentication(models.Model):
         return self._comparisonChoicesDict[self.authenticationMethod]
 
     def __str__(self):
-        return self.username + ' - ' + self.getAuthMethodDescription()
+        return self.username + " - " + self.getAuthMethodDescription()
 
     # pylint: disable=W0222
     def save(self, *args, **kwargs):
         # check if social auth is enabled
-        if 'tardis.apps.social_auth' not in settings.INSTALLED_APPS:
+        if "tardis.apps.social_auth" not in settings.INSTALLED_APPS:
             super().save(*args, **kwargs)
             return
         # check if authentication method requires admin approval
         from tardis.apps.social_auth.auth.social_auth import requires_admin_approval
+
         if not requires_admin_approval(self.authenticationMethod):
             super().save(*args, **kwargs)
             return
         # check if social_auth is enabled
-        is_social_auth_enabled = 'tardis.apps.social_auth' in settings.INSTALLED_APPS
+        is_social_auth_enabled = "tardis.apps.social_auth" in settings.INSTALLED_APPS
         # check if approved status has changed from false to true
         if is_social_auth_enabled and self.approved and not self.__original_approved:
             # get linked user profile
             user_profile = self.userProfile
             user = user_profile.user
             # add user permissions
-            user.user_permissions.add(Permission.objects.get(codename='add_experiment'))
-            user.user_permissions.add(Permission.objects.get(codename='change_experiment'))
-            user.user_permissions.add(Permission.objects.get(codename='change_group'))
-            is_openidusermigration_enabled = 'tardis.apps.openid_migration' in settings.INSTALLED_APPS
+            user.user_permissions.add(Permission.objects.get(codename="add_experiment"))
+            user.user_permissions.add(
+                Permission.objects.get(codename="change_experiment")
+            )
+            user.user_permissions.add(Permission.objects.get(codename="change_group"))
+            is_openidusermigration_enabled = (
+                "tardis.apps.openid_migration" in settings.INSTALLED_APPS
+            )
             if is_openidusermigration_enabled:
-                user.user_permissions.add(Permission.objects.get(codename='add_openidusermigration'))
-            user.user_permissions.add(Permission.objects.get(codename='change_experimentacl'))
-            user.user_permissions.add(Permission.objects.get(codename='change_datasetacl'))
-            user.user_permissions.add(Permission.objects.get(codename='change_datafileacl'))
-            user.user_permissions.add(Permission.objects.get(codename='add_datafile'))
-            user.user_permissions.add(Permission.objects.get(codename='change_dataset'))
+                user.user_permissions.add(
+                    Permission.objects.get(codename="add_openidusermigration")
+                )
+            user.user_permissions.add(
+                Permission.objects.get(codename="change_experimentacl")
+            )
+            user.user_permissions.add(
+                Permission.objects.get(codename="change_datasetacl")
+            )
+            user.user_permissions.add(
+                Permission.objects.get(codename="change_datafileacl")
+            )
+            user.user_permissions.add(Permission.objects.get(codename="add_datafile"))
+            user.user_permissions.add(Permission.objects.get(codename="change_dataset"))
             # send email to user
-            from tardis.apps.social_auth.auth.social_auth import send_account_approved_email
+            from tardis.apps.social_auth.auth.social_auth import (
+                send_account_approved_email,
+            )
+
             send_account_approved_email(user.id, self.authenticationMethod)
 
         super().save(*args, **kwargs)
@@ -205,16 +235,27 @@ class ACL(models.Model):
     OWNER_OWNED = 1
     SYSTEM_OWNED = 2
     __COMPARISON_CHOICES = (
-        (OWNER_OWNED, 'Owner-owned'),
-        (SYSTEM_OWNED, 'System-owned'),
+        (OWNER_OWNED, "Owner-owned"),
+        (SYSTEM_OWNED, "System-owned"),
     )
 
-    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True,
-                             blank=True, related_name='%(class)ss')
-    group = models.ForeignKey(Group, on_delete=models.CASCADE, null=True,
-                              blank=True, related_name='%(class)ss')
-    token = models.ForeignKey(Token, on_delete=models.CASCADE, null=True,
-                              blank=True, related_name='%(class)ss')
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, null=True, blank=True, related_name="%(class)ss"
+    )
+    group = models.ForeignKey(
+        Group,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="%(class)ss",
+    )
+    token = models.ForeignKey(
+        Token,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="%(class)ss",
+    )
     canRead = models.BooleanField(default=False)
     canDownload = models.BooleanField(default=False)
     canWrite = models.BooleanField(default=False)
@@ -224,21 +265,26 @@ class ACL(models.Model):
     effectiveDate = models.DateField(null=True, blank=True)
     expiryDate = models.DateField(null=True, blank=True)
     aclOwnershipType = models.IntegerField(
-        choices=__COMPARISON_CHOICES, default=OWNER_OWNED)
+        choices=__COMPARISON_CHOICES, default=OWNER_OWNED
+    )
 
     class Meta:
         abstract = True
-        app_label = 'tardis_portal'
-        ordering = ['id']
+        app_label = "tardis_portal"
+        ordering = ["id"]
 
     def save(self, *args, **kwargs):
         """
         Only save ACL if only has one entry for User/Group/Token Foreign key
         """
         if sum(x is not None for x in [self.user, self.group, self.token]) > 1:
-            raise AssertionError("An ACL must only have one of the following fields: User, Group, or Token")
+            raise AssertionError(
+                "An ACL must only have one of the following fields: User, Group, or Token"
+            )
         if sum(x is not None for x in [self.user, self.group, self.token]) < 1:
-            raise AssertionError("An ACL must have one of the following fields: User, Group, or Token")
+            raise AssertionError(
+                "An ACL must have one of the following fields: User, Group, or Token"
+            )
         super().save(*args, **kwargs)
 
     def get_related_object(self):
@@ -259,10 +305,9 @@ class ACL(models.Model):
 
     @classmethod
     def get_effective_query(cls):
-        acl_effective_query = (Q(effectiveDate__lte=datetime.today()) |
-                               Q(effectiveDate__isnull=True)) &\
-            (Q(expiryDate__gte=datetime.today()) |
-             Q(expiryDate__isnull=True))
+        acl_effective_query = (
+            Q(effectiveDate__lte=datetime.today()) | Q(effectiveDate__isnull=True)
+        ) & (Q(expiryDate__gte=datetime.today()) | Q(expiryDate__isnull=True))
         return acl_effective_query
 
 
@@ -292,16 +337,25 @@ def create_user_api_key(sender, **kwargs):
     Auto-create ApiKey objects using Tastypie's create_api_key
     """
     from tastypie.models import create_api_key
+
     create_api_key(User, **kwargs)
 
 
-if getattr(settings, 'AUTOGENERATE_API_KEY', False):
+if getattr(settings, "AUTOGENERATE_API_KEY", False):
     post_save.connect(create_user_api_key, sender=User, weak=False)
 
 
 def delete_if_all_false(instance, **kwargs):
-    if not any([instance.canRead, instance.canDownload, instance.canWrite,
-                instance.canDelete, instance.canSensitive, instance.isOwner]):
+    if not any(
+        [
+            instance.canRead,
+            instance.canDownload,
+            instance.canWrite,
+            instance.canDelete,
+            instance.canSensitive,
+            instance.isOwner,
+        ]
+    ):
         instance.delete()
 
 
@@ -309,37 +363,71 @@ def public_acls(instance, **kwargs):
     # Post save function to create/delete ACLs for the PUBLIC_USER based upon
     # an Exp/Set/File public_access flag
     PUBLIC_USER = User.objects.get(pk=settings.PUBLIC_USER_ID)
-    if instance.public_access > 25: #25 = Embargoed
+    if instance.public_access > 25:  # 25 = Embargoed
         if isinstance(instance, Experiment):
-            if not PUBLIC_USER.experimentacls.select_related("experiment"
-                                ).filter(experiment__id=instance.id).exists():
-                acl = ExperimentACL(user=PUBLIC_USER, experiment=instance, canRead=True,
-                                    aclOwnershipType=ExperimentACL.SYSTEM_OWNED)
+            if (
+                not PUBLIC_USER.experimentacls.select_related("experiment")
+                .filter(experiment__id=instance.id)
+                .exists()
+            ):
+                acl = ExperimentACL(
+                    user=PUBLIC_USER,
+                    experiment=instance,
+                    canRead=True,
+                    aclOwnershipType=ExperimentACL.SYSTEM_OWNED,
+                )
                 acl.save()
+        # Keep related project public_flags in sync with "parent" exp public_flag
+        # when running in Macro mode. This keeps the project "public_access" badges
+        # accurate with the underlying access
+        if (
+            settings.ONLY_EXPERIMENT_ACLS
+            and "tardis.apps.projects" in settings.INSTALLED_APPS
+        ):
+            for proj in instance.projects.all():
+                proj.public_access = instance.public_access
+                proj.save()
         if not settings.ONLY_EXPERIMENT_ACLS:
             if isinstance(instance, Dataset):
-                if not PUBLIC_USER.datasetacls.select_related("dataset"
-                                    ).filter(dataset__id=instance.id).exists():
-                    acl = DatasetACL(user=PUBLIC_USER, dataset=instance, canRead=True,
-                                        aclOwnershipType=DatasetACL.SYSTEM_OWNED)
+                if (
+                    not PUBLIC_USER.datasetacls.select_related("dataset")
+                    .filter(dataset__id=instance.id)
+                    .exists()
+                ):
+                    acl = DatasetACL(
+                        user=PUBLIC_USER,
+                        dataset=instance,
+                        canRead=True,
+                        aclOwnershipType=DatasetACL.SYSTEM_OWNED,
+                    )
                     acl.save()
             if isinstance(instance, DataFile):
-                if not PUBLIC_USER.datafileacls.select_related("datafile"
-                                    ).filter(datafile__id=instance.id).exists():
-                    acl = DatafileACL(user=PUBLIC_USER, datafile=instance, canRead=True,
-                                        aclOwnershipType=DatafileACL.SYSTEM_OWNED)
+                if (
+                    not PUBLIC_USER.datafileacls.select_related("datafile")
+                    .filter(datafile__id=instance.id)
+                    .exists()
+                ):
+                    acl = DatafileACL(
+                        user=PUBLIC_USER,
+                        datafile=instance,
+                        canRead=True,
+                        aclOwnershipType=DatafileACL.SYSTEM_OWNED,
+                    )
                     acl.save()
     else:
         if isinstance(instance, Experiment):
-            PUBLIC_USER.experimentacls.select_related("experiment"
-                                ).filter(experiment__id=instance.id).delete()
+            PUBLIC_USER.experimentacls.select_related("experiment").filter(
+                experiment__id=instance.id
+            ).delete()
         if not settings.ONLY_EXPERIMENT_ACLS:
             if isinstance(instance, Dataset):
-                PUBLIC_USER.datasetacls.select_related("dataset"
-                                    ).filter(dataset__id=instance.id).delete()
+                PUBLIC_USER.datasetacls.select_related("dataset").filter(
+                    dataset__id=instance.id
+                ).delete()
             if isinstance(instance, DataFile):
-                PUBLIC_USER.datafileacls.select_related("datafile"
-                                    ).filter(datafile__id=instance.id).delete()
+                PUBLIC_USER.datafileacls.select_related("datafile").filter(
+                    datafile__id=instance.id
+                ).delete()
 
 
 post_save.connect(delete_if_all_false, sender=ExperimentACL)

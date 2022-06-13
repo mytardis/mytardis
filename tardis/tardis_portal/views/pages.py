@@ -15,7 +15,6 @@ from django.contrib.sites.shortcuts import get_current_site
 from django.core.exceptions import PermissionDenied, ImproperlyConfigured
 from django.core.paginator import Paginator, EmptyPage, InvalidPage
 from django.urls import reverse
-from django.db.models import Prefetch
 from django.db import connection
 from django.http import HttpResponse, HttpResponseForbidden, JsonResponse
 from django.views.decorators.cache import cache_page
