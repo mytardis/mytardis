@@ -377,16 +377,16 @@ def public_acls(instance, **kwargs):
                     aclOwnershipType=ExperimentACL.SYSTEM_OWNED,
                 )
                 acl.save()
-        # Keep related project public_flags in sync with "parent" exp public_flag
-        # when running in Macro mode. This keeps the project "public_access" badges
-        # accurate with the underlying access
-        if (
-            settings.ONLY_EXPERIMENT_ACLS
-            and "tardis.apps.projects" in settings.INSTALLED_APPS
-        ):
-            for proj in instance.projects.all():
-                proj.public_access = instance.public_access
-                proj.save()
+            # Keep related project public_flags in sync with "parent" exp public_flag
+            # when running in Macro mode. This keeps the project "public_access" badges
+            # accurate with the underlying access
+            if (
+                settings.ONLY_EXPERIMENT_ACLS
+                and "tardis.apps.projects" in settings.INSTALLED_APPS
+            ):
+                for proj in instance.projects.all():
+                    proj.public_access = instance.public_access
+                    proj.save()
         if not settings.ONLY_EXPERIMENT_ACLS:
             if isinstance(instance, Dataset):
                 if (
