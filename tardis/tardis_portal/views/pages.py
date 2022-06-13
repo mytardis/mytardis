@@ -148,11 +148,7 @@ class IndexView(TemplateView):
             c["private_experiments"] = private_experiments
             if len(private_experiments) > 4:
                 limit = 4
-        public_experiments = (
-            Experiment.objects.exclude(public_access=Experiment.PUBLIC_ACCESS_NONE)
-            .exclude(public_access=Experiment.PUBLIC_ACCESS_EMBARGO)
-            .order_by("-update_time")[:limit]
-        )
+        public_experiments = Experiment.safe.public().order_by("-update_time")[:limit]
         c["public_experiments"] = public_experiments
         c["exps_expand_accordion"] = 1
 
@@ -171,7 +167,12 @@ class IndexView(TemplateView):
                         request.user
                     ).order_by("-start_time")[:project_limit]
 
+                public_projects = Project.safe.public().order_by("-start_time")[
+                    :project_limit
+                ]
+
                 c["private_projects"] = private_projects
+                c["public_projects"] = public_projects
                 c["private_projects_count"] = private_projects.count()
                 c["proj_expand_accordion"] = 1
 
