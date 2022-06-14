@@ -162,14 +162,16 @@ class IndexView(TemplateView):
                     private_projects = Project.objects.filter(
                         experiments__in=Experiment.safe.owned_and_shared(request.user)
                     ).order_by("-start_time")[:project_limit]
+                    public_projects = Project.objects.filter(
+                        experiments__in=Experiment.safe.public()
+                    ).order_by("-start_time")[:project_limit]
                 else:
                     private_projects = Project.safe.owned_and_shared(
                         request.user
                     ).order_by("-start_time")[:project_limit]
-
-                public_projects = Project.safe.public().order_by("-start_time")[
-                    :project_limit
-                ]
+                    public_projects = Project.safe.public().order_by("-start_time")[
+                        :project_limit
+                    ]
 
                 c["private_projects"] = private_projects
                 c["public_projects"] = public_projects
