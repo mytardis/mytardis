@@ -419,6 +419,14 @@ def public_acls(instance, **kwargs):
             PUBLIC_USER.experimentacls.select_related("experiment").filter(
                 experiment__id=instance.id
             ).delete()
+            if (
+                settings.ONLY_EXPERIMENT_ACLS
+                and "tardis.apps.projects" in settings.INSTALLED_APPS
+            ):
+                for proj in instance.projects.all():
+                    proj.public_access = instance.public_access
+                    proj.save()
+
         if not settings.ONLY_EXPERIMENT_ACLS:
             if isinstance(instance, Dataset):
                 PUBLIC_USER.datasetacls.select_related("dataset").filter(
