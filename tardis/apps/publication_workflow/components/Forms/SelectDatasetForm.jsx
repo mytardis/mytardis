@@ -127,7 +127,7 @@ const SelectDatasetForm = ({ formik }) => {
                   onChange={handleExpChange}
                 >
                   {expList.map((value, index) => (
-                    <option value={index} key={value.id}>
+                    <option value={value.id} key={value.id}>
                       {value.title}
                     </option>
                   ))}
