@@ -23,19 +23,26 @@ const SelectDatasetForm = ({ formik }) => {
     fetchDatasetsForExperiment(event.target.value)
       .then(result => setDatasetList(result))
       .catch(() => setDatasetList([]));
-    setSelectedExperiment(expList[event.target.value]);
+
+    const selectedExperiment = expList.find(x => x.id == event.target.value)
+    setSelectedExperiment(selectedExperiment);
   };
   const handleDatasetSelectChange = (event) => {
     const selectedOptionsArray = [].slice.call(event.target.selectedOptions);
     let currentlySelectedDatasetList = [];
-    selectedOptionsArray.map(item => currentlySelectedDatasetList.push({
-      experiment: selectedExperiment.title,
-      experiment_id: selectedExperiment.id,
-      dataset: {
-        id: item.value,
-        description: item.label.slice(0, item.label.length),
-      },
-    }));
+    selectedOptionsArray.map(item => {
+      const isSelectedExperiment = selectedDatasetList.find(x => x.dataset.id == item.value)
+      if (!isSelectedExperiment) {
+        currentlySelectedDatasetList.push({
+          experiment: selectedExperiment.title,
+          experiment_id: selectedExperiment.id,
+          dataset: {
+            id: item.value,
+            description: item.label.slice(0, item.label.length),
+          },
+        })
+      }
+    });
     currentlySelectedDatasetList = selectedDatasetList.concat(
       currentlySelectedDatasetList,
     );
@@ -46,7 +53,7 @@ const SelectDatasetForm = ({ formik }) => {
 
   useEffect(() => {
     fetchExperimentList().then((data) => {
-      const expListArray = [];
+      let expListArray = [];
       expListArray.push({ id: '-1', title: 'Select experiment' });
       data.map(item => expListArray.push(item));
       setExpList(expListArray);
@@ -127,7 +134,7 @@ const SelectDatasetForm = ({ formik }) => {
                   onChange={handleExpChange}
                 >
                   {expList.map((value, index) => (
-                    <option value={value.id} key={value.id}>
+                    <option value={value.id} key={index}>
                       {value.title}
                     </option>
                   ))}
