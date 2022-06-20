@@ -86,7 +86,7 @@
                       <li class="list-group-item experiment-list-item small px-2 py-1">
                           <i class="fa fa-folder o-6"></i>
                           <a class="experiment-link"
-                             href="{% url 'tardis_portal.view_experiment' ds.id %}">
+                             href="{% url 'tardis_portal.view_experiment' exp.id %}">
                             {{ exp.title }}
                           </a>
                       {% if proj.public_download_allowed %}
