@@ -136,7 +136,10 @@
     {% endif %}
     {% if project_app_enabled %}
       {% with total=public_projects|length %}
-        <h3>The {{ total }} most recent public project{{total|pluralize}}</h3>
+        <h3>
+          The {{ total }} most recent public project{{total|pluralize}}
+          <small>(<a href="{% url 'tardis.apps.projects.views.public_projects' %}">view all</a>)</small>
+        </h3>
       {% endwith %}
       <div id="public-projects" class="projects">
           {% for proj in public_projects %}
@@ -190,7 +193,10 @@
     {% endif %}
 
     {% with total=public_experiments|length %}
-      <h3>The {{ total }} most recent public experiment{{total|pluralize}}</h3>
+      <h3>
+        The {{ total }} most recent public experiment{{total|pluralize}}
+        <small>(<a href="{% url 'tardis.tardis_portal.views.public_data' %}">view all</a>)</small>
+      </h3>
     {% endwith %}
     <div id="public-experiments" class="experiments">
         {% for exp in public_experiments %}
