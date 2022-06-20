@@ -489,11 +489,11 @@ def streaming_download_experiment(
 
         # Take chained generators and turn them into a set of datafiles
         datafiles = set(chain(chain.from_iterable(map(get_datafile, datafiles))))
-        if not datafiles:
-            message = """The experiment you are trying to access does not contain
-                         any DataFiles that you are allowed to download."""
-            message = " ".join(message.split())  # removes spaces
-            return redirect_back_with_error(request, message)
+    if not datafiles:
+        message = """The experiment you are trying to access does not contain
+                     any DataFiles that you are allowed to download."""
+        message = " ".join(message.split())  # removes spaces
+        return redirect_back_with_error(request, message)
 
     return _streaming_downloader(
         request, datafiles, rootdir, filename, comptype, organization
@@ -524,11 +524,11 @@ def streaming_download_dataset(
 
         # Take chained generators and turn them into a set of datafiles
         datafiles = set(chain(chain.from_iterable(map(get_datafile, datafiles))))
-        if not datafiles:
-            message = """The experiment you are trying to access does not contain
-                         any DataFiles that you are allowed to download."""
-            message = " ".join(message.split())  # removes spaces
-            return redirect_back_with_error(request, message)
+    if not datafiles:
+        message = """The experiment you are trying to access does not contain
+                     any DataFiles that you are allowed to download."""
+        message = " ".join(message.split())  # removes spaces
+        return redirect_back_with_error(request, message)
 
     return _streaming_downloader(
         request, datafiles, rootdir, filename, comptype, organization
