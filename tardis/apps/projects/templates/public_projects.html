@@ -48,7 +48,7 @@
                     </a>
                   </div>
                   <div class="col">
-                    <div class="badges" id="badge-{{proj.id}}"></div>
+                    <div class="projectbadges" id="badge-{{proj.id}}"></div>
                   </div>
                 </div> {% comment %} class="row" {% endcomment %}
                 <div class="row">
@@ -138,5 +138,5 @@ $(function() {
     });
 });
 </script>
-{% render_bundle 'tardis_portal_my_projects' %}
+{% render_bundle 'project_badges' %}
 {% endblock %}
