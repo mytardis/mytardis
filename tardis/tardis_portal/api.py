@@ -922,19 +922,19 @@ class DatasetResource(MyTardisModelResource):
                     bundle.obj.experiments.add(exp)
                 except NotFound:
                     pass
-        if not settings.ONLY_EXPERIMENT_ACLS:
-            acl = DatasetACL(
-                dataset=dataset,
-                user=bundle.request.user,
-                canRead=True,
-                canDownload=True,
-                canWrite=True,
-                canDelete=True,
-                canSensitive=True,
-                isOwner=True,
-                aclOwnershipType=DatasetACL.OWNER_OWNED,
-            )
-            acl.save()
+            if not settings.ONLY_EXPERIMENT_ACLS:
+                acl = DatasetACL(
+                    dataset=dataset,
+                    user=bundle.request.user,
+                    canRead=True,
+                    canDownload=True,
+                    canWrite=True,
+                    canDelete=True,
+                    canSensitive=True,
+                    isOwner=True,
+                    aclOwnershipType=DatasetACL.OWNER_OWNED,
+                )
+                acl.save()
 
         return super().hydrate_m2m(bundle)
 

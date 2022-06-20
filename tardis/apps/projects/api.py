@@ -129,17 +129,20 @@ class ProjectACLAuthorization(Authorization):
             if not bundle.request.user.has_perm("tardis_portal.change_project"):
                 return False
             perm = False
-            for exp_uri in bundle.data.get("experiments", []):
-                try:
-                    this_exp = ExperimentResource.get_via_uri(
-                        ExperimentResource(), exp_uri, bundle.request
-                    )
-                except:
-                    return False
-                if has_write(bundle.request, this_exp.id, "experiment"):
-                    perm = True
-                else:
-                    return False
+            if settings.ONLY_EXPERIMENT_ACLS:
+                for exp_uri in bundle.data.get("experiments", []):
+                    try:
+                        this_exp = ExperimentResource.get_via_uri(
+                            ExperimentResource(), exp_uri, bundle.request
+                        )
+                    except:
+                        return False
+                    if has_write(bundle.request, this_exp.id, "experiment"):
+                        perm = True
+                    else:
+                        return False
+            else:
+                perm = True
             return perm
         if isinstance(bundle.obj, ProjectParameterSet):
             if not bundle.request.user.has_perm("tardis_portal.change_project"):
@@ -232,10 +235,6 @@ class ProjectResource(ModelResource):
         bundle.data["dataset_count"] = project_dataset_count
         project_datafile_count = project.get_datafiles(bundle.request.user).count()
         bundle.data["datafile_count"] = project_datafile_count
-        # admins = project.get_admins()
-        # bundle.data["admin_groups"] = [acl.id for acl in admins]
-        # members = project.get_groups()
-        # bundle.data["member_groups"] = [acl.id for acl in members]
         return bundle
 
     def prepend_urls(self):
@@ -248,12 +247,13 @@ class ProjectResource(ModelResource):
             ),
         ]
 
-    '''def hydrate_m2m(self, bundle):
+    def hydrate_m2m(self, bundle):
         """
-        Create experiment-dataset associations first, because they affect
+        Create project-experiment associations first, in case they affect
         authorization for adding other related resources, e.g. metadata
         """
         if getattr(bundle.obj, "id", False):
+            project = bundle.obj
             for exp_uri in bundle.data.get("experiments", []):
                 try:
                     exp = ExperimentResource.get_via_uri(
@@ -262,18 +262,34 @@ class ProjectResource(ModelResource):
                     bundle.obj.experiments.add(exp)
                 except NotFound:
                     pass
-        # acls = process_acls(bundle)
-        # if acls:
-        #    bulk_replace_existing_acls(acls)
-        # if "admins" in bundle.data.keys():
-        #    bundle.data.pop("admins")
-        # if "admin_groups" in bundle.data.keys():
-        #    bundle.data.pop("admin_groups")
-        # if "members" in bundle.data.keys():
-        #    bundle.data.pop("members")
-        # if "member_groups" in bundle.data.keys():
-        #    bundle.data.pop("member_groups")
-        return super().hydrate_m2m(bundle)'''
+            if not settings.ONLY_EXPERIMENT_ACLS:
+                # ACL for ingestor
+                acl = ProjectACL(
+                    project=project,
+                    user=bundle.request.user,
+                    canRead=True,
+                    canDownload=True,
+                    canWrite=True,
+                    canDelete=True,
+                    canSensitive=True,
+                    isOwner=True,
+                    aclOwnershipType=ProjectACL.OWNER_OWNED,
+                )
+                acl.save()
+                # and for PI
+                acl = ProjectACL(
+                    project=project,
+                    user=project.principal_investigator,
+                    canRead=True,
+                    canDownload=True,
+                    canWrite=True,
+                    canDelete=True,
+                    canSensitive=True,
+                    isOwner=True,
+                    aclOwnershipType=ProjectACL.OWNER_OWNED,
+                )
+                acl.save()
+        return super().hydrate_m2m(bundle)
 
     def obj_create(self, bundle, **kwargs):
         """Currently not tested for failed db transactions as sqlite does not
@@ -281,28 +297,6 @@ class ProjectResource(ModelResource):
         """
         user = bundle.request.user
         bundle.data["created_by"] = user
-        """if not User.objects.filter(
-            username=bundle.data["principal_investigator"]
-        ).exists():
-            new_user = get_user_from_upi(bundle.data["principal_investigator"])
-            if not new_user:
-                logger.error("No one found for upi: {member}")
-            user = User.objects.create(
-                username=new_user["username"],
-                first_name=new_user["first_name"],
-                last_name=new_user["last_name"],
-                email=new_user["email"],
-            )
-            user.set_password(gen_random_password())
-            for permission in settings.DEFAULT_PERMISSIONS:
-                user.user_permission.add(Permission.objects.get(codename=permission))
-            user.save()
-            authentication = UserAuthentication(
-                userProfile=user.userprofile,
-                username=new_user["username"],
-                authenticationMethod=settings.LDAP_METHOD,
-            )
-            authentication.save()"""
         project_lead = User.objects.get(username=bundle.data["principal_investigator"])
         bundle.data["principal_investigator"] = project_lead
         bundle = super().obj_create(bundle, **kwargs)
