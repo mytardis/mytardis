@@ -219,6 +219,22 @@ def my_projects(request):
     return render_response_index(request, "my_projects.html", c)
 
 
+def public_projects(request):
+    """
+    list of public projects
+    """
+
+    if settings.ONLY_EXPERIMENT_ACLS:
+        public_projects = Project.objects.filter(
+            experiments__in=Experiment.safe.public()
+        ).order_by("-start_time")
+    else:
+        public_projects = Project.safe.public().order_by("-start_time")
+
+    c = {"public_projects": public_projects}
+    return render_response_index(request, "public_projects.html", c)
+
+
 @never_cache
 @login_required
 def retrieve_owned_proj_list(request, template_name="ajax/proj_list.html"):

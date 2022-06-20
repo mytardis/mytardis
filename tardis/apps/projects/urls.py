@@ -7,6 +7,7 @@ from .views import (
     create_project,
     edit_project,
     my_projects,
+    public_projects,
     retrieve_owned_proj_list,
 )
 
@@ -25,6 +26,11 @@ project_urls = [
         name="tardis.apps.projects.edit_project",
     ),
     url(r"^myprojects/$", my_projects, name="tardis.apps.projects.views.my_projects"),
+    url(
+        r"^public_projects/$",
+        public_projects,
+        name="tardis.apps.projects.views.public_projects",
+    ),
     url(
         r"^ajax/owned_proj_list/$",
         retrieve_owned_proj_list,
