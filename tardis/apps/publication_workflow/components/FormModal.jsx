@@ -39,7 +39,7 @@ const FormModal = ({
               license:
                 'selectedLicenseId' in initialData
                   ? initialData.selectedLicenseId
-                  : '',
+                  : null,
               releaseDate:
                 'releaseDate' in initialData ? initialData.releaseDate : '',
               consent:
