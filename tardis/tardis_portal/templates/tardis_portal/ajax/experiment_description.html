@@ -43,7 +43,11 @@
       {% if experiment.license_id %}
         <div class="row">
           <div class="col-md-6">
-            This experiment data is licensed under
+            {% if experiment.is_publication %} 
+            This publication data is licensed under 
+            {% else %}
+            This experiment data is licensed under 
+            {% endif %}
             <a rel="license"
                property="dc:license"
                href="{{ experiment.license.url }}">

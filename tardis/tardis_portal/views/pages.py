@@ -725,7 +725,7 @@ def edit_experiment(request, experiment_id,
     """
     experiment = Experiment.objects.get(id=experiment_id)
 
-    c = {'subtitle': 'Edit Experiment',
+    c = {'subtitle': 'Edit Publication' if experiment.is_publication() else 'Edit Experiment',
          'experiment_id': experiment_id, }
 
     if request.method == 'POST':

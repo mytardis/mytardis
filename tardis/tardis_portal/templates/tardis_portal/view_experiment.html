@@ -58,11 +58,19 @@
     </a>
     {% endif %}
     {% if has_write_permissions %}
-    <a class="btn btn-sm btn-outline-secondary" title="Edit Experiment"
-       href="{{ experiment.get_edit_url }}">
+      {% if experiment.is_publication %} 
+      <a class="btn btn-sm btn-outline-secondary" title="Edit Publication"
+        href="{{ experiment.get_edit_url }}">
+        <i class="fa fa-pencil"></i>
+        Edit Publication
+      </a>
+      {% else %}
+      <a class="btn btn-sm btn-outline-secondary" title="Edit Experiment"
+      href="{{ experiment.get_edit_url }}">
       <i class="fa fa-pencil"></i>
       Edit Experiment
-    </a>
+      </a>
+      {% endif %}
     {% endif %}
   </div>
   {% endif %}
