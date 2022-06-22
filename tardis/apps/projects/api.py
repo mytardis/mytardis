@@ -276,19 +276,20 @@ class ProjectResource(ModelResource):
                     aclOwnershipType=ProjectACL.OWNER_OWNED,
                 )
                 acl.save()
-                # and for PI
-                acl = ProjectACL(
-                    project=project,
-                    user=project.principal_investigator,
-                    canRead=True,
-                    canDownload=True,
-                    canWrite=True,
-                    canDelete=True,
-                    canSensitive=True,
-                    isOwner=True,
-                    aclOwnershipType=ProjectACL.OWNER_OWNED,
-                )
-                acl.save()
+                if bundle.request.user.id != project.principal_investigator.id:
+                    # and for PI
+                    acl = ProjectACL(
+                        project=project,
+                        user=project.principal_investigator,
+                        canRead=True,
+                        canDownload=True,
+                        canWrite=True,
+                        canDelete=True,
+                        canSensitive=True,
+                        isOwner=True,
+                        aclOwnershipType=ProjectACL.OWNER_OWNED,
+                    )
+                    acl.save()
         return super().hydrate_m2m(bundle)
 
     def obj_create(self, bundle, **kwargs):

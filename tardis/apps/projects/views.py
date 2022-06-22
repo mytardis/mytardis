@@ -163,21 +163,22 @@ def create_project(request):
                 aclOwnershipType=ProjectACL.OWNER_OWNED,
             )
             acl.save()
-            # add default ACL
-            acl = ProjectACL(
-                project=project,
-                user=project.principal_investigator,
-                canRead=True,
-                canDownload=True,
-                canWrite=True,
-                canDelete=True,
-                canSensitive=True,
-                isOwner=True,
-                aclOwnershipType=ProjectACL.OWNER_OWNED,
-            )
-            acl.save()
+            if request.user.id != project.principal_investigator.id:
+                # add default ACL
+                acl = ProjectACL(
+                    project=project,
+                    user=project.principal_investigator,
+                    canRead=True,
+                    canDownload=True,
+                    canWrite=True,
+                    canDelete=True,
+                    canSensitive=True,
+                    isOwner=True,
+                    aclOwnershipType=ProjectACL.OWNER_OWNED,
+                )
+                acl.save()
 
-            return _redirect_303("tardis.apps.projects.create_project", project.id)
+            return _redirect_303("tardis.apps.projects.view_project", project.id)
     else:
         c["status"] = "Errors exist in form."
         c["error"] = "true"
