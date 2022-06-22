@@ -179,11 +179,12 @@ def create_project(request):
 
             return _redirect_303("tardis.apps.projects.create_project", project.id)
     else:
+        c["status"] = "Errors exist in form."
+        c["error"] = "true"
         form = ProjectForm()
 
     c = {"form": form}
-    c["status"] = "Errors exist in form."
-    c["error"] = "true"
+
     return render_response_index(request, "create_project.html", c)
 
 
