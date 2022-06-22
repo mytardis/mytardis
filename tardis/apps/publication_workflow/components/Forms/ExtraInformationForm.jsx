@@ -30,10 +30,10 @@ const ExtraInformationForm = ({ formik }) => {
       <p>The following extra information is required based on your dataset selection:</p>
       {Object.keys(formik.values.extraInfo).length > 0
       // extra info is present
-        ? Object.keys(formik.values.extraInfo).map(elem => (
-          <Card key={`${elem.id}_${Date.now()}`} className="mb-3">
+        ? Object.keys(formik.values.extraInfo).map(elem, idx => (
+          <Card key={idx} className="mb-3">
             <Card.Body>
-              <div key={elem}>
+              <div>
                 <h4>{formik.values.extraInfo[elem].dataset}</h4>
                 <Form.Group className="mb-3" controlId="formGroupDatasetDescription">
                   <Form.Label>Description</Form.Label>
@@ -43,7 +43,6 @@ const ExtraInformationForm = ({ formik }) => {
                     placeholder="Describe your Dataset"
                     name={`datasetDescription_${elem}`}
                     onChange={e => handleDatasetDescriptionChange(elem, e)}
-                    key={elem}
                     value={formik.values.extraInfo[elem].description}
                   />
                 </Form.Group>
@@ -52,9 +51,9 @@ const ExtraInformationForm = ({ formik }) => {
           </Card>
         ))
         : formik.values.selectedDatasets.map((item, idx) => (
-          <Card className="mb-3" key={`${item.dataset.id}_${Date.now()}`}>
+          <Card key={idx} className="mb-3">
             <Card.Body>
-              <div key={item.dataset.id}>
+              <div>
                 <h4>{item.dataset.description}</h4>
                 <Form.Group className="mb-3" controlId="formGroupDatasetDescription">
                   <Form.Label>Description</Form.Label>
@@ -64,7 +63,6 @@ const ExtraInformationForm = ({ formik }) => {
                     placeholder="Describe your Dataset"
                     name={`datasetDescription_${idx}`}
                     onChange={e => handleDatasetDescriptionChange(idx, e)}
-                    key={formik.values.selectedDatasets[idx]}
                     value={formik.values.selectedDatasets[idx].publication_dataset_description}
                   />
                 </Form.Group>
