@@ -9,7 +9,6 @@ from django.conf import settings
 from django.contrib.auth.decorators import login_required, permission_required
 from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator
-from django.urls import reverse
 from django.views.decorators.cache import never_cache
 from django.views.generic.base import TemplateView
 
@@ -20,13 +19,12 @@ from tardis.tardis_portal.shortcuts import (
     return_response_not_found,
 )
 from tardis.tardis_portal.models import Experiment
-from tardis.tardis_portal.views.utils import _redirect_303, HttpResponseSeeAlso
+from tardis.tardis_portal.views.utils import _redirect_303
 from tardis.tardis_portal.views.pages import _resolve_view
 
 
 from .models import Project, ProjectACL
 from .forms import ProjectForm
-
 
 logger = logging.getLogger(__name__)
 
@@ -142,14 +140,15 @@ def create_project(request):
     if request.method == "POST":
         form = ProjectForm(request.POST)
         if form.is_valid():
-            project = Project()
+            project = Project(created_by=request.user)
             project.name = form.cleaned_data["name"]
             # project.raid = form.cleaned_data["raid"]
             project.description = form.cleaned_data["description"]
             project.principal_investigator = form.cleaned_data["principal_investigator"]
+            project.save()
             institutions = form.cleaned_data.get("institution")
             project.institution.add(*institutions)
-            project.save(commit=False)
+            project.save()
 
             # add default ACL
             acl = ProjectACL(
@@ -178,17 +177,13 @@ def create_project(request):
             )
             acl.save()
 
-            request.POST = {"status": "Project Created."}
-            return HttpResponseSeeAlso(
-                reverse("tardis.apps.projects.create_project", args=[str(project.id)])
-                + "#created"
-            )
-        c["status"] = "Errors exist in form."
-        c["error"] = "true"
+            return _redirect_303("tardis.apps.projects.create_project", project.id)
     else:
         form = ProjectForm()
 
     c = {"form": form}
+    c["status"] = "Errors exist in form."
+    c["error"] = "true"
     return render_response_index(request, "create_project.html", c)
 
 
