@@ -1,4 +1,6 @@
 from django import forms
+from django.conf import settings
+from django.contrib.auth.models import User
 
 # from django.forms.models import ModelChoiceField
 
@@ -21,3 +23,9 @@ class ProjectForm(forms.ModelForm):
             # "start_time",
             # "end_time",
         ]
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.fields["principal_investigator"].queryset = User.objects.exclude(
+            pk=settings.PUBLIC_USER_ID
+        )
