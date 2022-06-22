@@ -25,7 +25,7 @@ class ProjectForm(forms.ModelForm):
         ]
 
     def __init__(self, *args, **kwargs):
-        super().__init__(**kwargs)
+        super().__init__(*args, **kwargs)
         self.fields["principal_investigator"].queryset = User.objects.exclude(
             pk=settings.PUBLIC_USER_ID
         )
