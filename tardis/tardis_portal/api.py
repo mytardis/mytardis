@@ -602,6 +602,7 @@ class ExperimentResource(MyTardisModelResource):
                 'allows_distribution': lic.allows_distribution,
             }
         owners = exp.get_owners()
+        bundle.data['is_publication'] = exp.is_publication()
         bundle.data['owner_ids'] = [o.id for o in owners]
         dataset_count = exp.datasets.all().count()
         bundle.data['dataset_count'] = dataset_count

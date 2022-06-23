@@ -63,7 +63,7 @@
     <div class="sharing-section sharing">
     <h3>Sharing</h3>
     <h4>Users</h4>
-    <p>Users who have a share in this experiment:</p>
+    <p>Users who have a share in this {% if experiment.is_publication %}publication:{% else %}experiment:{% endif %}</p>
     <div id="experiment_user_list"></div>
     {% if is_owner or is_superuser %}
     <a class="share_link btn btn-outline-secondary btn-sm" title="Change">
@@ -73,7 +73,7 @@
     {% endif %}
     <br/><br/>
     <h4>Groups</h4>
-    <p>Groups who have a share in this experiment:</p>
+    <p>Groups who have a share in this {% if experiment.is_publication %}publication:{% else %}experiment:{% endif %}</p>
     <div id="experiment_group_list"></div>
     {% if is_owner or is_superuser %}
     <a class="share_link_group btn btn-outline-secondary btn-sm" title="Change">
@@ -86,19 +86,19 @@
     <div class="sharing-section sharing">
     <h3>Links</h3>
         {% if public_link %}
-        <p>This experiment can be viewed by everybody with the link below:</p>
+        <p>This {% if experiment.is_publication %}publication{% else %}experiment{% endif %} can be viewed by everybody with the link below:</p>
             <br/>
         <p><div class="copylink">{{domain}}{{experiment.get_absolute_url}}</div><br/></p>
             {% if experiment.public_access == experiment.PUBLIC_ACCESS_METADATA %}
-                <p>This experiment has been set to <em>'metadata only'</em>. Registered users must be explicitly allowed to access files. Alternately, a temporary link can be created and privately shared for direct access.</p>
+                <p>This {% if experiment.is_publication %}publication{% else %}experiment{% endif %} has been set to <em>'metadata only'</em>. Registered users must be explicitly allowed to access files. Alternately, a temporary link can be created and privately shared for direct access.</p>
             {% endif %}
         {% else %}
-        <p>This experiment is private. A temporary link can be created by its owner(s) and privately shared for direct access.</p>
+        <p>This {% if experiment.is_publication %}publication{% else %}experiment{% endif %} is private. A temporary link can be created by its owner(s) and privately shared for direct access.</p>
         {% endif %}
 
     {% if has_download_permissions %}
     <br/>
-    <p>Temporary access links provide full access to recipients regardless of an experiment's public status.</p>
+    <p>Temporary access links provide full access to recipients regardless of {% if experiment.is_publication %}a publication's{% else %} an experiment's{% endif %} public status.</p>
     <div id="experiment_token_list"></div>
 
         {% if is_owner or is_superuser %}

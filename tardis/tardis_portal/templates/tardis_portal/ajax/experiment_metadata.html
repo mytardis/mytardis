@@ -30,6 +30,6 @@
     </div>
 {% empty %}
   <div class="alert alert-info mt-3" >
-    There is no metadata for this experiment.
+    There is no metadata for this {% if experiment.is_publication %} publication. {% else %} experiment. {% endif %}
   </div>
 {% endfor %}
