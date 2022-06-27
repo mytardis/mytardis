@@ -211,7 +211,7 @@ def edit_project(request, project_id):
             project.name = form.cleaned_data["name"]
             project.description = form.cleaned_data["description"]
 
-            project.save()
+            project.save(commit=False)
             return _redirect_303("tardis.apps.projects.view_project", project.id)
     else:
         form = ProjectForm(instance=project, user=request.user)
