@@ -184,7 +184,7 @@ def create_project(request):
     else:
         c["status"] = "Errors exist in form."
         c["error"] = "true"
-        form = ProjectForm()
+        form = ProjectForm(user=request.user)
 
     c = {"form": form}
 
