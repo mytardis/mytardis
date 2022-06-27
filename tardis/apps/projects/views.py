@@ -145,7 +145,7 @@ def create_project(request):
             # project.raid = form.cleaned_data["raid"]
             project.description = form.cleaned_data["description"]
             project.principal_investigator = form.cleaned_data["principal_investigator"]
-            # project.save()
+            project.save()
             institutions = form.cleaned_data.get("institution")
             project.institution.add(*institutions)
             # project.save()
