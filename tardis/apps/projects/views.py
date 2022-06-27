@@ -141,18 +141,19 @@ def create_project(request):
         form = ProjectForm(request.POST, user=request.user)
         if form.is_valid():
             project = Project(created_by=request.user)
-            project.name = form.cleaned_data["name"]
-            # project.raid = form.cleaned_data["raid"]
-            project.description = form.cleaned_data["description"]
-            project.principal_investigator = form.cleaned_data["principal_investigator"]
-            project.save()
-            institutions = form.cleaned_data.get("institution")
-            project.institution.add(*institutions)
-            # project.save()
             experiments = form.cleaned_data.get("experiments")
-            if (
-                settings.ONLY_EXPERIMENT_ACLS and experiments
-            ) or not settings.ONLY_EXPERIMENT_ACLS:
+            if settings.ONLY_EXPERIMENT_ACLS and not experiments:
+                c["status"] = "Please specify one or more experiments."
+            else:
+                project.name = form.cleaned_data["name"]
+                # project.raid = form.cleaned_data["raid"]
+                project.description = form.cleaned_data["description"]
+                project.principal_investigator = form.cleaned_data[
+                    "principal_investigator"
+                ]
+                project.save()
+                institutions = form.cleaned_data.get("institution")
+                project.institution.add(*institutions)
                 project.experiments.add(*experiments)
                 project.save()
                 # add default ACL
@@ -185,9 +186,8 @@ def create_project(request):
 
                 return _redirect_303("tardis.apps.projects.view_project", project.id)
 
-        c["status"] = "Errors exist in form."
-        if settings.ONLY_EXPERIMENT_ACLS and not experiments:
-            c["status"] = "Please specify one or more experiments."
+        if c["status"] != "Please specify one or more experiments.":
+            c["status"] = "Errors exist in form."
         c["error"] = "true"
     else:
         form = ProjectForm(user=request.user)
