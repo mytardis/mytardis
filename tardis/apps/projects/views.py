@@ -191,7 +191,7 @@ def create_project(request):
         c["error"] = "true"
     else:
         form = ProjectForm(user=request.user)
-    c["form":form]
+    c["form"] = form
 
     return render_response_index(request, "create_project.html", c)
 
