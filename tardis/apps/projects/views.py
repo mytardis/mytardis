@@ -146,12 +146,11 @@ def create_project(request):
                 c["status"] = "Please specify one or more experiments."
             else:
                 project.name = form.cleaned_data["name"]
-                # project.raid = form.cleaned_data["raid"]
                 project.description = form.cleaned_data["description"]
                 project.principal_investigator = form.cleaned_data[
                     "principal_investigator"
                 ]
-                project.save()
+                project.save(commit=False)
                 institutions = form.cleaned_data.get("institution")
                 project.institution.add(*institutions)
                 project.experiments.add(*experiments)
@@ -184,6 +183,7 @@ def create_project(request):
                     )
                     acl.save()
 
+                request.POST = {"status": "Project Created."}
                 return _redirect_303("tardis.apps.projects.view_project", project.id)
 
         if c["status"] != "Please specify one or more experiments.":
@@ -197,25 +197,24 @@ def create_project(request):
 
 
 @login_required
+@permission_required("tardis_portal.change_project")
+@authz.project_write_permissions_required
 def edit_project(request, project_id):
 
     project = Project.objects.get(id=project_id)
 
     # Process form or prepopulate it
     if request.method == "POST":
-        form = ProjectForm(request.POST)
+        form = ProjectForm(request.POST, instance=project, user=request.user)
         if form.is_valid():
             project = Project()
             project.name = form.cleaned_data["name"]
-            project.raid = form.cleaned_data["raid"]
             project.description = form.cleaned_data["description"]
-            project.owner = form.cleaned_data["owner"]
-            project.contact = form.cleaned_data["contact"]
-            project.member = form.cleaned_data["member"]
+
             project.save()
             return _redirect_303("tardis.apps.projects.view_project", project.id)
     else:
-        form = ProjectForm(instance=project)
+        form = ProjectForm(instance=project, user=request.user)
 
     c = {"form": form, "project": project}
     return render_response_index(request, "create_project.html", c)

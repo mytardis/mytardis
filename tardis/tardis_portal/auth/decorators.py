@@ -345,6 +345,18 @@ def write_permissions_required(f):
     return wrap
 
 
+def project_write_permissions_required(f):
+    def wrap(request, *args, **kwargs):
+
+        if not has_write(request, kwargs["project_id"], "project"):
+            return return_response_error(request)
+        return f(request, *args, **kwargs)
+
+    wrap.__doc__ = f.__doc__
+    wrap.__name__ = f.__name__
+    return wrap
+
+
 def dataset_write_permissions_required(f):
     def wrap(request, *args, **kwargs):
         dataset_id = kwargs["dataset_id"]
