@@ -138,18 +138,20 @@ def create_project(request):
 
     # Process form or prepopulate it
     if request.method == "POST":
-        form = ProjectForm(request.POST)
+        form = ProjectForm(request.POST, user=request.user)
         if form.is_valid():
             project = Project(created_by=request.user)
             project.name = form.cleaned_data["name"]
             # project.raid = form.cleaned_data["raid"]
             project.description = form.cleaned_data["description"]
             project.principal_investigator = form.cleaned_data["principal_investigator"]
-            project.save()
+            # project.save()
             institutions = form.cleaned_data.get("institution")
             project.institution.add(*institutions)
+            # project.save()
+            experiments = form.cleaned_data.get("experiments")
+            project.experiments.add(*experiments)
             project.save()
-
             # add default ACL
             acl = ProjectACL(
                 project=project,
