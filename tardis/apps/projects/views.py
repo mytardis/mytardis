@@ -150,6 +150,11 @@ def create_project(request):
             project.institution.add(*institutions)
             # project.save()
             experiments = form.cleaned_data.get("experiments")
+            if not settings.ONLY_EXPERIMENT_ACLS and not experiments:
+                c["status"] = "Please specify one or more experiments."
+                c["error"] = "true"
+                c = {"form": ProjectForm(user=request.user)}
+                return render_response_index(request, "create_project.html", c)
             project.experiments.add(*experiments)
             project.save()
             # add default ACL
