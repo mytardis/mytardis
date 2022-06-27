@@ -150,31 +150,15 @@ def create_project(request):
             project.institution.add(*institutions)
             # project.save()
             experiments = form.cleaned_data.get("experiments")
-            if settings.ONLY_EXPERIMENT_ACLS and not experiments:
-                c["status"] = "Please specify one or more experiments."
-                c["error"] = "true"
-                c = {"form": ProjectForm(user=request.user)}
-                return render_response_index(request, "create_project.html", c)
-            project.experiments.add(*experiments)
-            project.save()
-            # add default ACL
-            acl = ProjectACL(
-                project=project,
-                user=request.user,
-                canRead=True,
-                canDownload=True,
-                canWrite=True,
-                canDelete=True,
-                canSensitive=True,
-                isOwner=True,
-                aclOwnershipType=ProjectACL.OWNER_OWNED,
-            )
-            acl.save()
-            if request.user.id != project.principal_investigator.id:
+            if (
+                settings.ONLY_EXPERIMENT_ACLS and experiments
+            ) or not settings.ONLY_EXPERIMENT_ACLS:
+                project.experiments.add(*experiments)
+                project.save()
                 # add default ACL
                 acl = ProjectACL(
                     project=project,
-                    user=project.principal_investigator,
+                    user=request.user,
                     canRead=True,
                     canDownload=True,
                     canWrite=True,
@@ -184,14 +168,30 @@ def create_project(request):
                     aclOwnershipType=ProjectACL.OWNER_OWNED,
                 )
                 acl.save()
+                if request.user.id != project.principal_investigator.id:
+                    # add default ACL
+                    acl = ProjectACL(
+                        project=project,
+                        user=project.principal_investigator,
+                        canRead=True,
+                        canDownload=True,
+                        canWrite=True,
+                        canDelete=True,
+                        canSensitive=True,
+                        isOwner=True,
+                        aclOwnershipType=ProjectACL.OWNER_OWNED,
+                    )
+                    acl.save()
 
-            return _redirect_303("tardis.apps.projects.view_project", project.id)
-    else:
+                return _redirect_303("tardis.apps.projects.view_project", project.id)
+
         c["status"] = "Errors exist in form."
+        if settings.ONLY_EXPERIMENT_ACLS and not experiments:
+            c["status"] = "Please specify one or more experiments."
         c["error"] = "true"
+    else:
         form = ProjectForm(user=request.user)
-
-    c = {"form": form}
+    c["form":form]
 
     return render_response_index(request, "create_project.html", c)
 
