@@ -28,7 +28,9 @@ const CurrentLicense = ({ experimentId, licenseUpdatedCount }) => {
             <Fragment>
               <div className="row">
                 <div className="col-md-6">
-                  This {expData.is_publication ? 'publication' : 'experiment'} data is licensed under
+                  This 
+                  {expData.is_publication ? 'publication' : 'experiment'} 
+                  data is licensed under
                   <a
                     rel="license"
                     property="dc:license"

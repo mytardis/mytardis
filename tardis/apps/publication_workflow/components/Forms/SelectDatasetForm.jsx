@@ -24,14 +24,14 @@ const SelectDatasetForm = ({ formik }) => {
       .then(result => setDatasetList(result))
       .catch(() => setDatasetList([]));
 
-    const selectedExperiment = expList.find(x => x.id == event.target.value)
-    setSelectedExperiment(selectedExperiment);
+    const selectedExp = expList.find(x => Number(x.id) === Number(event.target.value));
+    setSelectedExperiment(selectedExp);
   };
   const handleDatasetSelectChange = (event) => {
     const selectedOptionsArray = [].slice.call(event.target.selectedOptions);
     let currentlySelectedDatasetList = [];
-    selectedOptionsArray.map(item => {
-      const isSelectedExperiment = selectedDatasetList.find(x => x.dataset.id == item.value)
+    selectedOptionsArray.forEach((item) => {
+      const isSelectedExperiment = selectedDatasetList.find(x => Number(x.dataset.id) === Number(item.value));
       if (!isSelectedExperiment) {
         currentlySelectedDatasetList.push({
           experiment: selectedExperiment.title,
@@ -40,7 +40,7 @@ const SelectDatasetForm = ({ formik }) => {
             id: item.value,
             description: item.label.slice(0, item.label.length),
           },
-        })
+        });
       }
     });
     currentlySelectedDatasetList = selectedDatasetList.concat(
@@ -53,7 +53,7 @@ const SelectDatasetForm = ({ formik }) => {
 
   useEffect(() => {
     fetchExperimentList().then((data) => {
-      let expListArray = [];
+      const expListArray = [];
       expListArray.push({ id: '-1', title: 'Select experiment' });
       data.map(item => expListArray.push(item));
       setExpList(expListArray);
@@ -133,8 +133,8 @@ const SelectDatasetForm = ({ formik }) => {
                   name="experimentDropDown"
                   onChange={handleExpChange}
                 >
-                  {expList.map((value, index) => (
-                    <option value={value.id} key={index}>
+                  {expList.map(value => (
+                    <option value={value.id} key={value.id}>
                       {value.title}
                     </option>
                   ))}

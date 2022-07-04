@@ -41,11 +41,16 @@ const PublicationsHome = () => {
       setScheduledPubsList(data);
     });
   };
-  const handleClose = () => {
+  const handleClose = (pub_create = true) => {
+
     setShow(false);
-    // show message
-    setToastMessage('Publication created successfully');
-    setToastShow(true);
+
+    if (pub_create) {
+      // show message
+      setToastMessage('Publication created successfully');
+      setToastShow(true);
+    }
+
     // reload pub list
     onPubUpdate('');
     // set resume draft id to 0

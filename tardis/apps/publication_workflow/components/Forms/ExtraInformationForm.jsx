@@ -30,8 +30,8 @@ const ExtraInformationForm = ({ formik }) => {
       <p>The following extra information is required based on your dataset selection:</p>
       {Object.keys(formik.values.extraInfo).length > 0
       // extra info is present
-        ? Object.keys(formik.values.extraInfo).map(elem, idx => (
-          <Card key={idx} className="mb-3">
+        ? Object.keys(formik.values.extraInfo).map((elem, idx) => (
+          <Card key={formik.values.extraInfo[elem].dataset.experiment_id} className="mb-3">
             <Card.Body>
               <div>
                 <h4>{formik.values.extraInfo[elem].dataset}</h4>
@@ -51,7 +51,7 @@ const ExtraInformationForm = ({ formik }) => {
           </Card>
         ))
         : formik.values.selectedDatasets.map((item, idx) => (
-          <Card key={idx} className="mb-3">
+          <Card key={formik.values.selectedDatasets[idx].experiment_id} className="mb-3">
             <Card.Body>
               <div>
                 <h4>{item.dataset.description}</h4>

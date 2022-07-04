@@ -12,7 +12,7 @@ const FormModal = ({
   useEffect(() => {}, [resumeDraftId]);
   return (
     <>
-      <Modal show={show} onHide={handleClose} size="lg">
+      <Modal show={show} onHide={handleClose} size="lg" backdrop="static" keyboard={false}>
         <Modal.Body>
           <Stepper
             initialValues={{
@@ -47,8 +47,10 @@ const FormModal = ({
             }}
             onSubmit={values => SubmitFormData(values, 'submit', resumeDraftId).then(() => {
               handleClose();
-            })
-            }
+            })}
+            onClose={() => {
+              handleClose(false)
+            }}
             modalFooter
           >
             <>
@@ -61,6 +63,9 @@ const FormModal = ({
                   ).then(() => {
                     handleClose();
                   });
+                }}
+                onClose={() => {
+                  handleClose(false)
                 }}
                 validationSchema={Yup.object({
                   publicationTitle: Yup.string().required(
@@ -94,6 +99,9 @@ const FormModal = ({
                     handleClose();
                   });
                 }}
+                onClose={() => {
+                  handleClose(false)
+                }}
                 validationSchema={Yup.object({
                   extraInfo: Yup.object({}),
                 })}
@@ -107,6 +115,9 @@ const FormModal = ({
                   ).then(() => {
                     handleClose();
                   });
+                }}
+                onClose={() => {
+                  handleClose(false)
                 }}
                 validationSchema={Yup.object().shape({
                   authors: Yup.array().of(
@@ -132,6 +143,9 @@ const FormModal = ({
                   ).then(() => {
                     handleClose();
                   });
+                }}
+                onClose={() => {
+                  handleClose(false)
                 }}
                 validationSchema={Yup.object({
                   license: Yup.number().required('license is required'),

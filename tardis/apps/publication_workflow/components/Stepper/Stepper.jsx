@@ -13,7 +13,7 @@ import LicensingAndReleaseForm from '../Forms/LicensingAndReleaseForm';
 
 
 const Stepper = ({
-  children, initialValues, onSubmit,
+  children, initialValues, onSubmit, onClose
 }) => {
   const [stepNumber, setStepNumber] = useState(0);
   const steps = React.Children.toArray(children.props.children);
@@ -50,6 +50,11 @@ const Stepper = ({
     });
   };
 
+  // handle close
+  const handleClose = async () => {
+    step.props.onClose()
+  };
+
   const renderStepContent = (formik, activeStep) => {
     switch (activeStep) {
       case 0:
@@ -70,6 +75,7 @@ const Stepper = ({
       initialValues={snapshot}
       onSubmit={handleSubmit}
       validationSchema={step.props.validationSchema}
+      onClose={handleClose}
     >
       {formik => (
         <Form noValidate>
@@ -99,12 +105,18 @@ const Stepper = ({
                       <Button disabled={formik.isSubmitting} className="mt-2 me-2 float-end" onClick={() => handleSave(formik.values, formik)}>
                         Save and Finish later
                       </Button>
+                      <Button disabled={formik.isSubmitting} className="btn btn-danger mt-2 me-2 float-end" onClick={() => handleClose()}>
+                        Close
+                      </Button>
                     </Col>
                   </Row>
                 ) : (
                   <>
                     <Button disabled={formik.isSubmitting} className="mt-2 float-end" onClick={() => handleSave(formik.values, formik)}>
                       Save and Finish later
+                    </Button>
+                    <Button disabled={formik.isSubmitting} className="btn btn-danger mt-2 me-2 float-end" onClick={() => handleClose()}>
+                        Close
                     </Button>
                   </>
                 )
@@ -124,4 +136,5 @@ Stepper.propTypes = {
   children: PropTypes.element.isRequired,
   initialValues: PropTypes.object.isRequired,
   onSubmit: PropTypes.func.isRequired,
+  onClose: PropTypes.func.isRequired,
 };
