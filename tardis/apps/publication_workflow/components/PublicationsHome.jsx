@@ -41,11 +41,10 @@ const PublicationsHome = () => {
       setScheduledPubsList(data);
     });
   };
-  const handleClose = (pub_create = true) => {
-
+  const handleClose = (pubCreate = true) => {
     setShow(false);
 
-    if (pub_create) {
+    if (pubCreate) {
       // show message
       setToastMessage('Publication created successfully');
       setToastShow(true);

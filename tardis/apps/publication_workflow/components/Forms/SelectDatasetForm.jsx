@@ -31,6 +31,7 @@ const SelectDatasetForm = ({ formik }) => {
     const selectedOptionsArray = [].slice.call(event.target.selectedOptions);
     let currentlySelectedDatasetList = [];
     selectedOptionsArray.forEach((item) => {
+      // eslint-disable-next-line max-len
       const isSelectedExperiment = selectedDatasetList.find(x => Number(x.dataset.id) === Number(item.value));
       if (!isSelectedExperiment) {
         currentlySelectedDatasetList.push({

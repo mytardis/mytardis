@@ -49,7 +49,7 @@ const FormModal = ({
               handleClose();
             })}
             onClose={() => {
-              handleClose(false)
+              handleClose(false);
             }}
             modalFooter
           >
@@ -65,7 +65,7 @@ const FormModal = ({
                   });
                 }}
                 onClose={() => {
-                  handleClose(false)
+                  handleClose(false);
                 }}
                 validationSchema={Yup.object({
                   publicationTitle: Yup.string().required(
@@ -100,7 +100,7 @@ const FormModal = ({
                   });
                 }}
                 onClose={() => {
-                  handleClose(false)
+                  handleClose(false);
                 }}
                 validationSchema={Yup.object({
                   extraInfo: Yup.object({}),
@@ -117,7 +117,7 @@ const FormModal = ({
                   });
                 }}
                 onClose={() => {
-                  handleClose(false)
+                  handleClose(false);
                 }}
                 validationSchema={Yup.object().shape({
                   authors: Yup.array().of(
@@ -145,7 +145,7 @@ const FormModal = ({
                   });
                 }}
                 onClose={() => {
-                  handleClose(false)
+                  handleClose(false);
                 }}
                 validationSchema={Yup.object({
                   license: Yup.number().required('license is required'),

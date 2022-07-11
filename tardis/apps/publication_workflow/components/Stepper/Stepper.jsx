@@ -13,7 +13,7 @@ import LicensingAndReleaseForm from '../Forms/LicensingAndReleaseForm';
 
 
 const Stepper = ({
-  children, initialValues, onSubmit, onClose
+  children, initialValues, onSubmit,
 }) => {
   const [stepNumber, setStepNumber] = useState(0);
   const steps = React.Children.toArray(children.props.children);
@@ -52,7 +52,7 @@ const Stepper = ({
 
   // handle close
   const handleClose = async () => {
-    step.props.onClose()
+    step.props.onClose();
   };
 
   const renderStepContent = (formik, activeStep) => {
@@ -116,7 +116,7 @@ const Stepper = ({
                       Save and Finish later
                     </Button>
                     <Button disabled={formik.isSubmitting} className="btn btn-danger mt-2 me-2 float-end" onClick={() => handleClose()}>
-                        Close
+                      Close
                     </Button>
                   </>
                 )
@@ -136,5 +136,4 @@ Stepper.propTypes = {
   children: PropTypes.element.isRequired,
   initialValues: PropTypes.object.isRequired,
   onSubmit: PropTypes.func.isRequired,
-  onClose: PropTypes.func.isRequired,
 };
