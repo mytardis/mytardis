@@ -1,2 +1,2 @@
 PyCifRW==4.4
-zeep==3.0.0
+zeep==4.2.0
