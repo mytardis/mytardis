@@ -1,2 +1,2 @@
-PyCifRW==4.4
+PyCifRW==4.4.5
 zeep==3.0.0
