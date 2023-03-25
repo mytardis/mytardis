@@ -29,7 +29,7 @@ pyoai==2.5.0
 python-dateutil==2.8.2
 # python-magic
 git+https://github.com/mytardis/python-magic.git#egg=python-magic
-pytz==2021.1
+pytz==2023.2
 requests==2.26.0
 uritemplate==3.0.1
 # GraphQL
