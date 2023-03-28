@@ -16,8 +16,10 @@ django-user-agents==0.4.0
 django-webpack-loader==1.0.0
 django-widget-tweaks==1.4.8
 django-storages==1.11.1
-gunicorn==20.1.0
-gevent==21.1.2
+#gunicorn==20.1.0
+#gevent==21.1.2
+gunicorn
+gevent
 html2text==2020.1.16
 html5lib==1.1
 isodate==0.6.0
@@ -26,7 +28,8 @@ lxml==4.6.3
 paramiko==2.7.2
 pillow==8.2.0
 pyoai==2.5.0
-pystache==0.5.4
+#pystache==0.5.4
+pystache
 python-dateutil==2.8.1
 # python-magic
 git+https://github.com/mytardis/python-magic.git#egg=python-magic

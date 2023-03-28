@@ -18,7 +18,12 @@ class Identifier(models.Model):
     :attribute identifier: A CharField holding the ID
     """
 
-    identifier = models.CharField(max_length=400, null=True, blank=True)
+    identifier = models.CharField(max_length=400, null=False, blank=False)
+
+    def __str__(self):
+        if self.identifier:
+            return self.identifier
+        return "No Identifier"
 
 
 class DatasetID(Identifier):
@@ -27,7 +32,9 @@ class DatasetID(Identifier):
     """
 
     dataset = models.ForeignKey(
-        Dataset, on_delete=models.CASCADE, related_name="identifiers"
+        Dataset,
+        on_delete=models.CASCADE,
+        related_name="identifiers",
     )
 
     class Meta:
@@ -42,7 +49,9 @@ class ExperimentID(Identifier):
     """
 
     experiment = models.ForeignKey(
-        Experiment, on_delete=models.CASCADE, related_name="identifiers"
+        Experiment,
+        on_delete=models.CASCADE,
+        related_name="identifiers",
     )
 
     class Meta:
@@ -59,7 +68,9 @@ class FacilityID(Identifier):
     """
 
     facility = models.ForeignKey(
-        Facility, on_delete=models.CASCADE, related_name="identifiers"
+        Facility,
+        on_delete=models.CASCADE,
+        related_name="identifiers",
     )
 
     class Meta:
@@ -74,7 +85,9 @@ class InstrumentID(Identifier):
     """
 
     instrument = models.ForeignKey(
-        Instrument, on_delete=models.CASCADE, related_name="identifiers"
+        Instrument,
+        on_delete=models.CASCADE,
+        related_name="identifiers",
     )
 
     class Meta:
@@ -91,7 +104,9 @@ class ProjectID(Identifier):
     """
 
     project = models.ForeignKey(
-        Project, on_delete=models.CASCADE, related_name="identifiers"
+        Project,
+        on_delete=models.CASCADE,
+        related_name="identifiers",
     )
 
     class Meta:
@@ -106,7 +121,9 @@ class InstitutionID(Identifier):
     """
 
     institution = models.ForeignKey(
-        Institution, on_delete=models.CASCADE, related_name="identifiers"
+        Institution,
+        on_delete=models.CASCADE,
+        related_name="identifiers",
     )
 
     class Meta:
