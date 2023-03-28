@@ -1,6 +1,5 @@
 import logging
 
-from django.conf import settings
 from django.db import models
 
 from tardis.apps.projects.models import Institution, Project

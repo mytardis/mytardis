@@ -5,14 +5,12 @@ Implemented with Tastypie.
 .. moduleauthor:: Mike Laverick <mike.laverick@auckland.ac.nz>
 .. moduleauthor:: Chris Seal <c.seal@auckland.ac.nz>
 """
-import resource
 from itertools import chain
 
 from django.conf import settings
 from django.conf.urls import url
 from django.contrib.auth.models import Group, Permission, User
 from django.db import transaction
-from django.db.models import Q
 from django.http import HttpResponseForbidden, JsonResponse
 
 import ldap3
@@ -74,7 +72,7 @@ def get_user_from_upi(upi):
             )
             # if logger:
             #    logger.error(error_message)
-            raise Exception(error_message)
+            raise ValueError(error_message)
         if len(connection.entries) == 0:
             error_message = "No one with {}: {} has been found in the LDAP".format(
                 settings.LDAP_USER_LOGIN_ATTR, upi
