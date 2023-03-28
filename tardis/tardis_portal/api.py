@@ -9,23 +9,31 @@ Implemented with Tastypie.
 import json
 import re
 from itertools import chain
+from typing import Optional
 from wsgiref.util import FileWrapper
 
 from django.conf import settings
 from django.conf.urls import url
-from django.contrib.auth.models import AnonymousUser, User, Group, Permission
+from django.contrib.auth.models import AnonymousUser, Group, Permission, User
 from django.core.paginator import EmptyPage, InvalidPage, Paginator
 from django.db import IntegrityError, transaction
-from django.db.models import Q
-from django.http import (HttpResponse, HttpResponseForbidden,
-                         HttpResponseNotFound, JsonResponse,
-                         StreamingHttpResponse)
+from django.db.models import Model, Q
+from django.http import (
+    HttpResponse,
+    HttpResponseForbidden,
+    HttpResponseNotFound,
+    JsonResponse,
+    StreamingHttpResponse,
+)
 from django.shortcuts import redirect
 
 import ldap3
 from tastypie import fields
-from tastypie.authentication import (ApiKeyAuthentication, BasicAuthentication,
-                                     SessionAuthentication)
+from tastypie.authentication import (
+    ApiKeyAuthentication,
+    BasicAuthentication,
+    SessionAuthentication,
+)
 from tastypie.authorization import Authorization
 from tastypie.constants import ALL_WITH_RELATIONS
 from tastypie.exceptions import ImmediateHttpResponse, NotFound, Unauthorized
@@ -36,22 +44,37 @@ from tastypie.utils import trailing_slash
 from uritemplate import URITemplate
 
 from tardis.analytics.tracker import IteratorTracker
+from tardis.apps.identifiers.models import FacilityID
 
 from . import tasks
-from .auth.decorators import (has_access, has_delete_permissions,
-                              has_download_access, has_sensitive_access,
-                              has_write)
-from .models.access_control import (DatafileACL, DatasetACL, ExperimentACL,
-                                    UserAuthentication)
+from .auth.decorators import (
+    has_access,
+    has_delete_permissions,
+    has_download_access,
+    has_sensitive_access,
+    has_write,
+)
+from .models.access_control import (
+    DatafileACL,
+    DatasetACL,
+    ExperimentACL,
+    UserAuthentication,
+)
 from .models.datafile import DataFile, DataFileObject, compute_checksums
 from .models.dataset import Dataset
 from .models.experiment import Experiment, ExperimentAuthor
 from .models.facility import Facility, facilities_managed_by
 from .models.instrument import Instrument
-from .models.parameters import (DatafileParameter, DatafileParameterSet,
-                                DatasetParameter, DatasetParameterSet,
-                                ExperimentParameter, ExperimentParameterSet,
-                                ParameterName, Schema)
+from .models.parameters import (
+    DatafileParameter,
+    DatafileParameterSet,
+    DatasetParameter,
+    DatasetParameterSet,
+    ExperimentParameter,
+    ExperimentParameterSet,
+    ParameterName,
+    Schema,
+)
 from .models.storage import StorageBox, StorageBoxAttribute, StorageBoxOption
 
 
@@ -755,70 +778,65 @@ class MyTardisModelResource(ModelResource):
         authentication = default_authentication
         authorization = ACLAuthorization()
         serializer = default_serializer
-        object_class = None
+        object_class: Optional[Model] = None
+
+
+class FacilityIDResource(ModelResource):
+    """Tastypie class that allows for filtering of Facilities
+    on the FacilityIDs associated with it."""
+
+    class Meta:
+        queryset = FacilityID.all()
+        resource_name = "institutionid"
+        filtering = {
+            "identifier": ("exact",),
+        }
 
 
 class FacilityResource(MyTardisModelResource):
     manager_group = fields.ForeignKey(
         GroupResource, "manager_group", null=True, full=True
     )
-
-    # Custom filter for identifiers module based on code example from
-    # https://stackoverflow.com/questions/10021749/ \
-    # django-tastypie-advanced-filtering-how-to-do-complex-lookups-with-q-objects
-
-    def build_filters(self, filters=None, ignore_bad_filters=False):
-        if filters is None:
-            filters = {}
-        orm_filters = super().build_filters(filters)
-
-        if "tardis.apps.identifiers" in settings.INSTALLED_APPS:
-            if "institution" in settings.OBJECTS_WITH_IDENTIFIERS and "pids" in filters:
-                query = filters["pids"]
-                qset = Q(persistent_id__persistent_id__exact=query) | Q(
-                    persistent_id__alternate_ids__contains=query
-                )
-                orm_filters.update({"pids": qset})
-        return orm_filters
-
-    def apply_filters(self, request, applicable_filters):
-        if "tardis.apps.identifiers" in settings.INSTALLED_APPS:
-            if (
-                "institution" in settings.OBJECTS_WITH_IDENTIFIERS
-                and "pids" in applicable_filters
-            ):
-                custom = applicable_filters.pop("pids")
-            else:
-                custom = None
-        else:
-            custom = None
-
-        semi_filtered = super().apply_filters(request, applicable_filters)
-
-        return semi_filtered.filter(custom) if custom else semi_filtered
-
-    # End of custom filter code
+    facilityid = None
+    identifiers = fields.ListField(null=True, blank=True)
+    if (
+        "tardis.apps.identifiers" in settings.INSTALLED_APPS
+        and "facilities" in settings.OBJECTS_WITH_IDENTIFIERS
+    ):
+        institutionid = fields.ToManyField(
+            FacilityIDResource,
+            attribute=lambda bundle: FacilityID.objects.filter(
+                institution_id=bundle.obj.id
+            ),
+            full=True,
+            related_name="identifiers",
+            null=True,
+        )
 
     class Meta(MyTardisModelResource.Meta):
         object_class = Facility
         queryset = Facility.objects.all()
+        allowed_methods = ["get"]
         filtering = {
             "id": ("exact",),
             "manager_group": ALL_WITH_RELATIONS,
             "name": ("exact",),
         }
+        if (
+            "tardis.apps.identifiers" in settings.INSTALLED_APPS
+            and "facilities" in settings.OBJECTS_WITH_IDENTIFIERS
+        ):
+            filtering.update({"facilityid": ALL_WITH_RELATIONS})
         ordering = ["id", "name"]
         always_return_data = True
 
-    def dehydrate(self, bundle):
-        facility = bundle.obj
+    def dehydrate_identifiers(self, bundle):
         if (
             "tardis.apps.identifiers" in settings.INSTALLED_APPS
             and "facility" in settings.OBJECTS_WITH_IDENTIFIERS
         ):
-            bundle.data["persistent_id"] = facility.persistent_id.persistent_id
-            bundle.data["alternate_ids"] = facility.persistent_id.alternate_ids
-        return bundle
+            return map(str, bundle.obj.identifers.all())
+        return None
 
 
 class InstrumentResource(MyTardisModelResource):
@@ -1571,8 +1589,7 @@ class DatasetResource(MyTardisModelResource):
                             ):
 
                                 for grandparent in parent.projects.all():
-                                    from tardis.apps.projects.models import \
-                                        ProjectACL
+                                    from tardis.apps.projects.models import ProjectACL
 
                                     ProjectACL.objects.create(
                                         project=grandparent,
@@ -1902,8 +1919,9 @@ class DataFileResource(MyTardisModelResource):
                                 ):
 
                                     for grandparent in parent.projects.all():
-                                        from tardis.apps.projects.models import \
-                                            ProjectACL
+                                        from tardis.apps.projects.models import (
+                                            ProjectACL,
+                                        )
 
                                         ProjectACL.objects.create(
                                             project=grandparent,

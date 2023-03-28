@@ -285,7 +285,7 @@ class InstitutionResource(ModelResource):
     """Tastypie class for accessing Instituions"""
 
     instituitionid = None
-    identifiers = fields.ListField()
+    identifiers = fields.ListField(null=True, blank=True)
     if (
         "tardis.apps.identifiers" in settings.INSTALLED_APPS
         and "institution" in settings.OBJECTS_WITH_IDENTIFIERS
@@ -325,8 +325,7 @@ class InstitutionResource(ModelResource):
             and "institution" in settings.OBJECTS_WITH_IDENTIFIERS
         ):
             return map(str, bundle.obj.identifers.all())
-        else:
-            return None
+        return None
 
 
 class ProjectIDResource(ModelResource):
@@ -349,7 +348,7 @@ class ProjectResource(ModelResource):
     """
 
     projectid = None
-    identifiers = fields.ListField()
+    identifiers = fields.ListField(null=True, blank=True)
     created_by = fields.ForeignKey(UserResource, "created_by")
     parameter_sets = fields.ToManyField(
         "tardis.apps.projects.api.ProjectParameterSetResource",
@@ -410,8 +409,7 @@ class ProjectResource(ModelResource):
             and "project" in settings.OBJECTS_WITH_IDENTIFIERS
         ):
             return map(str, bundle.obj.identifers.all())
-        else:
-            return None
+        return None
 
     def dehydrate(self, bundle):
         from tardis.tardis_portal.models import Experiment
