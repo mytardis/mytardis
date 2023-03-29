@@ -1184,7 +1184,7 @@ def filter_dataset_id_items(bundle):
     resource = DatasetIDResource()
     new_bundle = Bundle(request=bundle.request)
     objs = resource.obj_get_list(new_bundle)
-    return objs.filter(parent_id=bundle.obj.pk)
+    return objs.filter(dataset_id=bundle.obj.pk)
 
 
 class DatasetResource(MyTardisModelResource):
