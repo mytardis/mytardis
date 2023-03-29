@@ -21,17 +21,12 @@ class DatasetID(models.Model):
         on_delete=models.CASCADE,
         related_name="identifiers",
     )
-    identifier = models.CharField(max_length=400, null=False, blank=False)
+    identifier = models.CharField(max_length=400, null=True, blank=True, unique=True)
 
     def __str__(self):
         if self.identifier:
             return self.identifier
         return "No Identifier"
-
-    class Meta:
-        constraints = [
-            models.UniqueConstraint(fields=("identifier",), name="unique_dataset_id"),
-        ]
 
 
 class ExperimentID(models.Model):
@@ -44,19 +39,12 @@ class ExperimentID(models.Model):
         on_delete=models.CASCADE,
         related_name="identifiers",
     )
-    identifier = models.CharField(max_length=400, null=False, blank=False)
+    identifier = models.CharField(max_length=400, null=True, blank=True, unique=True)
 
     def __str__(self):
         if self.identifier:
             return self.identifier
         return "No Identifier"
-
-    class Meta:
-        constraints = [
-            models.UniqueConstraint(
-                fields=("identifier",), name="unique_experiment_id"
-            ),
-        ]
 
 
 class FacilityID(models.Model):
@@ -69,17 +57,12 @@ class FacilityID(models.Model):
         on_delete=models.CASCADE,
         related_name="identifiers",
     )
-    identifier = models.CharField(max_length=400, null=False, blank=False)
+    identifier = models.CharField(max_length=400, null=True, blank=True, unique=True)
 
     def __str__(self):
         if self.identifier:
             return self.identifier
         return "No Identifier"
-
-    class Meta:
-        constraints = [
-            models.UniqueConstraint(fields=("identifier",), name="unique_facility_id"),
-        ]
 
 
 class InstrumentID(models.Model):
@@ -92,19 +75,12 @@ class InstrumentID(models.Model):
         on_delete=models.CASCADE,
         related_name="identifiers",
     )
-    identifier = models.CharField(max_length=400, null=False, blank=False)
+    identifier = models.CharField(max_length=400, null=True, blank=True, unique=True)
 
     def __str__(self):
         if self.identifier:
             return self.identifier
         return "No Identifier"
-
-    class Meta:
-        constraints = [
-            models.UniqueConstraint(
-                fields=("identifier",), name="unique_instrument_id"
-            ),
-        ]
 
 
 class ProjectID(models.Model):
@@ -117,17 +93,12 @@ class ProjectID(models.Model):
         on_delete=models.CASCADE,
         related_name="identifiers",
     )
-    identifier = models.CharField(max_length=400, null=False, blank=False)
+    identifier = models.CharField(max_length=400, null=True, blank=True, unique=True)
 
     def __str__(self):
         if self.identifier:
             return self.identifier
         return "No Identifier"
-
-    class Meta:
-        constraints = [
-            models.UniqueConstraint(fields=("identifier",), name="unique_project_id"),
-        ]
 
 
 class InstitutionID(models.Model):
@@ -140,16 +111,9 @@ class InstitutionID(models.Model):
         on_delete=models.CASCADE,
         related_name="identifiers",
     )
-    identifier = models.CharField(max_length=400, null=False, blank=False)
+    identifier = models.CharField(max_length=400, null=True, blank=True, unique=True)
 
     def __str__(self):
         if self.identifier:
             return self.identifier
         return "No Identifier"
-
-    class Meta:
-        constraints = [
-            models.UniqueConstraint(
-                fields=("identifier",), name="unique_institution_id"
-            ),
-        ]
