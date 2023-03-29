@@ -1203,13 +1203,13 @@ class DatasetResource(MyTardisModelResource):
     instrument = fields.ForeignKey(
         InstrumentResource, "instrument", null=True, full=True
     )
-    datasetid = fields.ToManyField(
+    identifiers = fields.ToManyField(
         DatasetIDResource,
         attribute=lambda bundle: filter_dataset_id_items(bundle),
         full=True,
         null=True,
     )
-    identifiers = fields.ListField(null=True, blank=True)
+    # identifiers = fields.ListField(null=True, blank=True)
     if (
         "tardis.apps.identifiers" in settings.INSTALLED_APPS
         and "dataset" in settings.OBJECTS_WITH_IDENTIFIERS
