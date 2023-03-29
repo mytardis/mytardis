@@ -324,8 +324,10 @@ class InstitutionResource(ModelResource):
             and "institution" in settings.OBJECTS_WITH_IDENTIFIERS
         ):
             bundle.data["identifiers"] = list(
-                InstitutionID.objects.filter(institution=bundle.obj).identifer
+                map(str, InstitutionID.objects.filter(institution=bundle.obj))
             )
+            if bundle.data["identifiers"] == []:
+                bundle.data.pop("identifiers")
         return bundle
 
 
@@ -423,9 +425,11 @@ class ProjectResource(ModelResource):
             "tardis.apps.identifiers" in settings.INSTALLED_APPS
             and "project" in settings.OBJECTS_WITH_IDENTIFIERS
         ):
-            bundle.data["identifiers"] = map(
-                str, ProjectID.objects.filter(project=bundle.obj)
+            bundle.data["identifiers"] = list(
+                map(str, ProjectID.objects.filter(project=bundle.obj))
             )
+            if bundle.data["identifiers"] == []:
+                bundle.data.pop("identifiers")
         # admins = project.get_admins()
         # bundle.data["admin_groups"] = [acl.id for acl in admins]
         # members = project.get_groups()

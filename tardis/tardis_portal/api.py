@@ -814,7 +814,6 @@ class FacilityResource(MyTardisModelResource):
                 facility_id=bundle.obj.id
             ),
             full=True,
-            related_name="identifiers",
             null=True,
         )
 
@@ -841,9 +840,11 @@ class FacilityResource(MyTardisModelResource):
             and "facility" in settings.OBJECTS_WITH_IDENTIFIERS
         ):
 
-            bundle.data["identifiers"] = map(
-                str, FacilityID.objects.filter(facility=bundle.obj)
+            bundle.data["identifiers"] = list(
+                map(str, FacilityID.objects.filter(facility=bundle.obj))
             )
+            if bundle.data["identifiers"] == []:
+                bundle.data.pop("identifiers")
         return bundle
 
 
@@ -873,7 +874,6 @@ class InstrumentResource(MyTardisModelResource):
                 instrument_id=bundle.obj.id
             ),
             full=True,
-            related_name="identifiers",
             null=True,
         )
 
@@ -898,9 +898,11 @@ class InstrumentResource(MyTardisModelResource):
             "tardis.apps.identifiers" in settings.INSTALLED_APPS
             and "instrument" in settings.OBJECTS_WITH_IDENTIFIERS
         ):
-            bundle.data["identifiers"] = map(
-                str, InstrumentID.objects.filter(instrument=bundle.obj)
+            bundle.data["identifiers"] = list(
+                map(str, InstrumentID.objects.filter(instrument=bundle.obj))
             )
+            if bundle.data["identifiers"] == []:
+                bundle.data.pop("identifiers")
         return bundle
 
 
@@ -936,7 +938,6 @@ class ExperimentResource(MyTardisModelResource):
                 experiment_id=bundle.obj.id
             ),
             full=True,
-            related_name="identifiers",
             null=True,
         )
     created_by = fields.ForeignKey(UserResource, "created_by")
@@ -993,9 +994,11 @@ class ExperimentResource(MyTardisModelResource):
             "tardis.apps.identifiers" in settings.INSTALLED_APPS
             and "experiment" in settings.OBJECTS_WITH_IDENTIFIERS
         ):
-            bundle.data["identifiers"] = map(
-                str, ExperimentID.objects.filter(experiment=bundle.obj)
+            bundle.data["identifiers"] = list(
+                map(str, ExperimentID.objects.filter(experiment=bundle.obj))
             )
+            if bundle.data["identifiers"] == []:
+                bundle.data.pop("identifiers")
 
         if settings.ONLY_EXPERIMENT_ACLS:
             dataset_count = exp.datasets.all().count()
@@ -1253,6 +1256,8 @@ class DatasetResource(MyTardisModelResource):
             bundle.data["identifiers"] = list(
                 map(str, DatasetID.objects.filter(dataset=bundle.obj))
             )
+            if bundle.data["identifiers"] == []:
+                bundle.data.pop("identifiers")
         return bundle
 
     def prepend_urls(self):
