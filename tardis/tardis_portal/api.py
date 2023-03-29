@@ -841,7 +841,9 @@ class FacilityResource(MyTardisModelResource):
             and "facility" in settings.OBJECTS_WITH_IDENTIFIERS
         ):
 
-            bundle.data["identifiers"] = map(str, bundle.obj.facilityid.all())
+            bundle.data["identifiers"] = map(
+                str, FacilityID.objects.all(facility=bundle.obj)
+            )
         return bundle
 
 
