@@ -1201,7 +1201,6 @@ class DatasetResource(MyTardisModelResource):
             DatasetIDResource,
             attribute=lambda bundle: DatasetID.objects.filter(dataset_id=bundle.obj.id),
             full=True,
-            related_name="identifiers",
             null=True,
         )
     tags = fields.ListField()
@@ -1251,8 +1250,8 @@ class DatasetResource(MyTardisModelResource):
             "tardis.apps.identifiers" in settings.INSTALLED_APPS
             and "dataset" in settings.OBJECTS_WITH_IDENTIFIERS
         ):
-            bundle.data["identifiers"] = map(
-                str, DatasetID.objects.filter(dataset=bundle.obj)
+            bundle.data["identifiers"] = list(
+                DatasetID.objects.filter(dataset=bundle.obj).identifiers
             )
         return bundle
 

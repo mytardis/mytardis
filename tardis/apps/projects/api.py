@@ -296,7 +296,6 @@ class InstitutionResource(ModelResource):
                 institution_id=bundle.obj.id
             ),
             full=True,
-            related_name="identifiers",
             null=True,
         )
 
@@ -324,8 +323,8 @@ class InstitutionResource(ModelResource):
             "tardis.apps.identifiers" in settings.INSTALLED_APPS
             and "institution" in settings.OBJECTS_WITH_IDENTIFIERS
         ):
-            bundle.data["identifiers"] = map(
-                str, InstitutionID.objects.filter(institution=bundle.obj)
+            bundle.data["identifiers"] = list(
+                InstitutionID.objects.filter(institution=bundle.obj).identifer
             )
         return bundle
 
