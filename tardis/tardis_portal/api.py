@@ -835,13 +835,13 @@ class FacilityResource(MyTardisModelResource):
         ordering = ["id", "name"]
         always_return_data = True
 
-    def dehydrate_identifiers(self, bundle):
+    def dehydrate(self, bundle):
         if (
             "tardis.apps.identifiers" in settings.INSTALLED_APPS
             and "facility" in settings.OBJECTS_WITH_IDENTIFIERS
         ):
-            return map(str, bundle.obj.identifers.all())
-        return None
+            bundle.data["identifiers"] = map(str, bundle.obj.identifers.all())
+        return bundle
 
 
 class InstrumentIDResource(MyTardisModelResource):
@@ -890,13 +890,13 @@ class InstrumentResource(MyTardisModelResource):
         ordering = ["id", "name"]
         always_return_data = True
 
-    def dehydrate_identifiers(self, bundle):
+    def dehydrate(self, bundle):
         if (
             "tardis.apps.identifiers" in settings.INSTALLED_APPS
             and "instrument" in settings.OBJECTS_WITH_IDENTIFIERS
         ):
-            return map(str, bundle.obj.identifers.all())
-        return None
+            bundle.data["identifiers"] = map(str, bundle.obj.identifers.all())
+        return bundle
 
 
 class ExperimentIDResource(MyTardisModelResource):
@@ -947,14 +947,6 @@ class ExperimentResource(MyTardisModelResource):
     def dehydrate_tags(self, bundle):
         return list(map(str, bundle.obj.tags.all()))
 
-    def dehydrate_identifiers(self, bundle):
-        if (
-            "tardis.apps.identifiers" in settings.INSTALLED_APPS
-            and "experiment" in settings.OBJECTS_WITH_IDENTIFIERS
-        ):
-            return map(str, bundle.obj.identifers.all())
-        return None
-
     def save_m2m(self, bundle):
         tags = bundle.data.get("tags", [])
         bundle.obj.tags.set(*tags)
@@ -992,6 +984,11 @@ class ExperimentResource(MyTardisModelResource):
             }
         owners = exp.get_owners()
         bundle.data["owner_ids"] = [o.id for o in owners]
+        if (
+            "tardis.apps.identifiers" in settings.INSTALLED_APPS
+            and "experiment" in settings.OBJECTS_WITH_IDENTIFIERS
+        ):
+            bundle.data["identifiers"] = map(str, bundle.obj.identifers.all())
 
         if settings.ONLY_EXPERIMENT_ACLS:
             dataset_count = exp.datasets.all().count()
@@ -1223,14 +1220,6 @@ class DatasetResource(MyTardisModelResource):
     def dehydrate_tags(self, bundle):
         return list(map(str, bundle.obj.tags.all()))
 
-    def dehydrate_identifiers(self, bundle):
-        if (
-            "tardis.apps.identifiers" in settings.INSTALLED_APPS
-            and "dataset" in settings.OBJECTS_WITH_IDENTIFIERS
-        ):
-            return map(str, bundle.obj.identifers.all())
-        return None
-
     def save_m2m(self, bundle):
         tags = bundle.data.get("tags", [])
         bundle.obj.tags.set(*tags)
@@ -1251,6 +1240,11 @@ class DatasetResource(MyTardisModelResource):
                 .count()
             )
         bundle.data["dataset_datafile_count"] = dataset_datafile_count
+        if (
+            "tardis.apps.identifiers" in settings.INSTALLED_APPS
+            and "dataset" in settings.OBJECTS_WITH_IDENTIFIERS
+        ):
+            bundle.data["identifiers"] = map(str, bundle.obj.identifers.all())
         return bundle
 
     def prepend_urls(self):

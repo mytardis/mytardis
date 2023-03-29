@@ -319,13 +319,13 @@ class InstitutionResource(ModelResource):
         ordering = ["id", "name"]
         always_return_data = True
 
-    def dehydrate_identifiers(self, bundle):
+    def dehydrate(self, bundle):
         if (
             "tardis.apps.identifiers" in settings.INSTALLED_APPS
             and "institution" in settings.OBJECTS_WITH_IDENTIFIERS
         ):
-            return map(str, bundle.obj.identifers.all())
-        return None
+            bundle.data["identifiers"] = map(str, bundle.obj.identifers.all())
+        return bundle
 
 
 class ProjectIDResource(ModelResource):
@@ -403,14 +403,6 @@ class ProjectResource(ModelResource):
         ordering = ["id", "name", "url", "start_time", "end_time"]
         always_return_data = True
 
-    def dehydrate_identifiers(self, bundle):
-        if (
-            "tardis.apps.identifiers" in settings.INSTALLED_APPS
-            and "project" in settings.OBJECTS_WITH_IDENTIFIERS
-        ):
-            return map(str, bundle.obj.identifers.all())
-        return None
-
     def dehydrate(self, bundle):
         from tardis.tardis_portal.models import Experiment
 
@@ -426,6 +418,11 @@ class ProjectResource(ModelResource):
         bundle.data["dataset_count"] = project_dataset_count
         project_datafile_count = project.get_datafiles(bundle.request.user).count()
         bundle.data["datafile_count"] = project_datafile_count
+        if (
+            "tardis.apps.identifiers" in settings.INSTALLED_APPS
+            and "project" in settings.OBJECTS_WITH_IDENTIFIERS
+        ):
+            bundle.data["identifiers"] = map(str, bundle.obj.identifers.all())
         # admins = project.get_admins()
         # bundle.data["admin_groups"] = [acl.id for acl in admins]
         # members = project.get_groups()
