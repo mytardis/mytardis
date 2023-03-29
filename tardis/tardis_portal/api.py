@@ -840,7 +840,8 @@ class FacilityResource(MyTardisModelResource):
             "tardis.apps.identifiers" in settings.INSTALLED_APPS
             and "facility" in settings.OBJECTS_WITH_IDENTIFIERS
         ):
-            bundle.data["identifiers"] = map(str, bundle.obj.identifers.all())
+
+            bundle.data["identifiers"] = map(str, bundle.obj__identifers.all())
         return bundle
 
 
