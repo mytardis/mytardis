@@ -1,27 +1,28 @@
 from django.conf import settings
 from django.contrib import admin
+
 from tardis.apps.identifiers.models import (
-    DatasetPID,
-    ExperimentPID,
-    FacilityPID,
-    InstrumentPID,
-    ProjectPID,
-    InstitutionPID,
+    DatasetID,
+    ExperimentID,
+    FacilityID,
+    InstitutionID,
+    InstrumentID,
+    ProjectID,
 )
 
 # Register PID models in admin site
 if "dataset" in settings.OBJECTS_WITH_IDENTIFIERS:
-    admin.site.register(DatasetPID)
+    admin.site.register(DatasetID)
 if "experiment" in settings.OBJECTS_WITH_IDENTIFIERS:
-    admin.site.register(ExperimentPID)
+    admin.site.register(ExperimentID)
 if "facility" in settings.OBJECTS_WITH_IDENTIFIERS:
-    admin.site.register(FacilityPID)
+    admin.site.register(FacilityID)
 if "instrument" in settings.OBJECTS_WITH_IDENTIFIERS:
-    admin.site.register(InstrumentPID)
+    admin.site.register(InstrumentID)
 if "institution" in settings.OBJECTS_WITH_IDENTIFIERS:
-    admin.site.register(InstitutionPID)
+    admin.site.register(InstitutionID)
 if (
     "tardis.apps.projects" in settings.INSTALLED_APPS
     and "project" in settings.OBJECTS_WITH_IDENTIFIERS
 ):
-    admin.site.register(ProjectPID)
+    admin.site.register(ProjectID)
