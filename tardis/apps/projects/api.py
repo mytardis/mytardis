@@ -16,6 +16,7 @@ from django.http import HttpResponseForbidden, JsonResponse
 import ldap3
 from tastypie import fields
 from tastypie.authorization import Authorization
+from tastypie.bundle import Bundle
 from tastypie.constants import ALL_WITH_RELATIONS
 from tastypie.exceptions import NotFound, Unauthorized
 from tastypie.resources import ModelResource
@@ -279,10 +280,17 @@ class InstitutionIDResource(ModelResource):
         filtering = {
             "identifier": ("exact",),
         }
+        include_resource_uri = False
 
 
 class InstitutionResource(ModelResource):
     """Tastypie class for accessing Instituions"""
+
+    def filter_id_items(self, bundle):
+        resource = InstitutionIDResource()
+        new_bundle = Bundle(request=bundle.request)
+        objs = resource.obj_get_list(new_bundle)
+        return objs.filter(parent_id=bundle.obj.pk)
 
     instituitionid = None
     identifiers = fields.ListField(null=True, blank=True)
@@ -292,9 +300,7 @@ class InstitutionResource(ModelResource):
     ):
         institutionid = fields.ToManyField(
             InstitutionIDResource,
-            attribute=lambda bundle: InstitutionID.objects.filter(
-                institution_id=bundle.obj.id
-            ),
+            attribute=lambda bundle: self.filter_id_items(bundle),
             full=True,
             null=True,
         )
