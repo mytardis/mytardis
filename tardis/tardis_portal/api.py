@@ -1178,6 +1178,7 @@ class DatasetIDResource(MyTardisModelResource):
         filtering = {
             "identifier": ("exact",),
         }
+        include_resource_uri = False
 
 
 def filter_dataset_id_items(bundle):
