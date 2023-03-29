@@ -842,7 +842,7 @@ class FacilityResource(MyTardisModelResource):
         ):
 
             bundle.data["identifiers"] = map(
-                str, FacilityID.objects.all(facility=bundle.obj)
+                str, FacilityID.objects.filter(facility=bundle.obj)
             )
         return bundle
 
