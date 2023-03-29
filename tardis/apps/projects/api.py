@@ -274,7 +274,7 @@ class InstitutionIDResource(ModelResource):
     on the InstitutionIDs associated with it."""
 
     class Meta:
-        queryset = InstitutionID.all()
+        queryset = InstitutionID.objects.all()
         resource_name = "institutionid"
         filtering = {
             "identifier": ("exact",),
@@ -333,7 +333,7 @@ class ProjectIDResource(ModelResource):
     on the ProjectIDs associated with it."""
 
     class Meta:
-        queryset = InstitutionID.all()
+        queryset = ProjectID.objects.all()
         resource_name = "projectid"
         filtering = {
             "identifier": ("exact",),

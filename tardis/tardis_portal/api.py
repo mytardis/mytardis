@@ -791,7 +791,7 @@ class FacilityIDResource(MyTardisModelResource):
     on the FacilityIDs associated with it."""
 
     class Meta:
-        queryset = FacilityID.all()
+        queryset = FacilityID.objects.all()
         resource_name = "facilityid"
         filtering = {
             "identifier": ("exact",),
@@ -849,7 +849,7 @@ class InstrumentIDResource(MyTardisModelResource):
     on the InstrumentIDs associated with it."""
 
     class Meta:
-        queryset = InstrumentID.all()
+        queryset = InstrumentID.objects.all()
         resource_name = "instrumentid"
         filtering = {
             "identifier": ("exact",),
@@ -904,7 +904,7 @@ class ExperimentIDResource(MyTardisModelResource):
     on the FacilityIDs associated with it."""
 
     class Meta:
-        queryset = ExperimentID.all()
+        queryset = ExperimentID.objects.all()
         resource_name = "experimentid"
         filtering = {
             "identifier": ("exact",),
@@ -1166,7 +1166,7 @@ class DatasetIDResource(MyTardisModelResource):
     on the DatasetIDs associated with it."""
 
     class Meta:
-        queryset = DatasetID.all()
+        queryset = DatasetID.objects.all()
         resource_name = "datasetid"
         filtering = {
             "identifier": ("exact",),
