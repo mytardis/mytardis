@@ -11,21 +11,7 @@ from tardis.tardis_portal.models.instrument import Instrument
 logger = logging.getLogger(__name__)
 
 
-class Identifier(models.Model):
-    """A base class that holds the identifer from which other
-    classes can be subclassed.
-    :attribute identifier: A CharField holding the ID
-    """
-
-    identifier = models.CharField(max_length=400, null=False, blank=False)
-
-    def __str__(self):
-        if self.identifier:
-            return self.identifier
-        return "No Identifier"
-
-
-class DatasetID(Identifier):
+class DatasetID(models.Model):
     """A model that adds a ID field to an dataset model
     :attribute dataset: A ForeignKey pointing to the related Dataset
     """
@@ -35,6 +21,12 @@ class DatasetID(Identifier):
         on_delete=models.CASCADE,
         related_name="identifiers",
     )
+    identifier = models.CharField(max_length=400, null=False, blank=False)
+
+    def __str__(self):
+        if self.identifier:
+            return self.identifier
+        return "No Identifier"
 
     class Meta:
         constraints = [
@@ -42,7 +34,7 @@ class DatasetID(Identifier):
         ]
 
 
-class ExperimentID(Identifier):
+class ExperimentID(models.Model):
     """A model that adds a ID field to an experiment model
     :attribute experiment: A ForeignKey pointing to the related Experiment
     """
@@ -52,6 +44,12 @@ class ExperimentID(Identifier):
         on_delete=models.CASCADE,
         related_name="identifiers",
     )
+    identifier = models.CharField(max_length=400, null=False, blank=False)
+
+    def __str__(self):
+        if self.identifier:
+            return self.identifier
+        return "No Identifier"
 
     class Meta:
         constraints = [
@@ -61,7 +59,7 @@ class ExperimentID(Identifier):
         ]
 
 
-class FacilityID(Identifier):
+class FacilityID(models.Model):
     """A model that adds a ID field to an facility model
     :attribute facility: A ForeignKey pointing to the related Facility
     """
@@ -71,6 +69,12 @@ class FacilityID(Identifier):
         on_delete=models.CASCADE,
         related_name="identifiers",
     )
+    identifier = models.CharField(max_length=400, null=False, blank=False)
+
+    def __str__(self):
+        if self.identifier:
+            return self.identifier
+        return "No Identifier"
 
     class Meta:
         constraints = [
@@ -78,7 +82,7 @@ class FacilityID(Identifier):
         ]
 
 
-class InstrumentID(Identifier):
+class InstrumentID(models.Model):
     """A model that adds a ID field to an instrument model
     :attribute instrument: A ForeignKey pointing to the related Instrument
     """
@@ -88,6 +92,12 @@ class InstrumentID(Identifier):
         on_delete=models.CASCADE,
         related_name="identifiers",
     )
+    identifier = models.CharField(max_length=400, null=False, blank=False)
+
+    def __str__(self):
+        if self.identifier:
+            return self.identifier
+        return "No Identifier"
 
     class Meta:
         constraints = [
@@ -97,7 +107,7 @@ class InstrumentID(Identifier):
         ]
 
 
-class ProjectID(Identifier):
+class ProjectID(models.Model):
     """A model that adds a ID field to a Project model
     :attribute project: A ForeignKey pointing to the related Project
     """
@@ -107,6 +117,12 @@ class ProjectID(Identifier):
         on_delete=models.CASCADE,
         related_name="identifiers",
     )
+    identifier = models.CharField(max_length=400, null=False, blank=False)
+
+    def __str__(self):
+        if self.identifier:
+            return self.identifier
+        return "No Identifier"
 
     class Meta:
         constraints = [
@@ -114,7 +130,7 @@ class ProjectID(Identifier):
         ]
 
 
-class InstitutionID(Identifier):
+class InstitutionID(models.Model):
     """A model that adds a ID field to a Institution model
     :attribute institution: A ForeignKey pointing to the related Institution
     """
@@ -124,6 +140,12 @@ class InstitutionID(Identifier):
         on_delete=models.CASCADE,
         related_name="identifiers",
     )
+    identifier = models.CharField(max_length=400, null=False, blank=False)
+
+    def __str__(self):
+        if self.identifier:
+            return self.identifier
+        return "No Identifier"
 
     class Meta:
         constraints = [
