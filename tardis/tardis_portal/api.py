@@ -1251,7 +1251,7 @@ class DatasetResource(MyTardisModelResource):
             and "dataset" in settings.OBJECTS_WITH_IDENTIFIERS
         ):
             bundle.data["identifiers"] = list(
-                DatasetID.objects.filter(dataset=bundle.obj).identifiers
+                map(str, DatasetID.objects.filter(dataset=bundle.obj))
             )
         return bundle
 
