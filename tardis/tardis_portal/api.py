@@ -1180,12 +1180,14 @@ class DatasetIDResource(MyTardisModelResource):
         }
 
 
+def filter_dataset_id_items(bundle):
+    resource = DatasetIDResource()
+    new_bundle = Bundle(request=bundle.request)
+    objs = resource.obj_get_list(new_bundle)
+    return objs.filter(parent_id=bundle.obj.pk)
+
+
 class DatasetResource(MyTardisModelResource):
-    def filter_id_items(self, bundle):
-        resource = DatasetIDResource()
-        new_bundle = Bundle(request=bundle.request)
-        objs = resource.obj_get_list(new_bundle)
-        return objs.filter(parent_id=bundle.obj.pk)
 
     experiments = fields.ToManyField(
         ExperimentResource, "experiments", related_name="datasets"
@@ -1208,7 +1210,7 @@ class DatasetResource(MyTardisModelResource):
     ):
         datasetid = fields.ToManyField(
             DatasetIDResource,
-            attribute=lambda bundle: self.filter_id_items(bundle),
+            attribute=lambda bundle: filter_dataset_id_items(bundle),
             full=True,
             null=True,
         )
