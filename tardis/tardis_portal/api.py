@@ -1809,16 +1809,6 @@ class DataFileResource(MyTardisModelResource):
         If a duplicate key error occurs, responds with HTTP Error 409: CONFLICT
         """
         with transaction.atomic():
-            if (
-                "tardis.apps.identifiers" in settings.INSTALLED_APPS
-                and "datafile" in settings.OBJECTS_WITH_IDENTIFIERS
-            ):
-                pid = None
-                alternate_ids = None
-                if "persistent_id" in bundle.data.keys():
-                    pid = bundle.data.pop("persistent_id")
-                if "alternate_ids" in bundle.data.keys():
-                    alternate_ids = bundle.data.pop("alternate_ids")
             try:
                 retval = super().obj_create(bundle, **kwargs)
             except IntegrityError as err:
@@ -1849,16 +1839,6 @@ class DataFileResource(MyTardisModelResource):
 
             # After the obj has been created
             datafile = retval.obj
-            if (
-                "tardis.apps.identifiers" in settings.INSTALLED_APPS
-                and "datafile" in settings.OBJECTS_WITH_IDENTIFIERS
-            ):
-                pid_obj = datafile.persistent_id
-                if pid:
-                    pid_obj.persistent_id = pid
-                if alternate_ids:
-                    pid_obj.alternate_ids = alternate_ids
-                pid_obj.save()
             try:
                 dataset = DatasetResource.get_via_uri(
                     DatasetResource(), bundle.data["dataset"], bundle.request
