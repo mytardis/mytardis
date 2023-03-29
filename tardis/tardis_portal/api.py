@@ -898,7 +898,9 @@ class InstrumentResource(MyTardisModelResource):
             "tardis.apps.identifiers" in settings.INSTALLED_APPS
             and "instrument" in settings.OBJECTS_WITH_IDENTIFIERS
         ):
-            bundle.data["identifiers"] = map(str, bundle.obj.identifers.all())
+            bundle.data["identifiers"] = map(
+                str, InstrumentID.objects.filter(instrument=bundle.obj)
+            )
         return bundle
 
 
@@ -991,7 +993,9 @@ class ExperimentResource(MyTardisModelResource):
             "tardis.apps.identifiers" in settings.INSTALLED_APPS
             and "experiment" in settings.OBJECTS_WITH_IDENTIFIERS
         ):
-            bundle.data["identifiers"] = map(str, bundle.obj.identifers.all())
+            bundle.data["identifiers"] = map(
+                str, ExperimentID.objects.filter(experiment=bundle.obj)
+            )
 
         if settings.ONLY_EXPERIMENT_ACLS:
             dataset_count = exp.datasets.all().count()
@@ -1247,7 +1251,9 @@ class DatasetResource(MyTardisModelResource):
             "tardis.apps.identifiers" in settings.INSTALLED_APPS
             and "dataset" in settings.OBJECTS_WITH_IDENTIFIERS
         ):
-            bundle.data["identifiers"] = map(str, bundle.obj.identifers.all())
+            bundle.data["identifiers"] = map(
+                str, DatasetID.objects.filter(dataset=bundle.obj)
+            )
         return bundle
 
     def prepend_urls(self):
