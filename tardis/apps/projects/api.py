@@ -11,6 +11,7 @@ from django.conf import settings
 from django.conf.urls import url
 from django.contrib.auth.models import Group, Permission, User
 from django.db import transaction
+from django.db.models import Q
 from django.http import HttpResponseForbidden, JsonResponse
 
 import ldap3
@@ -270,19 +271,6 @@ class ProjectACLAuthorization(Authorization):
         raise Unauthorized("Sorry, no deletes.")
 
 
-class InstitutionIDResource(ModelResource):
-    """Tastypie class that allows for filtering of Institutions
-    on the InstitutionIDs associated with it."""
-
-    class Meta:
-        queryset = InstitutionID.objects.all()
-        resource_name = "institutionid"
-        filtering = {
-            "identifier": ("exact",),
-        }
-        include_resource_uri = False
-
-
 class InstitutionResource(ModelResource):
     """Tastypie class for accessing Instituions"""
 
@@ -294,16 +282,43 @@ class InstitutionResource(ModelResource):
 
     instituitionid = None
     identifiers = fields.ListField(null=True, blank=True)
-    if (
-        "tardis.apps.identifiers" in settings.INSTALLED_APPS
-        and "institution" in settings.OBJECTS_WITH_IDENTIFIERS
-    ):
-        institutionid = fields.ToManyField(
-            InstitutionIDResource,
-            attribute=lambda bundle: self.filter_id_items(bundle),
-            full=True,
-            null=True,
-        )
+
+    # Custom filter for identifiers module based on code example from
+    # https://stackoverflow.com/questions/10021749/ \
+    # django-tastypie-advanced-filtering-how-to-do-complex-lookups-with-q-objects
+
+    def build_filters(self, filters=None, ignore_bad_filters=False):
+        if filters is None:
+            filters = {}
+        orm_filters = super().build_filters(filters)
+
+        if "tardis.apps.identifiers" in settings.INSTALLED_APPS:
+            if (
+                "institution" in settings.OBJECTS_WITH_IDENTIFIERS
+                and "identifier" in filters
+            ):
+                query = filters["identifier"]
+                qset = Q(identifiers__identifier__iexact=query)
+                orm_filters.update({"identifier": qset})
+        return orm_filters
+
+    def apply_filters(self, request, applicable_filters):
+        if "tardis.apps.identifiers" in settings.INSTALLED_APPS:
+            if (
+                "institution" in settings.OBJECTS_WITH_IDENTIFIERS
+                and "identifier" in applicable_filters
+            ):
+                custom = applicable_filters.pop("identifier")
+            else:
+                custom = None
+        else:
+            custom = None
+
+        semi_filtered = super().apply_filters(request, applicable_filters)
+
+        return semi_filtered.filter(custom) if custom else semi_filtered
+
+    # End of custom filter code
 
     class Meta:
         authentication = MyTardisAuthentication()
@@ -316,11 +331,6 @@ class InstitutionResource(ModelResource):
             "id": ("exact",),
             "name": ("exact",),
         }
-        if (
-            "tardis.apps.identifiers" in settings.INSTALLED_APPS
-            and "institution" in settings.OBJECTS_WITH_IDENTIFIERS
-        ):
-            filtering.update({"institutionid": ALL_WITH_RELATIONS})
         ordering = ["id", "name"]
         always_return_data = True
 
@@ -337,18 +347,6 @@ class InstitutionResource(ModelResource):
         return bundle
 
 
-class ProjectIDResource(ModelResource):
-    """Tastypie class that allows for filtering of Projects
-    on the ProjectIDs associated with it."""
-
-    class Meta:
-        queryset = ProjectID.objects.all()
-        resource_name = "projectid"
-        filtering = {
-            "identifier": ("exact",),
-        }
-
-
 class ProjectResource(ModelResource):
     """API for Projects
     also creates a default ACL and allows ProjectParameterSets to be read
@@ -356,7 +354,6 @@ class ProjectResource(ModelResource):
     TODO: catch duplicate schema submissions for parameter sets
     """
 
-    projectid = None
     identifiers = fields.ListField(null=True, blank=True)
     created_by = fields.ForeignKey(UserResource, "created_by")
     parameter_sets = fields.ToManyField(
@@ -372,17 +369,42 @@ class ProjectResource(ModelResource):
     principal_investigator = fields.ForeignKey(UserResource, "principal_investigator")
     tags = fields.ListField()
 
-    if (
-        "tardis.apps.identifiers" in settings.INSTALLED_APPS
-        and "institution" in settings.OBJECTS_WITH_IDENTIFIERS
-    ):
-        projectid = fields.ToManyField(
-            ProjectIDResource,
-            attribute=lambda bundle: ProjectID.objects.filter(project_id=bundle.obj.id),
-            full=True,
-            related_name="identifiers",
-            null=True,
-        )
+    # Custom filter for identifiers module based on code example from
+    # https://stackoverflow.com/questions/10021749/ \
+    # django-tastypie-advanced-filtering-how-to-do-complex-lookups-with-q-objects
+
+    def build_filters(self, filters=None, ignore_bad_filters=False):
+        if filters is None:
+            filters = {}
+        orm_filters = super().build_filters(filters)
+
+        if "tardis.apps.identifiers" in settings.INSTALLED_APPS:
+            if (
+                "project" in settings.OBJECTS_WITH_IDENTIFIERS
+                and "identifier" in filters
+            ):
+                query = filters["identifier"]
+                qset = Q(identifiers__identifier__iexact=query)
+                orm_filters.update({"identifier": qset})
+        return orm_filters
+
+    def apply_filters(self, request, applicable_filters):
+        if "tardis.apps.identifiers" in settings.INSTALLED_APPS:
+            if (
+                "project" in settings.OBJECTS_WITH_IDENTIFIERS
+                and "identifier" in applicable_filters
+            ):
+                custom = applicable_filters.pop("identifier")
+            else:
+                custom = None
+        else:
+            custom = None
+
+        semi_filtered = super().apply_filters(request, applicable_filters)
+
+        return semi_filtered.filter(custom) if custom else semi_filtered
+
+    # End of custom filter code
 
     def dehydrate_tags(self, bundle):
         return list(map(str, bundle.obj.tags.all()))
@@ -404,11 +426,6 @@ class ProjectResource(ModelResource):
             "url": ("exact",),
             "institution": ALL_WITH_RELATIONS,
         }
-        if (
-            "tardis.apps.identifiers" in settings.INSTALLED_APPS
-            and "project" in settings.OBJECTS_WITH_IDENTIFIERS
-        ):
-            filtering.update({"projectid": ALL_WITH_RELATIONS})
         ordering = ["id", "name", "url", "start_time", "end_time"]
         always_return_data = True
 
