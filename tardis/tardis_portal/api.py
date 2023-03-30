@@ -906,17 +906,6 @@ class InstrumentResource(MyTardisModelResource):
         return bundle
 
 
-class ExperimentIDResource(MyTardisModelResource):
-    """Tastypie class that allows for filtering of Facilities
-    on the FacilityIDs associated with it."""
-
-    class Meta:
-        queryset = ExperimentID.objects.all()
-        resource_name = "experimentid"
-        filtering = {
-            "identifier": ("exact",),
-        }
-
 
 class ExperimentResource(MyTardisModelResource):
     """API for Experiments
@@ -926,20 +915,7 @@ class ExperimentResource(MyTardisModelResource):
     TODO: catch duplicate schema submissions for parameter sets
     """
 
-    experimentid = None
     identifiers = fields.ListField(null=True, blank=True)
-    if (
-        "tardis.apps.identifiers" in settings.INSTALLED_APPS
-        and "experiment" in settings.OBJECTS_WITH_IDENTIFIERS
-    ):
-        experimentid = fields.ToManyField(
-            ExperimentIDResource,
-            attribute=lambda bundle: ExperimentID.objects.filter(
-                experiment_id=bundle.obj.id
-            ),
-            full=True,
-            null=True,
-        )
     created_by = fields.ForeignKey(UserResource, "created_by")
     parameter_sets = fields.ToManyField(
         "tardis.tardis_portal.api.ExperimentParameterSetResource",
@@ -949,6 +925,42 @@ class ExperimentResource(MyTardisModelResource):
         null=True,
     )
     tags = fields.ListField()
+
+    # Custom filter for identifiers module based on code example from
+    # https://stackoverflow.com/questions/10021749/ \
+    # django-tastypie-advanced-filtering-how-to-do-complex-lookups-with-q-objects
+
+    def build_filters(self, filters=None, ignore_bad_filters=False):
+        if filters is None:
+            filters = {}
+        orm_filters = super().build_filters(filters)
+
+        if "tardis.apps.identifiers" in settings.INSTALLED_APPS:
+            if "dataset" in settings.OBJECTS_WITH_IDENTIFIERS and "identifier" in filters:
+                query = filters["identifier"]
+                qset = Q(
+                    identifiers__identifier__iexact=query
+                )
+                orm_filters.update({"identifier": qset})
+        return orm_filters
+
+    def apply_filters(self, request, applicable_filters):
+        if "tardis.apps.identifiers" in settings.INSTALLED_APPS:
+            if (
+                "dataset" in settings.OBJECTS_WITH_IDENTIFIERS
+                and "identifier" in applicable_filters
+            ):
+                custom = applicable_filters.pop("identifier")
+            else:
+                custom = None
+        else:
+            custom = None
+
+        semi_filtered = super().apply_filters(request, applicable_filters)
+
+        return semi_filtered.filter(custom) if custom else semi_filtered
+
+    # End of custom filter code
 
     def dehydrate_tags(self, bundle):
         return list(map(str, bundle.obj.tags.all()))
@@ -1181,13 +1193,6 @@ class DatasetIDResource(MyTardisModelResource):
         include_resource_uri = False
 
 
-def filter_dataset_id_items(bundle):
-    resource = DatasetIDResource()
-    new_bundle = Bundle(request=bundle.request)
-    objs = resource.obj_get_list(new_bundle)
-    return objs.filter(dataset_id=bundle.obj.pk)
-
-
 class DatasetResource(MyTardisModelResource):
 
     experiments = fields.ToManyField(
@@ -1203,24 +1208,44 @@ class DatasetResource(MyTardisModelResource):
     instrument = fields.ForeignKey(
         InstrumentResource, "instrument", null=True, full=True
     )
-    identifiers = fields.ToManyField(
-        DatasetIDResource,
-        attribute=lambda bundle: filter_dataset_id_items(bundle),
-        full=True,
-        null=True,
-    )
-    # identifiers = fields.ListField(null=True, blank=True)
-    if (
-        "tardis.apps.identifiers" in settings.INSTALLED_APPS
-        and "dataset" in settings.OBJECTS_WITH_IDENTIFIERS
-    ):
-        datasetid = fields.ToManyField(
-            DatasetIDResource,
-            attribute=lambda bundle: filter_dataset_id_items(bundle),
-            full=True,
-            null=True,
-        )
+    identifiers = fields.ListField(null=True, blank=True)
     tags = fields.ListField()
+
+    # Custom filter for identifiers module based on code example from
+    # https://stackoverflow.com/questions/10021749/ \
+    # django-tastypie-advanced-filtering-how-to-do-complex-lookups-with-q-objects
+
+    def build_filters(self, filters=None, ignore_bad_filters=False):
+        if filters is None:
+            filters = {}
+        orm_filters = super().build_filters(filters)
+
+        if "tardis.apps.identifiers" in settings.INSTALLED_APPS:
+            if "dataset" in settings.OBJECTS_WITH_IDENTIFIERS and "identifier" in filters:
+                query = filters["identifier"]
+                qset = Q(
+                    identifiers__identifier__iexact=query
+                )
+                orm_filters.update({"identifier": qset})
+        return orm_filters
+
+    def apply_filters(self, request, applicable_filters):
+        if "tardis.apps.identifiers" in settings.INSTALLED_APPS:
+            if (
+                "dataset" in settings.OBJECTS_WITH_IDENTIFIERS
+                and "identifier" in applicable_filters
+            ):
+                custom = applicable_filters.pop("identifier")
+            else:
+                custom = None
+        else:
+            custom = None
+
+        semi_filtered = super().apply_filters(request, applicable_filters)
+
+        return semi_filtered.filter(custom) if custom else semi_filtered
+
+    # End of custom filter code
 
     class Meta(MyTardisModelResource.Meta):
         object_class = Dataset
@@ -1232,11 +1257,11 @@ class DatasetResource(MyTardisModelResource):
             "directory": ("exact",),
             "instrument": ALL_WITH_RELATIONS,
         }
-        if (
+        '''if (
             "tardis.apps.identifiers" in settings.INSTALLED_APPS
             and "dataset" in settings.OBJECTS_WITH_IDENTIFIERS
         ):
-            filtering.update({"datasetid": ALL_WITH_RELATIONS})
+            filtering.update({"identifiers": ALL_WITH_RELATIONS})'''
         ordering = ["id", "description"]
         always_return_data = True
 
