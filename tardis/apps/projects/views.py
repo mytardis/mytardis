@@ -31,6 +31,7 @@ logger = logging.getLogger(__name__)
 
 class ProjectView(TemplateView):
     template_name = "view_project.html"
+
     # TODO: Can me make this a generic function like site_routed_view
     #       that will take an Experiment, Dataset or DataFile and
     #       the associated routing list from settings ?
@@ -130,7 +131,6 @@ class ProjectView(TemplateView):
 @permission_required("tardis_portal.add_project")
 @login_required
 def create_project(request):
-
     c = {
         "subtitle": "Create Project",
         "user_id": request.user.id,
@@ -150,7 +150,7 @@ def create_project(request):
                 project.principal_investigator = form.cleaned_data[
                     "principal_investigator"
                 ]
-                project.save(commit=False)
+                project.save()
                 institutions = form.cleaned_data.get("institution")
                 project.institution.add(*institutions)
                 project.experiments.add(*experiments)
@@ -200,7 +200,6 @@ def create_project(request):
 @permission_required("tardis_portal.change_project")
 @authz.project_write_permissions_required
 def edit_project(request, project_id):
-
     project = Project.objects.get(id=project_id)
 
     # Process form or prepopulate it
@@ -211,7 +210,7 @@ def edit_project(request, project_id):
             project.name = form.cleaned_data["name"]
             project.description = form.cleaned_data["description"]
 
-            project.save(commit=False)
+            project.save()
             return _redirect_303("tardis.apps.projects.view_project", project.id)
     else:
         form = ProjectForm(instance=project, user=request.user)
@@ -261,7 +260,6 @@ def public_projects(request):
 @never_cache
 @login_required
 def retrieve_owned_proj_list(request, template_name="ajax/proj_list.html"):
-
     projects = []
 
     if "tardis.apps.projects" in settings.INSTALLED_APPS:
