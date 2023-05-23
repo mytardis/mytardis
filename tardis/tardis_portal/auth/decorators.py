@@ -61,81 +61,123 @@ def get_owned_experiments(request):
 
 def get_accessible_datafiles_for_user(request):
     experiments = get_accessible_experiments(request)
-    experiment_ids = list(experiments.values_list('id', flat=True))
+    experiment_ids = list(experiments.values_list("id", flat=True))
 
     if len(experiment_ids) == 0:
         return DataFile.objects.none()
 
-    return DataFile.objects.filter(
-        Q(dataset__experiments__id__in=experiment_ids))
+    return DataFile.objects.filter(Q(dataset__experiments__id__in=experiment_ids))
 
 
 def has_ownership(request, obj_id, ct_type):
-    if ct_type == 'experiment':
-        return Experiment.safe.owned(request.user).filter(
-            pk=obj_id).exists()
+    if ct_type == "experiment":
+        return Experiment.safe.owned(request.user).filter(pk=obj_id).exists()
 
     if settings.ONLY_EXPERIMENT_ACLS:
-        if ct_type == 'dataset':
+        if ct_type == "project":
+            from tardis.apps.projects.models import Project
+
+            project = Project.objects.get(id=obj_id)
+            return any(
+                has_ownership(request, experiment.id, "experiment")
+                for experiment in project.experiments.all()
+            )
+        if ct_type == "dataset":
             dataset = Dataset.objects.get(id=obj_id)
-            return any(has_ownership(request, experiment.id, "experiment")
-                       for experiment in dataset.experiments.all())
-        if ct_type == 'datafile':
+            return any(
+                has_ownership(request, experiment.id, "experiment")
+                for experiment in dataset.experiments.all()
+            )
+        if ct_type == "datafile":
             datafile = DataFile.objects.get(id=obj_id)
-            return any(has_ownership(request, experiment.id, "experiment")
-                       for experiment in datafile.dataset.experiments.all())
+            return any(
+                has_ownership(request, experiment.id, "experiment")
+                for experiment in datafile.dataset.experiments.all()
+            )
     else:
-        if ct_type == 'dataset':
-            return Dataset.safe.owned(request.user).filter(
-                pk=obj_id).exists()
-        if ct_type == 'datafile':
-            return DataFile.safe.owned(request.user).filter(
-                pk=obj_id).exists()
+        if ct_type == "project":
+            from tardis.apps.projects.models import Project
+
+            return Project.safe.owned(request.user).filter(pk=obj_id).exists()
+        if ct_type == "dataset":
+            return Dataset.safe.owned(request.user).filter(pk=obj_id).exists()
+        if ct_type == "datafile":
+            return DataFile.safe.owned(request.user).filter(pk=obj_id).exists()
     return False
 
 
 def has_X_access(request, obj_id, ct_type, perm_type):
     try:
-        if ct_type == 'experiment':
+        if ct_type == "experiment":
             obj = Experiment.objects.get(id=obj_id)
         if settings.ONLY_EXPERIMENT_ACLS:
-            if ct_type == 'dataset':
+            if ct_type == "project":
+                from tardis.apps.projects.models import Project
+
+                try:
+                    project = Project.objects.get(id=obj_id)
+                    if (perm_type == "change") & project.locked:
+                        return False
+                    return any(
+                        has_X_access(request, experiment.id, "experiment", perm_type)
+                        for experiment in project.experiments.all()
+                    )
+                except (Project.DoesNotExist):
+                    return False
+            if ct_type == "dataset":
                 dataset = Dataset.objects.get(id=obj_id)
                 if (perm_type == "change") & dataset.immutable:
                     return False
-                return any(has_X_access(request, experiment.id, "experiment", perm_type)
-                           for experiment in dataset.experiments.all())
-            if ct_type == 'datafile':
+                return any(
+                    has_X_access(request, experiment.id, "experiment", perm_type)
+                    for experiment in dataset.experiments.all()
+                )
+            if ct_type == "datafile":
                 datafile = DataFile.objects.get(id=obj_id)
-                return any(has_X_access(request, experiment.id, "experiment", perm_type)
-                           for experiment in datafile.dataset.experiments.all())
+                return any(
+                    has_X_access(request, experiment.id, "experiment", perm_type)
+                    for experiment in datafile.dataset.experiments.all()
+                )
         else:
-            if ct_type == 'dataset':
+            if ct_type == "project":
+                from tardis.apps.projects.models import Project
+
+                try:
+                    obj = Project.objects.get(id=obj_id)
+                    if (perm_type == "change") & obj.locked:
+                        return False
+                except (Project.DoesNotExist):
+                    return False
+            if ct_type == "dataset":
                 obj = Dataset.objects.get(id=obj_id)
                 if (perm_type == "change") & obj.immutable:
                     return False
-            if ct_type == 'datafile':
+            if ct_type == "datafile":
                 obj = DataFile.objects.get(id=obj_id)
     except (Experiment.DoesNotExist, Dataset.DoesNotExist, DataFile.DoesNotExist):
         return False
-    return request.user.has_perm('tardis_acls.'+perm_type+'_'+ct_type, obj)
+    return request.user.has_perm("tardis_acls." + perm_type + "_" + ct_type, obj)
+
 
 def has_access(request, obj_id, ct_type):
-    return has_X_access(request, obj_id, ct_type, 'view')
+    return has_X_access(request, obj_id, ct_type, "view")
+
 
 def has_download_access(request, obj_id, ct_type):
-    return has_X_access(request, obj_id, ct_type, 'download')
+    return has_X_access(request, obj_id, ct_type, "download")
+
 
 def has_write(request, obj_id, ct_type):
-    return has_X_access(request, obj_id, ct_type, 'change')
+    return has_X_access(request, obj_id, ct_type, "change")
+
 
 def has_sensitive_access(request, obj_id, ct_type):
-    return has_X_access(request, obj_id, ct_type, 'sensitive')
+    return has_X_access(request, obj_id, ct_type, "sensitive")
 
 
 def has_delete_permissions(request, experiment_id):
     experiment = Experiment.safe.get(request.user, experiment_id)
-    return request.user.has_perm('tardis_acls.delete_experiment', experiment)
+    return request.user.has_perm("tardis_acls.delete_experiment", experiment)
 
 
 @login_required
@@ -145,6 +187,7 @@ def is_group_admin(request, group_id):
     for admin_group in admin_groups:
         query |= GroupAdmin.objects.filter(admin_group=admin_group, group__id=group_id)
     return query.exists()
+
 
 def group_ownership_required(f):
     """
@@ -159,12 +202,12 @@ def group_ownership_required(f):
     :return: A Django view function
     :rtype: types.FunctionType
     """
+
     def wrap(request, *args, **kwargs):
         user = request.user
         if not request.user.is_authenticated:
-            return HttpResponseRedirect('/login?next=%s' % request.path)
-        if not (is_group_admin(request, kwargs['group_id']) or
-                user.is_superuser):
+            return HttpResponseRedirect("/login?next=%s" % request.path)
+        if not (is_group_admin(request, kwargs["group_id"]) or user.is_superuser):
             return return_response_error(request)
         return f(request, *args, **kwargs)
 
@@ -186,12 +229,15 @@ def experiment_ownership_required(f):
     :return: A Django view function
     :rtype: types.FunctionType
     """
+
     def wrap(request, *args, **kwargs):
         user = request.user
         if not user.is_authenticated:
-            return HttpResponseRedirect('/login?next=%s' % request.path)
-        if not (has_ownership(request, kwargs['experiment_id'], "experiment") or
-                user.is_superuser):
+            return HttpResponseRedirect("/login?next=%s" % request.path)
+        if not (
+            has_ownership(request, kwargs["experiment_id"], "experiment")
+            or user.is_superuser
+        ):
             return return_response_error(request)
         return f(request, *args, **kwargs)
 
@@ -201,7 +247,6 @@ def experiment_ownership_required(f):
 
 
 def experiment_access_required(f):
-
     def wrap(*args, **kwargs):
         # We find the request as either the first or second argument.
         # This is so it can be used for the 'get' method on class-based
@@ -213,7 +258,7 @@ def experiment_access_required(f):
         if not isinstance(request, HttpRequest):
             request = args[1]
 
-        if not has_access(request, kwargs['experiment_id'], "experiment"):
+        if not has_access(request, kwargs["experiment_id"], "experiment"):
             return return_response_error(request)
         return f(*args, **kwargs)
 
@@ -223,10 +268,8 @@ def experiment_access_required(f):
 
 
 def experiment_download_required(f):
-
     def wrap(request, *args, **kwargs):
-        if not has_download_access(
-                request, kwargs['experiment_id'], "experiment"):
+        if not has_download_access(request, kwargs["experiment_id"], "experiment"):
             return return_response_error(request)
         return f(request, *args, **kwargs)
 
@@ -236,9 +279,8 @@ def experiment_download_required(f):
 
 
 def dataset_download_required(f):
-
     def wrap(request, *args, **kwargs):
-        if not has_download_access(request, kwargs['dataset_id'], "dataset"):
+        if not has_download_access(request, kwargs["dataset_id"], "dataset"):
             return return_response_error(request)
         return f(request, *args, **kwargs)
 
@@ -248,10 +290,8 @@ def dataset_download_required(f):
 
 
 def datafile_download_required(f):
-
     def wrap(request, *args, **kwargs):
-        if not has_download_access(
-                request, kwargs['datafile_id'], "datafile"):
+        if not has_download_access(request, kwargs["datafile_id"], "datafile"):
             return return_response_error(request)
         return f(request, *args, **kwargs)
 
@@ -261,7 +301,6 @@ def datafile_download_required(f):
 
 
 def dataset_access_required(f):
-
     def wrap(*args, **kwargs):
         # We find the request as either the first or second argument.
         # This is so it can be used for the 'get' method on class-based
@@ -273,7 +312,7 @@ def dataset_access_required(f):
         if not isinstance(request, HttpRequest):
             request = args[1]
 
-        if not has_access(request, kwargs['dataset_id'], "dataset"):
+        if not has_access(request, kwargs["dataset_id"], "dataset"):
             return return_response_error(request)
         return f(*args, **kwargs)
 
@@ -283,10 +322,9 @@ def dataset_access_required(f):
 
 
 def datafile_access_required(f):
-
     def wrap(request, *args, **kwargs):
 
-        if not has_access(request, kwargs['datafile_id'], "datafile"):
+        if not has_access(request, kwargs["datafile_id"], "datafile"):
             return return_response_error(request)
         return f(request, *args, **kwargs)
 
@@ -296,10 +334,9 @@ def datafile_access_required(f):
 
 
 def write_permissions_required(f):
-
     def wrap(request, *args, **kwargs):
 
-        if not has_write(request, kwargs['experiment_id'], "experiment"):
+        if not has_write(request, kwargs["experiment_id"], "experiment"):
             return return_response_error(request)
         return f(request, *args, **kwargs)
 
@@ -310,7 +347,7 @@ def write_permissions_required(f):
 
 def dataset_write_permissions_required(f):
     def wrap(request, *args, **kwargs):
-        dataset_id = kwargs['dataset_id']
+        dataset_id = kwargs["dataset_id"]
         if not has_write(request, dataset_id, "dataset"):
             if request.is_ajax():
                 return HttpResponse("")
@@ -323,10 +360,9 @@ def dataset_write_permissions_required(f):
 
 
 def delete_permissions_required(f):
-
     def wrap(request, *args, **kwargs):
 
-        if not has_delete_permissions(request, kwargs['experiment_id']):
+        if not has_delete_permissions(request, kwargs["experiment_id"]):
             return return_response_error(request)
         return f(request, *args, **kwargs)
 
@@ -338,15 +374,16 @@ def delete_permissions_required(f):
 def upload_auth(f):
     def wrap(request, *args, **kwargs):
         from django.utils import timezone
-        session_id = request.POST.get('session_id',
-                                      request.COOKIES.get(
-                                          settings.SESSION_COOKIE_NAME,
-                                          None))
+
+        session_id = request.POST.get(
+            "session_id", request.COOKIES.get(settings.SESSION_COOKIE_NAME, None)
+        )
         sessions = Session.objects.filter(pk=session_id)
         if sessions and sessions[0].expire_date > timezone.now():
             try:
                 request.user = User.objects.get(
-                    pk=sessions[0].get_decoded()['_auth_user_id'])
+                    pk=sessions[0].get_decoded()["_auth_user_id"]
+                )
             except:
                 if request.is_ajax():
                     return HttpResponse("")

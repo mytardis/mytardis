@@ -1,9 +1,10 @@
-'''
+"""
 URLs for MyTardis's RESTful API
-'''
+"""
 from importlib import import_module
 import logging
 
+from django.conf import settings
 from django.conf.urls import include, url
 
 from tastypie.api import Api
@@ -25,6 +26,7 @@ from tardis.tardis_portal.api import (
     FacilityResource,
     GroupResource,
     InstrumentResource,
+    IntrospectionResource,
     LocationResource,
     ExperimentACLResource,
     DatasetACLResource,
@@ -40,7 +42,7 @@ from tardis.tardis_portal.api import (
 
 logger = logging.getLogger(__name__)
 
-v1_api = Api(api_name='v1')
+v1_api = Api(api_name="v1")
 v1_api.register(DatasetParameterSetResource())
 v1_api.register(DatasetParameterResource())
 v1_api.register(DatasetResource())
@@ -65,34 +67,56 @@ v1_api.register(DatasetACLResource())
 v1_api.register(DatafileACLResource())
 v1_api.register(FacilityResource())
 v1_api.register(InstrumentResource())
+v1_api.register(IntrospectionResource())
 
 for app_name, app in get_tardis_apps():
     try:
-        app_api = import_module('%s.api' % app)
+        if app_name == "projects":
+            continue
+        app_api = import_module("%s.api" % app)
         for res_name in dir(app_api):
-            if not res_name.endswith('AppResource'):
+            if not res_name.endswith("AppResource"):
                 continue
             resource = getattr(app_api, res_name)
             if not issubclass(resource, Resource):
                 continue
             resource_name = resource._meta.resource_name
             if not resource_name.startswith(app_name):
-                resource._meta.resource_name = '%s_%s' % (
-                    format_app_name_for_url(app_name), resource_name)
+                resource._meta.resource_name = "%s_%s" % (
+                    format_app_name_for_url(app_name),
+                    resource_name,
+                )
             v1_api.register(resource())
     except ImportError as e:
-        logger.debug('App API URLs import error: %s' % str(e))
+        logger.debug("App API URLs import error: %s" % str(e))
+
+# Import project app urls here to avoid /apps prefix in url
+if "tardis.apps.projects" in settings.INSTALLED_APPS:
+    from tardis.apps.projects.api import (
+        ProjectResource,
+        ProjectACLResource,
+        ProjectParameterSetResource,
+        ProjectParameterResource,
+        InstitutionResource,
+    )
+
+    v1_api.register(ProjectResource())
+    v1_api.register(ProjectACLResource())
+    v1_api.register(ProjectParameterSetResource())
+    v1_api.register(ProjectParameterResource())
+    v1_api.register(InstitutionResource())
 
 
-api_urls = [ url(r'^', include(v1_api.urls)) ]
+api_urls = [url(r"^", include(v1_api.urls))]
 
 tastypie_swagger_urls = [
-    url(r'v1/swagger/',
-        include('tastypie_swagger.urls',
-                namespace='api_v1_tastypie_swagger'),
+    url(
+        r"v1/swagger/",
+        include("tastypie_swagger.urls", namespace="api_v1_tastypie_swagger"),
         kwargs={
-          "tastypie_api_module": v1_api,
-          "namespace": "api_v1_tastypie_swagger",
-          "version": "1"}
-        ),
+            "tastypie_api_module": v1_api,
+            "namespace": "api_v1_tastypie_swagger",
+            "version": "1",
+        },
+    ),
 ]

@@ -51,7 +51,7 @@ from ..auth.utils import get_or_create_user
 logger = logging.getLogger(__name__)
 
 
-class AuthService():
+class AuthService:
     """The AuthService provides an interface for querying the
     auth(n|z) framework within MyTardis. The auth service works by
     reading the class path to plugins from the settings file.
@@ -82,71 +82,81 @@ class AuthService():
         for up in self.settings.USER_PROVIDERS:
             self._user_providers.append(self._safe_import(up))
         for authenticationBackend in self.settings.AUTH_PROVIDERS:
-            self._authentication_backends[authenticationBackend[0]] = \
-                self._safe_import(authenticationBackend[2])
+            self._authentication_backends[authenticationBackend[0]] = self._safe_import(
+                authenticationBackend[2]
+            )
         self._initialised = True
 
     def _safe_import(self, path):
         try:
-            dot = path.rindex('.')
+            dot = path.rindex(".")
         except ValueError:
-            raise ImproperlyConfigured('%s isn\'t a middleware module' % path)
-        auth_module, auth_classname = path[:dot], path[dot + 1:]
+            raise ImproperlyConfigured("%s isn't a middleware module" % path)
+        auth_module, auth_classname = path[:dot], path[dot + 1 :]
         try:
             mod = import_module(auth_module)
         except ImportError as e:
-            raise ImproperlyConfigured('Error importing auth module %s: "%s"' %
-                                       (auth_module, e))
+            raise ImproperlyConfigured(
+                'Error importing auth module %s: "%s"' % (auth_module, e)
+            )
         try:
             auth_class = getattr(mod, auth_classname)
         except AttributeError:
             raise ImproperlyConfigured(
-                'Auth module "%s" does not define a "%s" class' %
-                (auth_module, auth_classname))
+                'Auth module "%s" does not define a "%s" class'
+                % (auth_module, auth_classname)
+            )
 
         auth_instance = auth_class()
         return auth_instance
 
     def _get_or_create_user_from_dict(self, user_dict, auth_method):
-        (user, created) = get_or_create_user(auth_method, user_dict['id'])
+        (user, created) = get_or_create_user(auth_method, user_dict["id"])
         if user and created:
             self._set_user_from_dict(user, user_dict, auth_method)
         return user
 
     def _set_user_from_dict(self, user, user_dict, auth_method):
-        for field in ['first_name', 'last_name', 'email']:
+        for field in ["first_name", "last_name", "email"]:
             if field not in user_dict:
-                logger.warning('%s.get_user did not return %s' %
-                               (auth_method, field))
-        user.email = user_dict.get('email', '')
-        user.first_name = user_dict.get('first_name', '')
-        user.last_name = user_dict.get('last_name', '')
+                logger.warning("%s.get_user did not return %s" % (auth_method, field))
+        user.email = user_dict.get("email", "")
+        user.first_name = user_dict.get("first_name", "")
+        user.last_name = user_dict.get("last_name", "")
 
         user.save()
-        user.user_permissions.add(Permission.objects.get(codename='add_experiment'))
-        user.user_permissions.add(Permission.objects.get(codename='change_experiment'))
-        user.user_permissions.add(Permission.objects.get(codename='change_group'))
-        user.user_permissions.add(Permission.objects.get(codename='change_userauthentication'))
-        user.user_permissions.add(Permission.objects.get(codename='change_experimentacl'))
-        user.user_permissions.add(Permission.objects.get(codename='change_datasetacl'))
-        user.user_permissions.add(Permission.objects.get(codename='change_datafileacl'))
+        user.user_permissions.add(Permission.objects.get(codename="add_experiment"))
+        user.user_permissions.add(Permission.objects.get(codename="change_experiment"))
+        user.user_permissions.add(Permission.objects.get(codename="change_group"))
+        user.user_permissions.add(
+            Permission.objects.get(codename="change_userauthentication")
+        )
+        user.user_permissions.add(
+            Permission.objects.get(codename="change_experimentacl")
+        )
+        user.user_permissions.add(Permission.objects.get(codename="change_datasetacl"))
+        user.user_permissions.add(Permission.objects.get(codename="change_datafileacl"))
 
-        user.user_permissions.add(Permission.objects.get(codename='add_datafile'))
-        user.user_permissions.add(Permission.objects.get(codename='change_dataset'))
+        user.user_permissions.add(Permission.objects.get(codename="add_datafile"))
+        user.user_permissions.add(Permission.objects.get(codename="change_dataset"))
+
+        if "tardis.apps.projects" in settings.INSTALLED_APPS:
+            user.user_permissions.add(
+                Permission.objects.get(codename="change_projectacl")
+            )
 
     def get_or_create_user(self, user_obj_or_dict, authMethod=None):
-        '''
+        """
         refactored out for external use by AAF and possibly others
-        '''
+        """
         if not self._initialised:
             self._manual_init()
         if authMethod is None:
             # pick default Django auth
-            authMethod = getattr(settings, 'DEFAULT_AUTH', 'localdb')
+            authMethod = getattr(settings, "DEFAULT_AUTH", "localdb")
         if isinstance(user_obj_or_dict, dict):
             user_dict = user_obj_or_dict
-            user_obj_or_dict = self._get_or_create_user_from_dict(
-                user_dict, authMethod)
+            user_obj_or_dict = self._get_or_create_user_from_dict(user_dict, authMethod)
         if isinstance(user_obj_or_dict, User):
             return user_obj_or_dict
         return None
@@ -173,27 +183,24 @@ class AuthService():
             # authenticate() returns either a User or a dictionary describing a
             # user (id, email, first_name, last_name).
             authenticate_retval = self._authentication_backends[
-                auth_method].authenticate(**credentials)
-            user = self.get_or_create_user(authenticate_retval,
-                                           auth_method)
+                auth_method
+            ].authenticate(**credentials)
+            user = self.get_or_create_user(authenticate_retval, auth_method)
             if user is not None:
                 if getattr(settings, "ENABLE_EVENTLOG", False):
                     from tardis.apps.eventlog.utils import log
+
                     log(
                         action="USER_LOGIN_SUCCESS",
                         user=user,
-                        extra={
-                            "auth_method": auth_method
-                        }
+                        extra={"auth_method": auth_method},
                     )
                 return user
 
         if getattr(settings, "ENABLE_EVENTLOG", False):
             from tardis.apps.eventlog.utils import log
-            log(
-                action="USER_LOGIN_FAILURE",
-                request=credentials.get("request")
-            )
+
+            log(action="USER_LOGIN_FAILURE", request=credentials.get("request"))
 
         return None
 
@@ -218,15 +225,17 @@ class AuthService():
                 # For backwards compatibility
                 try:
                     from ..models.access_control import UserAuthentication
+
                     # Check if the given username in combination with the
                     # auth method is already in the UserAuthentication table
-                    user = UserAuthentication.objects.get(username=user_id,
-                        authenticationMethod=authMethod).userProfile.user
+                    user = UserAuthentication.objects.get(
+                        username=user_id, authenticationMethod=authMethod
+                    ).userProfile.user
                 except UserAuthentication.DoesNotExist:
                     # As a last resort, create the user anyway. Not recommended
                     # as this could fill the db with non-existent users.
                     if force_user_create:
-                        user = { 'id': user_id }
+                        user = {"id": user_id}
 
             if isinstance(user, dict):
                 user_dict = user
@@ -237,10 +246,8 @@ class AuthService():
 
         return user
 
-
     def getUsernameByEmail(self, authMethod, email):
-        """Return a username given the auth method and email address of a user.
-        """
+        """Return a username given the auth method and email address of a user."""
         if not self._initialised:
             self._manual_init()
 
@@ -250,6 +257,7 @@ class AuthService():
         # Django auth.
         if not authMethod or authMethod == localdb_auth_key:
             from django.contrib.auth.models import User
+
             try:
                 user = User.objects.get(email=email)
                 if user:
@@ -258,7 +266,9 @@ class AuthService():
                 pass
         elif authMethod in self._authentication_backends:
             try:
-                username = self._authentication_backends[authMethod].getUsernameByEmail(email)
+                username = self._authentication_backends[authMethod].getUsernameByEmail(
+                    email
+                )
             except (NotImplementedError, AttributeError):
                 pass
         return username
@@ -279,16 +289,12 @@ class AuthService():
         return grouplist
 
     def searchEntities(self, filter):
-        """Return a list of users and/or groups
-
-        """
+        """Return a list of users and/or groups"""
         if not self._initialised:
             self._manual_init()
 
     def searchUsers(self, filter):
-        """Return a list of users and/or groups
-
-        """
+        """Return a list of users and/or groups"""
         if not self._initialised:
             self._manual_init()
 
@@ -307,18 +313,18 @@ class AuthService():
         if not self._initialised:
             self._manual_init()
         result = []
-        max_results = kw.get('max_results', '')
-        sort_by = kw.get('sort_by', '')
-        plugin = kw.get('plugin', '')
+        max_results = kw.get("max_results", "")
+        sort_by = kw.get("sort_by", "")
+        plugin = kw.get("plugin", "")
 
         # We apply sorting and slicing here across all sets, so don't
         # make the plugin do it
         if sort_by:
-            del kw['sort_by']
+            del kw["sort_by"]
         if max_results:
-            del kw['max_results']
+            del kw["max_results"]
         if plugin:
-            del kw['plugin']
+            del kw["plugin"]
 
         for gp in self._group_providers:
             if plugin:
@@ -334,9 +340,7 @@ class AuthService():
                 return (x > y) - (x < y)
 
             def compare(a, b):
-                return cmp(
-                    a.get(sort_by, '').lower(),
-                    b.get(sort_by, '').lower())
+                return cmp(a.get(sort_by, "").lower(), b.get(sort_by, "").lower())
 
             result.sort(key=cmp_to_key(compare))
 

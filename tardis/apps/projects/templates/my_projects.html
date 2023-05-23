@@ -1,0 +1,66 @@
+{% extends "tardis_portal/portal_template.html" %}
+{% load static %}
+{% load render_bundle from webpack_loader %}
+{% load project_tags %}
+{% load experimentstats %}
+{% load humanize %}
+{% load bleach_tag %}
+{% load capture %}
+
+{% block content %}
+
+<div id="content" class="container-fluid">
+  <div class="row">
+    <div class="col-md-12">
+      <h3 class="d-block d-sm-none">Projects</h3>
+      {% if not disable_creation_forms %}
+        <div class="pull-right pb-1">
+          {% if perms.tardis_portal.add_project %}
+          <a id="create-project"
+             class="btn btn-primary"
+             href="{% url 'tardis.apps.projects.create_project' %}">
+            <i class="fa fa-plus"></i>
+            Create
+          </a>
+          {% endif %}
+        </div>  <!-- class="pull-right" -->
+      {% endif %}
+      <div class="pull-left">
+        <h3 class="d-none d-sm-block" style="text-align: center">Projects</h3>
+      </div>
+    </div>  <!-- class="col-md-12" -->
+  </div>  <!-- class="row" -->
+
+  <div class="row">
+    <div class="col-md-12">
+      {% if not owned_projects %}
+      <p class="alert alert-info">
+        You do not have access to any private projects.
+      Add your own projects or browse the public projects.</p>
+      {% endif %}
+
+      {% if owned_projects %}
+      <div class="pull-left">
+        <h4><strong>{{ owned_projects.count }}</strong>
+        Project{{ owned_projects.count|pluralize}} you can access
+        </h4>
+      </div>
+      <div class="pull-right mb-1">
+        <button type="button" class="btn btn-outline-secondary btn-sm"
+                onclick="$('#myprojects .collapse').collapse('hide');" >
+        Collapse all</button>
+        <button type="button" class="btn btn-outline-secondary btn-sm"
+                onclick="$('#myprojects .collapse').collapse('show');" >
+        Expand all</button>
+      </div>
+      <div class="clearfix"></div>
+      <div id="myprojects" class="myprojectdata panel-group projects"></div>
+      <br/>
+      {% endif %}
+    </div>  <!-- class="col-md-12" -->
+  </div>  <!-- class="row" -->
+</div>  <!-- id="content" -->
+
+<input type="hidden" id="proj-expand-accordion" value="{{ proj_expand_accordion }}">
+{% render_bundle 'my_projects' %}
+{% endblock %}

@@ -30,10 +30,10 @@ logger = logging.getLogger(__name__)
 
 
 class ParameterSetManagerMixin(ParameterSetManager):
-    '''for clarity's sake and for future extension this class makes
+    """for clarity's sake and for future extension this class makes
     ParameterSetManager local to this file.
     At the moment its only function is increasing the line count
-    '''
+    """
 
 
 class Schema(models.Model):
@@ -43,29 +43,32 @@ class Schema(models.Model):
     DATAFILE = 3
     NONE = 4
     INSTRUMENT = 5
+    PROJECT = 6
 
     _SCHEMA_TYPES = (
-        (EXPERIMENT, 'Experiment schema'),
-        (DATASET, 'Dataset schema'),
-        (DATAFILE, 'Datafile schema'),
-        (INSTRUMENT, 'Instrument schema'),
-        (NONE, 'None'),
+        (EXPERIMENT, "Experiment schema"),
+        (DATASET, "Dataset schema"),
+        (DATAFILE, "Datafile schema"),
+        (NONE, "None"),
+        (INSTRUMENT, "Instrument schema"),
+        (PROJECT, "Project schema"),
     )
 
     _SCHEMA_TYPES_SHORT = (
-        (EXPERIMENT, 'experiment'),
-        (DATASET, 'dataset'),
-        (DATAFILE, 'datafile'),
-        (INSTRUMENT, 'instrument'),
-        (NONE, 'none'),
+        (EXPERIMENT, "experiment"),
+        (DATASET, "dataset"),
+        (DATAFILE, "datafile"),
+        (NONE, "none"),
+        (INSTRUMENT, "instrument"),
+        (PROJECT, "project"),
     )
 
-    namespace = models.URLField(unique=True,
-                                max_length=255)
+    namespace = models.URLField(unique=True, max_length=255)
     name = models.CharField(blank=True, null=True, max_length=50)
     # WHY 'type', a reserved word? Someone please refactor and migrate db
     type = models.IntegerField(  # @ReservedAssignment
-        choices=_SCHEMA_TYPES, default=EXPERIMENT)
+        choices=_SCHEMA_TYPES, default=EXPERIMENT
+    )
 
     # subtype will be used for categorising the type of experiment, dataset
     # or datafile schemas. for example, the type of beamlines are usually used
@@ -77,7 +80,7 @@ class Schema(models.Model):
     hidden = models.BooleanField(default=False)
 
     class Meta:
-        app_label = 'tardis_portal'
+        app_label = "tardis_portal"
 
     def natural_key(self):
         return (self.namespace,)
@@ -86,12 +89,14 @@ class Schema(models.Model):
         return dict(self._SCHEMA_TYPES)[typeNum]
 
     def __str__(self):
-        return self._getSchemaTypeName(self.type) + (
-            self.subtype and ' for ' + self.subtype.upper() or ''
-        ) + ': ' + self.namespace
+        return (
+            self._getSchemaTypeName(self.type)
+            + (self.subtype and " for " + self.subtype.upper() or "")
+            + ": "
+            + self.namespace
+        )
 
     class UnsupportedType(Exception):
-
         def __init__(self, msg):
             Exception.__init__(self, msg)
 
@@ -107,15 +112,15 @@ class ParameterName(models.Model):
     LESS_THAN_EQUAL_COMPARISON = 7
     CONTAINS_COMPARISON = 8
     __COMPARISON_CHOICES = (
-        (EXACT_VALUE_COMPARISON, 'Exact value'),
-        (CONTAINS_COMPARISON, 'Contains'),
+        (EXACT_VALUE_COMPARISON, "Exact value"),
+        (CONTAINS_COMPARISON, "Contains"),
         # TODO: enable this next time if i figure out how to support
         # (NOT_EQUAL_COMPARISON, 'Not equal'),
-        (RANGE_COMPARISON, 'Range'),
-        (GREATER_THAN_COMPARISON, 'Greater than'),
-        (GREATER_THAN_EQUAL_COMPARISON, 'Greater than or equal'),
-        (LESS_THAN_COMPARISON, 'Less than'),
-        (LESS_THAN_EQUAL_COMPARISON, 'Less than or equal'),
+        (RANGE_COMPARISON, "Range"),
+        (GREATER_THAN_COMPARISON, "Greater than"),
+        (GREATER_THAN_EQUAL_COMPARISON, "Greater than or equal"),
+        (LESS_THAN_COMPARISON, "Less than"),
+        (LESS_THAN_EQUAL_COMPARISON, "Less than or equal"),
     )
 
     NUMERIC = 1
@@ -128,15 +133,15 @@ class ParameterName(models.Model):
     JSON = 8
 
     __TYPE_CHOICES = (
-        (NUMERIC, 'NUMERIC'),
-        (STRING, 'STRING'),
-        (URL, 'URL'),
-        (LINK, 'LINK'),
-        (FILENAME, 'FILENAME'),
-        (DATETIME, 'DATETIME'),
-        (LONGSTRING, 'LONGSTRING'),
-        (JSON, 'JSON'),
-        )
+        (NUMERIC, "NUMERIC"),
+        (STRING, "STRING"),
+        (URL, "URL"),
+        (LINK, "LINK"),
+        (FILENAME, "FILENAME"),
+        (DATETIME, "DATETIME"),
+        (LONGSTRING, "LONGSTRING"),
+        (JSON, "JSON"),
+    )
 
     schema = models.ForeignKey(Schema, on_delete=models.CASCADE)
     name = models.CharField(max_length=60)
@@ -145,7 +150,8 @@ class ParameterName(models.Model):
     data_type = models.IntegerField(choices=__TYPE_CHOICES, default=STRING)
     immutable = models.BooleanField(default=False)
     comparison_type = models.IntegerField(
-        choices=__COMPARISON_CHOICES, default=EXACT_VALUE_COMPARISON)
+        choices=__COMPARISON_CHOICES, default=EXACT_VALUE_COMPARISON
+    )
     is_searchable = models.BooleanField(default=False)
     # TODO: we'll need to rethink the way choices for drop down menus are
     #       represented in the DB. doing it this way is just a bit wasteful.
@@ -155,9 +161,9 @@ class ParameterName(models.Model):
     objects = ParameterNameManager()
 
     class Meta:
-        app_label = 'tardis_portal'
-        unique_together = (('schema', 'name'),)
-        ordering = ('order', 'name')
+        app_label = "tardis_portal"
+        unique_together = (("schema", "name"),)
+        ordering = ("order", "name")
 
     def __str__(self):
         return (self.schema.name or self.schema.namespace) + ": " + self.name
@@ -187,7 +193,7 @@ class ParameterName(models.Model):
         return self.data_type == self.DATETIME
 
     def getUniqueShortName(self):
-        return self.name + '_' + str(self.id)
+        return self.name + "_" + str(self.id)
 
     def is_json(self):
         return self.data_type == self.JSON
@@ -207,27 +213,32 @@ def _get_filename_parameter_as_image_element(parameter):
     :return: An HTML formated img element, or None
     :rtype: basestring | types.NoneType
     """
-    assert parameter.name.isFilename(), \
-        "'image*' parameters are expected to be of type FILENAME"
+    assert (
+        parameter.name.isFilename()
+    ), "'image*' parameters are expected to be of type FILENAME"
 
-    if parameter.name.isFilename() and \
-            parameter.name.units.startswith('image') and \
-            parameter.string_value:
+    if (
+        parameter.name.isFilename()
+        and parameter.name.units.startswith("image")
+        and parameter.string_value
+    ):
         parset = type(parameter.parameterset).__name__
         viewname = None
-        if parset == 'DatafileParameterSet':
-            viewname = 'tardis.tardis_portal.views.load_datafile_image'
-        elif parset == 'DatasetParameterSet':
-            viewname = 'tardis.tardis_portal.views.load_dataset_image'
-        elif parset == 'ExperimentParameterSet':
-            viewname = 'tardis.tardis_portal.views.load_experiment_image'
+        if parset == "DatafileParameterSet":
+            viewname = "tardis.tardis_portal.views.load_datafile_image"
+        elif parset == "DatasetParameterSet":
+            viewname = "tardis.tardis_portal.views.load_dataset_image"
+        elif parset == "ExperimentParameterSet":
+            viewname = "tardis.tardis_portal.views.load_experiment_image"
         if viewname is not None:
-            value = "<a href='%s' target='_blank'>" \
-                    "<img style='width: 300px;' src='%s' /></a>" % \
-                 (reverse(viewname=viewname,
-                          args=[parameter.id]),
-                  reverse(viewname=viewname,
-                          args=[parameter.id]))
+            value = (
+                "<a href='%s' target='_blank'>"
+                "<img style='width: 300px;' src='%s' /></a>"
+                % (
+                    reverse(viewname=viewname, args=[parameter.id]),
+                    reverse(viewname=viewname, args=[parameter.id]),
+                )
+            )
             return mark_safe(value)
 
     return None
@@ -239,7 +250,7 @@ def _get_parameter(parameter):
         value = str(parameter.numerical_value)
         units = parameter.name.units
         if units:
-            value += ' %s' % units
+            value += " %s" % units
         return value
 
     if parameter.name.isLongString() or parameter.name.isString():
@@ -248,8 +259,7 @@ def _get_parameter(parameter):
     if parameter.name.isFilename():
         as_img_element = _get_filename_parameter_as_image_element(parameter)
 
-        return as_img_element if as_img_element is not None else \
-            parameter.string_value
+        return as_img_element if as_img_element is not None else parameter.string_value
 
     if parameter.name.isURL():
         url = parameter.string_value
@@ -258,7 +268,7 @@ def _get_parameter(parameter):
 
     if parameter.name.isLink():
         if parameter.string_value is None:
-            return ''
+            return ""
         units = parameter.name.units
         if units:
             url = units + parameter.string_value
@@ -269,8 +279,7 @@ def _get_parameter(parameter):
 
     if parameter.name.isDateTime():
         try:
-            value = parameter.datetime_value.astimezone(
-                tz=LOCAL_TZ).strftime("%c")
+            value = parameter.datetime_value.astimezone(tz=LOCAL_TZ).strftime("%c")
         except ValueError:
             value = parameter.datetime_value.strftime("%c")
         return value
@@ -283,20 +292,20 @@ def _get_parameter(parameter):
 
 class ParameterSet(models.Model, ParameterSetManagerMixin):
     schema = models.ForeignKey(Schema, on_delete=models.CASCADE)
-    storage_box = models.ManyToManyField(
-        StorageBox, related_name='%(class)ss')
+    storage_box = models.ManyToManyField(StorageBox, related_name="%(class)ss")
     parameter_class = None
 
     class Meta:
         abstract = True
-        app_label = 'tardis_portal'
-        ordering = ['id']
+        app_label = "tardis_portal"
+        ordering = ["id"]
 
     def _init_parameterset_accessors(self):
         self.parameterset = self
         self.namespace = self.schema.namespace
         self.parameters = self.parameter_class.objects.filter(
-            parameterset=self.parameterset).order_by('name__full_name')
+            parameterset=self.parameterset
+        ).order_by("name__full_name")
         self.blank_param = self.parameter_class
 
     def __init__(self, *args, **kwargs):
@@ -315,14 +324,14 @@ class ParameterSet(models.Model, ParameterSetManagerMixin):
     def __str__(self):
         labelattribute, default = self._get_label()
         try:
-            namespace = operator.attrgetter('schema.namespace')(self)
+            namespace = operator.attrgetter("schema.namespace")(self)
             label = operator.attrgetter(labelattribute)(self)
-            return '%s / %s' % (namespace, label)
+            return "%s / %s" % (namespace, label)
         except (AttributeError, ObjectDoesNotExist):
-            return 'Uninitialised %sParameterSet' % default
+            return "Uninitialised %sParameterSet" % default
 
     def _has_any_perm(self, user_obj):
-        if not hasattr(self, 'id'):
+        if not hasattr(self, "id"):
             return False
         return self.parameter_class
 
@@ -344,39 +353,43 @@ class Parameter(models.Model):
     datetime_value = models.DateTimeField(null=True, blank=True, db_index=True)
     link_id = models.PositiveIntegerField(null=True, blank=True)
     link_ct = models.ForeignKey(
-        ContentType, null=True, blank=True, on_delete=models.CASCADE)
-    link_gfk = GenericForeignKey('link_ct', 'link_id')
+        ContentType, null=True, blank=True, on_delete=models.CASCADE
+    )
+    link_gfk = GenericForeignKey("link_ct", "link_id")
     objects = OracleSafeManager()
-    parameter_type = 'Abstract'
+    parameter_type = "Abstract"
 
     class Meta:
         abstract = True
-        app_label = 'tardis_portal'
-        ordering = ['name']
+        app_label = "tardis_portal"
+        ordering = ["name"]
 
     def get(self):
         return _get_parameter(self)
 
     def __str__(self):
         try:
-            return '%s Param: %s=%s' % (self.parameter_type,
-                                        self.name.name, self.get())
+            return "%s Param: %s=%s" % (self.parameter_type, self.name.name, self.get())
         except:
-            return 'Unitialised %sParameter' % self.parameter_type
+            return "Unitialised %sParameter" % self.parameter_type
 
     @property
     def link_url(self):
         if not self.name.isLink():
             return None
         if isinstance(self.link_gfk, DataFile):
-            url = reverse('tardis_portal.view_dataset',
-                          kwargs={'dataset_id': self.link_gfk.dataset.id})
+            url = reverse(
+                "tardis_portal.view_dataset",
+                kwargs={"dataset_id": self.link_gfk.dataset.id},
+            )
         elif isinstance(self.link_gfk, Dataset):
-            url = reverse('tardis_portal.view_dataset',
-                          kwargs={'dataset_id': self.link_id})
+            url = reverse(
+                "tardis_portal.view_dataset", kwargs={"dataset_id": self.link_id}
+            )
         elif isinstance(self.link_gfk, Experiment):
-            url = reverse('tardis_portal.view_experiment',
-                          kwargs={'experiment_id': self.link_id})
+            url = reverse(
+                "tardis_portal.view_experiment", kwargs={"experiment_id": self.link_id}
+            )
         elif self.link_gfk is None and self.string_value:
             url = self.string_value
         else:
@@ -408,7 +421,7 @@ class Parameter(models.Model):
         elif self.name.isLink():
             # Always store the raw value as a string, even if setting
             # the GenericForeignKey via link_id/link_ct
-            if str(value) == '' or value is None:
+            if str(value) == "" or value is None:
                 return
             self.string_value = str(value)
 
@@ -420,37 +433,38 @@ class Parameter(models.Model):
                 # properly created via the REST API.
 
                 match = resolve(value)
-                if match.view_name == u'api_dispatch_detail':
-                    model_name = match.kwargs.get(u'resource_name', None)
-                    if model_name not in ('experiment', 'dataset'):
+                if match.view_name == u"api_dispatch_detail":
+                    model_name = match.kwargs.get(u"resource_name", None)
+                    if model_name not in ("experiment", "dataset"):
                         model_name, pk = None, None
                     else:
-                        pk = match.kwargs.get('pk', None)
-                elif match.view_name.endswith('view_experiment'):
-                    model_name = 'experiment'
-                    pk = match.kwargs.get('experiment_id')
-                elif match.view_name.endswith('view_dataset'):
-                    model_name = 'dataset'
-                    pk = match.kwargs.get('dataset_id')
+                        pk = match.kwargs.get("pk", None)
+                elif match.view_name.endswith("view_experiment"):
+                    model_name = "experiment"
+                    pk = match.kwargs.get("experiment_id")
+                elif match.view_name.endswith("view_dataset"):
+                    model_name = "dataset"
+                    pk = match.kwargs.get("dataset_id")
                 else:
                     model_name, pk = None, None
 
                 if pk is not None and model_name is not None:
                     self.link_id = pk
                     self.link_ct = ContentType.objects.get(
-                        app_label='tardis_portal',
-                        model=model_name.lower())
+                        app_label="tardis_portal", model=model_name.lower()
+                    )
             except (ValueError, IndexError, Resolver404):
                 # If we were unable to successfully match the url to model
                 # instance, return an error. For any URL the URL Parameter
                 # type should be used.
-                raise SuspiciousOperation('Link parameter could not be set '
-                                          'from string: %s' % str(value))
+                raise SuspiciousOperation(
+                    "Link parameter could not be set " "from string: %s" % str(value)
+                )
         else:
             self.string_value = str(value)
 
     def _has_any_perm(self, user_obj):
-        if not hasattr(self, 'id'):
+        if not hasattr(self, "id"):
             return False
         return self.parameterset
 
@@ -465,36 +479,33 @@ class Parameter(models.Model):
 
 
 class DatafileParameter(Parameter):
-    parameterset = models.ForeignKey(
-        'DatafileParameterSet', on_delete=models.CASCADE)
-    parameter_type = 'Datafile'
+    parameterset = models.ForeignKey("DatafileParameterSet", on_delete=models.CASCADE)
+    parameter_type = "Datafile"
 
 
 class DatasetParameter(Parameter):
-    parameterset = models.ForeignKey(
-        'DatasetParameterSet', on_delete=models.CASCADE)
-    parameter_type = 'Dataset'
+    parameterset = models.ForeignKey("DatasetParameterSet", on_delete=models.CASCADE)
+    parameter_type = "Dataset"
 
 
 class ExperimentParameter(Parameter):
-    parameterset = models.ForeignKey(
-        'ExperimentParameterSet', on_delete=models.CASCADE)
-    parameter_type = 'Experiment'
+    parameterset = models.ForeignKey("ExperimentParameterSet", on_delete=models.CASCADE)
+    parameter_type = "Experiment"
 
     # pylint: disable=W0222
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
         try:
             from .hooks import publish_public_expt_rifcs
+
             publish_public_expt_rifcs(self.parameterset.experiment)
         except Exception:
-            logger.exception('')
+            logger.exception("")
 
 
 class InstrumentParameter(Parameter):
-    parameterset = models.ForeignKey(
-        'InstrumentParameterSet', on_delete=models.CASCADE)
-    parameter_type = 'Instrument'
+    parameterset = models.ForeignKey("InstrumentParameterSet", on_delete=models.CASCADE)
+    parameter_type = "Instrument"
 
 
 class DatafileParameterSet(ParameterSet):
@@ -502,7 +513,7 @@ class DatafileParameterSet(ParameterSet):
     parameter_class = DatafileParameter
 
     def _get_label(self):
-        return ('datafile.filename', 'Datafile')
+        return ("datafile.filename", "Datafile")
 
 
 class DatasetParameterSet(ParameterSet):
@@ -510,7 +521,7 @@ class DatasetParameterSet(ParameterSet):
     parameter_class = DatasetParameter
 
     def _get_label(self):
-        return ('dataset.description', 'Dataset')
+        return ("dataset.description", "Dataset")
 
 
 class InstrumentParameterSet(ParameterSet):
@@ -518,7 +529,7 @@ class InstrumentParameterSet(ParameterSet):
     parameter_class = InstrumentParameter
 
     def _get_label(self):
-        return ('instrument.name', 'Instrument')
+        return ("instrument.name", "Instrument")
 
 
 class ExperimentParameterSet(ParameterSet):
@@ -526,7 +537,7 @@ class ExperimentParameterSet(ParameterSet):
     parameter_class = ExperimentParameter
 
     def _get_label(self):
-        return ('experiment.title', 'Experiment')
+        return ("experiment.title", "Experiment")
 
 
 class FreeTextSearchField(models.Model):
@@ -534,7 +545,7 @@ class FreeTextSearchField(models.Model):
     parameter_name = models.ForeignKey(ParameterName, on_delete=models.CASCADE)
 
     class Meta:
-        app_label = 'tardis_portal'
+        app_label = "tardis_portal"
 
     def __str__(self):
         return "Index on %s" % (self.parameter_name)

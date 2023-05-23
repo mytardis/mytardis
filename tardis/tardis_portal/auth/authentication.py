@@ -1,10 +1,10 @@
 # pylint: disable=http-response-with-json-dumps,http-response-with-content-type-json
-'''
+"""
 A module containing helper methods for the manage_auth_methods function in
 views.py.
 
 .. moduleauthor:: Gerson Galang <gerson.galang@versi.edu.au>
-'''
+"""
 import json
 import logging
 
@@ -12,8 +12,13 @@ from django.conf import settings
 from django.contrib.auth.models import Group
 from django.http import HttpResponse
 
-from ..models import (UserProfile, UserAuthentication, ExperimentACL,
-                      DatasetACL, DatafileACL)
+from ..models import (
+    UserProfile,
+    UserAuthentication,
+    ExperimentACL,
+    DatasetACL,
+    DatafileACL,
+)
 from . import localdb_auth
 from ..forms import createLinkedUserAuthenticationForm
 from ..shortcuts import render_response_index
@@ -44,20 +49,28 @@ def list_auth_methods(request):
             # if the main account for this user is a django account, add his
             # details in the userAuthMethodList (a list of user authentication
             # methods that the user can modify or delete)
-            userAuthMethodList.append((request.user.username,
-                localdb_auth.auth_display_name, localdb_auth.auth_key))
+            userAuthMethodList.append(
+                (
+                    request.user.username,
+                    localdb_auth.auth_display_name,
+                    localdb_auth.auth_key,
+                )
+            )
 
         # get the user authentication methods for the current user
-        userAuths = UserAuthentication.objects.filter(
-            userProfile__user=request.user)
+        userAuths = UserAuthentication.objects.filter(userProfile__user=request.user)
 
         # ... and append it to our list
         for userAuth in userAuths:
             # localdb is already represented above
             if userAuth.authenticationMethod != "localdb":
-                userAuthMethodList.append((userAuth.username,
-                    userAuth.getAuthMethodDescription(),
-                    userAuth.authenticationMethod))
+                userAuthMethodList.append(
+                    (
+                        userAuth.username,
+                        userAuth.getAuthMethodDescription(),
+                        userAuth.authenticationMethod,
+                    )
+                )
 
                 # also remove the current userAuth from the list of authentication
                 # method options that can be added by this user
@@ -68,26 +81,33 @@ def list_auth_methods(request):
         # he might only have a django account so we'll only add localDB
         # information to the list of user authentication methods he can use
         # to log into the system.
-        userAuthMethodList.append((request.user.username,
-            localdb_auth.auth_display_name, localdb_auth.auth_key))
+        userAuthMethodList.append(
+            (
+                request.user.username,
+                localdb_auth.auth_display_name,
+                localdb_auth.auth_key,
+            )
+        )
 
-    LinkedUserAuthenticationForm = \
-        createLinkedUserAuthenticationForm(supportedAuthMethods)
+    LinkedUserAuthenticationForm = createLinkedUserAuthenticationForm(
+        supportedAuthMethods
+    )
     authForm = LinkedUserAuthenticationForm()
     isDjangoAccount = True
     try:
-        isDjangoAccount = UserProfile.objects.get(
-            user=request.user).isDjangoAccount
+        isDjangoAccount = UserProfile.objects.get(user=request.user).isDjangoAccount
     except UserProfile.DoesNotExist:
         isDjangoAccount = True
 
-    c = {'userAuthMethodList': userAuthMethodList,
-         'authForm': authForm, 'supportedAuthMethods': supportedAuthMethods,
-         'allAuthMethods': _getSupportedAuthMethods(),
-         'isDjangoAccount': isDjangoAccount}
+    c = {
+        "userAuthMethodList": userAuthMethodList,
+        "authForm": authForm,
+        "supportedAuthMethods": supportedAuthMethods,
+        "allAuthMethods": _getSupportedAuthMethods(),
+        "isDjangoAccount": isDjangoAccount,
+    }
 
-    return render_response_index(
-        request, 'tardis_portal/auth_methods.html', c)
+    return render_response_index(request, "tardis_portal/auth_methods.html", c)
 
 
 def add_auth_method(request):
@@ -105,23 +125,22 @@ def add_auth_method(request):
     from . import auth_service
 
     supportedAuthMethods = _getSupportedAuthMethods()
-    LinkedUserAuthenticationForm = \
-        createLinkedUserAuthenticationForm(supportedAuthMethods)
+    LinkedUserAuthenticationForm = createLinkedUserAuthenticationForm(
+        supportedAuthMethods
+    )
     authForm = LinkedUserAuthenticationForm(request.POST)
 
     if not authForm.is_valid():
-        errorMessage = \
-            'Please provide all the necessary information to authenticate.'
+        errorMessage = "Please provide all the necessary information to authenticate."
         return _getJsonFailedResponse(errorMessage)
 
-    authenticationMethod = authForm.cleaned_data['authenticationMethod']
+    authenticationMethod = authForm.cleaned_data["authenticationMethod"]
 
     # let's try and authenticate here
-    user = auth_service.authenticate(authMethod=authenticationMethod,
-        request=request)
+    user = auth_service.authenticate(authMethod=authenticationMethod, request=request)
 
     if user is None:
-        errorMessage = 'Wrong username or password. Please try again'
+        errorMessage = "Wrong username or password. Please try again"
         return _getJsonFailedResponse(errorMessage)
 
     # if has already registered to use the provided auth method, then we'll
@@ -135,8 +154,7 @@ def add_auth_method(request):
     #       other info that can be used to modify the html document
 
     # get the user authentication methods for the current user
-    userAuths = UserAuthentication.objects.filter(
-        userProfile__user=request.user)
+    userAuths = UserAuthentication.objects.filter(userProfile__user=request.user)
 
     # ... and append it to our list
     for userAuth in userAuths:
@@ -161,16 +179,16 @@ def _setupJsonData(authForm, authenticationMethod, supportedAuthMethods):
     :rtype: dict
     """
     data = {}
-    username = authForm.cleaned_data['username']
-    data['username'] = username
-    data['authenticationMethod'] = authenticationMethod
-    #data['authenticationMethodDesc'] = authenticationMethodDesc
+    username = authForm.cleaned_data["username"]
+    data["username"] = username
+    data["authenticationMethod"] = authenticationMethod
+    # data['authenticationMethodDesc'] = authenticationMethodDesc
 
     # flag to tell if there are any more auth methods that we can show
     # the user
-    data['supportedAuthMethodsLen'] = len(supportedAuthMethods)
+    data["supportedAuthMethodsLen"] = len(supportedAuthMethods)
 
-    logger.debug('Sending partial data to auth methods management page')
+    logger.debug("Sending partial data to auth methods management page")
     return data
 
 
@@ -191,23 +209,22 @@ def merge_auth_method(request):
     from . import auth_service
 
     supportedAuthMethods = _getSupportedAuthMethods()
-    LinkedUserAuthenticationForm = \
-        createLinkedUserAuthenticationForm(supportedAuthMethods)
+    LinkedUserAuthenticationForm = createLinkedUserAuthenticationForm(
+        supportedAuthMethods
+    )
     authForm = LinkedUserAuthenticationForm(request.POST)
 
     if not authForm.is_valid():
-        errorMessage = \
-            'Please provide all the necessary information to authenticate.'
+        errorMessage = "Please provide all the necessary information to authenticate."
         return _getJsonFailedResponse(errorMessage)
 
-    authenticationMethod = authForm.cleaned_data['authenticationMethod']
+    authenticationMethod = authForm.cleaned_data["authenticationMethod"]
 
     # let's try and authenticate here
-    user = auth_service.authenticate(authMethod=authenticationMethod,
-        request=request)
+    user = auth_service.authenticate(authMethod=authenticationMethod, request=request)
 
     if user is None:
-        errorMessage = 'Wrong username or password. Please try again'
+        errorMessage = "Wrong username or password. Please try again"
         return _getJsonFailedResponse(errorMessage)
 
     # if has already registered to use the provided auth method, then we can't
@@ -217,12 +234,10 @@ def merge_auth_method(request):
         # "request.user" to them
 
         # check if the "request.user" has a userProfile
-        userProfile, _ = UserProfile.objects.get_or_create(
-            user=request.user)
+        userProfile, _ = UserProfile.objects.get_or_create(user=request.user)
 
         # if he has, link 'user's UserAuthentication to it
-        userAuths = UserAuthentication.objects.filter(
-            userProfile__user=user)
+        userAuths = UserAuthentication.objects.filter(userProfile__user=user)
 
         for userAuth in userAuths:
 
@@ -238,7 +253,6 @@ def merge_auth_method(request):
         userIdToBeReplaced = user.id
         replacementUserId = request.user.id
 
-
         experiment_ACLs = ExperimentACL.objects.filter(user=userIdToBeReplaced)
         dataset_ACLs = DatasetACL.objects.filter(user=userIdToBeReplaced)
         datafile_ACLs = DatafileACL.objects.filter(user=userIdToBeReplaced)
@@ -248,8 +262,7 @@ def merge_auth_method(request):
         for experiment_ACL in experiment_ACLs:
             try:
                 acl = ExperimentACL.objects.get(
-                    user=replacementUserId,
-                    experiment=experiment_ACL.experiment
+                    user=replacementUserId, experiment=experiment_ACL.experiment
                 )
                 acl.canRead = acl.canRead or experiment_ACL.canRead
                 acl.canDownload = acl.canDownload or experiment_ACL.canDownload
@@ -265,8 +278,7 @@ def merge_auth_method(request):
         for dataset_ACL in dataset_ACLs:
             try:
                 acl = DatasetACL.objects.get(
-                    user=replacementUserId,
-                    dataset=dataset_ACL.dataset
+                    user=replacementUserId, dataset=dataset_ACL.dataset
                 )
                 acl.canRead = acl.canRead or dataset_ACL.canRead
                 acl.canDownload = acl.canDownload or dataset_ACL.canDownload
@@ -282,8 +294,7 @@ def merge_auth_method(request):
         for datafile_ACL in datafile_ACLs:
             try:
                 acl = DatafileACL.objects.get(
-                    user=replacementUserId,
-                    datafile=datafile_ACL.datafile
+                    user=replacementUserId, datafile=datafile_ACL.datafile
                 )
                 acl.canRead = acl.canRead or datafile_ACL.canRead
                 acl.canDownload = acl.canDownload or datafile_ACL.canDownload
@@ -295,6 +306,26 @@ def merge_auth_method(request):
             except DatafileACL.DoesNotExist:
                 datafile_ACL.user = replacementUserId
                 datafile_ACL.save()
+
+        if "tardis.apps.projects" in settings.INSTALLED_APPS:
+            from tardis.apps.projects.models import ProjectACL
+
+            project_ACLs = ProjectACL.objects.filter(user=userIdToBeReplaced)
+            for project_ACL in project_ACLs:
+                try:
+                    acl = ProjectACL.objects.get(
+                        user=replacementUserId, project=project_ACL.datafile
+                    )
+                    acl.canRead = acl.canRead or project_ACL.canRead
+                    acl.canDownload = acl.canDownload or project_ACL.canDownload
+                    acl.canWrite = acl.canWrite or project_ACL.canWrite
+                    acl.canSensitive = acl.canSensitive or project_ACL.canSensitive
+                    acl.canDelete = acl.canDelete or project_ACL.canDelete
+                    acl.save()
+                    project_ACL.delete()
+                except ProjectACL.DoesNotExist:
+                    project_ACL.user = replacementUserId
+                    project_ACL.save()
 
         # let's also change the group memberships of all the groups that 'user'
         # is a member of
@@ -318,32 +349,34 @@ def remove_auth_method(request):
         authentication methods
     :rtype: HttpResponse
     """
-    authMethod = request.POST['authMethod']
+    authMethod = request.POST["authMethod"]
     try:
-        UserAuthentication.objects.get(userProfile__user=request.user,
-            authenticationMethod=authMethod).delete()
+        UserAuthentication.objects.get(
+            userProfile__user=request.user, authenticationMethod=authMethod
+        ).delete()
         return _getJsonSuccessResponse({})
 
     except UserAuthentication.DoesNotExist:
-        return _getJsonFailedResponse(authMethod +
-            " auth method you are trying to delete does not exist.")
+        return _getJsonFailedResponse(
+            authMethod + " auth method you are trying to delete does not exist."
+        )
 
 
 def edit_auth_method(request):
-    '''Change the local DB (Django) password for request.user.'''
-    currentPassword = request.POST['currentPassword']
-    newPassword = request.POST['newPassword']
+    """Change the local DB (Django) password for request.user."""
+    currentPassword = request.POST["currentPassword"]
+    newPassword = request.POST["newPassword"]
     u = request.user
-    if (u.check_password(currentPassword)):
+    if u.check_password(currentPassword):
         u.set_password(newPassword)
         u.save()
         return _getJsonSuccessResponse()
-    errorMessage = 'The current password you entered is wrong.'
+    errorMessage = "The current password you entered is wrong."
     return _getJsonFailedResponse(errorMessage)
 
 
 def _getSupportedAuthMethods():
-    '''Return the list of all non-local DB authentication methods.'''
+    """Return the list of all non-local DB authentication methods."""
     # the list of supported non-local DB authentication methods
     supportedAuthMethods = {}
 
@@ -357,21 +390,18 @@ def _getSupportedAuthMethods():
 
 
 def _getJsonFailedResponse(errorMessage):
-    '''Return a failed JSON HttpResponse.'''
+    """Return a failed JSON HttpResponse."""
     response = {"status": "fail", "errorMessage": errorMessage}
-    return HttpResponse(json.dumps(response),
-        content_type="application/json")
+    return HttpResponse(json.dumps(response), content_type="application/json")
 
 
 def _getJsonSuccessResponse(data={}):
-    '''Return a successful JSON HttpResponse.'''
+    """Return a successful JSON HttpResponse."""
     response = {"status": "success", "data": data}
-    return HttpResponse(json.dumps(response),
-        content_type="application/json")
+    return HttpResponse(json.dumps(response), content_type="application/json")
 
 
 def _getJsonConfirmResponse(data={}):
-    '''Return a JSON HttpResponse asking the user for confirmation'''
+    """Return a JSON HttpResponse asking the user for confirmation"""
     response = {"status": "confirm", "data": data}
-    return HttpResponse(json.dumps(response),
-        content_type="application/json")
+    return HttpResponse(json.dumps(response), content_type="application/json")

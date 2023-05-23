@@ -166,6 +166,12 @@ class SafeManager(models.Manager):
     def _query_on_acls(self, user=None, group=None, token=None, isOwner=False):
         filter_dict = {}
         exclude_dict = {}
+        if self.model.get_ct(self.model).model == "project":
+            from tardis.apps.projects.models import Project, ProjectACL
+
+            OBJECT = Project
+            OBJECTACL = ProjectACL
+            acl_str = "projectacl"
         if self.model.get_ct(self.model).model == "experiment":
             from .models import Experiment, ExperimentACL
 
@@ -308,6 +314,12 @@ class SafeManager(models.Manager):
         :rtype: QuerySet
         """
         obj = super().get(pk=obj_id)
+        if self.model.get_ct(self.model).model == "project":
+            from tardis.apps.projects.models import ProjectACL
+
+            return obj.projectacl_set.select_related("user").filter(
+                user__isnull=False, aclOwnershipType=ProjectACL.OWNER_OWNED
+            )
         if self.model.get_ct(self.model).model == "experiment":
             from .models.access_control import ExperimentACL
 
@@ -353,6 +365,12 @@ class SafeManager(models.Manager):
         from .models.access_control import ExperimentACL, DatasetACL, DatafileACL
 
         obj = super().get(pk=obj_id)
+        if self.model.get_ct(self.model).model == "project":
+            from tardis.apps.projects.models import ProjectACL
+
+            return obj.projectacl_set.select_related("group").filter(
+                group__isnull=False, aclOwnershipType=ProjectACL.OWNER_OWNED
+            )
         if self.model.get_ct(self.model).model == "experiment":
             return obj.experimentacl_set.select_related("group").filter(
                 group__isnull=False, aclOwnershipType=ExperimentACL.OWNER_OWNED
@@ -390,6 +408,12 @@ class SafeManager(models.Manager):
         from .models.access_control import ExperimentACL, DatasetACL, DatafileACL
 
         obj = super().get(pk=obj_id)
+        if self.model.get_ct(self.model).model == "project":
+            from tardis.apps.projects.models import ProjectACL
+
+            acl = obj.projectacl_set.select_related("group").filter(
+                group__isnull=False, aclOwnershipType=ProjectACL.OWNER_OWNED
+            )
         if self.model.get_ct(self.model).model == "experiment":
             acl = obj.experimentacl_set.select_related("group").filter(
                 group__isnull=False, aclOwnershipType=ExperimentACL.OWNER_OWNED
@@ -415,6 +439,12 @@ class SafeManager(models.Manager):
         from .models.access_control import ExperimentACL, DatasetACL, DatafileACL
 
         obj = super().get(pk=obj_id)
+        if self.model.get_ct(self.model).model == "project":
+            from tardis.apps.projects.models import ProjectACL
+
+            return obj.projectacl_set.select_related("group").filter(
+                group__isnull=False, aclOwnershipType=ProjectACL.OWNER_OWNED
+            )
         if self.model.get_ct(self.model).model == "experiment":
             return obj.experimentacl_set.select_related("group").filter(
                 group__isnull=False, aclOwnershipType=ExperimentACL.OWNER_OWNED
@@ -439,6 +469,12 @@ class SafeManager(models.Manager):
         from .models.access_control import ExperimentACL, DatasetACL, DatafileACL
 
         obj = super().get(pk=obj_id)
+        if self.model.get_ct(self.model).model == "project":
+            from tardis.apps.projects.models import ProjectACL
+
+            return obj.projectacl_set.select_related("group").filter(
+                group__isnull=False, aclOwnershipType=ProjectACL.SYSTEM_OWNED
+            )
         if self.model.get_ct(self.model).model == "experiment":
             return obj.experimentacl_set.select_related("group").filter(
                 group__isnull=False, aclOwnershipType=ExperimentACL.SYSTEM_OWNED
@@ -465,6 +501,12 @@ class SafeManager(models.Manager):
         from .models.access_control import ExperimentACL, DatasetACL, DatafileACL
 
         obj = super().get(pk=obj_id)
+        if self.model.get_ct(self.model).model == "project":
+            from tardis.apps.projects.models import ProjectACL
+
+            acl = obj.projectacl_set.select_related("group").filter(
+                group__isnull=False, aclOwnershipType=ProjectACL.SYSTEM_OWNED
+            )
         if self.model.get_ct(self.model).model == "experiment":
             acl = obj.experimentacl_set.select_related("group").filter(
                 group__isnull=False, aclOwnershipType=ExperimentACL.SYSTEM_OWNED
@@ -487,6 +529,8 @@ class SafeManager(models.Manager):
         :rtype: list
         """
         obj = super().get(pk=obj_id)
+        if self.model.get_ct(self.model).model == "project":
+            acl = obj.projectacl_set.select_related("token").filter(token__isnull=False)
         if self.model.get_ct(self.model).model == "experiment":
             acl = obj.experimentacl_set.select_related("token").filter(
                 token__isnull=False

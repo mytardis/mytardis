@@ -1,0 +1,24 @@
+{% extends "tardis_portal/portal_template.html" %}
+{% load render_bundle from webpack_loader %}
+{% load bleach_tag %}
+
+{% block content %}
+<div class="page-header">
+  <h4>Project</h4>
+  {% if has_write_permissions %}
+  <div class="float-right">
+  <a class="btn btn-sm btn-outline-secondary" title="Edit Project"
+     href="{{ project.get_edit_url }}">
+    <i class="fa fa-pencil"></i>
+    Edit Project
+  </a>
+  </div>
+  {% endif %}
+
+  <h1><span property="dc:title">{{ project.name }}</span></h1>
+  <span id="abstractText">{{ project.description }}</span>
+</div>
+
+<div id="project-app"></div>
+{% render_bundle 'project_app' %}
+{% endblock content%}

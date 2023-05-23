@@ -51,4 +51,15 @@ tardis/apps/*
 !tardis/apps/social_auth
 !tardis/apps/search
 !tardis/apps/eventlog
+!tardis/apps/projects
+!tardis/apps/identifiers
+
+*.old
+
+*.txt~
 venv/
+
+*.py#
+
+tardis/apps/projects/.#api.py
+tardis/apps/identifiers/tests/#test_models.py#

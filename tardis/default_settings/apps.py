@@ -1,35 +1,36 @@
 # A tuple of strings designating all applications that are enabled in
 # this Django installation.
-TARDIS_APP_ROOT = 'tardis.apps'
+TARDIS_APP_ROOT = "tardis.apps"
 INSTALLED_APPS = (
-    'django_extensions',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.messages',
-    'django.contrib.sessions',
-    'django.contrib.sites',
-    'django.contrib.staticfiles',
-    'django.contrib.admin',
-    'django.contrib.admindocs',
-    'django.contrib.humanize',
-    'registration',
-    'jstemplate',
-    'tastypie',
-    'tastypie_swagger',
-    'webpack_loader',
-    'widget_tweaks',
-    'tardis.tardis_portal',
-    'tardis.tardis_portal.templatetags',
-    'tardis.analytics',
+    "django_extensions",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.messages",
+    "django.contrib.sessions",
+    "django.contrib.sites",
+    "django.contrib.staticfiles",
+    "django.contrib.admin",
+    "django.contrib.admindocs",
+    "django.contrib.humanize",
+    "registration",
+    "jstemplate",
+    "tastypie",
+    "tastypie_swagger",
+    "webpack_loader",
+    "widget_tweaks",
+    "tardis.tardis_portal",
+    "tardis.tardis_portal.templatetags",
+    "tardis.analytics",
     # these optional apps, may require extra settings
-    'tardis.apps.oaipmh',
-    'tardis.apps.sftp',
+    "tardis.apps.oaipmh",
+    "tardis.apps.sftp",
     # 'tardis.apps.push_to',
     # 'tardis.apps.social_auth',
+    "taggit",
 )
 
 USER_MENU_MODIFIERS = []
-'''
+"""
 A list of methods which can modify the user menu defined in
 tardis.tardis_portal.context_processors.user_menu_processor
 The modifications will be applied in order, so it is possible for one
@@ -44,4 +45,4 @@ An example from the SFTP app is below::
   USER_MENU_MODIFIERS.extend([
       'tardis.apps.sftp.user_menu_modifiers.add_ssh_keys_menu_item'
   ])
-'''
+"""
