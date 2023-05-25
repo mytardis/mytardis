@@ -51,6 +51,13 @@ def get_accessible_experiments_for_dataset(request, dataset_id):
     return experiments.filter(datasets__id=dataset_id)
 
 
+def get_accessible_projects_for_experiment(request, experiment_id):
+    from tardis.apps.projects.models import Project
+
+    projects = Project.safe.all(request.user)
+    return projects.filter(experiments__id=experiment_id)
+
+
 def get_shared_experiments(request):
     return Experiment.safe.shared(request.user)
 
@@ -122,7 +129,7 @@ def has_X_access(request, obj_id, ct_type, perm_type):
                         has_X_access(request, experiment.id, "experiment", perm_type)
                         for experiment in project.experiments.all()
                     )
-                except (Project.DoesNotExist):
+                except Project.DoesNotExist:
                     return False
             if ct_type == "dataset":
                 dataset = Dataset.objects.get(id=obj_id)
@@ -146,7 +153,7 @@ def has_X_access(request, obj_id, ct_type, perm_type):
                     obj = Project.objects.get(id=obj_id)
                     if (perm_type == "change") & obj.locked:
                         return False
-                except (Project.DoesNotExist):
+                except Project.DoesNotExist:
                     return False
             if ct_type == "dataset":
                 obj = Dataset.objects.get(id=obj_id)
@@ -323,7 +330,6 @@ def dataset_access_required(f):
 
 def datafile_access_required(f):
     def wrap(request, *args, **kwargs):
-
         if not has_access(request, kwargs["datafile_id"], "datafile"):
             return return_response_error(request)
         return f(request, *args, **kwargs)
@@ -335,7 +341,6 @@ def datafile_access_required(f):
 
 def write_permissions_required(f):
     def wrap(request, *args, **kwargs):
-
         if not has_write(request, kwargs["experiment_id"], "experiment"):
             return return_response_error(request)
         return f(request, *args, **kwargs)
@@ -347,7 +352,6 @@ def write_permissions_required(f):
 
 def project_write_permissions_required(f):
     def wrap(request, *args, **kwargs):
-
         if not has_write(request, kwargs["project_id"], "project"):
             return return_response_error(request)
         return f(request, *args, **kwargs)
@@ -373,7 +377,6 @@ def dataset_write_permissions_required(f):
 
 def delete_permissions_required(f):
     def wrap(request, *args, **kwargs):
-
         if not has_delete_permissions(request, kwargs["experiment_id"]):
             return return_response_error(request)
         return f(request, *args, **kwargs)

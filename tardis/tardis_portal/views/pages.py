@@ -157,7 +157,6 @@ class IndexView(TemplateView):
 
             project_limit = 4
             if request.user.is_authenticated:
-
                 if settings.ONLY_EXPERIMENT_ACLS:
                     private_projects = Project.objects.filter(
                         experiments__in=Experiment.safe.owned_and_shared(request.user)
@@ -398,7 +397,6 @@ class DatasetView(TemplateView):
 
 
 def about(request):
-
     c = {
         "subtitle": "About",
         "about_pressed": True,
@@ -552,6 +550,13 @@ class ExperimentView(TemplateView):
                 kwargs=push_to_args,
             )
 
+        # "project_app_enabled" is specified globally for all templates
+        # no need to specify here
+        if "tardis.apps.projects" in settings.INSTALLED_APPS:
+            c["projects"] = authz.get_accessible_projects_for_experiment(
+                request, experiment.id
+            )
+
         c["subtitle"] = experiment.title
         c["nav"] = [
             {"name": "Data", "link": "/experiment/view/"},
@@ -700,7 +705,6 @@ def public_data(request):
 @permission_required("tardis_portal.add_experiment")
 @login_required
 def create_experiment(request, template_name="tardis_portal/create_experiment.html"):
-
     """Create a new experiment view.
 
     :param request: a HTTP Request instance
