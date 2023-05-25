@@ -73,20 +73,20 @@
       <div class="col-md-9">
         <span style="padding-top: 4px">
           <small>
-        {% if projects|length == 1 %}
-            Related Project:
-        {% else %}
-        Related Projects:
-        {% endif %}
-        {% for project in projects %}
-            <a
-               class="project-link"
-               href="{{ project.get_absolute_url }}">
-            {{ project.name }}
-            </a>
-            </small>
+          {% if projects|length == 1 %}
+              Related Project:
+          {% else %}
+          Related Projects:
+          {% endif %}
+          {% for project in projects %}
+              <a
+                class="project-link"
+                href="{{ project.get_absolute_url }}">
+              {{ project.name }}
+              </a>
+          {% endfor %}
+          </small>
         </span>
-        {% endfor %}
       </div>
     </div>
   {% endif %}
