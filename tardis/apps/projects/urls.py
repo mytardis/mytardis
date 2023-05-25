@@ -13,6 +13,8 @@ from .views import (
     my_projects,
     public_projects,
     retrieve_owned_proj_list,
+    add_project_par,
+    edit_project_par,
 )
 
 
@@ -54,6 +56,16 @@ project_urls = [
         r"^project_metadata/(?P<project_id>\d+)/$",
         retrieve_project_metadata,
         name="tardis.apps.projects.retrieve_project_metadata",
+    ),
+    url(
+        r"^add_project_parameters/(?P<project_id>\d+)/$",
+        add_project_par,
+        name="tardis.apps.projects.views.add_project_par",
+    ),
+    url(
+        r"^edit_project_parameters/(?P<parameterset_id>\d+)/$",
+        edit_project_par,
+        name="tardis.apps.projects.views.edit_project_par",
     ),
 ]
 
