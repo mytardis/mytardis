@@ -20,5 +20,16 @@
 </div>
 
 <div id="project-app"></div>
-{% render_bundle 'project_app' %}
+
+<div class="row">
+  <div class="col-md-6">
+    <div id="metadata-pane">
+      {% include "apps/projects/ajax/dataset_metadata.html" %}
+    </div>  <!-- id="metadata-pane" -->
+  </div>  <!-- class="col-md-6" -->
+
+  <div class="col-md-6">
+    {% render_bundle 'project_app' %}
+  </div>  <!-- class="col-md-6" -->
+</div>
 {% endblock content%}

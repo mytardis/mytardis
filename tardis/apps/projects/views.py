@@ -18,12 +18,12 @@ from tardis.tardis_portal.shortcuts import (
     return_response_error,
     return_response_not_found,
 )
-from tardis.tardis_portal.models import Experiment
+from tardis.tardis_portal.models import Experiment, Schema
 from tardis.tardis_portal.views.utils import _redirect_303
 from tardis.tardis_portal.views.pages import _resolve_view
+from tardis.tardis_portal.views.parameters import add_par, edit_parameters
 
-
-from .models import Project, ProjectACL
+from .models import Project, ProjectACL, ProjectParameterSet
 from .forms import ProjectForm
 
 logger = logging.getLogger(__name__)
@@ -288,3 +288,24 @@ def retrieve_owned_proj_list(request, template_name="ajax/proj_list.html"):
         "query_string": query_string,
     }
     return render_response_index(request, template_name, c)
+
+
+@login_required
+def add_project_par(request, project_id):
+    parentObject = Project.objects.get(id=project_id)
+    if authz.has_write(request, parentObject.id, "project"):
+        return add_par(request, parentObject, otype="project", stype=Schema.PROJECT)
+    return return_response_error(request)
+
+
+@login_required
+def edit_project_par(request, parameterset_id):
+    parameterset = ProjectParameterSet.objects.get(id=parameterset_id)
+    if authz.has_write(request, parameterset.project.id, "project"):
+        view_sensitive = authz.has_sensitive_access(
+            request, parameterset.project.id, "project"
+        )
+        return edit_parameters(
+            request, parameterset, otype="project", view_sensitive=view_sensitive
+        )
+    return return_response_error(request)
