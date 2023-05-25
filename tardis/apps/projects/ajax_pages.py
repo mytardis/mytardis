@@ -62,4 +62,4 @@ def retrieve_project_metadata(request, project_id):
         "has_sensitive_permissions": has_sensitive_permissions,
     }
 
-    return render_response_index(request, "apps/project/ajax/project_metadata.html", c)
+    return render_response_index(request, "ajax/project_metadata.html", c)
