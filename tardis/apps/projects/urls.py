@@ -1,7 +1,11 @@
 from django.conf import settings
 from django.conf.urls import url
 
-from .ajax_pages import project_latest_experiment, project_recent_experiments
+from .ajax_pages import (
+    project_latest_experiment,
+    project_recent_experiments,
+    retrieve_project_metadata,
+)
 from .views import (
     ProjectView,
     create_project,
@@ -45,6 +49,11 @@ project_urls = [
         r"^ajax/(?P<project_id>\d+)/recent_experiments$",
         project_recent_experiments,
         name="tardis.apps.projects.project_recent_experiments",
+    ),
+    url(
+        r"^project_metadata/(?P<project_id>\d+)/$",
+        retrieve_project_metadata,
+        name="tardis.apps.projects.retrieve_project_metadata",
     ),
 ]
 
