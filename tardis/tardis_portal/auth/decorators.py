@@ -223,6 +223,27 @@ def group_ownership_required(f):
     return wrap
 
 
+def project_access_required(f):
+    def wrap(*args, **kwargs):
+        # We find the request as either the first or second argument.
+        # This is so it can be used for the 'get' method on class-based
+        # views (where the first argument is 'self') and also with traditional
+        # view functions (where the first argument is the request).
+        # TODO: An alternative would be to create a mixin for the ProjectView
+        #       and similar classes, like AccessRequiredMixin
+        request = args[0]
+        if not isinstance(request, HttpRequest):
+            request = args[1]
+
+        if not has_access(request, kwargs["project_id"], "project"):
+            return return_response_error(request)
+        return f(*args, **kwargs)
+
+    wrap.__doc__ = f.__doc__
+    wrap.__name__ = f.__name__
+    return wrap
+
+
 def experiment_ownership_required(f):
     """
     A decorator for Django views that validates if a user is an owner of an
