@@ -53,7 +53,7 @@ project_urls = [
         name="tardis.apps.projects.project_recent_experiments",
     ),
     url(
-        r"^project_metadata/(?P<project_id>\d+)/$",
+        r"^ajax/project_metadata/(?P<project_id>\d+)/$",
         retrieve_project_metadata,
         name="tardis.apps.projects.retrieve_project_metadata",
     ),
