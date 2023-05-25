@@ -58,12 +58,12 @@ project_urls = [
         name="tardis.apps.projects.retrieve_project_metadata",
     ),
     url(
-        r"^add_project_parameters/(?P<project_id>\d+)/$",
+        r"^ajax/add_project_parameters/(?P<project_id>\d+)/$",
         add_project_par,
         name="tardis.apps.projects.views.add_project_par",
     ),
     url(
-        r"^edit_project_parameters/(?P<parameterset_id>\d+)/$",
+        r"^ajax/edit_project_parameters/(?P<parameterset_id>\d+)/$",
         edit_project_par,
         name="tardis.apps.projects.views.edit_project_par",
     ),
