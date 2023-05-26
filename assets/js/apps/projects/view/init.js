@@ -4,7 +4,7 @@ $(document).ready(function() {
 
     // Create a reload event handler
     $("#metadata-pane").on("reload", function() {
-        $(this).load("/ajax/dataset_metadata/" + $("#dataset-id").val() + "/");
+        $(this).load("/project/ajax/project_metadata/" + $("#project-id").val() + "/");
     });
 });
 
