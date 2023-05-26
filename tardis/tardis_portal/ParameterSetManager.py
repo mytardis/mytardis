@@ -12,7 +12,6 @@ LOCAL_TZ = pytz.timezone(settings.TIME_ZONE)
 
 
 class ParameterSetManager(object):
-
     parameterset = None
     parameters = None  # queryset of parameters
     blank_param = None
@@ -51,12 +50,27 @@ class ParameterSetManager(object):
             ParameterSet,
         )
 
+        if "tardis.apps.projects" in settings.INSTALLED_APPS:
+            from tardis.apps.projects.models import (
+                Project,
+                ProjectParameterSet,
+                ProjectParameter,
+            )
+
         if issubclass(type(self), ParameterSet):
             pass
         elif parameterset:
             self.parameterset = parameterset
             self.schema = self.parameterset.schema
             self.namespace = self.schema.namespace
+
+            if "tardis.apps.projects" in settings.INSTALLED_APPS:
+                if isinstance(self.parameterset, ProjectParameterSet):
+                    self.parameters = ProjectParameter.objects.filter(
+                        parameterset=self.parameterset
+                    ).order_by("name__full_name")
+
+                    self.blank_param = ProjectParameter
 
             if isinstance(self.parameterset, DatafileParameterSet):
                 self.parameters = DatafileParameter.objects.filter(
@@ -83,8 +97,21 @@ class ParameterSetManager(object):
                 raise TypeError("Invalid parameterset object given.")
 
         elif parentObject and schema:
-
             self.namespace = schema
+
+            if "tardis.apps.projects" in settings.INSTALLED_APPS:
+                if isinstance(parentObject, Project):
+                    self.parameterset = ProjectParameterSet(
+                        schema=self.get_schema(), project=parentObject
+                    )
+
+                    self.parameterset.save()
+
+                    self.parameters = ProjectParameter.objects.filter(
+                        parameterset=self.parameterset
+                    )
+
+                self.blank_param = DatafileParameter
 
             if isinstance(parentObject, DataFile):
                 self.parameterset = DatafileParameterSet(
@@ -128,7 +155,7 @@ class ParameterSetManager(object):
             else:
                 raise TypeError(
                     "Invalid parent object."
-                    + "Must be an experiment/dataset/datafile not "
+                    + "Must be a project/experiment/dataset/datafile not "
                     + str(type(parentObject))
                 )
 
@@ -203,7 +230,7 @@ class ParameterSetManager(object):
                 self.new_param(parname, value, fullparname)
 
     def set_params_from_dict(self, params_dict):
-        for (key, value) in params_dict.items():
+        for key, value in params_dict.items():
             if isinstance(value, list):
                 self.set_param_list(key, value)
             else:
