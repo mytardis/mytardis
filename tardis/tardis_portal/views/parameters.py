@@ -112,7 +112,7 @@ def edit_parameters(request, parameterset, otype, view_sensitive=False):
     # this prefix is added to urls if otype = project
     # workaround for separate app using communal function
     project_url = ""
-    if "tardis.apps.projects" in settings.INSTALLED_APPS:
+    if otype == "project":
         project_url = "/project"
 
     c = {
@@ -202,7 +202,7 @@ def add_par(request, parentObject, otype, stype):
     # this prefix is added to urls if otype = project
     # workaround for separate app using communal function
     project_url = ""
-    if "tardis.apps.projects" in settings.INSTALLED_APPS:
+    if otype == "project":
         project_url = "/project"
 
     c = {
