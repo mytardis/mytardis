@@ -84,15 +84,26 @@ class ProjectView(TemplateView):
         # This might need to be more complex to account for users
         c = super().get_context_data(**kwargs)
 
-        c["project"] = project
-        c["has_write_permissions"] = authz.has_write(request, project.id, "project")
-        c["has_download_permissions"] = authz.has_download_access(
-            request, project.id, "project"
-        )
         if request.user.is_authenticated:
-            c["is_owner"] = authz.has_ownership(request, project.id, "project")
+            is_owner = authz.has_ownership(request, project.id, "project")
+        else:
+            is_owner = None
 
-        c["parametersets"]: project.projectparameterset_set.exclude(schema__hidden=True)
+        c.update(
+            {
+                "project": project,
+                "has_write_permissions": authz.has_write(
+                    request, project.id, "project"
+                ),
+                "has_download_permissions": authz.has_download_access(
+                    request, project.id, "project"
+                ),
+                "is_owner": is_owner,
+                "parametersets": project.projectparameterset_set.exclude(
+                    schema__hidden=True
+                ),
+            }
+        )
 
         # _add_protocols_and_organizations(request, project, c)
         return c
