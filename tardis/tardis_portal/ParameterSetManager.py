@@ -64,14 +64,6 @@ class ParameterSetManager(object):
             self.schema = self.parameterset.schema
             self.namespace = self.schema.namespace
 
-            if "tardis.apps.projects" in settings.INSTALLED_APPS:
-                if isinstance(self.parameterset, ProjectParameterSet):
-                    self.parameters = ProjectParameter.objects.filter(
-                        parameterset=self.parameterset
-                    ).order_by("name__full_name")
-
-                    self.blank_param = ProjectParameter
-
             if isinstance(self.parameterset, DatafileParameterSet):
                 self.parameters = DatafileParameter.objects.filter(
                     parameterset=self.parameterset
@@ -93,25 +85,21 @@ class ParameterSetManager(object):
 
                 self.blank_param = ExperimentParameter
 
+            elif "tardis.apps.projects" in settings.INSTALLED_APPS:
+                if isinstance(self.parameterset, ProjectParameterSet):
+                    self.parameters = ProjectParameter.objects.filter(
+                        parameterset=self.parameterset
+                    ).order_by("name__full_name")
+
+                    self.blank_param = ProjectParameter
+                else:
+                    raise TypeError("Invalid parameterset object given.")
+
             else:
                 raise TypeError("Invalid parameterset object given.")
 
         elif parentObject and schema:
             self.namespace = schema
-
-            if "tardis.apps.projects" in settings.INSTALLED_APPS:
-                if isinstance(parentObject, Project):
-                    self.parameterset = ProjectParameterSet(
-                        schema=self.get_schema(), project=parentObject
-                    )
-
-                    self.parameterset.save()
-
-                    self.parameters = ProjectParameter.objects.filter(
-                        parameterset=self.parameterset
-                    )
-
-                self.blank_param = DatafileParameter
 
             if isinstance(parentObject, DataFile):
                 self.parameterset = DatafileParameterSet(
@@ -152,10 +140,29 @@ class ParameterSetManager(object):
 
                 self.blank_param = ExperimentParameter
 
+            elif "tardis.apps.projects" in settings.INSTALLED_APPS:
+                if isinstance(parentObject, Project):
+                    self.parameterset = ProjectParameterSet(
+                        schema=self.get_schema(), project=parentObject
+                    )
+
+                    self.parameterset.save()
+
+                    self.parameters = ProjectParameter.objects.filter(
+                        parameterset=self.parameterset
+                    )
+
+                    self.blank_param = ProjectParameter
+                else:
+                    raise TypeError(
+                        "Invalid parent object."
+                        + "Must be a project/experiment/dataset/datafile not "
+                        + str(type(parentObject))
+                    )
             else:
                 raise TypeError(
                     "Invalid parent object."
-                    + "Must be a project/experiment/dataset/datafile not "
+                    + "Must be an experiment/dataset/datafile not "
                     + str(type(parentObject))
                 )
 
