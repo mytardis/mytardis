@@ -6,6 +6,8 @@
 {% block content %}
 {% render_bundle 'view_project' %}
 
+<input type="hidden" id="project-id" value="{{ project.id }}">
+
 <div class="modal" id="modal-metadata" role="dialog" tabindex="-1">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
