@@ -92,7 +92,7 @@ class ProjectView(TemplateView):
         if request.user.is_authenticated:
             c["is_owner"] = authz.has_ownership(request, project.id, "project")
 
-        c["parametersets"]: project.getParameterSets().exclude(schema__hidden=True)
+        c["parametersets"]: project.projectparameterset_set.exclude(schema__hidden=True)
 
         # _add_protocols_and_organizations(request, project, c)
         return c
