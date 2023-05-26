@@ -1,4 +1,13 @@
-var loadingHTML = "<img src=\"/static/images/ajax-loader.gif\"/><br />";
+$(document).ready(function() {
+
+    var loadingHTML = "<img src=\"/static/images/ajax-loader.gif\"/><br />";
+
+    // Create a reload event handler
+    $("#metadata-pane").on("reload", function() {
+        $(this).load("/ajax/dataset_metadata/" + $("#dataset-id").val() + "/");
+    });
+});
+
 
 function getNewParameterName(name)
 {
