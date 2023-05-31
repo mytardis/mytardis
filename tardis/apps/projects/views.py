@@ -222,7 +222,6 @@ def edit_project(request, project_id):
     if request.method == "POST":
         form = ProjectForm(request.POST, instance=project, user=request.user)
         if form.is_valid():
-            project = Project()
             project.name = form.cleaned_data["name"]
             project.description = form.cleaned_data["description"]
 
