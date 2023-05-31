@@ -98,6 +98,9 @@ class ProjectView(TemplateView):
                 "has_download_permissions": authz.has_download_access(
                     request, project.id, "project"
                 ),
+                "has_sensitive_permissions": authz.has_sensitive_access(
+                    request, project.id, "project"
+                ),
                 "is_owner": is_owner,
                 "parametersets": project.projectparameterset_set.exclude(
                     schema__hidden=True
