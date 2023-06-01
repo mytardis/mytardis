@@ -247,7 +247,6 @@ class SafeManager(models.Manager):
             group = kwargs.get("group")
         if group.id is None:
             return super().get_queryset().none()
-        kwargs.pop("group_id")
         query = self._query_on_acls(isOwner=True, **kwargs)
         return query
 
