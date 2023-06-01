@@ -234,6 +234,8 @@ class SafeManager(models.Manager):
             user = kwargs.get("user")
         if user.id is None:
             return super().get_queryset().none()
+        if kwargs.get("user"):
+            kwargs.pop("user")
         query = self._query_on_acls(isOwner=True, user=user, **kwargs)
         return query
 
