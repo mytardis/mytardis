@@ -4,7 +4,6 @@ views to do with metadata, parameters etc. Mostly ajax page inclusions
 
 import logging
 
-from django.conf import settings
 from django.contrib.auth.decorators import login_required
 
 from ..auth import decorators as authz
