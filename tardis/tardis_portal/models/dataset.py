@@ -134,7 +134,7 @@ class Dataset(models.Model):
         return reverse("tardis_portal.view_dataset", kwargs={"dataset_id": self.id})
 
     def get_download_urls(self):
-        view = "tardis.tardis_portal.download.streaming_download_" "dataset"
+        view = "tardis.tardis_portal.download.streaming_download_dataset"
         urls = {}
         for comptype in getattr(settings, "DEFAULT_ARCHIVE_FORMATS", ["tgz", "tar"]):
             urls[comptype] = reverse(

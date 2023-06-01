@@ -228,10 +228,10 @@ def edit_project(request, project_id):
                 project.name = form.cleaned_data["name"]
                 project.description = form.cleaned_data["description"]
                 project.institution = form.cleaned_data["institution"]
-                for experiment in form.cleaned_data["experiments"]:
-                    if has_write(request, project_id, "experiment"):
-                        # TODO finish this section
-                        pass
+                # for experiment in form.cleaned_data["experiments"]:
+                #    if has_write(request, project_id, "experiment"):
+                #        # TODO finish this section
+                #        pass
                 project.save()
             return _redirect_303("tardis.apps.projects.view_project", project.id)
     else:
