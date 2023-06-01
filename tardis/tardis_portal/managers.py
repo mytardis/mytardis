@@ -229,11 +229,11 @@ class SafeManager(models.Manager):
     def _query_owned(self, **kwargs):  # user, user_id=None):
         if kwargs.get("user_id") is not None:
             user = User.objects.get(pk=kwargs["user_id"])
+            kwargs.pop("user_id")
         else:
             user = kwargs.get("user")
         if user.id is None:
             return super().get_queryset().none()
-        kwargs.pop("user_id")
         query = self._query_on_acls(isOwner=True, user=user, **kwargs)
         return query
 
