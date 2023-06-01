@@ -9,7 +9,6 @@ from .models import Project
 
 
 class ProjectForm(forms.ModelForm):
-
     name = forms.CharField()
 
     class Meta:
@@ -32,4 +31,4 @@ class ProjectForm(forms.ModelForm):
         self.fields["principal_investigator"].queryset = User.objects.exclude(
             pk=settings.PUBLIC_USER_ID
         )
-        self.fields["experiments"].queryset = Experiment.safe.all(self.user)
+        self.fields["experiments"].queryset = Experiment.safe.all(user=self.user)

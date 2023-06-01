@@ -124,7 +124,7 @@ class SafeManager(models.Manager):
             query |= self._query_owned_by_group(group=group, **kwargs)
         return query.distinct()
 
-    def shared(self, **kwargs):
+    def shared(self, **kwargs):  # user):
         """
         Return all experiments/datasets/datafiles which are shared with a
         particular user via group membership.
@@ -134,7 +134,7 @@ class SafeManager(models.Manager):
         """
         return self._query_shared(**kwargs).distinct()
 
-    def owned_and_shared(self, **kwargs):
+    def owned_and_shared(self, **kwargs):  # user):
         """
         Return all experiments/datasets/datafiles which are either owned by or
         shared with a particular user, including those owned by a group of which
@@ -229,10 +229,12 @@ class SafeManager(models.Manager):
     def _query_owned(self, **kwargs):  # user, user_id=None):
         if kwargs.get("user_id") is not None:
             user = User.objects.get(pk=kwargs["user_id"])
+        else:
+            user = kwargs.get("user")
         if user.id is None:
             return super().get_queryset().none()
         kwargs.pop("user_id")
-        query = self._query_on_acls(isOwner=True, **kwargs)
+        query = self._query_on_acls(isOwner=True, user=user, **kwargs)
         return query
 
     def _query_owned_by_group(self, **kwargs):  # group, group_id=None):
@@ -304,7 +306,7 @@ class SafeManager(models.Manager):
         query = self._query_owned_by_group(**kwargs)
         return query
 
-    def owned_by_user_id(self, **kwargs):
+    def owned_by_user_id(self, **kwargs):  # userId):
         """
         Return all exps/sets/files which are owned by a particular user id
 

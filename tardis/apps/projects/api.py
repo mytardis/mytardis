@@ -78,6 +78,7 @@ class ProjectACLAuthorization(Authorization):
                 for pp in object_list
                 if has_access(bundle.request, pp.parameterset.project.id, "project")
             ]
+
             # Generator to filter sensitive exp_parameters when given an exp id
             def get_set_param(set_par):
                 if not set_par.name.sensitive:
@@ -228,7 +229,9 @@ class ProjectResource(ModelResource):
         bundle.data["size"] = size
         # Both Macro and Micro ACLs route through ExperimentACLs for this
         project_experiment_count = (
-            Experiment.safe.all(bundle.request.user).filter(projects=project).count()
+            Experiment.safe.all(user=bundle.request.user)
+            .filter(projects=project)
+            .count()
         )
         bundle.data["experiment_count"] = project_experiment_count
         project_dataset_count = project.get_datasets(bundle.request.user).count()
@@ -321,7 +324,7 @@ class ProjectResource(ModelResource):
             return HttpResponseForbidden()
 
         # Both Macro and Micro ACLs route through ExperimentACLs for this
-        exp_list = Experiment.safe.all(request.user).filter(projects=project_id)
+        exp_list = Experiment.safe.all(user=request.user).filter(projects=project_id)
 
         exp_list = {"objects": [*exp_list.values("id", "title")]}
         return JsonResponse(exp_list, status=200, safe=False)

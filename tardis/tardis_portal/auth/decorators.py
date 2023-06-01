@@ -43,27 +43,27 @@ from ..shortcuts import return_response_error
 
 
 def get_accessible_experiments(request):
-    return Experiment.safe.all(request.user)
+    return Experiment.safe.all(user=request.user)
 
 
 def get_accessible_experiments_for_dataset(request, dataset_id):
-    experiments = Experiment.safe.all(request.user)
+    experiments = Experiment.safe.all(user=request.user)
     return experiments.filter(datasets__id=dataset_id)
 
 
 def get_accessible_projects_for_experiment(request, experiment_id):
     from tardis.apps.projects.models import Project
 
-    projects = Project.safe.all(request.user)
+    projects = Project.safe.all(user=request.user)
     return projects.filter(experiments__id=experiment_id)
 
 
 def get_shared_experiments(request):
-    return Experiment.safe.shared(request.user)
+    return Experiment.safe.shared(user=request.user)
 
 
 def get_owned_experiments(request):
-    return Experiment.safe.owned(request.user)
+    return Experiment.safe.owned(user=request.user)
 
 
 def get_accessible_datafiles_for_user(request):
@@ -78,7 +78,7 @@ def get_accessible_datafiles_for_user(request):
 
 def has_ownership(request, obj_id, ct_type):
     if ct_type == "experiment":
-        return Experiment.safe.owned(request.user).filter(pk=obj_id).exists()
+        return Experiment.safe.owned(user=request.user).filter(pk=obj_id).exists()
 
     if settings.ONLY_EXPERIMENT_ACLS:
         if ct_type == "project":
@@ -105,11 +105,11 @@ def has_ownership(request, obj_id, ct_type):
         if ct_type == "project":
             from tardis.apps.projects.models import Project
 
-            return Project.safe.owned(request.user).filter(pk=obj_id).exists()
+            return Project.safe.owned(user=request.user).filter(pk=obj_id).exists()
         if ct_type == "dataset":
-            return Dataset.safe.owned(request.user).filter(pk=obj_id).exists()
+            return Dataset.safe.owned(user=request.user).filter(pk=obj_id).exists()
         if ct_type == "datafile":
-            return DataFile.safe.owned(request.user).filter(pk=obj_id).exists()
+            return DataFile.safe.owned(user=request.user).filter(pk=obj_id).exists()
     return False
 
 

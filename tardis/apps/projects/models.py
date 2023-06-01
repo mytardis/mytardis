@@ -27,7 +27,6 @@ logger = logging.getLogger(__name__)
 
 
 class Institution(models.Model):
-
     name = models.CharField(
         max_length=255, null=False, blank=False, default=settings.DEFAULT_INSTITUTION
     )
@@ -185,18 +184,20 @@ class Project(models.Model):
 
         if settings.ONLY_EXPERIMENT_ACLS:
             return DataFile.objects.filter(
-                dataset__experiments__in=Experiment.safe.all(user).filter(projects=self)
+                dataset__experiments__in=Experiment.safe.all(user=user).filter(
+                    projects=self
+                )
             )
-        return DataFile.safe.all(user).filter(dataset__experiments__projects=self)
+        return DataFile.safe.all(user=user).filter(dataset__experiments__projects=self)
 
     def get_datasets(self, user):
         from tardis.tardis_portal.models.dataset import Dataset
 
         if settings.ONLY_EXPERIMENT_ACLS:
             return Dataset.objects.filter(
-                experiments__in=Experiment.safe.all(user).filter(projects=self)
+                experiments__in=Experiment.safe.all(user=user).filter(projects=self)
             )
-        return Dataset.safe.all(user).filter(experiments__projects=self)
+        return Dataset.safe.all(user=user).filter(experiments__projects=self)
 
     def get_size(self, user, downloadable=False):
         from tardis.tardis_portal.models.datafile import DataFile

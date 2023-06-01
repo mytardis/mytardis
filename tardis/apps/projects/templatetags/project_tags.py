@@ -11,18 +11,20 @@ from tardis.tardis_portal.models.experiment import Experiment
 # from ..models.access_control import ExperimentACL, DatafileACL, DatasetACL
 
 register = template.Library()
+
+
 # def get_all_project_experiments(project_id, user):
 #    """
 #    Returns all experiment objects in a project.
 #    """
-#    return Experiment.safe.all(user).filter(project__id=project_id)
+#    return Experiment.safe.all(user=user).filter(project__id=project_id)
 @register.simple_tag
 def project_get_recent_experiments(project_id, user):
     """
     Return the 5 most recently updated experiments for this project
     """
     experiments = (
-        Experiment.safe.all(user)
+        Experiment.safe.all(user=user)
         .filter(project__id=project_id)
         .order_by("-update_time")[:4]
     )
@@ -35,7 +37,7 @@ def project_experiments_badge(project_id, user):
     """
     Displays a badge with the number of experiments for this project.
     """
-    # count = Experiment.safe.all(user).filter(project__id=project_id).count()
+    # count = Experiment.safe.all(user=user).filter(project__id=project_id).count()
     if not user.is_authenticated:
         from ..auth.token_auth import TokenGroupProvider
 

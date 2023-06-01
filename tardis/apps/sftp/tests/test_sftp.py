@@ -34,14 +34,14 @@ from tardis.apps.sftp.views import cybderduck_connection_window
 
 class SFTPTest(TestCase):
     def setUp(self):
-        self.hostname = '127.0.0.1'
-        self.username = 'tardis_user1'
-        self.password = 'secret'
-        email = ''
-        self.user = User.objects.create_user(
-            self.username, email, self.password)
+        self.hostname = "127.0.0.1"
+        self.username = "tardis_user1"
+        self.password = "secret"
+        email = ""
+        self.user = User.objects.create_user(self.username, email, self.password)
         self.exp = Experiment(
-            title='test exp1', institution_name='monash', created_by=self.user)
+            title="test exp1", institution_name="monash", created_by=self.user
+        )
         self.exp.save()
 
         self.acl = ExperimentACL(
@@ -53,24 +53,25 @@ class SFTPTest(TestCase):
             canWrite=True,
             canDelete=True,
             canSensitive=True,
-            aclOwnershipType=ExperimentACL.OWNER_OWNED)
+            aclOwnershipType=ExperimentACL.OWNER_OWNED,
+        )
         self.acl.save()
 
-        self.dataset = Dataset(description='test dataset1')
+        self.dataset = Dataset(description="test dataset1")
         self.dataset.save()
         self.dataset.experiments.set([self.exp])
         self.dataset.save()
 
         def _build(dataset, filename, url):
-            datafile_content = b"\n".join([b'some data %d' % i for i in range(1000)])
+            datafile_content = b"\n".join([b"some data %d" % i for i in range(1000)])
             filesize = len(datafile_content)
-            datafile = DataFile(
-                dataset=dataset, filename=filename, size=filesize)
+            datafile = DataFile(dataset=dataset, filename=filename, size=filesize)
             datafile.save()
             dfo = DataFileObject(
                 datafile=datafile,
                 storage_box=datafile.get_default_storage_box(),
-                uri=url)
+                uri=url,
+            )
             dfo.file_object = BytesIO(datafile_content)
             dfo.save()
             return datafile
@@ -78,7 +79,7 @@ class SFTPTest(TestCase):
         saved_setting = settings.REQUIRE_DATAFILE_CHECKSUMS
         try:
             settings.REQUIRE_DATAFILE_CHECKSUMS = False
-            _build(self.dataset, 'file.txt', 'path/file.txt')
+            _build(self.dataset, "file.txt", "path/file.txt")
         finally:
             settings.REQUIRE_DATAFILE_CHECKSUMS = saved_setting
 
@@ -90,34 +91,38 @@ class SFTPTest(TestCase):
         sftp_interface.session_started()
 
         exp_sftp_folders = sftp_interface.list_folder(
-            '/home/%s/experiments/' % self.username)
+            "/home/%s/experiments/" % self.username
+        )
         exp_sftp_folder_names = sorted(
-            [sftp_folder.filename for sftp_folder in exp_sftp_folders])
+            [sftp_folder.filename for sftp_folder in exp_sftp_folders]
+        )
         exp_folder_names = sorted(
-                [path_mapper(exp) for exp in Experiment.safe.all(self.user)])
+            [path_mapper(exp) for exp in Experiment.safe.all(user=self.user)]
+        )
         self.assertEqual(exp_sftp_folder_names, exp_folder_names)
 
         ds_sftp_folders = sftp_interface.list_folder(
-            '/home/%s/experiments/%s/'
-            % (self.username, path_mapper(self.exp)))
+            "/home/%s/experiments/%s/" % (self.username, path_mapper(self.exp))
+        )
         ds_sftp_folder_names = sorted(
-            [sftp_folder.filename for sftp_folder in ds_sftp_folders])
+            [sftp_folder.filename for sftp_folder in ds_sftp_folders]
+        )
         self.assertEqual(
-            ds_sftp_folder_names,
-            ['00_all_files', path_mapper(self.dataset)])
+            ds_sftp_folder_names, ["00_all_files", path_mapper(self.dataset)]
+        )
 
         sftp_files = sftp_interface.list_folder(
-            '/home/%s/experiments/%s/%s/'
-            % (self.username, path_mapper(self.exp),
-               path_mapper(self.dataset)))
-        sftp_filenames = sorted(
-            [sftp_file.filename for sftp_file in sftp_files])
-        self.assertEqual(sftp_filenames, ['file.txt'])
+            "/home/%s/experiments/%s/%s/"
+            % (self.username, path_mapper(self.exp), path_mapper(self.dataset))
+        )
+        sftp_filenames = sorted([sftp_file.filename for sftp_file in sftp_files])
+        self.assertEqual(sftp_filenames, ["file.txt"])
 
         server_interface = MyTServerInterface()
         self.assertEqual(
             server_interface.check_auth_password(self.username, self.password),
-            AUTH_SUCCESSFUL)
+            AUTH_SUCCESSFUL,
+        )
 
         # should fail if user is inactive
         self.user.is_active = False
@@ -125,7 +130,8 @@ class SFTPTest(TestCase):
 
         self.assertEqual(
             server_interface.check_auth_password(self.username, self.password),
-            AUTH_FAILED)
+            AUTH_FAILED,
+        )
 
         self.user.is_active = True
         self.user.save()
@@ -159,20 +165,17 @@ QKHf8Ha+rOx3B7Dbljc+Xdpcn9VyRmDlSqzX9aCkr18mNg==
         # Fail if public key not registered
         self.assertEqual(
             server_interface.check_auth_publickey(self.username, private_key),
-            AUTH_FAILED
+            AUTH_FAILED,
         )
 
         SFTPPublicKey.objects.create(
-            user = self.user,
-            name = "TestKey",
-            key_type = "ssh-rsa",
-            public_key = pub_key_str
+            user=self.user, name="TestKey", key_type="ssh-rsa", public_key=pub_key_str
         )
 
         # Succeed if public key is registered
         self.assertEqual(
             server_interface.check_auth_publickey(self.username, private_key),
-            AUTH_SUCCESSFUL
+            AUTH_SUCCESSFUL,
         )
 
         # Should fail if user is inactive
@@ -181,54 +184,53 @@ QKHf8Ha+rOx3B7Dbljc+Xdpcn9VyRmDlSqzX9aCkr18mNg==
 
         self.assertEqual(
             server_interface.check_auth_publickey(self.username, private_key),
-            AUTH_FAILED
+            AUTH_FAILED,
         )
         self.user.is_active = True
         self.user.save()
 
-    @patch('webpack_loader.loader.WebpackLoader.get_bundle')
+    @patch("webpack_loader.loader.WebpackLoader.get_bundle")
     def test_sftp_dynamic_docs_experiment(self, mock_webpack_get_bundle):
         factory = RequestFactory()
         request = factory.get(
-            '/sftp_access/?object_type=experiment&object_id=%s'
-            % self.exp.id)
+            "/sftp_access/?object_type=experiment&object_id=%s" % self.exp.id
+        )
         request.user = self.user
         response = sftp_access(request)
         path_mapper = make_mapper(settings.DEFAULT_PATH_MAPPER, rootdir=None)
         self.assertIn(
             b"sftp://tardis_user1@testserver:2200"
-            b"/home/tardis_user1/experiments/%s"
-            % path_mapper(self.exp).encode(),
-            response.content)
+            b"/home/tardis_user1/experiments/%s" % path_mapper(self.exp).encode(),
+            response.content,
+        )
         self.assertNotEqual(mock_webpack_get_bundle.call_count, 0)
 
-    @patch('webpack_loader.loader.WebpackLoader.get_bundle')
+    @patch("webpack_loader.loader.WebpackLoader.get_bundle")
     def test_sftp_dynamic_docs_dataset(self, mock_webpack_get_bundle):
         factory = RequestFactory()
         request = factory.get(
-            '/sftp_access/?object_type=dataset&object_id=%s'
-            % self.dataset.id)
+            "/sftp_access/?object_type=dataset&object_id=%s" % self.dataset.id
+        )
         request.user = self.user
         response = sftp_access(request)
         path_mapper = make_mapper(settings.DEFAULT_PATH_MAPPER, rootdir=None)
         self.assertIn(
             b"sftp://tardis_user1@testserver:2200"
             b"/home/tardis_user1/experiments/%s/%s"
-            % (path_mapper(self.exp).encode(),
-               path_mapper(self.dataset).encode()),
-            response.content)
+            % (path_mapper(self.exp).encode(), path_mapper(self.dataset).encode()),
+            response.content,
+        )
         self.assertNotEqual(mock_webpack_get_bundle.call_count, 0)
 
     def test_cybderduck_connection_window(self):
         factory = RequestFactory()
-        request = factory.get('/sftp_access/cyberduck/connection.png')
+        request = factory.get("/sftp_access/cyberduck/connection.png")
         request.user = self.user
         response = cybderduck_connection_window(request)
         self.assertEqual(response.status_code, 200)
 
 
 class SFTPDManagementTestCase(TestCase):
-
     def testSFTPDWithoutHostKey(self):
         """
         Attempting to start the SFTPD service without a host key
@@ -238,8 +240,11 @@ class SFTPDManagementTestCase(TestCase):
         settings.SFTP_HOST_KEY = ""
         with self.assertLogs("tardis.apps.sftp", level="ERROR") as logs:
             call_command("sftpd")
-            self.assertEqual(logs.output, [
-                "ERROR:tardis.apps.sftp.management.commands.sftpd:" +
-                "Can't start SFTP server: failed loading SFTP host key"
-            ])
+            self.assertEqual(
+                logs.output,
+                [
+                    "ERROR:tardis.apps.sftp.management.commands.sftpd:"
+                    + "Can't start SFTP server: failed loading SFTP host key"
+                ],
+            )
         settings.SFTP_HOST_KEY = saved_setting

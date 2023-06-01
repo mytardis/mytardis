@@ -71,7 +71,7 @@ def experiment_description(request, experiment_id):
             .filter(dataset__experiments__id=experiment_id)
         )
     else:
-        c["datafiles"] = DataFile.safe.all(request.user).filter(
+        c["datafiles"] = DataFile.safe.all(user=request.user).filter(
             dataset__experiments__id=experiment_id
         )
 
@@ -122,7 +122,7 @@ def experiment_latest_dataset(request, experiment_id):
         )
     else:
         context = dict(
-            datasets=Dataset.safe.all(request.user).filter(
+            datasets=Dataset.safe.all(user=request.user).filter(
                 experiments__id=experiment_id
             )
         )
@@ -142,7 +142,7 @@ def experiment_recent_datasets(request, experiment_id):
         )
     else:
         context = dict(
-            datasets=Dataset.safe.all(request.user).filter(
+            datasets=Dataset.safe.all(user=request.user).filter(
                 experiments__id=experiment_id
             )
         )
@@ -154,7 +154,7 @@ def experiment_recent_datasets(request, experiment_id):
 @never_cache
 @authz.experiment_access_required
 def experiment_dataset_transfer(request, experiment_id):
-    experiments = Experiment.safe.owned(request.user)
+    experiments = Experiment.safe.owned(user=request.user)
 
     def get_json_url_pattern():
         placeholder = "314159"
@@ -251,7 +251,6 @@ def display_datafile_details(request, datafile_id):
 @never_cache
 @authz.datafile_access_required
 def retrieve_parameters(request, datafile_id):
-
     parametersets = DatafileParameterSet.objects.all()
     parametersets = parametersets.filter(datafile__pk=datafile_id).exclude(
         schema__hidden=True
@@ -278,7 +277,6 @@ def retrieve_parameters(request, datafile_id):
 def retrieve_datafile_list(
     request, dataset_id, template_name="tardis_portal/ajax/datafile_list.html"
 ):
-
     from django.template.defaultfilters import filesizeformat
 
     params = {}
@@ -289,7 +287,7 @@ def retrieve_datafile_list(
         ).order_by("filename")
     else:
         dataset_results = (
-            DataFile.safe.all(request.user)
+            DataFile.safe.all(user=request.user)
             .filter(
                 dataset__pk=dataset_id,
             )
@@ -442,8 +440,7 @@ def choose_rights(request, experiment_id):
 def retrieve_owned_exps_list(
     request, template_name="tardis_portal/ajax/exps_list.html"
 ):
-
-    experiments = Experiment.safe.owned(request.user).order_by("-update_time")
+    experiments = Experiment.safe.owned(user=request.user).order_by("-update_time")
 
     try:
         page_num = int(request.GET.get("page", "0"))
@@ -469,8 +466,7 @@ def retrieve_owned_exps_list(
 def retrieve_shared_exps_list(
     request, template_name="tardis_portal/ajax/exps_list.html"
 ):
-
-    experiments = Experiment.safe.shared(request.user).order_by("-update_time")
+    experiments = Experiment.safe.shared(user=request.user).order_by("-update_time")
 
     try:
         page_num = int(request.GET.get("page", "0"))

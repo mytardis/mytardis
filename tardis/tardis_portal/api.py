@@ -161,23 +161,24 @@ class ACLAuthorization(Authorization):
         if bundle.request.user.is_authenticated and bundle.request.user.is_superuser:
             return object_list
         if isinstance(bundle.obj, Experiment):
-            experiments = Experiment.safe.all(bundle.request.user)
+            experiments = Experiment.safe.all(user=bundle.request.user)
             return experiments.filter(id__in=obj_ids)
         if isinstance(bundle.obj, ExperimentAuthor):
-            experiments = Experiment.safe.all(bundle.request.user)
+            experiments = Experiment.safe.all(user=bundle.request.user)
             return ExperimentAuthor.objects.filter(
                 experiment__in=experiments, id__in=obj_ids
             )
         if isinstance(bundle.obj, ExperimentParameterSet):
-            experiments = Experiment.safe.all(bundle.request.user)
+            experiments = Experiment.safe.all(user=bundle.request.user)
             return ExperimentParameterSet.objects.filter(
                 experiment__in=experiments, id__in=obj_ids
             )
         if isinstance(bundle.obj, ExperimentParameter):
-            experiments = Experiment.safe.all(bundle.request.user)
+            experiments = Experiment.safe.all(user=bundle.request.user)
             exp_params = ExperimentParameter.objects.filter(
                 parameterset__experiment__in=experiments, id__in=obj_ids
             )
+
             # Generator to filter sensitive exp_parameters when given an exp id
             def get_exp_param(exp_par):
                 if not exp_par.name.sensitive:
@@ -208,6 +209,7 @@ class ACLAuthorization(Authorization):
                 for dp in object_list
                 if has_access(bundle.request, dp.parameterset.dataset.id, "dataset")
             ]
+
             # Generator to filter sensitive exp_parameters when given an exp id
             def get_set_param(set_par):
                 if not set_par.name.sensitive:
@@ -238,6 +240,7 @@ class ACLAuthorization(Authorization):
                 for dp in object_list
                 if has_access(bundle.request, dp.parameterset.datafile.id, "datafile")
             ]
+
             # Generator to filter sensitive exp_parameters when given an exp id
             def get_file_param(file_par):
                 if not file_par.name.sensitive:
@@ -744,7 +747,7 @@ class ExperimentResource(MyTardisModelResource):
             dataset_count = exp.datasets.all().count()
         else:
             dataset_count = (
-                Dataset.safe.all(bundle.request.user)
+                Dataset.safe.all(user=bundle.request.user)
                 .filter(experiments__id=exp.id)
                 .count()
             )
@@ -852,7 +855,7 @@ class DatasetResource(MyTardisModelResource):
             dataset_datafile_count = dataset.datafile_set.count()
         else:
             dataset_datafile_count = (
-                DataFile.safe.all(bundle.request.user)
+                DataFile.safe.all(user=bundle.request.user)
                 .filter(dataset__id=dataset.id)
                 .count()
             )
@@ -958,8 +961,10 @@ class DatasetResource(MyTardisModelResource):
             ).distinct()
         else:
             dfs = (
-                DataFile.safe.all(request.user).filter(dataset=dataset, directory="")
-                | DataFile.safe.all(request.user).filter(
+                DataFile.safe.all(user=request.user).filter(
+                    dataset=dataset, directory=""
+                )
+                | DataFile.safe.all(user=request.user).filter(
                     dataset=dataset, directory__isnull=True
                 )
             ).distinct()
@@ -1040,7 +1045,7 @@ class DatasetResource(MyTardisModelResource):
         if settings.ONLY_EXPERIMENT_ACLS:
             dfs = DataFile.objects.filter(dataset=dataset, directory=base_dir)
         else:
-            dfs = DataFile.safe.all(request.user).filter(
+            dfs = DataFile.safe.all(user=request.user).filter(
                 dataset=dataset, directory=base_dir
             )
         # walk the directory tree and append files and dirs
@@ -1089,9 +1094,9 @@ class DatasetResource(MyTardisModelResource):
                 dataset__id=dataset_id, directory__startswith=dir_path + "/"
             )
         else:
-            df_list = DataFile.safe.all(request.user).filter(
+            df_list = DataFile.safe.all(user=request.user).filter(
                 dataset__id=dataset_id, directory=dir_path
-            ) | DataFile.safe.all(request.user).filter(
+            ) | DataFile.safe.all(user=request.user).filter(
                 dataset__id=dataset_id, directory__startswith=dir_path + "/"
             )
         ids = [df.id for df in df_list]
@@ -1108,7 +1113,7 @@ class DatasetResource(MyTardisModelResource):
             if settings.ONLY_EXPERIMENT_ACLS:
                 dfs = DataFile.objects.filter(dataset=dataset, directory=part2)
             else:
-                dfs = DataFile.safe.all(request.user).filter(
+                dfs = DataFile.safe.all(user=request.user).filter(
                     dataset=dataset, directory=part2
                 )
             filenames = [df.filename for df in dfs]

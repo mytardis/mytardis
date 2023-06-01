@@ -17,7 +17,7 @@ def project_latest_experiment(request, project_id):
         )
     else:
         context = dict(
-            experiments=Experiment.safe.all(request.user).filter(
+            experiments=Experiment.safe.all(user=request.user).filter(
                 projects__id=project_id
             )
         )
@@ -37,7 +37,7 @@ def project_recent_experiments(request, project_id):
         )
     else:
         context = dict(
-            experiments=Experiment.safe.all(request.user).filter(
+            experiments=Experiment.safe.all(user=request.user).filter(
                 projects__id=project_id
             )
         )

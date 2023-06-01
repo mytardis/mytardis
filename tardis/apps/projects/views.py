@@ -9,6 +9,7 @@ from django.conf import settings
 from django.contrib.auth.decorators import login_required, permission_required
 from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator
+from django.db import transaction
 from django.views.decorators.cache import never_cache
 from django.views.generic.base import TemplateView
 
@@ -18,6 +19,7 @@ from tardis.tardis_portal.shortcuts import (
     return_response_error,
     return_response_not_found,
 )
+from tardis.tardis_portal.auth.decorators import has_write
 from tardis.tardis_portal.models import Experiment, Schema
 from tardis.tardis_portal.views.utils import _redirect_303
 from tardis.tardis_portal.views.pages import _resolve_view
@@ -222,10 +224,15 @@ def edit_project(request, project_id):
     if request.method == "POST":
         form = ProjectForm(request.POST, instance=project, user=request.user)
         if form.is_valid():
-            project.name = form.cleaned_data["name"]
-            project.description = form.cleaned_data["description"]
-
-            project.save()
+            with transaction.atomic():
+                project.name = form.cleaned_data["name"]
+                project.description = form.cleaned_data["description"]
+                project.institution = form.cleaned_data["institution"]
+                for experiment in form.cleaned_data["experiments"]:
+                    if has_write(request, project_id, "experiment"):
+                        # TODO finish this section
+                        pass
+                project.save()
             return _redirect_303("tardis.apps.projects.view_project", project.id)
     else:
         form = ProjectForm(instance=project, user=request.user)
@@ -242,10 +249,10 @@ def my_projects(request):
 
     if settings.ONLY_EXPERIMENT_ACLS:
         owned_projects = Project.objects.filter(
-            experiments__in=Experiment.safe.owned_and_shared(request.user)
+            experiments__in=Experiment.safe.owned_and_shared(user=request.user)
         ).order_by("-start_time")
     else:
-        owned_projects = Project.safe.owned_and_shared(request.user).order_by(
+        owned_projects = Project.safe.owned_and_shared(user=request.user).order_by(
             "-start_time"
         )
     proj_expand_accordion = getattr(settings, "EXPS_EXPAND_ACCORDION", 5)
@@ -282,10 +289,12 @@ def retrieve_owned_proj_list(request, template_name="ajax/proj_list.html"):
 
     if settings.ONLY_EXPERIMENT_ACLS:
         projects = Project.objects.filter(
-            experiments__in=Experiment.safe.owned_and_shared(request.user)
+            experiments__in=Experiment.safe.owned_and_shared(user=request.user)
         ).order_by("-start_time")
     else:
-        projects = Project.safe.owned_and_shared(request.user).order_by("-start_time")
+        projects = Project.safe.owned_and_shared(user=request.user).order_by(
+            "-start_time"
+        )
     try:
         page_num = int(request.GET.get("page", "0"))
     except ValueError:

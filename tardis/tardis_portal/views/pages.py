@@ -143,7 +143,7 @@ class IndexView(TemplateView):
         c["status"] = status
         if request.user.is_authenticated:
             private_experiments = Experiment.safe.owned_and_shared(
-                request.user
+                user=request.user
             ).order_by("-update_time")[:limit]
             c["private_experiments"] = private_experiments
             if len(private_experiments) > 4:
@@ -159,14 +159,16 @@ class IndexView(TemplateView):
             if request.user.is_authenticated:
                 if settings.ONLY_EXPERIMENT_ACLS:
                     private_projects = Project.objects.filter(
-                        experiments__in=Experiment.safe.owned_and_shared(request.user)
+                        experiments__in=Experiment.safe.owned_and_shared(
+                            user=request.user
+                        )
                     ).order_by("-start_time")[:project_limit]
                     public_projects = Project.objects.filter(
                         experiments__in=Experiment.safe.public()
                     ).order_by("-start_time")[:project_limit]
                 else:
                     private_projects = Project.safe.owned_and_shared(
-                        request.user
+                        user=request.user
                     ).order_by("-start_time")[:project_limit]
                     public_projects = Project.safe.public().order_by("-start_time")[
                         :project_limit
@@ -264,7 +266,8 @@ class DatasetView(TemplateView):
                 paginator = Paginator(dataset.datafile_set.all(), pgresults)
             else:
                 paginator = Paginator(
-                    DataFile.safe.all(request.user).filter(dataset=dataset), pgresults
+                    DataFile.safe.all(user=request.user).filter(dataset=dataset),
+                    pgresults,
                 )
 
             try:
@@ -301,7 +304,7 @@ class DatasetView(TemplateView):
             display_preview = authz.has_download_access(request, dataset.id, "dataset")
         else:
             datafile_count = (
-                DataFile.safe.all(request.user).filter(dataset=dataset).count()
+                DataFile.safe.all(user=request.user).filter(dataset=dataset).count()
             )
             # probably too inefficient for lots of Datafiles
             display_preview = any(
@@ -424,7 +427,9 @@ def my_data(request):
     show owned data with credential-based access
     """
 
-    owned_experiments = Experiment.safe.owned(request.user).order_by("-update_time")
+    owned_experiments = Experiment.safe.owned(user=request.user).order_by(
+        "-update_time"
+    )
     exps_expand_accordion = getattr(settings, "EXPS_EXPAND_ACCORDION", 5)
 
     c = {
@@ -440,7 +445,9 @@ def shared(request):
     show shared data with credential-based access
     """
 
-    shared_experiments = Experiment.safe.shared(request.user).order_by("-update_time")
+    shared_experiments = Experiment.safe.shared(user=request.user).order_by(
+        "-update_time"
+    )
     exps_expand_accordion = getattr(settings, "EXPS_EXPAND_ACCORDION", 5)
 
     c = {
