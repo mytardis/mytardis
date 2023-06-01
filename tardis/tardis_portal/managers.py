@@ -242,6 +242,9 @@ class SafeManager(models.Manager):
     def _query_owned_by_group(self, **kwargs):  # group, group_id=None):
         if kwargs.get("group_id") is not None:
             group = Group.objects.get(pk=kwargs["group_id"])
+            kwargs.pop("group_id")
+        else:
+            group = kwargs.get("group")
         if group.id is None:
             return super().get_queryset().none()
         kwargs.pop("group_id")
