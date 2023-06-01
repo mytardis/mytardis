@@ -106,7 +106,7 @@ class SafeManager(models.Manager):
             return obj
         raise PermissionDenied
 
-    def owned(self, user):
+    def owned(self, **kwargs):  # user):
         """
         Return all experiments/datasets/datafiles which are owned by a
         particular user, including those owned by a group of which the user
@@ -116,14 +116,15 @@ class SafeManager(models.Manager):
         :rtype: QuerySet
         """
         # the user must be authenticated
-        if not user.is_authenticated:
+        if not kwargs["user"].is_authenticated:
             return super().get_queryset().none()
-        query = self._query_owned(user)
+        query = self._query_owned(**kwargs)
+        user = kwargs.pop("user")
         for group in user.groups.all():
-            query |= self._query_owned_by_group(group)
+            query |= self._query_owned_by_group(group=group, **kwargs)
         return query.distinct()
 
-    def shared(self, user):
+    def shared(self, **kwargs):
         """
         Return all experiments/datasets/datafiles which are shared with a
         particular user via group membership.
@@ -131,9 +132,9 @@ class SafeManager(models.Manager):
         :returns: QuerySet of exp/set/files shared with user
         :rtype: QuerySet
         """
-        return self._query_shared(user).distinct()
+        return self._query_shared(**kwargs).distinct()
 
-    def owned_and_shared(self, user):
+    def owned_and_shared(self, **kwargs):
         """
         Return all experiments/datasets/datafiles which are either owned by or
         shared with a particular user, including those owned by a group of which
@@ -142,17 +143,17 @@ class SafeManager(models.Manager):
         :returns: QuerySet of exp/set/files owned by or shared with a user
         :rtype: QuerySet
         """
-        return self._query_owned_and_shared(user).distinct()
+        return self._query_owned_and_shared(**kwargs).distinct()
 
-    def public(self):
+    def public(self, **kwargs):
         """
         Return all experiments/datasets/datafiles which are publicly available.
         :returns: QuerySet of exp/set/files that are publicly available
         :rtype: QuerySet
         """
-        return self._query_all_public().distinct()
+        return self._query_all_public(**kwargs).distinct()
 
-    def all(self, user):  # @ReservedAssignment
+    def all(self, **kwargs):  # user): @ReservedAssignment
         """
         Return all experiments/datasets/datafiles that are available to a user,
         including owned, shared, and public objects.
@@ -160,12 +161,12 @@ class SafeManager(models.Manager):
         :returns: QuerySet of all exp/set/files accessible to the user
         :rtype: QuerySet
         """
-        query = self._query_all_public() | self._query_owned_and_shared(user)
+        query = self._query_all_public(**kwargs) | self._query_owned_and_shared(
+            **kwargs
+        )
         return query.distinct()
 
-    def _query_on_acls(
-        self, **kwargs
-    ):  # user=None, group=None, token=None, isOwner=False):
+    def _query_on_acls(self, **kwargs):
         filter_dict = {}
         exclude_dict = {}
         if self.model.get_ct(self.model).model == "project":
@@ -225,60 +226,67 @@ class SafeManager(models.Manager):
         )
         return query
 
-    def _query_owned(self, user, user_id=None):
-        if user_id is not None:
-            user = User.objects.get(pk=user_id)
+    def _query_owned(self, **kwargs):  # user, user_id=None):
+        if kwargs.get("user_id") is not None:
+            user = User.objects.get(pk=kwargs["user_id"])
         if user.id is None:
             return super().get_queryset().none()
-        query = self._query_on_acls(user=user, isOwner=True)
+        kwargs.pop("user_id")
+        query = self._query_on_acls(isOwner=True, **kwargs)
         return query
 
-    def _query_owned_by_group(self, group, group_id=None):
-        if group_id is not None:
-            group = Group.objects.get(pk=group_id)
+    def _query_owned_by_group(self, **kwargs):  # group, group_id=None):
+        if kwargs.get("group_id") is not None:
+            group = Group.objects.get(pk=kwargs["group_id"])
         if group.id is None:
             return super().get_queryset().none()
-        query = self._query_on_acls(group=group, isOwner=True)
+        kwargs.pop("group_id")
+        query = self._query_on_acls(isOwner=True, **kwargs)
         return query
 
-    def _query_shared(self, user):
+    def _query_shared(self, **kwargs):  # user):
         """
         get all shared proj/exp/set/files, not owned ones
         """
         # if the user is not authenticated, only tokens apply
         # this is almost duplicate code of end of has_perm in authorisation.py
         # should be refactored, but cannot think of good way atm
-        if not user.is_authenticated:
+        if not kwargs["user"].is_authenticated:
             from .auth.token_auth import TokenGroupProvider
 
-            query = self._query_on_acls()
+            user = kwargs.pop("user")
+            query = self._query_on_acls(**kwargs)
             tgp = TokenGroupProvider()
             for token in tgp.getGroups(user):
-                query |= self._query_on_acls(token=token)
+                query |= self._query_on_acls(token=token, **kwargs)
             return query
         # for which proj/exp/set/files does the user have read access
         # based on USER permissions?
-        query = self._query_on_acls(user=user)
+        query = self._query_on_acls(**kwargs)
+        user = kwargs.pop("user")
         # for which does proj/exp/set/files does the user have read access
         # based on GROUP permissions
         for group in user.groups.all():
-            query |= self._query_on_acls(group=group)
+            query |= self._query_on_acls(group=group, **kwargs)
         return query
 
-    def _query_owned_and_shared(self, user):
-        query = self._query_shared(user) | self._query_owned(user)
+    def _query_owned_and_shared(self, **kwargs):
+        query = self._query_shared(**kwargs) | self._query_owned(**kwargs)
+        user = kwargs.pop("user")
         for group in user.groups.all():
-            query |= self._query_owned_by_group(group)
+            query |= self._query_owned_by_group(group=group, **kwargs)
         return query
 
-    def _query_all_public(self):
+    def _query_all_public(self, **kwargs):
         # Querying directly on the Exp/Set/File tables for public_flags scales
         # horribly with table size, so query via a PUBLIC_USER who has a read_only
         # ACL with all public objects.
+        if kwargs.get("user"):
+            kwargs.pop("user")
         PUBLIC_USER = User.objects.get(pk=settings.PUBLIC_USER_ID)
-        return self._query_on_acls(user=PUBLIC_USER)
+        return self._query_on_acls(user=PUBLIC_USER, **kwargs)
 
-    def owned_by_user(self, user):
+    def owned_by_user(self, **kwargs):  # user):
         """
         Return all exps/sets/files which are owned by a particular user id
 
@@ -286,17 +294,17 @@ class SafeManager(models.Manager):
         :return: QuerySet of exps/sets/files owned by user
         :rtype: QuerySet
         """
-        query = self._query_owned(user)
+        query = self._query_owned(**kwargs)
         return query
 
-    def owned_by_group(self, group):
+    def owned_by_group(self, **kwargs):
         """
         Return all exps/sets/files that are owned by a particular group
         """
-        query = self._query_owned_by_group(group)
+        query = self._query_owned_by_group(**kwargs)
         return query
 
-    def owned_by_user_id(self, userId):
+    def owned_by_user_id(self, **kwargs):
         """
         Return all exps/sets/files which are owned by a particular user id
 
@@ -304,7 +312,9 @@ class SafeManager(models.Manager):
         :returns: QuerySet of exps/sets/files owned by user id
         :rtype: QuerySet
         """
-        query = self._query_owned(user=None, user_id=userId)
+        if kwargs.get("user"):
+            kwargs.pop("user")
+        query = self._query_owned(**kwargs)
         return query
 
     def user_acls(self, obj_id):
