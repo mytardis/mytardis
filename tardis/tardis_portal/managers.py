@@ -163,7 +163,9 @@ class SafeManager(models.Manager):
         query = self._query_all_public() | self._query_owned_and_shared(user)
         return query.distinct()
 
-    def _query_on_acls(self, user=None, group=None, token=None, isOwner=False):
+    def _query_on_acls(
+        self, **kwargs
+    ):  # user=None, group=None, token=None, isOwner=False):
         filter_dict = {}
         exclude_dict = {}
         if self.model.get_ct(self.model).model == "project":
@@ -191,20 +193,20 @@ class SafeManager(models.Manager):
             OBJECTACL = DatafileACL
             acl_str = "datafileacl"
 
-        if not any([user, group, token, isOwner]):
+        if not any(["user", "group", "token", "isOwner"]) in kwargs:
             return OBJECT.objects.none()
 
-        if user:
+        if "user" in kwargs:
             related = "user"
-            filter_dict[acl_str + "__user"] = user
-        elif group:
+            filter_dict[acl_str + "__user"] = kwargs["user"]
+        elif "group" in kwargs:
             related = "group"
-            filter_dict[acl_str + "__group"] = group
-        elif token:
+            filter_dict[acl_str + "__group"] = kwargs["group"]
+        elif "token" in kwargs:
             related = "token"
-            filter_dict[acl_str + "__token"] = token
+            filter_dict[acl_str + "__token"] = kwargs["token"]
 
-        if isOwner:
+        if "isOwner" in kwargs:
             filter_dict[acl_str + "__isOwner"] = True
         else:
             filter_dict[acl_str + "__isOwner"] = False
@@ -551,9 +553,7 @@ class SafeManager(models.Manager):
 
         result = []
         for a in acl:
-            group = authService.searchGroups(
-                plugin=u"token_group", name=a.experiment.id
-            )
+            group = authService.searchGroups(plugin="token_group", name=a.experiment.id)
             if group:
                 result += group
         return result
