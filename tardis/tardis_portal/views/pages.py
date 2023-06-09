@@ -167,6 +167,9 @@ class IndexView(TemplateView):
                     private_projects = Project.safe.owned_and_shared(
                         user=request.user
                     ).order_by("-start_time")[:project_limit]
+                c["private_projects"] = private_projects
+                c["private_projects_count"] = private_projects.count()
+
             if settings.ONLY_EXPERIMENT_ACLS:
                 public_projects = Project.objects.filter(
                     experiments__in=Experiment.safe.public()
@@ -175,10 +178,7 @@ class IndexView(TemplateView):
                 public_projects = Project.safe.public().order_by("-start_time")[
                     :project_limit
                 ]
-
-            c["private_projects"] = private_projects
             c["public_projects"] = public_projects
-            c["private_projects_count"] = private_projects.count()
             c["proj_expand_accordion"] = 1
 
         return c
