@@ -93,9 +93,9 @@ class SafeManager(models.Manager):
         ACL rules. Raises PermissionDenied if the user does not have access.
 
         :param User user: a User instance
-        :param int obj_id: the ID of the exp/set/file to be edited
-        :returns: Experiment/Dataset/DataFile
-        :rtype: Experiment/Dataset/DataFile
+        :param int obj_id: the ID of the proj/exp/set/file to be edited
+        :returns: Project/Experiment/Dataset/DataFile
+        :rtype: Project/Experiment/Dataset/DataFile
         :raises PermissionDenied:
         """
         obj = super().get(pk=obj_id)
@@ -106,13 +106,13 @@ class SafeManager(models.Manager):
             return obj
         raise PermissionDenied
 
-    def owned(self, **kwargs):  # user):
+    def owned(self, **kwargs):
         """
         Return all experiments/datasets/datafiles which are owned by a
         particular user, including those owned by a group of which the user
         is a member.
-        :param User user: a User instance
-        :returns: QuerySet of exp/set/files owned by user
+        :param dict kwargs: In kwargs: param User user: a User instance
+        :returns: QuerySet of proj/exp/set/files owned by user
         :rtype: QuerySet
         """
         # the user must be authenticated
@@ -124,23 +124,23 @@ class SafeManager(models.Manager):
             query |= self._query_owned_by_group(group=group, **kwargs)
         return query.distinct()
 
-    def shared(self, **kwargs):  # user):
+    def shared(self, **kwargs):
         """
         Return all experiments/datasets/datafiles which are shared with a
         particular user via group membership.
-        :param User user: a User instance
-        :returns: QuerySet of exp/set/files shared with user
+        :param dict kwargs: In kwargs: param User user: a User instance
+        :returns: QuerySet of proj/exp/set/files shared with user
         :rtype: QuerySet
         """
         return self._query_shared(**kwargs).distinct()
 
-    def owned_and_shared(self, **kwargs):  # user):
+    def owned_and_shared(self, **kwargs):
         """
         Return all experiments/datasets/datafiles which are either owned by or
         shared with a particular user, including those owned by a group of which
         the user is a member. This function omits publicly accessible experiments.
-        :param User user: a User instance
-        :returns: QuerySet of exp/set/files owned by or shared with a user
+        :param dict kwargs: In kwargs: param User user: a User instance
+        :returns: QuerySet of proj/exp/set/files owned by or shared with a user
         :rtype: QuerySet
         """
         return self._query_owned_and_shared(**kwargs).distinct()
@@ -148,17 +148,18 @@ class SafeManager(models.Manager):
     def public(self, **kwargs):
         """
         Return all experiments/datasets/datafiles which are publicly available.
-        :returns: QuerySet of exp/set/files that are publicly available
+        :param dict kwargs:
+        :returns: QuerySet of proj/exp/set/files that are publicly available
         :rtype: QuerySet
         """
         return self._query_all_public(**kwargs).distinct()
 
-    def all(self, **kwargs):  # user): @ReservedAssignment
+    def all(self, **kwargs):  # @ReservedAssignment
         """
         Return all experiments/datasets/datafiles that are available to a user,
         including owned, shared, and public objects.
-        :param User user: a User instance
-        :returns: QuerySet of all exp/set/files accessible to the user
+        :param dict kwargs: In kwargs: param User user: a User instance
+        :returns: QuerySet of all proj/exp/set/files accessible to the user
         :rtype: QuerySet
         """
         query = self._query_all_public(**kwargs) | self._query_owned_and_shared(
@@ -167,6 +168,13 @@ class SafeManager(models.Manager):
         return query.distinct()
 
     def _query_on_acls(self, **kwargs):
+        """
+        Performs underlying DB query on objects based upon User/group ACLs
+        :param dict kwargs:
+        :returns: QuerySet as specified by above parent functions
+        :rtype: QuerySet
+        """
+
         filter_dict = {}
         exclude_dict = {}
         if self.model.get_ct(self.model).model == "project":
@@ -226,7 +234,15 @@ class SafeManager(models.Manager):
         )
         return query
 
-    def _query_owned(self, **kwargs):  # user, user_id=None):
+    def _query_owned(self, **kwargs):
+        """
+        Return all experiments/datasets/datafiles that are owned by a user.
+        :param dict kwargs:
+        In kwargs: param User user: a User instance
+        In kwargs: param int user_id: an ID coresponding to a user
+        :returns: QuerySet of all proj/exp/set/files owned by the user
+        :rtype: QuerySet
+        """
         if kwargs.get("user_id") is not None:
             user = User.objects.get(pk=kwargs["user_id"])
             kwargs.pop("user_id")
@@ -240,6 +256,14 @@ class SafeManager(models.Manager):
         return query
 
     def _query_owned_by_group(self, **kwargs):  # group, group_id=None):
+        """
+        Return all experiments/datasets/datafiles that are owned by a group.
+        :param dict kwargs:
+        In kwargs: param Group user: a Group instance
+        In kwargs: param int group_id: an ID coresponding to a group
+        :returns: QuerySet of all proj/exp/set/files owned by the group
+        :rtype: QuerySet
+        """
         if kwargs.get("group_id") is not None:
             group = Group.objects.get(pk=kwargs["group_id"])
             kwargs.pop("group_id")
@@ -250,9 +274,12 @@ class SafeManager(models.Manager):
         query = self._query_on_acls(isOwner=True, **kwargs)
         return query
 
-    def _query_shared(self, **kwargs):  # user):
+    def _query_shared(self, **kwargs):
         """
-        get all shared proj/exp/set/files, not owned ones
+        Return all projects/experiments/datasets/datafiles that are shared with a user.
+        :param dict kwargs: In kwargs: param User user: a User instance
+        :returns: QuerySet of all proj/exp/set/files shared with the user
+        :rtype: QuerySet
         """
         # if the user is not authenticated, only tokens apply
         # this is almost duplicate code of end of has_perm in authorisation.py
@@ -277,6 +304,12 @@ class SafeManager(models.Manager):
         return query
 
     def _query_owned_and_shared(self, **kwargs):
+        """
+        Return all projects/experiments/datasets/datafiles that are owned and shared with a user (inc. group access).
+        :param dict kwargs: In kwargs: param User user: a User instance
+        :returns: QuerySet of all proj/exp/set/files owned by or shared with the user (inc. group access)
+        :rtype: QuerySet
+        """
         query = self._query_shared(**kwargs) | self._query_owned(**kwargs)
         user = kwargs.pop("user")
         for group in user.groups.all():
@@ -284,7 +317,13 @@ class SafeManager(models.Manager):
         return query
 
     def _query_all_public(self, **kwargs):
-        # Querying directly on the Exp/Set/File tables for public_flags scales
+        """
+        Return all projects/experiments/datasets/datafiles that publicly accessible.
+        :param dict kwargs:
+        :returns: QuerySet of all proj/exp/set/files that are publicly accessible
+        :rtype: QuerySet
+        """
+        # Querying directly on the Proj/Exp/Set/File tables for public_flags scales
         # horribly with table size, so query via a PUBLIC_USER who has a read_only
         # ACL with all public objects.
         if kwargs.get("user"):
@@ -292,12 +331,11 @@ class SafeManager(models.Manager):
         PUBLIC_USER = User.objects.get(pk=settings.PUBLIC_USER_ID)
         return self._query_on_acls(user=PUBLIC_USER, **kwargs)
 
-    def owned_by_user(self, **kwargs):  # user):
+    def owned_by_user(self, **kwargs):
         """
-        Return all exps/sets/files which are owned by a particular user id
-
-        :param User user: a User Object
-        :return: QuerySet of exps/sets/files owned by user
+        Return all proj/exp/set/files which are owned by a particular user id
+        :param dict kwargs: In kwargs: param User user: a User instance
+        :return: QuerySet of proj/exp/set/files owned by user
         :rtype: QuerySet
         """
         query = self._query_owned(**kwargs)
@@ -305,17 +343,19 @@ class SafeManager(models.Manager):
 
     def owned_by_group(self, **kwargs):
         """
-        Return all exps/sets/files that are owned by a particular group
+        Return all proj/exp/set/files which are owned by a particular group
+        :param dict kwargs: In kwargs: param Group user: a Group instance
+        :return: QuerySet of proj/exp/set/files owned by group
+        :rtype: QuerySet
         """
         query = self._query_owned_by_group(**kwargs)
         return query
 
     def owned_by_user_id(self, **kwargs):  # userId):
         """
-        Return all exps/sets/files which are owned by a particular user id
-
-        :param int userId: a User ID
-        :returns: QuerySet of exps/sets/files owned by user id
+        Return all proj/exp/set/files which are owned by a particular user id
+        :param dict kwargs: In kwargs: :param int user_id: a User ID
+        :returns: QuerySet of proj/exp/set/files owned by user id
         :rtype: QuerySet
         """
         if kwargs.get("user"):
@@ -325,8 +365,8 @@ class SafeManager(models.Manager):
 
     def user_acls(self, obj_id):
         """
-        Returns a list of ACL rules associated with this exp/set/file.
-        :param obj_id: the ID of the exp/set/file
+        Returns a list of ACL rules associated with this proj/exp/set/file.
+        :param obj_id: the ID of the proj/exp/set/file
         :type obj_id: string
         :returns: QuerySet of ACLs
         :rtype: QuerySet
@@ -361,10 +401,10 @@ class SafeManager(models.Manager):
     def users(self, obj_id):
         """
         Returns a list of users who have ACL rules associated with this
-        exp/set/file.
+        proj/exp/set/file.
 
-        :param int obj_id: the ID of the exp/set/file
-        :returns: QuerySet of Users with exp/set/file access
+        :param int obj_id: the ID of the proj/exp/set/file
+        :returns: QuerySet of Users with proj/exp/set/file access
         :rtype: QuerySet
         """
         acl = self.user_acls(obj_id)
@@ -374,8 +414,8 @@ class SafeManager(models.Manager):
 
     def group_acls(self, obj_id):
         """
-        Returns a list of ACL rules associated with this exp/set/file.
-        :param obj_id: the ID of the exp/set/file
+        Returns a list of ACL rules associated with this proj/exp/set/file.
+        :param obj_id: the ID of the proj/exp/set/file
         :type obj_id: string
         :returns: QuerySet of ACLs
         :rtype: QuerySet
@@ -406,10 +446,10 @@ class SafeManager(models.Manager):
     def groups(self, obj_id):
         """
         Returns a list of groups who have ACL rules associated with this
-        exp/set/file.
+        proj/exp/set/file.
 
-        :param int obj_id: the ID of the exp/set/file
-        :returns: QuerySet of Groups with exp/set/file access
+        :param int obj_id: the ID of the proj/exp/set/file
+        :returns: QuerySet of Groups with proj/exp/set/file access
         :rtype: QuerySet
         """
         acl = self.group_acls(obj_id)
@@ -418,8 +458,8 @@ class SafeManager(models.Manager):
     def user_owned_groups(self, obj_id):
         """
         returns a list of user owned-groups which have ACL rules
-        associated with this exp/set/file
-        :param int obj_id: the ID of the exp/set/file to be edited
+        associated with this proj/exp/set/file
+        :param int obj_id: the ID of the proj/exp/set/file to be edited
         :returns: QuerySet of non system Groups
         :rtype: QuerySet
         """
@@ -449,8 +489,8 @@ class SafeManager(models.Manager):
 
     def group_acls_user_owned(self, obj_id):
         """
-        Returns a list of ACL rules associated with this exp/set/file.
-        :param int obj_id: the ID of the exp/set/file
+        Returns a list of ACL rules associated with this proj/exp/set/file.
+        :param int obj_id: the ID of the proj/exp/set/file
         :returns: QuerySet of ACLs
         :rtype: QuerySet
         """
@@ -479,9 +519,9 @@ class SafeManager(models.Manager):
 
     def group_acls_system_owned(self, obj_id):
         """
-        Returns a list of ACL rules associated with this exp/set/file.
-        :param int obj_id: the ID of the exp/set/file
-        :returns: QuerySet of system-owned ACLs for exp/set/file
+        Returns a list of ACL rules associated with this proj/exp/set/file.
+        :param int obj_id: the ID of the proj/exp/set/file
+        :returns: QuerySet of system-owned ACLs for proj/exp/set/file
         :rtype: QuerySet
         """
         from .models.access_control import ExperimentACL, DatasetACL, DatafileACL
@@ -542,7 +582,7 @@ class SafeManager(models.Manager):
     def external_users(self, obj_id):
         """
         returns a list of groups which have external ACL rules
-        :param int obj_id: the ID of the /exp/set/file to be edited
+        :param int obj_id: the ID of the proj/exp/set/file to be edited
         :returns: list of groups with external ACLs
         :rtype: list
         """
