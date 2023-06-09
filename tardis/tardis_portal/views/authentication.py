@@ -199,7 +199,7 @@ def create_user(request):
     except ValidationError:
         return HttpResponse(
             "Could not create user %s "
-            "(Email address is invalid: %s)" % escape(username, email),
+            "(Email address is invalid: %s)" % (escape(username), escape(email)),
             status=403,
         )
     except:  # FIXME
