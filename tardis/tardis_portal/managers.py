@@ -255,7 +255,7 @@ class SafeManager(models.Manager):
         query = self._query_on_acls(isOwner=True, user=user, **kwargs)
         return query
 
-    def _query_owned_by_group(self, **kwargs):  # group, group_id=None):
+    def _query_owned_by_group(self, **kwargs):
         """
         Return all experiments/datasets/datafiles that are owned by a group.
         :param dict kwargs:
@@ -351,10 +351,10 @@ class SafeManager(models.Manager):
         query = self._query_owned_by_group(**kwargs)
         return query
 
-    def owned_by_user_id(self, **kwargs):  # userId):
+    def owned_by_user_id(self, **kwargs):
         """
         Return all proj/exp/set/files which are owned by a particular user id
-        :param dict kwargs: In kwargs: :param int user_id: a User ID
+        :param dict kwargs:
         :returns: QuerySet of proj/exp/set/files owned by user id
         :rtype: QuerySet
         """

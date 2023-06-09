@@ -19,7 +19,6 @@ from tardis.tardis_portal.shortcuts import (
     return_response_error,
     return_response_not_found,
 )
-from tardis.tardis_portal.auth.decorators import has_write
 from tardis.tardis_portal.models import Experiment, Schema
 from tardis.tardis_portal.views.utils import _redirect_303
 from tardis.tardis_portal.views.pages import _resolve_view
