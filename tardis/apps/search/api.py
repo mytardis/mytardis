@@ -107,28 +107,28 @@ class SchemasAppResource(Resource):
         result_dict = {
             "project": [
                 *{
-                    *Project.safe.all(request.user)
+                    *Project.safe.all(user=request.user)
                     .prefetch_related("projectparameterset")
                     .values_list("projectparameterset__schema__id", flat=True)
                 }
             ],
             "experiment": [
                 *{
-                    *Experiment.safe.all(request.user)
+                    *Experiment.safe.all(user=request.user)
                     .prefetch_related("experimentparameterset")
                     .values_list("experimentparameterset__schema__id", flat=True)
                 }
             ],
             "dataset": [
                 *{
-                    *Dataset.safe.all(request.user)
+                    *Dataset.safe.all(user=request.user)
                     .prefetch_related("datasetparameterset")
                     .values_list("datasetparameterset__schema__id", flat=True)
                 }
             ],
             "datafile": [
                 *{
-                    *DataFile.safe.all(request.user)
+                    *DataFile.safe.all(user=request.user)
                     .prefetch_related("datafileparameterset")
                     .values_list("datafileparameterset__schema__id", flat=True)
                 }
@@ -262,7 +262,6 @@ class SearchAppResource(Resource):
         filter_level = 0
         ms = MultiSearch(index=index_list)
         for idx, obj in enumerate(index_list):
-
             # (1) add user/group criteria to searchers
             query_obj = Q(
                 {
@@ -555,7 +554,6 @@ class SearchAppResource(Resource):
                             filter["target"][1],
                         )
                         if target_objtype == obj:
-
                             # Update the heirarchy level at which the
                             # "parent-in-results" criteria must be applied
                             if filter_level < hierarchy[obj]:
@@ -1117,7 +1115,6 @@ class SearchAppResource(Resource):
             for idx, item in enumerate(results[1:]):
                 # if active filter level higher than current object type: apply "parent-in-result" filter
                 if hierarch[idx] < filter_level:
-
                     parent_ids = [
                         objj["_source"]["id"] for objj in results[idx].hits.hits
                     ]
@@ -1184,7 +1181,6 @@ class SearchAppResource(Resource):
 
                 # Get count of all nested objects and download status
                 if hit["_index"] == "datafile":
-
                     if hit["_source"]["id"] in datafiles_dl:
                         hit["_source"]["userDownloadRights"] = "full"
                         size = hit["_source"]["size"]

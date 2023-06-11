@@ -271,7 +271,6 @@ class ProjectACLAuthorization(Authorization):
 
 
 class InstitutionResource(ModelResource):
-
     # Custom filter for identifiers module based on code example from
     # https://stackoverflow.com/questions/10021749/ \
     # django-tastypie-advanced-filtering-how-to-do-complex-lookups-with-q-objects
@@ -515,7 +514,6 @@ class ProjectResource(ModelResource):
         project_lead = User.objects.get(username=bundle.data["principal_investigator"])
         bundle.data["principal_investigator"] = project_lead
         bundle = super().obj_create(bundle, **kwargs)
-        return bundle
         with transaction.atomic():
             project_lead = get_or_create_user(bundle.data["principal_investigator"])
             bundle.data["principal_investigator"] = project_lead
