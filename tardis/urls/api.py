@@ -97,12 +97,14 @@ if "tardis.apps.projects" in settings.INSTALLED_APPS:
         ProjectACLResource,
         ProjectParameterSetResource,
         ProjectParameterResource,
+        InstitutionResource,
     )
 
     v1_api.register(ProjectResource())
     v1_api.register(ProjectACLResource())
     v1_api.register(ProjectParameterSetResource())
     v1_api.register(ProjectParameterResource())
+    v1_api.register(InstitutionResource())
 
 
 api_urls = [url(r"^", include(v1_api.urls))]

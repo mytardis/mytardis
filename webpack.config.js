@@ -42,8 +42,9 @@ module.exports = {
         tardis_portal_create_project: glob.sync("./assets/js/apps/projects/create_project/*.js"),
         view_project: "./assets/js/apps/projects/view/init.js",
         project_app : "./assets/js/apps/projects/view/index.jsx",
-        tardis_portal_my_projects: glob.sync("./assets/js/apps/projects/my_projects/*.js"),
-        project_badges: "./assets/js/apps/badges/components/ProjectBadges.jsx"
+        my_projects: glob.sync("./assets/js/apps/projects/my_projects/**/*.js"),
+        project_badges: "./assets/js/apps/badges/components/ProjectBadges.jsx",
+
     },
     output: {
         path: path.resolve("./assets/bundles/"),
@@ -87,7 +88,12 @@ module.exports = {
         }),
         new MiniCssExtractPlugin({
             filename: "[name]-[hash].styles.css",
-        })
+        }),
+        new webpack.ProvidePlugin({
+            // Add polyfill for chunks that use the
+            // fetch AJAX function.
+            "fetch": ["whatwg-fetch","fetch"]
+        }),
     ],
     module: {
         rules: [
