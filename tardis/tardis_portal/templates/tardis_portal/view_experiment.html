@@ -68,6 +68,28 @@
             href="mailto:{{ author.email }}">{{ creator_span }}</a>{% endif %}{% if author.url %}<a
             href="{{ author.url }}">{{ creator_span }}</a>{% endif %}{% if not author.email and not author.url %}{{ creator_span }}{% endif %}{% endfor %}
   </span>
+  {% if project_app_enabled and projects %}
+    <div class="row">
+      <div class="col-md-9">
+        <span style="padding-top: 4px">
+          <small>
+          {% if projects|length == 1 %}
+              Related Project:
+          {% else %}
+          Related Projects:
+          {% endif %}
+          {% for project in projects %}
+              <a
+                class="project-link"
+                href="{{ project.get_absolute_url }}">
+              {{ project.name }}
+              </a>
+          {% endfor %}
+          </small>
+        </span>
+      </div>
+    </div>
+  {% endif %}
   <div class="badges" id="badge-{{experiment.id}}" style="text-align: right"></div>
 </div>
 

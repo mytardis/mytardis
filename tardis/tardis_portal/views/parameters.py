@@ -69,7 +69,6 @@ def edit_datafile_par(request, parameterset_id):
 
 
 def edit_parameters(request, parameterset, otype, view_sensitive=False):
-
     parameternames = ParameterName.objects.filter(
         schema__namespace=parameterset.schema.namespace
     )
@@ -109,6 +108,12 @@ def edit_parameters(request, parameterset, otype, view_sensitive=False):
 
         form = DynamicForm()
 
+    # this prefix is added to urls if otype = project
+    # workaround for separate app using communal function
+    project_url = ""
+    if otype == "project":
+        project_url = "/project"
+
     c = {
         "schema": parameterset.schema,
         "form": form,
@@ -117,6 +122,7 @@ def edit_parameters(request, parameterset, otype, view_sensitive=False):
         "success": success,
         "parameterset_id": parameterset.id,
         "valid": valid,
+        "prefix": project_url,
         #'can_view_sensitive': view_sensitive,
     }
 
@@ -150,7 +156,6 @@ def add_experiment_par(request, experiment_id):
 
 
 def add_par(request, parentObject, otype, stype):
-
     all_schema = Schema.objects.filter(type=stype, immutable=False)
 
     if "schema_id" in request.GET:
@@ -193,6 +198,12 @@ def add_par(request, parentObject, otype, stype):
 
         form = DynamicForm()
 
+    # this prefix is added to urls if otype = project
+    # workaround for separate app using communal function
+    project_url = ""
+    if otype == "project":
+        project_url = "/project"
+
     c = {
         "schema": schema,
         "form": form,
@@ -203,6 +214,7 @@ def add_par(request, parentObject, otype, stype):
         "parentObject": parentObject,
         "all_schema": all_schema,
         "schema_id": schema.id,
+        "prefix": project_url,
     }
 
     return render_response_index(request, "tardis_portal/ajax/parameteradd.html", c)

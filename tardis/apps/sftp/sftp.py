@@ -1,6 +1,6 @@
-'''
+"""
 SFTP Server
-'''
+"""
 # pylint: disable=C0411,C0412,C0413
 # disabling import order check for monkey patching
 
@@ -16,22 +16,29 @@ import uuid
 from paramiko.py3compat import StringIO
 
 from django.conf import settings
-from paramiko import InteractiveQuery,  RSAKey, ServerInterface,\
-    SFTPAttributes, SFTPHandle,\
-    SFTPServer, SFTPServerInterface, Transport,\
-    SSHException
-from paramiko import OPEN_SUCCEEDED, OPEN_FAILED_ADMINISTRATIVELY_PROHIBITED,\
-    SFTP_OP_UNSUPPORTED, SFTP_NO_SUCH_FILE
+from paramiko import (
+    InteractiveQuery,
+    RSAKey,
+    ServerInterface,
+    SFTPAttributes,
+    SFTPHandle,
+    SFTPServer,
+    SFTPServerInterface,
+    Transport,
+    SSHException,
+)
+from paramiko import (
+    OPEN_SUCCEEDED,
+    OPEN_FAILED_ADMINISTRATIVELY_PROHIBITED,
+    SFTP_OP_UNSUPPORTED,
+    SFTP_NO_SUCH_FILE,
+)
 from paramiko.common import AUTH_FAILED, AUTH_SUCCESSFUL
 from paramiko.rsakey import RSAKey
 
 from tardis.analytics import tracker
 from tardis.tardis_portal.download import make_mapper
-from tardis.tardis_portal.models import (
-    DataFile,
-    Experiment,
-    User
-)
+from tardis.tardis_portal.models import DataFile, Experiment, User
 from tardis.tardis_portal.util import split_path
 
 from .models import SFTPPublicKey
@@ -39,7 +46,7 @@ from .models import SFTPPublicKey
 logger = logging.getLogger(__name__)
 path_mapper = make_mapper(settings.DEFAULT_PATH_MAPPER, rootdir=None)
 
-paramiko_log = logging.getLogger('paramiko.transport')
+paramiko_log = logging.getLogger("paramiko.transport")
 paramiko_log.disabled = True
 
 
@@ -49,7 +56,6 @@ from django.contrib.auth.models import AnonymousUser  # noqa
 
 
 class DynamicTree(object):
-
     def __init__(self, host_obj=None):
         self.name = None
         self.obj = None  # an object if applicable
@@ -63,11 +69,10 @@ class DynamicTree(object):
         pass
 
     def clear_children(self):
-        self.children = collections.defaultdict(
-            lambda: DynamicTree(self.host_obj))
+        self.children = collections.defaultdict(lambda: DynamicTree(self.host_obj))
 
     def add_path(self, path):
-        path = path.strip('/')
+        path = path.strip("/")
         elems = split_path(path)
         return self.add_path_elems(elems)
 
@@ -85,7 +90,7 @@ class DynamicTree(object):
         new_child.obj = obj
 
     def get_leaf(self, path, update=False):
-        path = path.strip('/')
+        path = path.strip("/")
         elems = collections.deque(split_path(path))
         leaf = self.children.get(elems.popleft())
         if leaf and update:
@@ -97,8 +102,7 @@ class DynamicTree(object):
         return leaf
 
     def update_experiments(self):
-        exps = [(path_mapper(exp), exp)
-                for exp in self.host_obj.experiments]
+        exps = [(path_mapper(exp), exp) for exp in self.host_obj.experiments]
         self.clear_children()
         for exp_name, exp in exps:
             child = self.children[exp_name]
@@ -107,13 +111,12 @@ class DynamicTree(object):
             child.update = child.update_datasets
 
     def update_datasets(self):
-        all_files_name = '00_all_files'
-        datasets = [(path_mapper(ds), ds)
-                    for ds in self.obj.datasets.all()]
+        all_files_name = "00_all_files"
+        datasets = [(path_mapper(ds), ds) for ds in self.obj.datasets.all()]
         self.clear_children()
         for ds_name, ds in datasets:
             if ds_name == all_files_name:
-                ds_name = '%s_dataset' % all_files_name
+                ds_name = "%s_dataset" % all_files_name
             child = self.children[ds_name]
             child.name = ds_name
             child.obj = ds
@@ -125,8 +128,7 @@ class DynamicTree(object):
 
     def update_all_files(self):
         self.clear_children()
-        for df in DataFile.objects.filter(
-                dataset__experiments=self.obj).iterator():
+        for df in DataFile.objects.filter(dataset__experiments=self.obj).iterator():
             self._add_file_entry(df)
 
     def update_dataset_files(self):
@@ -155,7 +157,7 @@ class DynamicTree(object):
             name = orig_name
             while name in children:
                 counter += 1
-                name = '%s_%i' % (orig_name, counter)
+                name = "%s_%i" % (orig_name, counter)
             return name, children[name]
 
         if datafile.directory:
@@ -183,20 +185,19 @@ class MyTSFTPServerInterface(SFTPServerInterface):
         :param dict kwargs:
         """
         self.server = server
-        self.client_ip = kwargs.get('client_ip', '')
+        self.client_ip = kwargs.get("client_ip", "")
 
     @property
     def experiments(self):
         u = self.user.username
         if u not in self._exps_cache:
-            self._exps_cache[u] = {'all': None, 'last_update': None}
-        if self._exps_cache[u]['all'] is None:
-            self._exps_cache[u]['all'] = Experiment.safe.all(self.user)
-            self._exps_cache[u]['last_update'] = time.time()
-        elif self._exps_cache[u]['last_update'] - time.time() > \
-                self._cache_time:
-            self._exps_cache[u]['all']._result_cache = None
-        return self._exps_cache[u]['all']
+            self._exps_cache[u] = {"all": None, "last_update": None}
+        if self._exps_cache[u]["all"] is None:
+            self._exps_cache[u]["all"] = Experiment.safe.all(user=self.user)
+            self._exps_cache[u]["last_update"] = time.time()
+        elif self._exps_cache[u]["last_update"] - time.time() > self._cache_time:
+            self._exps_cache[u]["all"]._result_cache = None
+        return self._exps_cache[u]["all"]
 
     def session_started(self):
         """
@@ -204,14 +205,15 @@ class MyTSFTPServerInterface(SFTPServerInterface):
         """
         self.user = self.server.user
         self.uuid = str(uuid.uuid4())
-        tracker.track_login('sftp', session_id=self.uuid, ip=self.client_ip,
-                            user=self.user)
+        tracker.track_login(
+            "sftp", session_id=self.uuid, ip=self.client_ip, user=self.user
+        )
         self.username = self.server.user.username
         self.cwd = "/home/%s" % self.username
         self.tree = DynamicTree(self)
-        self.tree.name = '/'
+        self.tree.name = "/"
         self.tree.add_path(self.cwd)
-        exp_leaf = self.tree.add_path(os.path.join(self.cwd, 'experiments'))
+        exp_leaf = self.tree.add_path(os.path.join(self.cwd, "experiments"))
         exp_leaf.update = exp_leaf.update_experiments
 
     def session_ended(self):
@@ -219,8 +221,9 @@ class MyTSFTPServerInterface(SFTPServerInterface):
         run cleanup on exceptions or disconnection.
         idea: collect stats and store them in this function
         """
-        tracker.track_logout('sftp', session_id=self.uuid, ip=self.client_ip,
-                             user=self.user)
+        tracker.track_logout(
+            "sftp", session_id=self.uuid, ip=self.client_ip, user=self.user
+        )
 
     def open(self, path, flags, attr):
         """
@@ -261,8 +264,13 @@ class MyTSFTPServerInterface(SFTPServerInterface):
         """
         leaf = self.tree.get_leaf(path)
         tracker.track_download(
-            'sftp', session_id=self.uuid, ip=self.client_ip, user=self.user,
-            total_size=leaf.obj.size, num_files=1)
+            "sftp",
+            session_id=self.uuid,
+            ip=self.client_ip,
+            user=self.user,
+            total_size=leaf.obj.size,
+            num_files=1,
+        )
         return MyTSFTPHandle(leaf.obj, flags, attr)
 
     def list_folder(self, path):
@@ -288,8 +296,7 @@ class MyTSFTPServerInterface(SFTPServerInterface):
         """
         path = os.path.normpath(path)
         leaf = self.tree.get_leaf(path, update=True)
-        stats = [self.stat(os.path.join(path, child))
-                 for child in leaf.children.keys()]
+        stats = [self.stat(os.path.join(path, child)) for child in leaf.children.keys()]
         return stats
 
     def stat(self, path):
@@ -314,7 +321,7 @@ class MyTSFTPServerInterface(SFTPServerInterface):
                 return SFTP_NO_SUCH_FILE
         sftp_stat = SFTPAttributes()
         sftp_stat.filename = leaf.name
-        sftp_stat.st_size = int(getattr(leaf.obj, 'size', 1))
+        sftp_stat.st_size = int(getattr(leaf.obj, "size", 1))
         if not isinstance(leaf.obj, DataFile):
             sftp_stat.st_mode = 0o777 | stat.S_IFDIR
         else:
@@ -326,9 +333,9 @@ class MyTSFTPServerInterface(SFTPServerInterface):
         return sftp_stat
 
     def lstat(self, path):
-        '''
+        """
         symbolic links are not supported
-        '''
+        """
         return self.stat(path)
 
     def canonicalize(self, path):
@@ -341,9 +348,9 @@ class MyTSFTPServerInterface(SFTPServerInterface):
 
 
 class MyTSFTPHandle(SFTPHandle):
-    '''
+    """
     SFTP File Handle
-    '''
+    """
 
     def __init__(self, df, flags=0, optional_args=None):
         """
@@ -358,10 +365,9 @@ class MyTSFTPHandle(SFTPHandle):
         try:
             self.readfile = df.file_object
         except IOError:
-            if getattr(settings, 'DEBUG', False):
+            if getattr(settings, "DEBUG", False):
                 fo = df.file_objects.all()[0]
-                error_string = "%s:%s" % (fo.storage_box.name,
-                                          fo.uri)
+                error_string = "%s:%s" % (fo.storage_box.name, fo.uri)
                 self.readfile = StringIO(error_string)
 
     def stat(self):
@@ -378,17 +384,16 @@ class MyTSFTPHandle(SFTPHandle):
 
 
 class MyTServerInterface(ServerInterface):
-
     def __init__(self):
         super().__init__()
         self.username = None
         self.user = None
 
     def get_allowed_auths(self, username):
-        auth_methods = ['password', 'keyboard-interactive', 'publickey']
+        auth_methods = ["password", "keyboard-interactive", "publickey"]
         # if user_has_key_set_up:
         #     auth_methods.append('publickey')
-        return ','.join(auth_methods)
+        return ",".join(auth_methods)
 
     def myt_auth(self, username, password):
         from tardis.tardis_portal.auth import auth_service
@@ -399,15 +404,14 @@ class MyTServerInterface(ServerInterface):
             user = AnonymousUser()
 
         fake_request = FakeRequest()
-        fake_request.POST = {'username': username,
-                             'password': password}
+        fake_request.POST = {"username": username, "password": password}
         user = auth_service.authenticate(
-            request=fake_request,
-            authMethod=None)  # checks all available methods
+            request=fake_request, authMethod=None
+        )  # checks all available methods
         if user and user.is_authenticated:
             # the following line is Australian Synchrotron specific and will
             # disappear when we start using their newer auth system
-            user.epn_list = fake_request.session.get('_epn_list', [])
+            user.epn_list = fake_request.session.get("_epn_list", [])
             self.username = username
             self.user = user
             return AUTH_SUCCESSFUL
@@ -428,8 +432,7 @@ class MyTServerInterface(ServerInterface):
                 try:
                     user = User.objects.get(username=username)
                 except User.DoesNotExist:
-                    logger.error("User with username %s does not exist.",
-                                 username)
+                    logger.error("User with username %s does not exist.", username)
                 if user.is_active:
                     self.username = username
                     self.user = user
@@ -440,14 +443,14 @@ class MyTServerInterface(ServerInterface):
     def check_auth_interactive(self, username, submethods):
         self.username = username
         query = InteractiveQuery()
-        query.add_prompt('password: ', echo=False)
+        query.add_prompt("password: ", echo=False)
         return query
 
     def check_auth_interactive_response(self, responses):
         return self.myt_auth(self.username, responses[0])
 
     def check_channel_request(self, kind, chanid):
-        if kind == 'session':
+        if kind == "session":
             return OPEN_SUCCEEDED
         return OPEN_FAILED_ADMINISTRATIVELY_PROHIBITED
 
@@ -458,7 +461,7 @@ class MyTSFTPServer(SFTPServer):
     """
 
     def __init__(self, *args, **kwargs):
-        kwargs['client_ip'] = args[0].transport.getpeername()[0]
+        kwargs["client_ip"] = args[0].transport.getpeername()[0]
         super().__init__(*args, **kwargs)
 
 
@@ -470,11 +473,12 @@ class MyTSFTPRequestHandler(socketserver.BaseRequestHandler):
         self.transport = Transport(self.request)
         self.transport.load_server_moduli()
         so = self.transport.get_security_options()
-        so.digests = ('hmac-sha1', )
-        so.compression = ('zlib@openssh.com', 'none')
+        so.digests = ("hmac-sha1",)
+        so.compression = ("zlib@openssh.com", "none")
         self.transport.add_server_key(self.server.host_key)
         self.transport.set_subsystem_handler(
-            'sftp', MyTSFTPServer, MyTSFTPServerInterface)
+            "sftp", MyTSFTPServer, MyTSFTPServerInterface
+        )
 
     def handle(self):
         try:
@@ -487,7 +491,6 @@ class MyTSFTPRequestHandler(socketserver.BaseRequestHandler):
             logger.warning("Socket error: %s" % str(e))
         except Exception as e:
             logger.error("Error: %s" % str(e))
-
 
     def handle_timeout(self):
         self.transport.close()
@@ -514,19 +517,18 @@ class MyTSFTPTCPServer(socketserver.TCPServer):
 
 
 def start_server(host=None, port=None, keyfile=None):
-    '''
+    """
     The SFTP_HOST_KEY setting is required for configuring SFTP access.
     The SFTP_PORT setting defaults to 2200.
 
     See: tardis/default_settings/sftp.py
-    '''
+    """
     if host is None:
         current_site = Site.objects.get_current()
         host = current_site.domain
-    port = port or getattr(settings, 'SFTP_PORT', 2200)
+    port = port or getattr(settings, "SFTP_PORT", 2200)
     try:
-        host_key = RSAKey.from_private_key(
-            keyfile or StringIO(settings.SFTP_HOST_KEY))
+        host_key = RSAKey.from_private_key(keyfile or StringIO(settings.SFTP_HOST_KEY))
     except:
         raise SSHException("failed loading SFTP host key")
     server = MyTSFTPTCPServer((host, port), host_key=host_key)

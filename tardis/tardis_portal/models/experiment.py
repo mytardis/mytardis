@@ -169,7 +169,7 @@ class Experiment(models.Model):
 
         if settings.ONLY_EXPERIMENT_ACLS:
             return DataFile.objects.filter(dataset__experiments=self)
-        return DataFile.safe.all(user).filter(dataset__experiments=self)
+        return DataFile.safe.all(user=user).filter(dataset__experiments=self)
 
     def get_download_urls(self):
         urls = {}
@@ -307,7 +307,6 @@ class Experiment(models.Model):
 
 
 class ExperimentAuthor(models.Model):
-
     experiment = models.ForeignKey(Experiment, on_delete=models.CASCADE)
     author = models.CharField(max_length=255)
     institution = models.CharField(max_length=255, blank=True, null=True)

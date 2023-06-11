@@ -136,7 +136,7 @@ class Dataset(models.Model):
 
         if settings.ONLY_EXPERIMENT_ACLS:
             return DataFile.objects.filter(dataset__id=self.id)
-        return DataFile.safe.all(user).filter(dataset__id=self.id)
+        return DataFile.safe.all(user=user).filter(dataset__id=self.id)
 
     def get_absolute_url(self):
         """Return the absolute url to the current ``Dataset``"""

@@ -5,7 +5,7 @@
   Parameters saved successfully.
 {% else %}
   <form id="add_metadata_form"
-        action='/ajax/add_{{type}}_parameters/{{parentObject.id}}/{{schema.id}}/'
+        action='{{prefix}}/ajax/add_{{type}}_parameters/{{parentObject.id}}/{{schema.id}}/'
         method='post' data-type="{{type}}" data-parent_object_id="{{parentObject.id}}">
     {% csrf_token %}
     <div class="form-horizontal">

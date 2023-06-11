@@ -1,0 +1,35 @@
+{% load capture %}
+
+{% if has_write_permissions %}
+<div class="pull-right">
+  <a title="Add"
+     href="{% url 'tardis.apps.projects.views.add_project_par' project.id %}"
+     class="add-metadata btn btn-outline-secondary btn-sm"
+     style="margin-right: 20px">
+    <i class="fa fa-plus"></i>
+    Add Project Metadata
+  </a>
+</div>
+{% endif %}
+<h3>Project Metadata</h3>
+<div class="info-box">
+{% for parameterset in parametersets %}
+  {% capture as edit_control %}
+   {% if has_write_permissions and not parameterset.schema.immutable %}
+   <div class="pull-right">
+       <a class="edit-metadata btn btn-sm btn-outline-secondary" href="{% url 'tardis.apps.projects.views.edit_project_par' parameterset.id %}">
+          <i class="fa fa-pencil"></i>
+          Edit
+       </a>
+   </div>
+   {% endif %}
+  {% endcapture %}
+    <div style="margin-top: 10px">
+      {% include "tardis_portal/ajax/parameter_table.html" with parameters=parameterset.projectparameter_set.all can_view_sensitive=has_sensitive_permissions %}
+    </div>
+{% empty %}
+    <div>
+        There is no metadata for this project.
+    </div>
+{% endfor %}
+</div>  <!-- .info-box -->

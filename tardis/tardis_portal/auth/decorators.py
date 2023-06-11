@@ -43,20 +43,27 @@ from ..shortcuts import return_response_error
 
 
 def get_accessible_experiments(request):
-    return Experiment.safe.all(request.user)
+    return Experiment.safe.all(user=request.user)
 
 
 def get_accessible_experiments_for_dataset(request, dataset_id):
-    experiments = Experiment.safe.all(request.user)
+    experiments = Experiment.safe.all(user=request.user)
     return experiments.filter(datasets__id=dataset_id)
 
 
+def get_accessible_projects_for_experiment(request, experiment_id):
+    from tardis.apps.projects.models import Project
+
+    projects = Project.safe.all(user=request.user)
+    return projects.filter(experiments__id=experiment_id)
+
+
 def get_shared_experiments(request):
-    return Experiment.safe.shared(request.user)
+    return Experiment.safe.shared(user=request.user)
 
 
 def get_owned_experiments(request):
-    return Experiment.safe.owned(request.user)
+    return Experiment.safe.owned(user=request.user)
 
 
 def get_accessible_datafiles_for_user(request):
@@ -71,7 +78,7 @@ def get_accessible_datafiles_for_user(request):
 
 def has_ownership(request, obj_id, ct_type):
     if ct_type == "experiment":
-        return Experiment.safe.owned(request.user).filter(pk=obj_id).exists()
+        return Experiment.safe.owned(user=request.user).filter(pk=obj_id).exists()
 
     if settings.ONLY_EXPERIMENT_ACLS:
         if ct_type == "project":
@@ -98,11 +105,11 @@ def has_ownership(request, obj_id, ct_type):
         if ct_type == "project":
             from tardis.apps.projects.models import Project
 
-            return Project.safe.owned(request.user).filter(pk=obj_id).exists()
+            return Project.safe.owned(user=request.user).filter(pk=obj_id).exists()
         if ct_type == "dataset":
-            return Dataset.safe.owned(request.user).filter(pk=obj_id).exists()
+            return Dataset.safe.owned(user=request.user).filter(pk=obj_id).exists()
         if ct_type == "datafile":
-            return DataFile.safe.owned(request.user).filter(pk=obj_id).exists()
+            return DataFile.safe.owned(user=request.user).filter(pk=obj_id).exists()
     return False
 
 
@@ -122,7 +129,7 @@ def has_X_access(request, obj_id, ct_type, perm_type):
                         has_X_access(request, experiment.id, "experiment", perm_type)
                         for experiment in project.experiments.all()
                     )
-                except (Project.DoesNotExist):
+                except Project.DoesNotExist:
                     return False
             if ct_type == "dataset":
                 dataset = Dataset.objects.get(id=obj_id)
@@ -146,7 +153,7 @@ def has_X_access(request, obj_id, ct_type, perm_type):
                     obj = Project.objects.get(id=obj_id)
                     if (perm_type == "change") & obj.locked:
                         return False
-                except (Project.DoesNotExist):
+                except Project.DoesNotExist:
                     return False
             if ct_type == "dataset":
                 obj = Dataset.objects.get(id=obj_id)
@@ -210,6 +217,27 @@ def group_ownership_required(f):
         if not (is_group_admin(request, kwargs["group_id"]) or user.is_superuser):
             return return_response_error(request)
         return f(request, *args, **kwargs)
+
+    wrap.__doc__ = f.__doc__
+    wrap.__name__ = f.__name__
+    return wrap
+
+
+def project_access_required(f):
+    def wrap(*args, **kwargs):
+        # We find the request as either the first or second argument.
+        # This is so it can be used for the 'get' method on class-based
+        # views (where the first argument is 'self') and also with traditional
+        # view functions (where the first argument is the request).
+        # TODO: An alternative would be to create a mixin for the ProjectView
+        #       and similar classes, like AccessRequiredMixin
+        request = args[0]
+        if not isinstance(request, HttpRequest):
+            request = args[1]
+
+        if not has_access(request, kwargs["project_id"], "project"):
+            return return_response_error(request)
+        return f(*args, **kwargs)
 
     wrap.__doc__ = f.__doc__
     wrap.__name__ = f.__name__
@@ -323,7 +351,6 @@ def dataset_access_required(f):
 
 def datafile_access_required(f):
     def wrap(request, *args, **kwargs):
-
         if not has_access(request, kwargs["datafile_id"], "datafile"):
             return return_response_error(request)
         return f(request, *args, **kwargs)
@@ -335,8 +362,18 @@ def datafile_access_required(f):
 
 def write_permissions_required(f):
     def wrap(request, *args, **kwargs):
-
         if not has_write(request, kwargs["experiment_id"], "experiment"):
+            return return_response_error(request)
+        return f(request, *args, **kwargs)
+
+    wrap.__doc__ = f.__doc__
+    wrap.__name__ = f.__name__
+    return wrap
+
+
+def project_write_permissions_required(f):
+    def wrap(request, *args, **kwargs):
+        if not has_write(request, kwargs["project_id"], "project"):
             return return_response_error(request)
         return f(request, *args, **kwargs)
 
@@ -361,7 +398,6 @@ def dataset_write_permissions_required(f):
 
 def delete_permissions_required(f):
     def wrap(request, *args, **kwargs):
-
         if not has_delete_permissions(request, kwargs["experiment_id"]):
             return return_response_error(request)
         return f(request, *args, **kwargs)

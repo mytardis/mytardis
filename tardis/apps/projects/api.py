@@ -163,6 +163,7 @@ class ProjectACLAuthorization(Authorization):
                 for pp in object_list
                 if has_access(bundle.request, pp.parameterset.project.id, "project")
             ]
+
             # Generator to filter sensitive exp_parameters when given an exp id
             def get_set_param(set_par):
                 if not set_par.name.sensitive:
@@ -429,7 +430,9 @@ class ProjectResource(ModelResource):
         bundle.data["size"] = size
         # Both Macro and Micro ACLs route through ExperimentACLs for this
         project_experiment_count = (
-            Experiment.safe.all(bundle.request.user).filter(projects=project).count()
+            Experiment.safe.all(user=bundle.request.user)
+            .filter(projects=project)
+            .count()
         )
         bundle.data["experiment_count"] = project_experiment_count
         project_dataset_count = project.get_datasets(bundle.request.user).count()
@@ -458,12 +461,13 @@ class ProjectResource(ModelResource):
             ),
         ]
 
-    '''def hydrate_m2m(self, bundle):
+    def hydrate_m2m(self, bundle):
         """
-        Create experiment-dataset associations first, because they affect
+        Create project-experiment associations first, in case they affect
         authorization for adding other related resources, e.g. metadata
         """
         if getattr(bundle.obj, "id", False):
+            project = bundle.obj
             for exp_uri in bundle.data.get("experiments", []):
                 try:
                     exp = ExperimentResource.get_via_uri(
@@ -472,18 +476,35 @@ class ProjectResource(ModelResource):
                     bundle.obj.experiments.add(exp)
                 except NotFound:
                     pass
-        # acls = process_acls(bundle)
-        # if acls:
-        #    bulk_replace_existing_acls(acls)
-        # if "admins" in bundle.data.keys():
-        #    bundle.data.pop("admins")
-        # if "admin_groups" in bundle.data.keys():
-        #    bundle.data.pop("admin_groups")
-        # if "members" in bundle.data.keys():
-        #    bundle.data.pop("members")
-        # if "member_groups" in bundle.data.keys():
-        #    bundle.data.pop("member_groups")
-        return super().hydrate_m2m(bundle)'''
+            if not settings.ONLY_EXPERIMENT_ACLS:
+                # ACL for ingestor
+                acl = ProjectACL(
+                    project=project,
+                    user=bundle.request.user,
+                    canRead=True,
+                    canDownload=True,
+                    canWrite=True,
+                    canDelete=True,
+                    canSensitive=True,
+                    isOwner=True,
+                    aclOwnershipType=ProjectACL.OWNER_OWNED,
+                )
+                acl.save()
+                if bundle.request.user.id != project.principal_investigator.id:
+                    # and for PI
+                    acl = ProjectACL(
+                        project=project,
+                        user=project.principal_investigator,
+                        canRead=True,
+                        canDownload=True,
+                        canWrite=True,
+                        canDelete=True,
+                        canSensitive=True,
+                        isOwner=True,
+                        aclOwnershipType=ProjectACL.OWNER_OWNED,
+                    )
+                    acl.save()
+        return super().hydrate_m2m(bundle)
 
     def obj_create(self, bundle, **kwargs):
         """Currently not tested for failed db transactions as sqlite does not
@@ -491,6 +512,10 @@ class ProjectResource(ModelResource):
         """
         user = bundle.request.user
         bundle.data["created_by"] = user
+        project_lead = User.objects.get(username=bundle.data["principal_investigator"])
+        bundle.data["principal_investigator"] = project_lead
+        bundle = super().obj_create(bundle, **kwargs)
+        return bundle
         with transaction.atomic():
             project_lead = get_or_create_user(bundle.data["principal_investigator"])
             bundle.data["principal_investigator"] = project_lead
@@ -563,7 +588,7 @@ class ProjectResource(ModelResource):
             return HttpResponseForbidden()
 
         # Both Macro and Micro ACLs route through ExperimentACLs for this
-        exp_list = Experiment.safe.all(request.user).filter(projects=project_id)
+        exp_list = Experiment.safe.all(user=request.user).filter(projects=project_id)
 
         exp_list = {"objects": [*exp_list.values("id", "title")]}
         return JsonResponse(exp_list, status=200, safe=False)

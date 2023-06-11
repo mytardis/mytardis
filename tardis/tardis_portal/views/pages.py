@@ -15,7 +15,6 @@ from django.contrib.sites.shortcuts import get_current_site
 from django.core.exceptions import PermissionDenied, ImproperlyConfigured
 from django.core.paginator import Paginator, EmptyPage, InvalidPage
 from django.urls import reverse
-from django.db.models import Prefetch
 from django.db import connection
 from django.http import HttpResponse, HttpResponseForbidden, JsonResponse
 from django.views.decorators.cache import cache_page
@@ -144,16 +143,12 @@ class IndexView(TemplateView):
         c["status"] = status
         if request.user.is_authenticated:
             private_experiments = Experiment.safe.owned_and_shared(
-                request.user
+                user=request.user
             ).order_by("-update_time")[:limit]
             c["private_experiments"] = private_experiments
             if len(private_experiments) > 4:
                 limit = 4
-        public_experiments = (
-            Experiment.objects.exclude(public_access=Experiment.PUBLIC_ACCESS_NONE)
-            .exclude(public_access=Experiment.PUBLIC_ACCESS_EMBARGO)
-            .order_by("-update_time")[:limit]
-        )
+        public_experiments = Experiment.safe.public().order_by("-update_time")[:limit]
         c["public_experiments"] = public_experiments
         c["exps_expand_accordion"] = 1
 
@@ -162,22 +157,29 @@ class IndexView(TemplateView):
 
             project_limit = 4
             if request.user.is_authenticated:
-
                 if settings.ONLY_EXPERIMENT_ACLS:
-                    private_projects = Project.objects.prefetch_related(
-                        Prefetch(
-                            "experiments",
-                            queryset=Experiment.safe.owned_and_shared(request.user),
+                    private_projects = Project.objects.filter(
+                        experiments__in=Experiment.safe.owned_and_shared(
+                            user=request.user
                         )
                     ).order_by("-start_time")[:project_limit]
                 else:
                     private_projects = Project.safe.owned_and_shared(
-                        request.user
+                        user=request.user
                     ).order_by("-start_time")[:project_limit]
-
                 c["private_projects"] = private_projects
                 c["private_projects_count"] = private_projects.count()
-                c["proj_expand_accordion"] = 1
+
+            if settings.ONLY_EXPERIMENT_ACLS:
+                public_projects = Project.objects.filter(
+                    experiments__in=Experiment.safe.public()
+                ).order_by("-start_time")[:project_limit]
+            else:
+                public_projects = Project.safe.public().order_by("-start_time")[
+                    :project_limit
+                ]
+            c["public_projects"] = public_projects
+            c["proj_expand_accordion"] = 1
 
         return c
 
@@ -266,7 +268,8 @@ class DatasetView(TemplateView):
                 paginator = Paginator(dataset.datafile_set.all(), pgresults)
             else:
                 paginator = Paginator(
-                    DataFile.safe.all(request.user).filter(dataset=dataset), pgresults
+                    DataFile.safe.all(user=request.user).filter(dataset=dataset),
+                    pgresults,
                 )
 
             try:
@@ -303,7 +306,7 @@ class DatasetView(TemplateView):
             display_preview = authz.has_download_access(request, dataset.id, "dataset")
         else:
             datafile_count = (
-                DataFile.safe.all(request.user).filter(dataset=dataset).count()
+                DataFile.safe.all(user=request.user).filter(dataset=dataset).count()
             )
             # probably too inefficient for lots of Datafiles
             display_preview = any(
@@ -399,7 +402,6 @@ class DatasetView(TemplateView):
 
 
 def about(request):
-
     c = {
         "subtitle": "About",
         "about_pressed": True,
@@ -427,7 +429,9 @@ def my_data(request):
     show owned data with credential-based access
     """
 
-    owned_experiments = Experiment.safe.owned(request.user).order_by("-update_time")
+    owned_experiments = Experiment.safe.owned(user=request.user).order_by(
+        "-update_time"
+    )
     exps_expand_accordion = getattr(settings, "EXPS_EXPAND_ACCORDION", 5)
 
     c = {
@@ -443,7 +447,9 @@ def shared(request):
     show shared data with credential-based access
     """
 
-    shared_experiments = Experiment.safe.shared(request.user).order_by("-update_time")
+    shared_experiments = Experiment.safe.shared(user=request.user).order_by(
+        "-update_time"
+    )
     exps_expand_accordion = getattr(settings, "EXPS_EXPAND_ACCORDION", 5)
 
     c = {
@@ -551,6 +557,13 @@ class ExperimentView(TemplateView):
             c["push_to_url"] = reverse(
                 "tardis.apps.push_to.views.initiate_push_experiment",
                 kwargs=push_to_args,
+            )
+
+        # "project_app_enabled" is specified globally for all templates
+        # no need to specify here
+        if "tardis.apps.projects" in settings.INSTALLED_APPS:
+            c["projects"] = authz.get_accessible_projects_for_experiment(
+                request, experiment.id
             )
 
         c["subtitle"] = experiment.title
@@ -701,7 +714,6 @@ def public_data(request):
 @permission_required("tardis_portal.add_experiment")
 @login_required
 def create_experiment(request, template_name="tardis_portal/create_experiment.html"):
-
     """Create a new experiment view.
 
     :param request: a HTTP Request instance

@@ -19,7 +19,7 @@
           </div>
         </div>
 		    <div class="form-group row">
-          <label class="col-form-label col-md-2 " for="title">Principal Investigator (PI)</label>
+          <label class="col-form-label col-md-2 " for="pi">Principal Investigator (PI)</label>
           <div class=" col-md-9 ">
             {{ form.principal_investigator | add_class:"form-control" }}
           </div>
@@ -31,9 +31,15 @@
           </div>
         </div>
         <div class="form-group row">
-          <label class="col-form-label col-md-2 " for="authors">Institution</label>
+          <label class="col-form-label col-md-2 " for="institution">Institution</label>
           <div class=" col-md-9 ">
             {{ form.institution | add_class:"form-control" }}
+          </div>
+        </div>
+        <div class="form-group row">
+          <label class="col-form-label col-md-2 " for="experiments">Experiments</label>
+          <div class=" col-md-9 ">
+            {{ form.experiments | add_class:"form-control" }}
           </div>
         </div>
         <div class="form-group row">

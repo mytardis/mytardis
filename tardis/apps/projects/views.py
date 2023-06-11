@@ -9,7 +9,7 @@ from django.conf import settings
 from django.contrib.auth.decorators import login_required, permission_required
 from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator
-from django.db.models import Prefetch
+from django.db import transaction
 from django.views.decorators.cache import never_cache
 from django.views.generic.base import TemplateView
 
@@ -19,12 +19,12 @@ from tardis.tardis_portal.shortcuts import (
     return_response_error,
     return_response_not_found,
 )
-from tardis.tardis_portal.models import Experiment
+from tardis.tardis_portal.models import Experiment, Schema
 from tardis.tardis_portal.views.utils import _redirect_303
 from tardis.tardis_portal.views.pages import _resolve_view
+from tardis.tardis_portal.views.parameters import add_par, edit_parameters
 
-
-from .models import Project, ProjectACL
+from .models import Project, ProjectACL, ProjectParameterSet
 from .forms import ProjectForm
 
 logger = logging.getLogger(__name__)
@@ -32,6 +32,7 @@ logger = logging.getLogger(__name__)
 
 class ProjectView(TemplateView):
     template_name = "view_project.html"
+
     # TODO: Can me make this a generic function like site_routed_view
     #       that will take an Experiment, Dataset or DataFile and
     #       the associated routing list from settings ?
@@ -84,13 +85,29 @@ class ProjectView(TemplateView):
         # This might need to be more complex to account for users
         c = super().get_context_data(**kwargs)
 
-        c["project"] = project
-        c["has_write_permissions"] = authz.has_write(request, project.id, "project")
-        c["has_download_permissions"] = authz.has_download_access(
-            request, project.id, "project"
-        )
         if request.user.is_authenticated:
-            c["is_owner"] = authz.has_ownership(request, project.id, "project")
+            is_owner = authz.has_ownership(request, project.id, "project")
+        else:
+            is_owner = None
+
+        c.update(
+            {
+                "project": project,
+                "has_write_permissions": authz.has_write(
+                    request, project.id, "project"
+                ),
+                "has_download_permissions": authz.has_download_access(
+                    request, project.id, "project"
+                ),
+                "has_sensitive_permissions": authz.has_sensitive_access(
+                    request, project.id, "project"
+                ),
+                "is_owner": is_owner,
+                "parametersets": project.projectparameterset_set.exclude(
+                    schema__hidden=True
+                ),
+            }
+        )
 
         # _add_protocols_and_organizations(request, project, c)
         return c
@@ -131,7 +148,6 @@ class ProjectView(TemplateView):
 @permission_required("tardis_portal.add_project")
 @login_required
 def create_project(request):
-
     c = {
         "subtitle": "Create Project",
         "user_id": request.user.id,
@@ -139,60 +155,86 @@ def create_project(request):
 
     # Process form or prepopulate it
     if request.method == "POST":
-        form = ProjectForm(request.POST)
+        form = ProjectForm(request.POST, user=request.user)
         if form.is_valid():
-            project = Project()
-            project.name = form.cleaned_data["name"]
-            # project.raid = form.cleaned_data["raid"]
-            project.description = form.cleaned_data["description"]
-            project.principal_investigator = form.cleaned_data["principal_investigator"]
-            project.save()
-            institutions = form.cleaned_data.get("institution")
-            project.institution.add(*institutions)
-            project.save()
+            project = Project(created_by=request.user)
+            experiments = form.cleaned_data.get("experiments")
+            if settings.ONLY_EXPERIMENT_ACLS and not experiments:
+                c["status"] = "Please specify one or more experiments."
+            else:
+                project.name = form.cleaned_data["name"]
+                project.description = form.cleaned_data["description"]
+                project.principal_investigator = form.cleaned_data[
+                    "principal_investigator"
+                ]
+                project.save()
+                institutions = form.cleaned_data.get("institution")
+                project.institution.add(*institutions)
+                project.experiments.add(*experiments)
+                project.save()
+                # add default ACL
+                acl = ProjectACL(
+                    project=project,
+                    user=request.user,
+                    canRead=True,
+                    canDownload=True,
+                    canWrite=True,
+                    canDelete=True,
+                    canSensitive=True,
+                    isOwner=True,
+                    aclOwnershipType=ProjectACL.OWNER_OWNED,
+                )
+                acl.save()
+                if request.user.id != project.principal_investigator.id:
+                    # add default ACL
+                    acl = ProjectACL(
+                        project=project,
+                        user=project.principal_investigator,
+                        canRead=True,
+                        canDownload=True,
+                        canWrite=True,
+                        canDelete=True,
+                        canSensitive=True,
+                        isOwner=True,
+                        aclOwnershipType=ProjectACL.OWNER_OWNED,
+                    )
+                    acl.save()
 
-            # add default ACL
-            acl = ProjectACL(
-                project=project,
-                user=request.user,
-                canRead=True,
-                canDownload=True,
-                canWrite=True,
-                canDelete=True,
-                canSensitive=True,
-                isOwner=True,
-                aclOwnershipType=ProjectACL.OWNER_OWNED,
-            )
-            acl.save()
+                request.POST = {"status": "Project Created."}
+                return _redirect_303("tardis.apps.projects.view_project", project.id)
 
-            return _redirect_303("tardis.apps.projects.create_project", project.id)
+        if c["status"] != "Please specify one or more experiments.":
+            c["status"] = "Errors exist in form."
+        c["error"] = "true"
     else:
-        form = ProjectForm()
+        form = ProjectForm(user=request.user)
+    c["form"] = form
 
-    c = {"form": form}
     return render_response_index(request, "create_project.html", c)
 
 
 @login_required
+@permission_required("tardis_portal.change_project")
+@authz.project_write_permissions_required
 def edit_project(request, project_id):
-
     project = Project.objects.get(id=project_id)
 
     # Process form or prepopulate it
     if request.method == "POST":
-        form = ProjectForm(request.POST)
+        form = ProjectForm(request.POST, instance=project, user=request.user)
         if form.is_valid():
-            project = Project()
-            project.name = form.cleaned_data["name"]
-            project.raid = form.cleaned_data["raid"]
-            project.description = form.cleaned_data["description"]
-            project.owner = form.cleaned_data["owner"]
-            project.contact = form.cleaned_data["contact"]
-            project.member = form.cleaned_data["member"]
-            project.save()
+            with transaction.atomic():
+                project.name = form.cleaned_data["name"]
+                project.description = form.cleaned_data["description"]
+                project.institution = form.cleaned_data["institution"]
+                # for experiment in form.cleaned_data["experiments"]:
+                #    if has_write(request, project_id, "experiment"):
+                #        # TODO finish this section
+                #        pass
+                project.save()
             return _redirect_303("tardis.apps.projects.view_project", project.id)
     else:
-        form = ProjectForm(instance=project)
+        form = ProjectForm(instance=project, user=request.user)
 
     c = {"form": form, "project": project}
     return render_response_index(request, "create_project.html", c)
@@ -205,13 +247,11 @@ def my_projects(request):
     """
 
     if settings.ONLY_EXPERIMENT_ACLS:
-        owned_projects = Project.objects.prefetch_related(
-            Prefetch(
-                "experiments", queryset=Experiment.safe.owned_and_shared(request.user)
-            )
+        owned_projects = Project.objects.filter(
+            experiments__in=Experiment.safe.owned_and_shared(user=request.user)
         ).order_by("-start_time")
     else:
-        owned_projects = Project.safe.owned_and_shared(request.user).order_by(
+        owned_projects = Project.safe.owned_and_shared(user=request.user).order_by(
             "-start_time"
         )
     proj_expand_accordion = getattr(settings, "EXPS_EXPAND_ACCORDION", 5)
@@ -222,23 +262,38 @@ def my_projects(request):
     return render_response_index(request, "my_projects.html", c)
 
 
+def public_projects(request):
+    """
+    list of public projects
+    """
+
+    if settings.ONLY_EXPERIMENT_ACLS:
+        public_projects = Project.objects.filter(
+            experiments__in=Experiment.safe.public()
+        ).order_by("-start_time")
+    else:
+        public_projects = Project.safe.public().order_by("-start_time")
+
+    c = {"public_projects": public_projects}
+    return render_response_index(request, "public_projects.html", c)
+
+
 @never_cache
 @login_required
 def retrieve_owned_proj_list(request, template_name="ajax/proj_list.html"):
-
     projects = []
 
     if "tardis.apps.projects" in settings.INSTALLED_APPS:
         from tardis.apps.projects.models import Project
 
     if settings.ONLY_EXPERIMENT_ACLS:
-        projects = Project.objects.prefetch_related(
-            Prefetch(
-                "experiments", queryset=Experiment.safe.owned_and_shared(request.user)
-            )
+        projects = Project.objects.filter(
+            experiments__in=Experiment.safe.owned_and_shared(user=request.user)
         ).order_by("-start_time")
     else:
-        projects = Project.safe.owned_and_shared(request.user).order_by("-start_time")
+        projects = Project.safe.owned_and_shared(user=request.user).order_by(
+            "-start_time"
+        )
     try:
         page_num = int(request.GET.get("page", "0"))
     except ValueError:
@@ -256,3 +311,24 @@ def retrieve_owned_proj_list(request, template_name="ajax/proj_list.html"):
         "query_string": query_string,
     }
     return render_response_index(request, template_name, c)
+
+
+@login_required
+def add_project_par(request, project_id):
+    parentObject = Project.objects.get(id=project_id)
+    if authz.has_write(request, parentObject.id, "project"):
+        return add_par(request, parentObject, otype="project", stype=Schema.PROJECT)
+    return return_response_error(request)
+
+
+@login_required
+def edit_project_par(request, parameterset_id):
+    parameterset = ProjectParameterSet.objects.get(id=parameterset_id)
+    if authz.has_write(request, parameterset.project.id, "project"):
+        view_sensitive = authz.has_sensitive_access(
+            request, parameterset.project.id, "project"
+        )
+        return edit_parameters(
+            request, parameterset, otype="project", view_sensitive=view_sensitive
+        )
+    return return_response_error(request)
