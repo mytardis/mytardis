@@ -231,7 +231,7 @@ def edit_project(request, project_id):
             with transaction.atomic():
                 project.name = form.cleaned_data["name"]
                 project.description = form.cleaned_data["description"]
-                existing_inst = project.institution_set.all()
+                existing_inst = project.institution.all()
                 for inst in form.cleaned_data["institution"]:
                     project.institution.add(inst)
                 project.experiments.clear()
