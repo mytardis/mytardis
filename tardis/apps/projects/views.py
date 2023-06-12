@@ -219,6 +219,11 @@ def create_project(request):
 def edit_project(request, project_id):
     project = Project.objects.get(id=project_id)
 
+    c = {
+        "subtitle": "Edit Project",
+        "project_id": project_id,
+    }
+
     # Process form or prepopulate it
     if request.method == "POST":
         form = ProjectForm(request.POST, instance=project, user=request.user)
