@@ -215,6 +215,10 @@ class SafeManager(models.Manager):
             related = "token"
             filter_dict[acl_str + "__token"] = kwargs["token"]
 
+        for perm in ["canDownload", "canWrite", "canDelete", "canSensitive"]:
+            if perm in kwargs:
+                filter_dict[acl_str + "__" + perm] = kwargs[perm]
+
         if "isOwner" in kwargs:
             filter_dict[acl_str + "__isOwner"] = True
         else:
