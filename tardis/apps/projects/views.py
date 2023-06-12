@@ -248,7 +248,8 @@ def edit_project(request, project_id):
     else:
         form = ProjectForm(instance=project, user=request.user)
 
-    c = {"form": form, "project": project}
+    c["form"] = form
+    # c["project"] = project
     return render_response_index(request, "create_project.html", c)
 
 
