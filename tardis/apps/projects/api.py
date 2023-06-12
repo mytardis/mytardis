@@ -238,6 +238,9 @@ class ProjectResource(ModelResource):
         bundle.data["dataset_count"] = project_dataset_count
         project_datafile_count = project.get_datafiles(bundle.request.user).count()
         bundle.data["datafile_count"] = project_datafile_count
+        if settings.ONLY_EXPERIMENT_ACLS:
+            flags = project.experiments.all().values_list("public_access", flat=True)
+            bundle.data["public_access"] = max(list(flags))
         return bundle
 
     def prepend_urls(self):
