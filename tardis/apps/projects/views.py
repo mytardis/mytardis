@@ -228,6 +228,8 @@ def edit_project(request, project_id):
     if request.method == "POST":
         form = ProjectForm(request.POST, instance=project, user=request.user)
         if form.is_valid():
+            if settings.ONLY_EXPERIMENT_ACLS and not form.cleaned_data["experiments"]:
+                c["status"] = "Please specify one or more experiments."
             with transaction.atomic():
                 project.name = form.cleaned_data["name"]
                 project.description = form.cleaned_data["description"]
@@ -239,7 +241,8 @@ def edit_project(request, project_id):
                     project.experiments.add(exp)
                 project.save()
             return _redirect_303("tardis.apps.projects.view_project", project.id)
-        c["status"] = "Errors exist in form."
+        if c["status"] != "Please specify one or more experiments.":
+            c["status"] = "Errors exist in form."
         c["error"] = "true"
     else:
         form = ProjectForm(instance=project, user=request.user)
