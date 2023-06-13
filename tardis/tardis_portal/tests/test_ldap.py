@@ -39,9 +39,7 @@ class LDAPTest(TestCase):
 
         global server
         if not slapd.Slapd.check_paths():
-            raise pytest.skip(
-                "slapd.Slapd.check_paths() failed, " "so skipping LDAPTest"
-            )
+            pytest.skip("slapd.Slapd.check_paths() failed, " "so skipping LDAPTest")
 
         server = slapd.Slapd()
         server.set_dn_suffix("dc=example, dc=com")
