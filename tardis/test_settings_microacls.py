@@ -10,7 +10,7 @@ from django.apps import apps  # pylint: disable=wrong-import-order
 from .default_settings import *  # noqa # pylint: disable=W0401,W0614
 import logging  # pylint: disable=wrong-import-order
 
-TEST_RUNNER = "django_nose.NoseTestSuiteRunner"
+# TEST_RUNNER = "django_nose.NoseTestSuiteRunner"
 
 DEBUG = True
 
@@ -77,7 +77,7 @@ def get_all_tardis_apps():
 
 
 INSTALLED_APPS += get_all_tardis_apps() + (
-    "django_nose",
+    # "django_nose",
     "behave_django",
 )
 

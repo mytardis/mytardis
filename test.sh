@@ -7,7 +7,7 @@ fi
 # select test to run with TEST_TYPE, memory pg mysql pylint behave templates
 
 function run_test {
-    python test.py test --settings=$1
+    py.test --settings=$1
     result=$?
     if [ "$TEST_TYPE" == "memory" ]; then
         if [ -n "$PULL_REQUEST_NUMBER" ]; then
