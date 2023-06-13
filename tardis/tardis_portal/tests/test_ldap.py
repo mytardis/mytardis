@@ -2,10 +2,11 @@
 
 .. moduleauthor:: Russell Sim <russell.sim@monash.edu>
 """
-from unittest import skipIf, SkipTest
+from unittest import skipIf, skip
 from django.conf import settings
 from django.test import TestCase, RequestFactory
-import pytest
+
+# from nose.plugins.skip import SkipTest
 
 server = None
 
@@ -30,14 +31,16 @@ class LDAPErrorTest(TestCase):
     ldap_auth_provider not in settings.AUTH_PROVIDERS,
     "ldap_auth is not enabled, skipping tests",
 )
+@skip("Incompatible with Pytest")
 class LDAPTest(TestCase):
-    def setup(self):
+    def setUp(self):
         from .ldap_ldif import test_ldif
         from . import slapd
 
         global server
-        if not slapd.Slapd.check_paths():
-            SkipTest("slapd.Slapd.check_paths() failed, so skipping LDAPTest")
+        # if not slapd.Slapd.check_paths():
+        #    raise SkipTest('slapd.Slapd.check_paths() failed, '
+        #                   'so skipping LDAPTest')
 
         server = slapd.Slapd()
         server.set_dn_suffix("dc=example, dc=com")
@@ -50,10 +53,7 @@ class LDAPTest(TestCase):
         self.server = server
 
     def tearDown(self):
-        from . import slapd
-
-        if slapd.Slapd.check_paths():
-            self.server.stop()
+        self.server.stop()
 
     def test_search(self):
         from django.conf import settings
