@@ -7,8 +7,6 @@ from django.conf import settings
 from django.test import TestCase, RequestFactory
 import pytest
 
-# from nose.plugins.skip import SkipTest
-
 server = None
 
 ldap_auth_provider = ("ldap", "LDAP", "tardis.tardis_portal.auth.ldap_auth.ldap_auth")
@@ -33,16 +31,13 @@ class LDAPErrorTest(TestCase):
     "ldap_auth is not enabled, skipping tests",
 )
 class LDAPTest(TestCase):
-    def setUp(self):
+    def setup_class(self):
         from .ldap_ldif import test_ldif
         from . import slapd
 
         global server
-        # if not slapd.Slapd.check_paths():
-        #    pytest.skip(
-        #        "slapd.Slapd.check_paths() failed, so skipping LDAPTest",
-        #        allow_module_level=True,
-        #    )
+        if not slapd.Slapd.check_paths():
+            pytest.skip("slapd.Slapd.check_paths() failed, so skipping LDAPTest")
 
         server = slapd.Slapd()
         server.set_dn_suffix("dc=example, dc=com")
@@ -57,9 +52,6 @@ class LDAPTest(TestCase):
     def tearDown(self):
         self.server.stop()
 
-    @pytest.mark.skip(
-        reason="Pytest has no nice way of running a skip within class setup"
-    )
     def test_search(self):
         from django.conf import settings
         from ..auth.ldap_auth import ldap_auth
@@ -92,9 +84,6 @@ class LDAPTest(TestCase):
         ]
         self.assertEqual(res, res1)
 
-    @pytest.mark.skip(
-        reason="Pytest has no nice way of running a skip within class setup"
-    )
     def test_getuserbyid(self):
         from ..auth.ldap_auth import ldap_auth
 
@@ -111,9 +100,6 @@ class LDAPTest(TestCase):
         user = l.getUserById("nulluser")
         self.assertEqual(user, None)
 
-    @pytest.mark.skip(
-        reason="Pytest has no nice way of running a skip within class setup"
-    )
     def test_authenticate(self):
         from ..auth.ldap_auth import ldap_auth
         from django.contrib.auth.models import User
@@ -153,9 +139,6 @@ class LDAPTest(TestCase):
         ).userProfile.user
         self.assertEqual(user, user1)
 
-    @pytest.mark.skip(
-        reason="Pytest has no nice way of running a skip within class setup"
-    )
     def test_getgroups(self):
         from django.contrib.auth.models import User
         from ..auth.authservice import AuthService
@@ -173,9 +156,6 @@ class LDAPTest(TestCase):
         # Tests getGroups
         self.assertEqual(list(l.getGroups(req.user)), ["full", "systems"])
 
-    @pytest.mark.skip(
-        reason="Pytest has no nice way of running a skip within class setup"
-    )
     def test_getgroupbyid(self):
         from ..auth.ldap_auth import ldap_auth
 
@@ -185,9 +165,6 @@ class LDAPTest(TestCase):
         )
         self.assertEqual(l.getGroupById("invalid"), None)
 
-    @pytest.mark.skip(
-        reason="Pytest has no nice way of running a skip within class setup"
-    )
     def test_getgroupsforentity(self):
         from ..auth.ldap_auth import ldap_auth
 
@@ -200,9 +177,6 @@ class LDAPTest(TestCase):
             ],
         )
 
-    @pytest.mark.skip(
-        reason="Pytest has no nice way of running a skip within class setup"
-    )
     def test_searchgroups(self):
         from ..auth.ldap_auth import ldap_auth
 
