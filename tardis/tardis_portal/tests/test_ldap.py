@@ -50,7 +50,10 @@ class LDAPTest(TestCase):
         self.server = server
 
     def tearDown(self):
-        self.server.stop()
+        from . import slapd
+
+        if slapd.Slapd.check_paths():
+            self.server.stop()
 
     def test_search(self):
         from django.conf import settings
