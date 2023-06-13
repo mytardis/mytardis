@@ -31,7 +31,7 @@ class LDAPErrorTest(TestCase):
     "ldap_auth is not enabled, skipping tests",
 )
 class LDAPTest(TestCase):
-    def setup_class(self):
+    def setup(self):
         from .ldap_ldif import test_ldif
         from . import slapd
 
