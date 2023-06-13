@@ -5,6 +5,7 @@
 from unittest import skipIf
 from django.conf import settings
 from django.test import TestCase, RequestFactory
+import pytest
 
 # from nose.plugins.skip import SkipTest
 
@@ -37,9 +38,10 @@ class LDAPTest(TestCase):
         from . import slapd
 
         global server
-        # if not slapd.Slapd.check_paths():
-        #    raise SkipTest('slapd.Slapd.check_paths() failed, '
-        #                   'so skipping LDAPTest')
+        if not slapd.Slapd.check_paths():
+            raise pytest.skip(
+                "slapd.Slapd.check_paths() failed, " "so skipping LDAPTest"
+            )
 
         server = slapd.Slapd()
         server.set_dn_suffix("dc=example, dc=com")
