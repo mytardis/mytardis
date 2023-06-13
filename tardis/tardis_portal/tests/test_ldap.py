@@ -2,7 +2,7 @@
 
 .. moduleauthor:: Russell Sim <russell.sim@monash.edu>
 """
-from unittest import skipIf
+from unittest import skipIf, SkipTest
 from django.conf import settings
 from django.test import TestCase, RequestFactory
 import pytest
@@ -37,7 +37,7 @@ class LDAPTest(TestCase):
 
         global server
         if not slapd.Slapd.check_paths():
-            pytest.skip("slapd.Slapd.check_paths() failed, so skipping LDAPTest")
+            SkipTest("slapd.Slapd.check_paths() failed, so skipping LDAPTest")
 
         server = slapd.Slapd()
         server.set_dn_suffix("dc=example, dc=com")
