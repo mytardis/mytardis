@@ -38,11 +38,6 @@ class LDAPTest(TestCase):
         from . import slapd
 
         global server
-        if not slapd.Slapd.check_paths():
-            pytest.skip(
-                "slapd.Slapd.check_paths() failed, so skipping LDAPTest",
-                allow_module_level=True,
-            )
 
         server = slapd.Slapd()
         server.set_dn_suffix("dc=example, dc=com")
@@ -60,6 +55,13 @@ class LDAPTest(TestCase):
     def test_search(self):
         from django.conf import settings
         from ..auth.ldap_auth import ldap_auth
+        from . import slapd
+
+        if not slapd.Slapd.check_paths():
+            pytest.skip(
+                "slapd.Slapd.check_paths() failed, so skipping LDAPTest",
+                allow_module_level=True,
+            )
 
         l = ldap_auth(force_create=True)
         res = l._query(settings.LDAP_USER_BASE, "(objectClass=*)", ["givenName", "sn"])
@@ -91,7 +93,13 @@ class LDAPTest(TestCase):
 
     def test_getuserbyid(self):
         from ..auth.ldap_auth import ldap_auth
+        from . import slapd
 
+        if not slapd.Slapd.check_paths():
+            pytest.skip(
+                "slapd.Slapd.check_paths() failed, so skipping LDAPTest",
+                allow_module_level=True,
+            )
         l = ldap_auth(force_create=True)
         user = l.getUserById("testuser1")
         user1 = {
@@ -108,7 +116,13 @@ class LDAPTest(TestCase):
     def test_authenticate(self):
         from ..auth.ldap_auth import ldap_auth
         from django.contrib.auth.models import User
+        from . import slapd
 
+        if not slapd.Slapd.check_paths():
+            pytest.skip(
+                "slapd.Slapd.check_paths() failed, so skipping LDAPTest",
+                allow_module_level=True,
+            )
         # Tests Authenticate API
         l = ldap_auth(force_create=True)
         rf = RequestFactory()
@@ -148,7 +162,13 @@ class LDAPTest(TestCase):
         from django.contrib.auth.models import User
         from ..auth.authservice import AuthService
         from ..auth.ldap_auth import ldap_auth
+        from . import slapd
 
+        if not slapd.Slapd.check_paths():
+            pytest.skip(
+                "slapd.Slapd.check_paths() failed, so skipping LDAPTest",
+                allow_module_level=True,
+            )
         l = ldap_auth(force_create=True)
         auth_service = AuthService()
         rf = RequestFactory()
@@ -163,7 +183,13 @@ class LDAPTest(TestCase):
 
     def test_getgroupbyid(self):
         from ..auth.ldap_auth import ldap_auth
+        from . import slapd
 
+        if not slapd.Slapd.check_paths():
+            pytest.skip(
+                "slapd.Slapd.check_paths() failed, so skipping LDAPTest",
+                allow_module_level=True,
+            )
         l = ldap_auth(force_create=True)
         self.assertEqual(
             l.getGroupById("full"), {"id": "full", "display": "Full Group"}
@@ -172,7 +198,13 @@ class LDAPTest(TestCase):
 
     def test_getgroupsforentity(self):
         from ..auth.ldap_auth import ldap_auth
+        from . import slapd
 
+        if not slapd.Slapd.check_paths():
+            pytest.skip(
+                "slapd.Slapd.check_paths() failed, so skipping LDAPTest",
+                allow_module_level=True,
+            )
         l = ldap_auth(force_create=True)
         self.assertEqual(
             list(l.getGroupsForEntity("testuser1")),
@@ -184,7 +216,13 @@ class LDAPTest(TestCase):
 
     def test_searchgroups(self):
         from ..auth.ldap_auth import ldap_auth
+        from . import slapd
 
+        if not slapd.Slapd.check_paths():
+            pytest.skip(
+                "slapd.Slapd.check_paths() failed, so skipping LDAPTest",
+                allow_module_level=True,
+            )
         l = ldap_auth(force_create=True)
         self.assertEqual(
             list(l.searchGroups(id="fu*")),
