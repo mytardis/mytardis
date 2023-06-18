@@ -80,7 +80,7 @@ jobs:
         mkdir -p var/store
         poetry run test.py
    
-   - name: run microacl tests
+    - name: run microacl tests
       if: always() && (steps.runMacroTests.outcome == 'success' || steps.runMacroTests.outcome == 'failure')
       run: |
         poetry run test_micro.py
