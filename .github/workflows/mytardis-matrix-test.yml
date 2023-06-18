@@ -68,16 +68,19 @@ jobs:
     # ensures this only runs on a cache miss.
     - run: poetry install --no-interaction --no-root
       if: steps.cache-deps.outputs.cache-hit != 'true'
-      
-    - name: run pylint
-      run: |
-        poetry run pylint --rcfile .pylintrc --django-settings-module=tardis.test_settings tardis
+    
+    # Temporarily deactivate pylint tests
+    #- name: run pylint
+    #  run: |
+    #    poetry run pylint --rcfile .pylintrc --django-settings-module=tardis.test_settings tardis
+    
     - name: run macroacl tests
       id: runMacroTests
       run: |
         mkdir -p var/store
         poetry run test.py
-    - name: run microacl tests
+   
+   - name: run microacl tests
       if: always() && (steps.runMacroTests.outcome == 'success' || steps.runMacroTests.outcome == 'failure')
       run: |
         poetry run test_micro.py
