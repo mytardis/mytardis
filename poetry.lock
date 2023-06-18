@@ -757,7 +757,7 @@ develop = false
 
 [package.source]
 type = "git"
-url = "ssh://git@github.com/mytardis/django-form-utils.git"
+url = "https://github.com/mytardis/django-form-utils.git"
 reference = "HEAD"
 resolved_reference = "d9867e7f563fee145ebb7e2ad2dde1ea2ea516de"
 
@@ -877,7 +877,7 @@ develop = false
 
 [package.source]
 type = "git"
-url = "ssh://git@github.com/mytardis/django-tastypie-swagger.git"
+url = "https://github.com/mytardis/django-tastypie-swagger.git"
 reference = "HEAD"
 resolved_reference = "9ca55c0a01df207551c935230244c00e2294151c"
 
@@ -2123,7 +2123,7 @@ develop = false
 
 [package.source]
 type = "git"
-url = "ssh://git@github.com/mytardis/python-magic.git"
+url = "https://github.com/mytardis/python-magic.git"
 reference = "HEAD"
 resolved_reference = "e1801bf60a9db3be8af69ddafd6f942b3934a071"
 
@@ -2791,4 +2791,4 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "bdfa9dcbd1f5df710deab92361b05d8f64dffd0b7d3609e7b2cad25a9c556907"
+content-hash = "92e403bf761b34332b9e1e033f990ef0b7073ad742157caa98f271a6f6432412"
