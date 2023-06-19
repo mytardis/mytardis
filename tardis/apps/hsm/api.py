@@ -143,13 +143,13 @@ class DatasetAppResource(tardis.tardis_portal.api.DatasetResource):
 
     def prepend_urls(self):
         return [
-            url(
+            re_path(
                 r"^(?P<resource_name>%s)/(?P<pk>\w[\w/-]*)/count%s$"
                 % (self._meta.resource_name, trailing_slash()),
                 self.wrap_view("online_count"),
                 name="hsm_api_count_online_files",
             ),
-            url(
+            re_path(
                 r"^(?P<resource_name>%s)/(?P<pk>\w[\w/-]*)/recall%s$"
                 % (self._meta.resource_name, trailing_slash()),
                 self.wrap_view("dataset_recall"),
