@@ -18,7 +18,6 @@ django-form-utils = {git = "https://github.com/mytardis/django-form-utils.git"}
 django-jstemplate = "^2.0.1"
 django-registration-redux = "^2.12"
 django-tastypie = "^0.14.5"
-django-tastypie-swagger = {git = "https://github.com/mytardis/django-tastypie-swagger.git"}
 django-user-agents = "^0.4.0"
 django-webpack-loader = "^2.0.1"
 django-widget-tweaks = "^1.4.12"

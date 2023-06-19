@@ -14,7 +14,7 @@ from tardis.tardis_portal.views.pages import site_routed_view
 
 from .accounts import accounts_urls
 from .ajax import ajax_urls
-from .api import api_urls, tastypie_swagger_urls
+from .api import api_urls, #tastypie_swagger_urls
 from .core import core_urls
 from .datafile import datafile_urls
 from .dataset import dataset_urls
@@ -71,7 +71,7 @@ urlpatterns = [
     # API views
     re_path(r"^api/", include(api_urls)),
     # tastypie_swagger endpoints for API auto-documentation
-    re_path(r"^api/", include(tastypie_swagger_urls)),
+    #re_path(r"^api/", include(tastypie_swagger_urls)),
     # Experiment Views
     re_path(r"^experiment/", include(experiment_urls)),
     # Dataset Views

@@ -106,14 +106,15 @@ if "tardis.apps.projects" in settings.INSTALLED_APPS:
 
 api_urls = [re_path(r"^", include(v1_api.urls))]
 
-tastypie_swagger_urls = [
-    re_path(
-        r"v1/swagger/",
-        include("tastypie_swagger.urls", namespace="api_v1_tastypie_swagger"),
-        kwargs={
-            "tastypie_api_module": v1_api,
-            "namespace": "api_v1_tastypie_swagger",
-            "version": "1",
-        },
-    ),
-]
+# Deprecated
+# tastypie_swagger_urls = [
+#    re_path(
+#        r"v1/swagger/",
+#        include("tastypie_swagger.urls", namespace="api_v1_tastypie_swagger"),
+#        kwargs={
+#            "tastypie_api_module": v1_api,
+#            "namespace": "api_v1_tastypie_swagger",
+#            "version": "1",
+#        },
+#    ),
+# ]

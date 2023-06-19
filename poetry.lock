@@ -905,21 +905,6 @@ python-dateutil = ">=1.5,<2.0 || >2.0"
 python-mimeparse = ">=0.1.4,<1.5 || >1.5"
 
 [[package]]
-name = "django-tastypie-swagger"
-version = "0.1.4"
-description = "An adapter to use swagger-ui with django-tastypie"
-optional = false
-python-versions = "*"
-files = []
-develop = false
-
-[package.source]
-type = "git"
-url = "https://github.com/mytardis/django-tastypie-swagger.git"
-reference = "HEAD"
-resolved_reference = "9ca55c0a01df207551c935230244c00e2294151c"
-
-[[package]]
 name = "django-user-agents"
 version = "0.4.0"
 description = "A django package that allows easy identification of visitors' browser, operating system and device information (mobile phone, tablet or has touch capabilities)."
@@ -3034,4 +3019,4 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "cdbeef7816902eef34e66fe1c87996dceebd11e13481c836c087869d3d8f95e8"
+content-hash = "050c923fbe48633e241ea7eb11d9baf10776bd2a2050a4dfec0d285b3ed3845c"
