@@ -50,7 +50,7 @@ from django.forms import ModelForm, ValidationError
 from django.forms.models import ModelChoiceField
 from django.forms.utils import ErrorList
 from django.forms.widgets import HiddenInput
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 from registration.models import RegistrationProfile
 
@@ -173,7 +173,6 @@ class RegistrationForm(forms.Form):
 
 
 class AddUserPermissionsForm(forms.Form):
-
     entered_user = forms.CharField(label="User", required=False, max_length=100)
     autocomp_user = forms.CharField(
         label="", required=False, max_length=100, widget=forms.HiddenInput
@@ -192,7 +191,6 @@ class AddUserPermissionsForm(forms.Form):
 
 
 class ManageGroupPermissionsForm(forms.Form):
-
     authMethod = forms.CharField(
         required=True,
         widget=forms.Select(choices=getAuthMethodChoices()),
@@ -239,14 +237,12 @@ def createLinkedUserAuthenticationForm(authMethods):
 
 
 class ImportParamsForm(forms.Form):
-
     username = forms.CharField(max_length=400, required=True)
     password = forms.CharField(max_length=400, required=True)
     params = forms.FileField()
 
 
 class RegisterExperimentForm(forms.Form):
-
     username = forms.CharField(max_length=400, required=True)
     password = forms.CharField(max_length=400, required=True)
     xmldata = forms.FileField(required=False)
@@ -257,7 +253,6 @@ class RegisterExperimentForm(forms.Form):
 
 
 class DatasetForm(forms.ModelForm):
-
     description = forms.CharField()
 
     class Meta:
@@ -330,7 +325,6 @@ class ExperimentForm(forms.ModelForm):
         instance=None,
         extra=0,
     ):
-
         super().__init__(
             data=data,
             files=files,
@@ -512,7 +506,6 @@ class NoInput(forms.Widget):
 
 
 class StaticField(forms.Field):
-
     widget = NoInput
 
     def clean(self, value):
@@ -522,7 +515,6 @@ class StaticField(forms.Field):
 def create_parameterset_edit_form(
     parameterset, request, post=False, view_sensitive=False
 ):
-
     from .models import ParameterName
 
     # if POST data to save
@@ -530,7 +522,6 @@ def create_parameterset_edit_form(
         fields = OrderedDict()
 
         for key, value in sorted(request.POST.items()):
-
             x = 1
             stripped_key = key.replace("_s47_", "/")
             stripped_key = stripped_key.rpartition("__")[0]
@@ -624,7 +615,6 @@ def create_parameterset_edit_form(
 
 
 def save_parameter_edit_form(parameterset, request, view_sensitive=False):
-
     psm = ParameterSetManager(parameterset=parameterset)
     # psm.delete_all_params()
 
@@ -645,7 +635,6 @@ def save_parameter_edit_form(parameterset, request, view_sensitive=False):
 
 
 def create_parameter_add_form(schema, parentObject, request=None):
-
     from .models import ParameterName
 
     # if POST data to save
@@ -653,7 +642,6 @@ def create_parameter_add_form(schema, parentObject, request=None):
         fields = OrderedDict()
 
         for key, value in sorted(request.POST.items()):
-
             x = 1
 
             stripped_key = key.replace("_s47_", "/")
@@ -706,7 +694,6 @@ def create_parameter_add_form(schema, parentObject, request=None):
     ).order_by("name")
 
     for dfp in parameternames:
-
         x = 1
 
         form_id = dfp.name + "__" + str(x)
@@ -741,7 +728,6 @@ def create_parameter_add_form(schema, parentObject, request=None):
 
 
 def save_parameter_add_form(schema, parentObject, request):
-
     psm = ParameterSetManager(schema=schema, parentObject=parentObject)
 
     for key, value in sorted(request.POST.items()):
