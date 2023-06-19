@@ -32,7 +32,6 @@
 
 from django.conf import settings
 
-
 test_ldif = [
     "dn: " + settings.LDAP_GROUP_BASE,
     "objectClass: organizationalUnit",

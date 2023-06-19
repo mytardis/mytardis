@@ -14,18 +14,18 @@ from django.views.decorators.cache import never_cache
 from django.views.generic.base import TemplateView
 
 from tardis.tardis_portal.auth import decorators as authz
+from tardis.tardis_portal.models import Experiment, Schema
 from tardis.tardis_portal.shortcuts import (
     render_response_index,
     return_response_error,
     return_response_not_found,
 )
-from tardis.tardis_portal.models import Experiment, Schema
-from tardis.tardis_portal.views.utils import _redirect_303
 from tardis.tardis_portal.views.pages import _resolve_view
 from tardis.tardis_portal.views.parameters import add_par, edit_parameters
+from tardis.tardis_portal.views.utils import _redirect_303
 
-from .models import Project, ProjectACL, ProjectParameterSet
 from .forms import ProjectForm
+from .models import Project, ProjectACL, ProjectParameterSet
 
 logger = logging.getLogger(__name__)
 

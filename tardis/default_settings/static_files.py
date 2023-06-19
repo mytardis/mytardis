@@ -1,4 +1,5 @@
 from os import path
+
 from .storage import DEFAULT_STORAGE_BASE_DIR
 
 # Absolute path to the directory that holds media.

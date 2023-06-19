@@ -1,19 +1,20 @@
 import logging
-from django.conf import settings
 
+from django.conf import settings
 from django.contrib.auth.models import User
-from elasticsearch_dsl import analysis, analyzer
+
 from django_elasticsearch_dsl import Document, fields
 from django_elasticsearch_dsl.registries import registry
+from elasticsearch_dsl import analysis, analyzer
 
 from tardis.tardis_portal.models import (
-    Dataset,
-    Experiment,
     DataFile,
-    Instrument,
-    ExperimentACL,
-    DatasetACL,
     DatafileACL,
+    Dataset,
+    DatasetACL,
+    Experiment,
+    ExperimentACL,
+    Instrument,
 )
 
 # IMPLEMENT ONCE SEARCH IS OVERHEAULED

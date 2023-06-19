@@ -2,10 +2,7 @@
 views that have to do with authentication
 """
 import logging
-
 from urllib.parse import urlparse
-
-import jwt
 
 from django.conf import settings
 from django.contrib import auth as djauth
@@ -15,17 +12,19 @@ from django.contrib.auth.models import User
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.core.validators import validate_email
 from django.db import transaction
-from django.http import HttpResponse, HttpResponseRedirect, HttpResponseForbidden
+from django.http import HttpResponse, HttpResponseForbidden, HttpResponseRedirect
 from django.shortcuts import redirect
 from django.utils.html import escape
 from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.debug import sensitive_post_parameters
 
+import jwt
+
 from ..auth import auth_service
 from ..auth.localdb_auth import auth_key as localdb_auth_key
-from ..forms import ManageAccountForm, CreateUserPermissionsForm
-from ..models import JTI, UserProfile, UserAuthentication
+from ..forms import CreateUserPermissionsForm, ManageAccountForm
+from ..models import JTI, UserAuthentication, UserProfile
 from ..shortcuts import render_response_index
 from ..views.utils import _redirect_303
 
@@ -267,10 +266,10 @@ def manage_auth_methods(request):
     """Manage the user's authentication methods using AJAX."""
     from ..auth.authentication import (
         add_auth_method,
-        merge_auth_method,
-        remove_auth_method,
         edit_auth_method,
         list_auth_methods,
+        merge_auth_method,
+        remove_auth_method,
     )
 
     if request.method == "POST":

@@ -8,14 +8,11 @@ import logging
 from django.conf import settings
 from django.http import HttpResponse
 
-from tardis.tardis_portal.auth import decorators as authz
-from tardis.tardis_portal.models import Dataset
-from tardis.tardis_portal.models import DataFile
-from tardis.tardis_portal.models import DatafileACL
-from tardis.tardis_portal.shortcuts import render_response_index
-
 import tardis.apps.filepicker.filepicker_settings as filepicker_settings
 from tardis.apps.filepicker.utils import FilepickerFile
+from tardis.tardis_portal.auth import decorators as authz
+from tardis.tardis_portal.models import DataFile, DatafileACL, Dataset
+from tardis.tardis_portal.shortcuts import render_response_index
 
 logger = logging.getLogger(__name__)
 

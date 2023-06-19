@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
-from __future__ import print_function
+from __future__ import print_function, unicode_literals
 
-from django.db import migrations, models
 from django.conf import settings
+from django.db import migrations, models
+
 import tardis.tardis_portal.models.parameters
 import tardis.tardis_portal.models.token
-
 
 # Functions from the following migrations need manual copying.
 # Move them and any dependencies into this file, then update the

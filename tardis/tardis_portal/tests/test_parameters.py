@@ -4,20 +4,26 @@ test_parameters.py
 
 .. moduleauthor::  James Wettenhall <james.wettenhall@monash.edu>
 """
-import pytz
-
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.test import TestCase
 from django.utils import timezone
 
+import pytz
+
 from ..models.datafile import DataFile
 from ..models.dataset import Dataset
 from ..models.experiment import Experiment
-from ..models.parameters import (Schema, ParameterName,
-                                 DatafileParameterSet, DatafileParameter,
-                                 DatasetParameterSet, DatasetParameter,
-                                 ExperimentParameterSet, ExperimentParameter)
+from ..models.parameters import (
+    DatafileParameter,
+    DatafileParameterSet,
+    DatasetParameter,
+    DatasetParameterSet,
+    ExperimentParameter,
+    ExperimentParameterSet,
+    ParameterName,
+    Schema,
+)
 
 
 class ParametersTestCase(TestCase):

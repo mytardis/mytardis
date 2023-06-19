@@ -1,9 +1,9 @@
 '''
 taken from https://raw.github.com/Filepicker/django-filepicker/master/django_filepicker/utils.py on 11 Apr 2013
 '''
+import os
 import re
 import urllib
-import os
 
 from django.core.files import File
 

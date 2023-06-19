@@ -9,8 +9,8 @@ from django.contrib.auth.models import User
 from django.utils import timezone
 
 from tardis.celery import tardis_app
-from .email_text import email_dfo_recall_complete
-from .email_text import email_dfo_recall_failed
+
+from .email_text import email_dfo_recall_complete, email_dfo_recall_failed
 
 logger = logging.getLogger(__name__)
 
@@ -33,9 +33,10 @@ def dfo_recall(dfo_id, user_id):
         DataFileObject is not supported
     '''
     from django.core.files.storage import get_storage_class
+
     from tardis.tardis_portal.models import DataFileObject
-    from .exceptions import (DataFileObjectNotVerified,
-                             StorageClassNotSupportedError)
+
+    from .exceptions import DataFileObjectNotVerified, StorageClassNotSupportedError
     from .storage import HsmFileSystemStorage
 
     dfo = DataFileObject.objects.get(id=dfo_id)
@@ -91,10 +92,13 @@ def ds_check(ds_id):
     '''
     from tardis.tardis_portal.models.datafile import DataFile
     from tardis.tardis_portal.models.dataset import Dataset
-    from tardis.tardis_portal.models.parameters import (Schema,
-                                                        ParameterName,
-                                                        DatasetParameterSet,
-                                                        DatasetParameter)
+    from tardis.tardis_portal.models.parameters import (
+        DatasetParameter,
+        DatasetParameterSet,
+        ParameterName,
+        Schema,
+    )
+
     from .check import dataset_online_count
 
     dataset = Dataset.objects.get(id=ds_id)

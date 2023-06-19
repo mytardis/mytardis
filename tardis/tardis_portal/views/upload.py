@@ -9,7 +9,7 @@ from django.http import HttpResponse
 from django.shortcuts import render
 
 from ..auth import decorators as authz
-from ..models import Dataset, DataFile, DatafileACL
+from ..models import DataFile, DatafileACL, Dataset
 
 logger = logging.getLogger(__name__)
 

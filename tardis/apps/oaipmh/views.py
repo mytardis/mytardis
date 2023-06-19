@@ -1,5 +1,6 @@
 from django.contrib.sites.shortcuts import get_current_site
 from django.http import HttpResponse
+
 from .server import get_server
 
 

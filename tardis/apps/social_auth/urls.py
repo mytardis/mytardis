@@ -1,5 +1,5 @@
-from django.conf.urls import include, url
+from django.urls import include, re_path
 
 urlpatterns = [
-    url('', include('social_django.urls', namespace='social')),
+    re_path("", include("social_django.urls", namespace="social")),
 ]

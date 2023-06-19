@@ -1,16 +1,14 @@
 import json
 import logging
-
 from unittest.mock import patch
 
 from django.conf import settings
+from django.contrib.auth.models import AnonymousUser, Group, Permission, User
 from django.test import TestCase
 from django.test.client import Client
 
-from django.contrib.auth.models import User, Group, Permission, AnonymousUser
-
 from ..auth.localdb_auth import auth_key as localdb_auth_key
-from ..models import ExperimentACL, Experiment
+from ..models import Experiment, ExperimentACL
 
 logger = logging.getLogger(__name__)
 

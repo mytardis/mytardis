@@ -1,15 +1,16 @@
 # -*- coding: utf-8 -*-
 
 import base64
-
 from binascii import hexlify
-from paramiko import RSAKey, DSSKey, ECDSAKey
+
+from paramiko import DSSKey, ECDSAKey, RSAKey
 from paramiko.py3compat import u
 from tastypie.authorization import Authorization
-from tastypie.exceptions import Unauthorized, HydrationError
+from tastypie.exceptions import HydrationError, Unauthorized
 from tastypie.resources import ModelResource
 
 from tardis.tardis_portal.api import default_authentication
+
 from .forms import key_add_form
 from .models import SFTPPublicKey
 

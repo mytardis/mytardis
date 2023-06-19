@@ -16,12 +16,10 @@ from django.test.client import Client
 
 import magic
 
-from ...models.access_control import DatasetACL, DatafileACL
+from ...models.access_control import DatafileACL, DatasetACL
 from ...models.datafile import DataFile, DataFileObject
 from ...models.dataset import Dataset
-from ...models.parameters import ParameterName
-from ...models.parameters import Schema
-
+from ...models.parameters import ParameterName, Schema
 from . import MyTardisResourceTestCase
 
 

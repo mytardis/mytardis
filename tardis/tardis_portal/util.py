@@ -1,14 +1,14 @@
 # pylint: disable=W1203
+import functools
 import logging
 import os
 import time
-import functools
 from urllib.parse import quote
 
 from django.conf import settings
 from django.db import connection, reset_queries
-import pytz
 
+import pytz
 
 logger = logging.getLogger(__name__)
 LOCAL_TZ = pytz.timezone(settings.TIME_ZONE)

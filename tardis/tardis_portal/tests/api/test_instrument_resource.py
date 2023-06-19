@@ -5,14 +5,12 @@ Testing the Instrument resource in MyTardis's Tastypie-based REST API
 .. moduleauthor:: James Wettenhall <james.wettenhall@monash.edu>
 '''
 import json
-
 from urllib.parse import quote
 
 from django.contrib.auth.models import Group
 
 from ...models.facility import Facility
 from ...models.instrument import Instrument
-
 from . import MyTardisResourceTestCase
 
 

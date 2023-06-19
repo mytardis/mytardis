@@ -1,8 +1,7 @@
-from django.conf.urls import url
+from django.urls import re_path
 
 from .views import endpoint
 
-
 urlpatterns = [
-    url(r'^$', endpoint, name="oaipmh-endpoint"),
+    re_path(r"^$", endpoint, name="oaipmh-endpoint"),
 ]

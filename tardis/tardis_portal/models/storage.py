@@ -1,13 +1,13 @@
 import base64
-import os
 import logging
+import os
 import pickle
 import random
 
+import django.core.files.storage as django_storage
 from django.conf import settings
 from django.db import models
 from django.db.utils import DatabaseError
-import django.core.files.storage as django_storage
 
 #from celery.contrib.methods import task
 

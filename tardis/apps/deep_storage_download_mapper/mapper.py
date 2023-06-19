@@ -4,7 +4,6 @@ File mapper that works for files stored in deep directory structures.
 It recreates the structure as stored in the datafile directory
 '''
 import os
-
 from urllib.parse import quote
 
 from django.conf import settings

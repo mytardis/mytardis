@@ -2,10 +2,12 @@ from django import forms
 from django.conf import settings
 from django.contrib.auth.models import User
 
+from tardis.tardis_portal.models import Experiment
+
+from .models import Project
+
 # from django.forms.models import ModelChoiceField
 
-from tardis.tardis_portal.models import Experiment
-from .models import Project
 
 
 class ProjectForm(forms.ModelForm):

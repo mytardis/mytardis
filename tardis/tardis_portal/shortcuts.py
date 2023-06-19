@@ -3,11 +3,10 @@ import json
 import re
 from html import escape
 
-from django.shortcuts import render
-from django.http import HttpResponse
-from django.http import HttpResponseRedirect
-from django.template.loader import render_to_string
 from django.contrib.sites.models import Site
+from django.http import HttpResponse, HttpResponseRedirect
+from django.shortcuts import render
+from django.template.loader import render_to_string
 
 from .models import ExperimentParameterSet
 from .ParameterSetManager import ParameterSetManager

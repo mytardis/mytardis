@@ -2,23 +2,20 @@
 import hashlib
 import json
 import mimetypes
-
 from io import BytesIO
-
-from wand.exceptions import WandException
-from wand.image import Image
-
-from lxml import etree
-from lxml.etree import Element, SubElement
 
 from django.conf import settings
 from django.http import HttpResponse, HttpResponseNotFound
-from django.views.decorators.http import etag
 from django.utils.cache import patch_cache_control
+from django.views.decorators.http import etag
 
-from .models import DataFile
+from lxml import etree
+from lxml.etree import Element, SubElement
+from wand.exceptions import WandException
+from wand.image import Image
+
 from .auth.decorators import has_download_access
-
+from .models import DataFile
 
 MAX_AGE = getattr(settings, 'DATAFILE_CACHE_MAX_AGE', 60*60*24*7)
 

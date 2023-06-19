@@ -14,12 +14,11 @@ from urllib.parse import quote
 from django.conf import settings
 from django.contrib.auth.models import User
 
-from ...models.access_control import ExperimentACL, DatasetACL, DatafileACL
+from ...models.access_control import DatafileACL, DatasetACL, ExperimentACL
 from ...models.datafile import DataFile
 from ...models.dataset import Dataset
 from ...models.experiment import Experiment
 from ...models.instrument import Instrument
-
 from . import MyTardisResourceTestCase
 
 

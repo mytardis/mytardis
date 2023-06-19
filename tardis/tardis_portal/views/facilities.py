@@ -8,16 +8,12 @@ import logging
 import time
 
 from django.contrib.auth.decorators import login_required
+from django.db.models import Case, IntegerField, Min, Sum, When
 from django.http import HttpResponse
 from django.utils import timezone
 from django.views.decorators.cache import never_cache
-from django.db.models import Sum
-from django.db.models import Min
-from django.db.models import Case
-from django.db.models import When
-from django.db.models import IntegerField
 
-from ..models import Dataset, Experiment, DataFile
+from ..models import DataFile, Dataset, Experiment
 from ..models.facility import facilities_managed_by
 
 logger = logging.getLogger(__name__)

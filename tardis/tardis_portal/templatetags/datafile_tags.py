@@ -1,4 +1,5 @@
 from django import template
+
 from ..auth import decorators as authz
 
 register = template.Library()

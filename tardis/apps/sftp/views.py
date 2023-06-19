@@ -9,17 +9,15 @@ from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.contrib.contenttypes.models import ContentType
 from django.forms.forms import NON_FIELD_ERRORS
-from django.http import (
-    HttpResponse,
-    HttpResponseServerError,
-    StreamingHttpResponse
-)
+from django.http import HttpResponse, HttpResponseServerError, StreamingHttpResponse
 from django.shortcuts import render
+
 from paramiko import RSAKey
 from paramiko.ssh_exception import SSHException
-from PIL import Image, ImageFont, ImageDraw
+from PIL import Image, ImageDraw, ImageFont
 
 from tardis.tardis_portal.auth.decorators import has_download_access
+
 from .forms import KeyGenerateForm
 from .models import SFTPPublicKey
 

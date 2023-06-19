@@ -9,7 +9,6 @@ from tardis import default_settings
 
 from .email_text import email_migration_success
 
-
 logger = logging.getLogger(__name__)
 
 

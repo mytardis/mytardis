@@ -1,6 +1,8 @@
 from django.urls import reverse
 
-from tardis.tardis_portal.templatetags.approved_user_tags import check_if_user_not_approved
+from tardis.tardis_portal.templatetags.approved_user_tags import (
+    check_if_user_not_approved,
+)
 
 
 def add_ssh_keys_menu_item(request, user_menu):

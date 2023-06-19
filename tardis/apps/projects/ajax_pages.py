@@ -1,8 +1,10 @@
 from django.conf import settings
 from django.views.decorators.cache import never_cache
+
+import tardis.tardis_portal.auth.decorators as authz
 from tardis.tardis_portal.models import Experiment
 from tardis.tardis_portal.shortcuts import render_response_index
-import tardis.tardis_portal.auth.decorators as authz
+
 from .models import Project
 
 

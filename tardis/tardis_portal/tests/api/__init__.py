@@ -5,7 +5,7 @@ Testing the tastypie-based mytardis api
 .. moduleauthor:: James Wettenhall <james.wettenhall@monash.edu>
 '''
 from django.conf import settings
-from django.contrib.auth.models import User, Group, Permission
+from django.contrib.auth.models import Group, Permission, User
 from django.test import TestCase
 
 from tastypie.test import ResourceTestCaseMixin

@@ -1,5 +1,7 @@
 import re
+
 from django.conf import settings
+
 
 class RifCsProvider(object):
 

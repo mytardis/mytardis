@@ -3,9 +3,10 @@
 Hierarchical Storage Management are online or offline (on tape).
 """
 from __future__ import unicode_literals
+
 import errno
-import os
 import logging
+import os
 
 logger = logging.getLogger(__name__)
 

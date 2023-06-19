@@ -11,9 +11,8 @@ from django.core import exceptions
 from django.core.management.base import BaseCommand, CommandError
 from django.utils.translation import ugettext as _
 
-from ...models import UserAuthentication
 from ...auth.localdb_auth import auth_key as locabdb_auth_key
-
+from ...models import UserAuthentication
 
 RE_VALID_USERNAME = re.compile('[\w.@+-]+$')
 

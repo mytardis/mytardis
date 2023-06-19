@@ -2,8 +2,8 @@
 views that return images or route to images
 """
 
-from base64 import b64decode
 import logging
+from base64 import b64decode
 from os import path
 
 from django.conf import settings
@@ -11,8 +11,7 @@ from django.http import HttpResponse, HttpResponseNotFound, HttpResponseRedirect
 from django.views.decorators.cache import never_cache
 
 from ..auth import decorators as authz
-from ..models import ExperimentParameter, DatasetParameter, \
-    DatafileParameter, Dataset
+from ..models import DatafileParameter, Dataset, DatasetParameter, ExperimentParameter
 from ..shortcuts import return_response_error
 
 logger = logging.getLogger(__name__)

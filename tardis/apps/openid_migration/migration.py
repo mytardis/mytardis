@@ -1,23 +1,23 @@
 import logging
 
-from django.contrib.auth.models import Permission
-from django.contrib import messages
 from django.conf import settings
+from django.contrib import messages
+from django.contrib.auth.models import Permission
 
 from tastypie.models import ApiKey
 
-from tardis.tardis_portal.models import User, UserAuthentication, \
-    ExperimentACL, Group
-from tardis.tardis_portal.auth.authentication import _getJsonFailedResponse,\
-    _getJsonSuccessResponse, _getJsonConfirmResponse
-
+from tardis.apps.openid_migration.models import OpenidACLMigration, OpenidUserMigration
+from tardis.tardis_portal.auth.authentication import (
+    _getJsonConfirmResponse,
+    _getJsonFailedResponse,
+    _getJsonSuccessResponse,
+)
+from tardis.tardis_portal.models import ExperimentACL, Group, User, UserAuthentication
 from tardis.tardis_portal.shortcuts import render_response_index
-from tardis.apps.openid_migration.models import OpenidUserMigration, OpenidACLMigration
 
 from . import default_settings
-from .tasks import notify_migration_status
 from .forms import openid_user_migration_form
-
+from .tasks import notify_migration_status
 
 logger = logging.getLogger(__name__)
 

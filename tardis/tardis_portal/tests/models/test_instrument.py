@@ -8,10 +8,13 @@ test_instrument.py
 """
 from django.contrib.auth.models import Group
 
-from tardis.tardis_portal.models import Facility, Instrument
-
 from tardis.tardis_portal.models import (
-    Schema, ParameterName, InstrumentParameterSet)
+    Facility,
+    Instrument,
+    InstrumentParameterSet,
+    ParameterName,
+    Schema,
+)
 
 from . import ModelTestCase
 

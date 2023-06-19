@@ -5,16 +5,15 @@ Testing the s3util app's extensions to the tastypie-based mytardis api
 """
 from unittest.mock import patch
 
-import botocore.signers
-
 from django.conf import settings
 
-from tardis.tardis_portal.tests.api import MyTardisResourceTestCase
+import botocore.signers
 
-from tardis.tardis_portal.models.access_control import DatasetACL, DatafileACL
+from tardis.tardis_portal.models.access_control import DatafileACL, DatasetACL
 from tardis.tardis_portal.models.datafile import DataFile, DataFileObject
 from tardis.tardis_portal.models.dataset import Dataset
 from tardis.tardis_portal.models.storage import StorageBox, StorageBoxOption
+from tardis.tardis_portal.tests.api import MyTardisResourceTestCase
 
 
 class S3UtilsAppApiTestCase(MyTardisResourceTestCase):

@@ -8,7 +8,7 @@ from django.urls import reverse
 
 from lxml import etree
 
-from tardis.tardis_portal.models import Experiment, License, ExperimentACL, User
+from tardis.tardis_portal.models import Experiment, ExperimentACL, License, User
 
 
 def _create_user_and_login(username='testuser', password='testpass'):

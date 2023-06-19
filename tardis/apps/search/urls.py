@@ -1,7 +1,7 @@
-from django.conf.urls import url
+from django.urls import re_path
 
 from tardis.apps.search.views import SearchView
 
 urlpatterns = [
-    url(r'^$', SearchView.as_view(), name='search'),
+    re_path(r"^$", SearchView.as_view(), name="search"),
 ]

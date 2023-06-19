@@ -1,18 +1,24 @@
 # pylint: disable=http-response-with-json-dumps,http-response-with-content-type-json
 import json
-import requests
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
-from django.urls import reverse
 from django.http import HttpResponse, HttpResponseForbidden, HttpResponseNotFound
 from django.shortcuts import redirect, render
+from django.urls import reverse
 
-from tardis.apps.push_to.utils import list_subdirectories, can_copy, get_default_push_location
+import requests
+
+from tardis.apps.push_to.utils import (
+    can_copy,
+    get_default_push_location,
+    list_subdirectories,
+)
 from tardis.tardis_portal.auth import decorators as authz
+
 from . import tasks
 from .exceptions import NoSuitableCredential
-from .models import OAuthSSHCertSigningService, Credential, RemoteHost
+from .models import Credential, OAuthSSHCertSigningService, RemoteHost
 from .oauth_tokens import get_token, get_token_data, set_token
 from .ssh_authz import sign_certificate
 

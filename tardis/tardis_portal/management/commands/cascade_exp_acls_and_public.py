@@ -18,8 +18,9 @@ import sys
 
 from django.core.management.base import BaseCommand
 
-from ...models.access_control import  DatasetACL, DatafileACL
 from ...models import Experiment
+from ...models.access_control import DatafileACL, DatasetACL
+
 
 class Command(BaseCommand):
 

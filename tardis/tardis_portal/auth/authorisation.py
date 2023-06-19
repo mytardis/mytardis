@@ -11,7 +11,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.db.models import Q
 from django.db.models.query import QuerySet
 
-from ..models.access_control import ExperimentACL, DatasetACL, DatafileACL
+from ..models.access_control import DatafileACL, DatasetACL, ExperimentACL
 from .token_auth import TokenGroupProvider
 
 

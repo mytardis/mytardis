@@ -1,16 +1,16 @@
-from datetime import datetime
 import itertools
+from datetime import datetime
 from functools import reduce
 from importlib import import_module
 
 from django.conf import settings
-from django.core.exceptions import ImproperlyConfigured
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
+from django.core.exceptions import ImproperlyConfigured
 from django.urls import reverse
 
-from oaipmh.common import Identify
 import oaipmh.error
+from oaipmh.common import Identify
 from oaipmh.interfaces import IOAI
 from oaipmh.metadata import MetadataRegistry
 from oaipmh.server import Server

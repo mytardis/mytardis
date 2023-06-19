@@ -1,9 +1,10 @@
 from django.db import transaction
 
+from tardis.apps.openid_migration.migration import (
+    migrate_api_key,
+    migrate_user_permissions,
+)
 from tardis.tardis_portal.models import Group
-
-from tardis.apps.openid_migration.migration import migrate_user_permissions, \
-    migrate_api_key
 
 
 def rollback_migration(user_migration_obj):

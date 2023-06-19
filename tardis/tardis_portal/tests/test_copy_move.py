@@ -16,8 +16,8 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.test import TestCase
 
-from ..models.dataset import Dataset
 from ..models.datafile import DataFile, DataFileObject
+from ..models.dataset import Dataset
 from ..models.storage import StorageBox, StorageBoxAttribute
 
 

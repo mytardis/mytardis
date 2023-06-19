@@ -3,9 +3,9 @@ Tests related to OpenID migration views
 '''
 from unittest.mock import patch
 
+from django.contrib.auth.models import Permission, User
 from django.test import TestCase
 from django.test.client import Client
-from django.contrib.auth.models import User, Permission
 
 
 class OpenIDMigrationViewTestCase(TestCase):

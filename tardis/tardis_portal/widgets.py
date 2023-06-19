@@ -1,6 +1,6 @@
-from django.utils.safestring import mark_safe
 from django.forms.utils import flatatt
 from django.forms.widgets import TextInput, Widget
+from django.utils.safestring import mark_safe
 
 
 class CommaSeparatedInput(TextInput):

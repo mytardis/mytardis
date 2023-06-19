@@ -4,7 +4,8 @@ import base64
 
 from django import forms
 from django.utils.translation import ugettext as _
-from paramiko import RSAKey, DSSKey, ECDSAKey
+
+from paramiko import DSSKey, ECDSAKey, RSAKey
 from paramiko.ssh_exception import SSHException
 from tastypie.validation import FormValidation
 

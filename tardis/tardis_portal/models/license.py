@@ -1,5 +1,5 @@
-from itertools import chain
 import logging
+from itertools import chain
 
 from django.db import models
 

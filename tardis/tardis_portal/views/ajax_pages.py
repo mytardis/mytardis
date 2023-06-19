@@ -1,33 +1,33 @@
 """
 views that return HTML that is injected into pages
 """
-import logging
 import json
-
+import logging
 from urllib.parse import urlencode
 
 from django.conf import settings
-from django.core.exceptions import PermissionDenied
-from django.core.paginator import Paginator, EmptyPage, InvalidPage
-from django.forms import model_to_dict
-from django.urls import reverse
-from django.http import JsonResponse
-from django.views.decorators.cache import never_cache
 from django.contrib.auth.decorators import login_required
+from django.core.exceptions import PermissionDenied
+from django.core.paginator import EmptyPage, InvalidPage, Paginator
+from django.forms import model_to_dict
+from django.http import JsonResponse
+from django.urls import reverse
+from django.views.decorators.cache import never_cache
+
 from ..auth import decorators as authz
 from ..forms import RightsForm
 from ..models import (
-    Experiment,
     DataFile,
-    Dataset,
-    Schema,
     DatafileParameterSet,
+    Dataset,
+    Experiment,
+    Schema,
     UserProfile,
 )
 from ..shortcuts import (
+    render_response_index,
     return_response_error,
     return_response_not_found,
-    render_response_index,
 )
 from ..views.pages import ExperimentView
 from ..views.utils import _add_protocols_and_organizations

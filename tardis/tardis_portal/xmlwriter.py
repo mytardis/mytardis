@@ -30,7 +30,9 @@
 #
 import logging
 import os
+
 from django.conf import settings
+
 from .shortcuts import render_to_file
 
 logger = logging.getLogger(__name__)

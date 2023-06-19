@@ -1,12 +1,13 @@
 # from datetime import datetime
 from django import template
 
+# from ..util import render_public_access_badge
+from tardis.tardis_portal.models.experiment import Experiment
+
 # from django.template.defaultfilters import pluralize
 # from django.contrib.humanize.templatetags.humanize import naturalday
 # from ..util import get_local_time
 
-# from ..util import render_public_access_badge
-from tardis.tardis_portal.models.experiment import Experiment
 
 # from ..models.access_control import ExperimentACL, DatafileACL, DatasetACL
 

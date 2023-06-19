@@ -1,5 +1,5 @@
-from django.test import TestCase
 from django.core.management import call_command
+from django.test import TestCase
 
 from ...models.parameters import Schema
 

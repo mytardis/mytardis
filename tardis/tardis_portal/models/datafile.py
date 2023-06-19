@@ -1,34 +1,32 @@
 import hashlib
 import logging
-import re
 import mimetypes
-from os import path
+import re
 from contextlib import contextmanager
+from os import path
 from tempfile import NamedTemporaryFile
 from urllib.parse import quote
-from uritemplate import URITemplate
-
 
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.core.files import File
 from django.core.files.storage import get_storage_class
-from django.urls import reverse
-from django.db import models
-from django.db import transaction
+from django.db import models, transaction
 from django.db.models import Q, Sum
 from django.db.models.signals import pre_delete
 from django.dispatch import receiver
 from django.forms.models import model_to_dict
+from django.urls import reverse
 from django.utils import timezone
 from django.utils.functional import cached_property
 
 import magic
+from uritemplate import URITemplate
 
 from .. import tasks
 from ..managers import OracleSafeManager, SafeManager
 from .dataset import Dataset
-from .storage import StorageBox, StorageBoxOption, StorageBoxAttribute
+from .storage import StorageBox, StorageBoxAttribute, StorageBoxOption
 
 logger = logging.getLogger(__name__)
 
@@ -886,8 +884,8 @@ class DataFileObject(models.Model):
         return result
 
     def apply_filters(self):
-        from django.core.files.storage import FileSystemStorage
-        from django.core.files.storage import get_storage_class
+        from django.core.files.storage import FileSystemStorage, get_storage_class
+
         from tardis.celery import tardis_app
 
         storage_class = get_storage_class(self.storage_box.django_storage_class)

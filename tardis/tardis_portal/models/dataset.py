@@ -3,15 +3,14 @@ from os import path
 
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
-from django.urls import reverse
 from django.db import models
+from django.urls import reverse
 from django.utils import timezone
 
 from ..managers import OracleSafeManager, SafeManager
-from .storage import StorageBox
-
 from .experiment import Experiment
 from .instrument import Instrument
+from .storage import StorageBox
 
 logger = logging.getLogger(__name__)
 
@@ -150,7 +149,7 @@ class Dataset(models.Model):
         return reverse("tardis.tardis_portal.views.edit_dataset", args=[self.id])
 
     def get_images(self):
-        from .datafile import DataFile, IMAGE_FILTER
+        from .datafile import IMAGE_FILTER, DataFile
 
         render_image_ds_size_limit = getattr(
             settings, "RENDER_IMAGE_DATASET_SIZE_LIMIT", 0

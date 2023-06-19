@@ -7,11 +7,15 @@ import logging
 from django.conf import settings
 from django.core.exceptions import PermissionDenied
 
-from ..auth import decorators as authz, auth_service
+from ..auth import auth_service
+from ..auth import decorators as authz
 from ..auth.localdb_auth import auth_key as localdb_auth_key
 from ..models import Experiment
-from ..shortcuts import return_response_error, \
-    return_response_not_found, render_response_index
+from ..shortcuts import (
+    render_response_index,
+    return_response_error,
+    return_response_not_found,
+)
 
 logger = logging.getLogger(__name__)
 

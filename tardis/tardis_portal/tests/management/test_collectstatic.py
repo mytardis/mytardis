@@ -1,9 +1,9 @@
 import shutil
-from os import mkdir
-from os import path
+from os import mkdir, path
 from tempfile import mkdtemp
-from django.test import TestCase
+
 from django.contrib.staticfiles.management.commands import collectstatic
+from django.test import TestCase
 
 
 class CollectstaticTest(TestCase):

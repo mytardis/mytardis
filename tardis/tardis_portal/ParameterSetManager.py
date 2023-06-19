@@ -1,12 +1,12 @@
-import pytz
-
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils.timezone import is_aware, make_aware
 
-from .models.experiment import Experiment
-from .models.dataset import Dataset
+import pytz
+
 from .models.datafile import DataFile
+from .models.dataset import Dataset
+from .models.experiment import Experiment
 
 LOCAL_TZ = pytz.timezone(settings.TIME_ZONE)
 
@@ -41,20 +41,20 @@ class ParameterSetManager(object):
         :raises TypeError:
         """
         from .models.parameters import (
-            DatasetParameterSet,
-            DatafileParameterSet,
-            ExperimentParameterSet,
-            DatasetParameter,
             DatafileParameter,
+            DatafileParameterSet,
+            DatasetParameter,
+            DatasetParameterSet,
             ExperimentParameter,
+            ExperimentParameterSet,
             ParameterSet,
         )
 
         if "tardis.apps.projects" in settings.INSTALLED_APPS:
             from tardis.apps.projects.models import (
                 Project,
-                ProjectParameterSet,
                 ProjectParameter,
+                ProjectParameterSet,
             )
 
         if issubclass(type(self), ParameterSet):

@@ -1,8 +1,9 @@
-from django.contrib.auth.models import User, Group
+from django.contrib.auth.models import Group, User
 from django.test import TestCase
+
 from paramiko import PKey, RSAKey
 
-from ..models import Credential, RemoteHost, OAuthSSHCertSigningService
+from ..models import Credential, OAuthSSHCertSigningService, RemoteHost
 
 
 class ModelsTestCase(TestCase):

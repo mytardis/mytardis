@@ -12,7 +12,7 @@ from django.contrib.sites.models import Site
 from django.http import HttpResponse
 from django.views.decorators.cache import never_cache
 
-from celery import group, chord
+from celery import chord, group
 
 from ..auth import decorators as authz
 from ..models import Dataset

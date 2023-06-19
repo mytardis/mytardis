@@ -12,17 +12,16 @@ from django.conf import settings
 from django.contrib.auth.models import Group
 from django.http import HttpResponse
 
-from ..models import (
-    UserProfile,
-    UserAuthentication,
-    ExperimentACL,
-    DatasetACL,
-    DatafileACL,
-)
-from . import localdb_auth
 from ..forms import createLinkedUserAuthenticationForm
+from ..models import (
+    DatafileACL,
+    DatasetACL,
+    ExperimentACL,
+    UserAuthentication,
+    UserProfile,
+)
 from ..shortcuts import render_response_index
-
+from . import localdb_auth
 
 logger = logging.getLogger(__name__)
 

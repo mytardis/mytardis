@@ -12,22 +12,16 @@ from unittest import skipIf
 from urllib.parse import quote
 
 from django.conf import settings
+from django.contrib.auth.models import Permission, User
 from django.test import TestCase
 from django.test.client import Client
-from django.contrib.auth.models import User, Permission
 
-from ...models import (
-    ExperimentACL,
-    Experiment,
-    Dataset,
-    DataFile,
-    DatasetACL,
-)
+from ...models import DataFile, Dataset, DatasetACL, Experiment, ExperimentACL
 
 
 class UploadTestCase(TestCase):
     def setUp(self):
-        from os import path, mkdir
+        from os import mkdir, path
         from tempfile import mkdtemp
 
         user = "tardis_user1"
@@ -169,7 +163,8 @@ class UploadTestCase(TestCase):
         self.assertTrue(test_files_db[0].file_objects.all()[0].verified)
 
     def test_upload_complete(self):
-        from django.http import QueryDict, HttpRequest
+        from django.http import HttpRequest, QueryDict
+
         from ...views.upload import upload_complete
 
         data = [

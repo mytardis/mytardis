@@ -8,9 +8,9 @@ managers.py
 from datetime import datetime
 
 from django.conf import settings
-from django.db import models
+from django.contrib.auth.models import Group, User
 from django.core.exceptions import PermissionDenied
-from django.contrib.auth.models import User, Group
+from django.db import models
 from django.db.models import Prefetch
 
 
@@ -424,7 +424,7 @@ class SafeManager(models.Manager):
         :returns: QuerySet of ACLs
         :rtype: QuerySet
         """
-        from .models.access_control import ExperimentACL, DatasetACL, DatafileACL
+        from .models.access_control import DatafileACL, DatasetACL, ExperimentACL
 
         obj = super().get(pk=obj_id)
         if self.model.get_ct(self.model).model == "project":
@@ -467,7 +467,7 @@ class SafeManager(models.Manager):
         :returns: QuerySet of non system Groups
         :rtype: QuerySet
         """
-        from .models.access_control import ExperimentACL, DatasetACL, DatafileACL
+        from .models.access_control import DatafileACL, DatasetACL, ExperimentACL
 
         obj = super().get(pk=obj_id)
         if self.model.get_ct(self.model).model == "project":
@@ -498,7 +498,7 @@ class SafeManager(models.Manager):
         :returns: QuerySet of ACLs
         :rtype: QuerySet
         """
-        from .models.access_control import ExperimentACL, DatasetACL, DatafileACL
+        from .models.access_control import DatafileACL, DatasetACL, ExperimentACL
 
         obj = super().get(pk=obj_id)
         if self.model.get_ct(self.model).model == "project":
@@ -528,7 +528,7 @@ class SafeManager(models.Manager):
         :returns: QuerySet of system-owned ACLs for proj/exp/set/file
         :rtype: QuerySet
         """
-        from .models.access_control import ExperimentACL, DatasetACL, DatafileACL
+        from .models.access_control import DatafileACL, DatasetACL, ExperimentACL
 
         obj = super().get(pk=obj_id)
         if self.model.get_ct(self.model).model == "project":
@@ -560,7 +560,7 @@ class SafeManager(models.Manager):
         :returns: system owned groups for proj/exp/set/file
         :rtype: QuerySet
         """
-        from .models.access_control import ExperimentACL, DatasetACL, DatafileACL
+        from .models.access_control import DatafileACL, DatasetACL, ExperimentACL
 
         obj = super().get(pk=obj_id)
         if self.model.get_ct(self.model).model == "project":

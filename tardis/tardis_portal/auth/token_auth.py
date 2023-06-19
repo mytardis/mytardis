@@ -1,8 +1,8 @@
 """
 token authentication module
 """
-from ..models import Token
 from ..auth.interfaces import GroupProvider
+from ..models import Token
 
 TOKEN_EXPERIMENT = '_token_experiment'
 

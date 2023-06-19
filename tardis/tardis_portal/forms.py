@@ -38,32 +38,28 @@ forms module
 """
 import logging
 import re
-
-from collections import OrderedDict
-from collections import UserDict
+from collections import OrderedDict, UserDict
 
 from django import forms
-from django.contrib.sites.shortcuts import get_current_site
-from django.forms import ValidationError
-from django.forms.utils import ErrorList
-from django.forms.models import ModelChoiceField
-from django.forms.widgets import HiddenInput
-from django.forms import ModelForm
 from django.conf import settings
-from django.db import transaction
-from django.contrib.auth.models import User
-from django.utils.translation import ugettext_lazy as _
 from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth.models import User
+from django.contrib.sites.shortcuts import get_current_site
+from django.db import transaction
+from django.forms import ModelForm, ValidationError
+from django.forms.models import ModelChoiceField
+from django.forms.utils import ErrorList
+from django.forms.widgets import HiddenInput
+from django.utils.translation import ugettext_lazy as _
 
 from registration.models import RegistrationProfile
 
 from . import models
-from .fields import MultiValueCommaSeparatedField
-from .widgets import CommaSeparatedInput
-from .models import UserAuthentication, Experiment, License
 from .auth.localdb_auth import auth_key as locabdb_auth_key
-
+from .fields import MultiValueCommaSeparatedField
+from .models import Experiment, License, UserAuthentication
 from .ParameterSetManager import ParameterSetManager
+from .widgets import CommaSeparatedInput
 
 logger = logging.getLogger(__name__)
 

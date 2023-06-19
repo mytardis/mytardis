@@ -5,12 +5,14 @@ Implemented with Tastypie.
 .. moduleauthor:: Mike Laverick <mike.laverick@auckland.ac.nz>
 .. moduleauthor:: Chris Seal <c.seal@auckland.ac.nz>
 """
+
 from itertools import chain
 
 from django.conf import settings
-from django.conf.urls import url
 from django.contrib.auth.models import User
-from django.http import JsonResponse, HttpResponseForbidden
+from django.http import HttpResponseForbidden, JsonResponse
+from django.urls import re_path
+
 from tastypie import fields
 from tastypie.authorization import Authorization
 from tastypie.constants import ALL_WITH_RELATIONS
@@ -20,32 +22,28 @@ from tastypie.serializers import Serializer
 from tastypie.utils import trailing_slash
 
 from tardis.tardis_portal.api import (
+    ExperimentResource,
     MyTardisAuthentication,
-    PrettyJSONSerializer,
     ParameterResource,
     ParameterSetResource,
+    PrettyJSONSerializer,
     UserResource,
-    ExperimentResource,
 )
 from tardis.tardis_portal.auth.decorators import (
     has_access,
     has_sensitive_access,
     has_write,
 )
+
 from .models import (
+    Institution,
     Project,
     ProjectACL,
     ProjectParameter,
     ProjectParameterSet,
-    Institution,
 )
 
-
-if settings.DEBUG:
-    default_serializer = PrettyJSONSerializer()
-else:
-    default_serializer = Serializer()
-
+default_serializer = PrettyJSONSerializer() if settings.DEBUG else Serializer()
 PROJECT_INSTITUTION_RESOURCE = "tardis.apps.projects.api.Institution"
 
 
@@ -123,7 +121,7 @@ class ProjectACLAuthorization(Authorization):
     def create_detail(self, object_list, bundle):  # noqa # too complex
         if not bundle.request.user.is_authenticated:
             return False
-        if bundle.request.user.is_authenticated and bundle.request.user.is_superuser:
+        if bundle.request.user.is_superuser:
             return True
 
         if isinstance(bundle.obj, Project):
@@ -136,7 +134,7 @@ class ProjectACLAuthorization(Authorization):
                         this_exp = ExperimentResource.get_via_uri(
                             ExperimentResource(), exp_uri, bundle.request
                         )
-                    except:
+                    except Exception:
                         return False
                     if has_write(bundle.request, this_exp.id, "experiment"):
                         perm = True
@@ -242,7 +240,7 @@ class ProjectResource(ModelResource):
 
     def prepend_urls(self):
         return [
-            url(
+            re_path(
                 r"^(?P<resource_name>%s)/(?P<pk>\w[\w/-]*)/project-experiments%s$"
                 % (self._meta.resource_name, trailing_slash()),
                 self.wrap_view("get_project_experiments"),

@@ -4,6 +4,7 @@
 hsm app."""
 
 from django.db import migrations
+
 from ..default_settings import HSM_DATASET_NAMESPACE
 
 

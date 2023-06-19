@@ -1,17 +1,24 @@
 import base64
-
 from io import StringIO
 
 from django import forms
 from django.apps import apps
 from django.contrib import admin
-from django.contrib.auth.models import User, Group
+from django.contrib.auth.models import Group, User
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
 
-from paramiko import RSAKey, SSHClient, MissingHostKeyPolicy, \
-    AutoAddPolicy, PKey, DSSKey, ECDSAKey, PublicBlob
+from paramiko import (
+    AutoAddPolicy,
+    DSSKey,
+    ECDSAKey,
+    MissingHostKeyPolicy,
+    PKey,
+    PublicBlob,
+    RSAKey,
+    SSHClient,
+)
 from paramiko.config import SSH_PORT
 
 from tardis.tardis_portal.models import DataFile

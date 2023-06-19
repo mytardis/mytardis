@@ -6,15 +6,14 @@ views that have to do with authorisations
 import json
 import logging
 from operator import itemgetter
-from urllib.parse import urlencode, urlparse, parse_qs
+from urllib.parse import parse_qs, urlencode, urlparse
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required, permission_required
-from django.contrib.auth.models import User, Group
+from django.contrib.auth.models import Group, User
 from django.contrib.sites.models import Site
-from django.db import transaction
-from django.db import IntegrityError
-from django.db.models import Q, Prefetch
+from django.db import IntegrityError, transaction
+from django.db.models import Prefetch, Q
 from django.http import HttpResponse, JsonResponse
 from django.utils.html import escape
 from django.views.decorators.cache import never_cache
@@ -22,12 +21,12 @@ from django.views.decorators.http import require_POST
 
 from ..auth import decorators as authz
 from ..models import (
+    Experiment,
+    ExperimentACL,
+    GroupAdmin,
+    Token,
     UserAuthentication,
     UserProfile,
-    Experiment,
-    Token,
-    GroupAdmin,
-    ExperimentACL,
 )
 from ..shortcuts import render_response_index
 

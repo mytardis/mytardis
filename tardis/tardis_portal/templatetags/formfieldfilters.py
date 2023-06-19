@@ -5,8 +5,8 @@ This module holds filters that can be used in postprocessing a form field.
 '''
 
 from django import template
-from lxml.html.clean import Cleaner  # pylint: disable=E0611
 
+from lxml.html.clean import Cleaner  # pylint: disable=E0611
 
 register = template.Library()
 

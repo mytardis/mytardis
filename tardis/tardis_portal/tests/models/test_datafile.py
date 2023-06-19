@@ -9,17 +9,21 @@ test_datafile.py
 import os
 import re
 from io import StringIO
-
 from unittest.mock import patch
 
 from django.conf import settings
 from django.db import models
 from django.test import override_settings
+
 from tastypie.utils import trailing_slash
 
-from tardis.tardis_portal.models import Experiment, ExperimentACL
-
-from tardis.tardis_portal.models import Dataset, DataFile, DataFileObject
+from tardis.tardis_portal.models import (
+    DataFile,
+    DataFileObject,
+    Dataset,
+    Experiment,
+    ExperimentACL,
+)
 
 from . import ModelTestCase
 

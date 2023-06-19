@@ -5,13 +5,17 @@ Tests related to OpenID migration
 
 import json
 
+from django.contrib.auth.models import Group, User
+from django.http import HttpRequest, QueryDict
 from django.test import TestCase
 from django.test.client import Client
-from django.http import HttpRequest, QueryDict
-from django.contrib.auth.models import User, Group
 
-from tardis.tardis_portal.models import Experiment, ExperimentACL
-from tardis.tardis_portal.models import UserAuthentication, UserProfile
+from tardis.tardis_portal.models import (
+    Experiment,
+    ExperimentACL,
+    UserAuthentication,
+    UserProfile,
+)
 
 from ..migration import do_migration
 from ..models import OpenidUserMigration

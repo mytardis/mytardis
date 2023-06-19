@@ -3,11 +3,14 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.test import TestCase
 
-from tardis.tardis_portal.models.dataset import Dataset
 from tardis.tardis_portal.models.datafile import DataFile
+from tardis.tardis_portal.models.dataset import Dataset
 from tardis.tardis_portal.models.parameters import (
-    Schema, ParameterName, DatafileParameterSet, DatafileParameter)
-
+    DatafileParameter,
+    DatafileParameterSet,
+    ParameterName,
+    Schema,
+)
 from tardis.tardis_portal.tasks import df_save_metadata
 
 

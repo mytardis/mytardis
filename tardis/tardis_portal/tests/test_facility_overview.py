@@ -2,24 +2,21 @@
 Tests relating to facility overview
 '''
 import json
-
 from io import BytesIO
 
 from django.conf import settings
-from django.contrib.auth.models import User
-from django.contrib.auth.models import Group
-from django.test import RequestFactory
-from django.test import TestCase
+from django.contrib.auth.models import Group, User
+from django.test import RequestFactory, TestCase
 
-from ..models.datafile import DataFile
-from ..models.datafile import DataFileObject
+from ..models.datafile import DataFile, DataFileObject
 from ..models.dataset import Dataset
 from ..models.experiment import Experiment
 from ..models.facility import Facility
 from ..models.instrument import Instrument
-
-from ..views.facilities import facility_overview_datafile_list
-from ..views.facilities import facility_overview_experiments
+from ..views.facilities import (
+    facility_overview_datafile_list,
+    facility_overview_experiments,
+)
 
 
 class FacilityOverviewTestCase(TestCase):

@@ -40,36 +40,37 @@ http://docs.djangoproject.com/en/dev/topics/testing/
 from datetime import datetime
 
 from django.conf import settings
-from django.contrib.auth.models import Permission
-from django.contrib.auth.models import User
-from django.core.exceptions import SuspiciousOperation
-from django.test import RequestFactory
-from django.test import TestCase
-from django.utils import timezone
+from django.contrib.auth.models import Permission, User
 from django.contrib.contenttypes.models import ContentType
+from django.core.exceptions import SuspiciousOperation
+from django.test import RequestFactory, TestCase
+from django.utils import timezone
+
 import pytz
 
-from ..models.experiment import Experiment
-from ..models.dataset import Dataset
+from ..models.access_control import DatafileACL, DatasetACL, ExperimentACL
 from ..models.datafile import DataFile, DataFileObject
+from ..models.dataset import Dataset
+from ..models.experiment import Experiment
 from ..models.parameters import (
-    Schema,
-    ParameterName,
-    DatafileParameterSet,
     DatafileParameter,
-    DatasetParameterSet,
+    DatafileParameterSet,
     DatasetParameter,
-    ExperimentParameterSet,
+    DatasetParameterSet,
     ExperimentParameter,
+    ExperimentParameterSet,
+    ParameterName,
+    Schema,
 )
-from ..models.access_control import ExperimentACL, DatasetACL, DatafileACL
 from ..ParameterSetManager import ParameterSetManager
-from ..views.parameters import edit_datafile_par
-from ..views.parameters import edit_dataset_par
-from ..views.parameters import edit_experiment_par
-from ..views.parameters import add_datafile_par
-from ..views.parameters import add_dataset_par
-from ..views.parameters import add_experiment_par
+from ..views.parameters import (
+    add_datafile_par,
+    add_dataset_par,
+    add_experiment_par,
+    edit_datafile_par,
+    edit_dataset_par,
+    edit_experiment_par,
+)
 
 
 class ParameterSetManagerTestCase(TestCase):

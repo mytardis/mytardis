@@ -1,6 +1,5 @@
 from tardis.default_settings import USER_MENU_MODIFIERS
 
-
 OPENID_MIGRATION_EMAIL_MESSAGES = {
     'migration_complete': ('[{site_title}] User Migration Completed Successfully',
                            '''\

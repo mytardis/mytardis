@@ -3,16 +3,16 @@ Utilities for starting up a test slapd server
 and talking to it with ldapsearch/ldapadd.
 """
 import base64
-
-import signal
-import sys
-import os
-from os import path as os_path
-import socket
-import time
-import subprocess
 import logging
+import os
+import signal
+import socket
+import subprocess
+import sys
 import tempfile
+import time
+from os import path as os_path
+
 _log = logging.getLogger("slapd")
 
 

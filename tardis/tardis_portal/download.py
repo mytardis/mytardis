@@ -9,9 +9,9 @@ download.py
 
 """
 import logging
-import urllib
 import os
 import time
+import urllib
 from importlib import import_module
 
 try:
@@ -24,30 +24,33 @@ except ImportError:
 
     crc32 = binascii.crc32
 
-from itertools import chain
-import tarfile
-from tarfile import TarFile
 import gzip
 import io
+import tarfile
+from itertools import chain
+from tarfile import TarFile
 from wsgiref.util import FileWrapper
 
-from django.http import StreamingHttpResponse
 from django.conf import settings
-from django.utils.dateformat import format as dateformatter
-from django.core.exceptions import ImproperlyConfigured
 from django.contrib.auth.decorators import login_required
+from django.core.exceptions import ImproperlyConfigured
+from django.http import StreamingHttpResponse
+from django.utils.dateformat import format as dateformatter
 
 from tardis.analytics.tracker import IteratorTracker
-from .models import Dataset
-from .models import DataFile
-from .models import DataFileObject
-from .models import Experiment
-from .auth.decorators import has_download_access
-from .auth.decorators import experiment_download_required
-from .auth.decorators import dataset_download_required
-from .shortcuts import render_error_message
-from .shortcuts import return_response_not_found, return_response_error
-from .shortcuts import redirect_back_with_error
+
+from .auth.decorators import (
+    dataset_download_required,
+    experiment_download_required,
+    has_download_access,
+)
+from .models import DataFile, DataFileObject, Dataset, Experiment
+from .shortcuts import (
+    redirect_back_with_error,
+    render_error_message,
+    return_response_error,
+    return_response_not_found,
+)
 from .util import get_filesystem_safe_dataset_name, get_filesystem_safe_experiment_name
 
 logger = logging.getLogger(__name__)

@@ -1,9 +1,9 @@
 import os
 
-from django.test import TestCase
 from django.conf import settings
+from django.test import TestCase
 
-from ..models import User, Experiment
+from ..models import Experiment, User
 from ..publish.provider.rifcsprovider import RifCsProvider
 from ..publish.publishservice import PublishService
 

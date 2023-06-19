@@ -1,11 +1,10 @@
 import re
 
-import six
-
-from django.apps import AppConfig
-from django.apps import apps
+from django.apps import AppConfig, apps
 from django.conf import settings
 from django.core.checks import Error, register
+
+import six
 
 
 class AbstractTardisAppConfig(AppConfig):

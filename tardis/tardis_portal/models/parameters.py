@@ -1,29 +1,27 @@
 # pylint: disable=model-no-explicit-unicode
+import json
 import logging
 import operator
-import json
 
+from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ObjectDoesNotExist, SuspiciousOperation
-from django.urls import reverse, resolve, Resolver404
-from django.conf import settings
 from django.db import models
+from django.urls import Resolver404, resolve, reverse
 from django.utils.safestring import mark_safe
 from django.utils.timezone import is_aware, is_naive, make_aware, make_naive
 
 import dateutil.parser
 import pytz
 
-from ..ParameterSetManager import ParameterSetManager
 from ..managers import OracleSafeManager, ParameterNameManager, SchemaManager
-
-from .experiment import Experiment
-from .dataset import Dataset
+from ..ParameterSetManager import ParameterSetManager
 from .datafile import DataFile
-from .storage import StorageBox
+from .dataset import Dataset
+from .experiment import Experiment
 from .instrument import Instrument
-
+from .storage import StorageBox
 
 LOCAL_TZ = pytz.timezone(settings.TIME_ZONE)
 logger = logging.getLogger(__name__)

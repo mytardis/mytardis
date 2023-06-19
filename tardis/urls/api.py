@@ -1,36 +1,35 @@
 """
 URLs for MyTardis's RESTful API
 """
-from importlib import import_module
 import logging
+from importlib import import_module
 
 from django.conf import settings
-from django.conf.urls import include, url
+from django.urls import include, re_path
 
 from tastypie.api import Api
 from tastypie.resources import Resource
 
-from tardis.app_config import format_app_name_for_url
-from tardis.app_config import get_tardis_apps
+from tardis.app_config import format_app_name_for_url, get_tardis_apps
 from tardis.tardis_portal.api import (
+    DatafileACLResource,
     DatafileParameterResource,
     DatafileParameterSetResource,
     DataFileResource,
+    DatasetACLResource,
     DatasetParameterResource,
     DatasetParameterSetResource,
     DatasetResource,
+    ExperimentACLResource,
+    ExperimentAuthorResource,
     ExperimentParameterResource,
     ExperimentParameterSetResource,
     ExperimentResource,
-    ExperimentAuthorResource,
     FacilityResource,
     GroupResource,
     InstrumentResource,
     IntrospectionResource,
     LocationResource,
-    ExperimentACLResource,
-    DatasetACLResource,
-    DatafileACLResource,
     ParameterNameResource,
     ReplicaResource,
     SchemaResource,
@@ -93,10 +92,10 @@ for app_name, app in get_tardis_apps():
 # Import project app urls here to avoid /apps prefix in url
 if "tardis.apps.projects" in settings.INSTALLED_APPS:
     from tardis.apps.projects.api import (
-        ProjectResource,
         ProjectACLResource,
-        ProjectParameterSetResource,
         ProjectParameterResource,
+        ProjectParameterSetResource,
+        ProjectResource,
     )
 
     v1_api.register(ProjectResource())
@@ -105,10 +104,10 @@ if "tardis.apps.projects" in settings.INSTALLED_APPS:
     v1_api.register(ProjectParameterResource())
 
 
-api_urls = [url(r"^", include(v1_api.urls))]
+api_urls = [re_path(r"^", include(v1_api.urls))]
 
 tastypie_swagger_urls = [
-    url(
+    re_path(
         r"v1/swagger/",
         include("tastypie_swagger.urls", namespace="api_v1_tastypie_swagger"),
         kwargs={

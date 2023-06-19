@@ -37,15 +37,15 @@ LDAP Authentication module.
 
 
 import logging
-import ldap
-from ldap3.utils.dn import escape_rdn
-from ldap3.utils.conv import escape_filter_chars
 
 from django.conf import settings
 
+import ldap
+from ldap3.utils.conv import escape_filter_chars
+from ldap3.utils.dn import escape_rdn
+
 from ..models import UserAuthentication
 from .interfaces import AuthProvider, GroupProvider, UserProvider
-
 
 logger = logging.getLogger(__name__)
 

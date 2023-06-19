@@ -6,11 +6,10 @@ Local DB Authentication module.
 
 import logging
 
-from django.contrib.auth.models import User, Group
 from django.contrib.auth.backends import ModelBackend
+from django.contrib.auth.models import Group, User
 
 from .interfaces import AuthProvider, GroupProvider, UserProvider
-
 
 logger = logging.getLogger(__name__)
 

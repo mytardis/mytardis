@@ -2,9 +2,10 @@
 
 .. moduleauthor:: Russell Sim <russell.sim@monash.edu>
 """
-from unittest import skipIf, skip
+from unittest import skip, skipIf
+
 from django.conf import settings
-from django.test import TestCase, RequestFactory
+from django.test import RequestFactory, TestCase
 
 # from nose.plugins.skip import SkipTest
 
@@ -34,8 +35,8 @@ class LDAPErrorTest(TestCase):
 @skip("Incompatible with Pytest")
 class LDAPTest(TestCase):
     def setUp(self):
-        from .ldap_ldif import test_ldif
         from . import slapd
+        from .ldap_ldif import test_ldif
 
         global server
         # if not slapd.Slapd.check_paths():
@@ -57,6 +58,7 @@ class LDAPTest(TestCase):
 
     def test_search(self):
         from django.conf import settings
+
         from ..auth.ldap_auth import ldap_auth
 
         l = ldap_auth(force_create=True)
@@ -104,8 +106,9 @@ class LDAPTest(TestCase):
         self.assertEqual(user, None)
 
     def test_authenticate(self):
-        from ..auth.ldap_auth import ldap_auth
         from django.contrib.auth.models import User
+
+        from ..auth.ldap_auth import ldap_auth
 
         # Tests Authenticate API
         l = ldap_auth(force_create=True)
@@ -144,6 +147,7 @@ class LDAPTest(TestCase):
 
     def test_getgroups(self):
         from django.contrib.auth.models import User
+
         from ..auth.authservice import AuthService
         from ..auth.ldap_auth import ldap_auth
 

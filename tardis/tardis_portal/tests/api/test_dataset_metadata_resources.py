@@ -11,12 +11,11 @@ from django.contrib.auth.models import Permission
 from ...models.access_control import DatasetACL
 from ...models.dataset import Dataset
 from ...models.parameters import (
-    Schema,
-    ParameterName,
     DatasetParameter,
     DatasetParameterSet,
+    ParameterName,
+    Schema,
 )
-
 from . import MyTardisResourceTestCase
 
 

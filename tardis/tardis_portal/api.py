@@ -8,54 +8,54 @@ Implemented with Tastypie.
 """
 import json
 import re
-from wsgiref.util import FileWrapper
 from itertools import chain
+from wsgiref.util import FileWrapper
 
 from django.conf import settings
-from django.conf.urls import url
-from django.contrib.auth.models import AnonymousUser
-from django.contrib.auth.models import User
-from django.contrib.auth.models import Group
+from django.contrib.auth.models import AnonymousUser, Group, User
 from django.core.paginator import EmptyPage, InvalidPage, Paginator
 from django.db import IntegrityError
 from django.http import (
     HttpResponse,
     HttpResponseForbidden,
-    StreamingHttpResponse,
     HttpResponseNotFound,
     JsonResponse,
+    StreamingHttpResponse,
 )
 from django.shortcuts import redirect
+from django.urls import re_path
 
 from tastypie import fields
-from tastypie.authentication import BasicAuthentication
-from tastypie.authentication import SessionAuthentication
-from tastypie.authentication import ApiKeyAuthentication
+from tastypie.authentication import (
+    ApiKeyAuthentication,
+    BasicAuthentication,
+    SessionAuthentication,
+)
 from tastypie.authorization import Authorization
 from tastypie.constants import ALL_WITH_RELATIONS
-from tastypie.exceptions import ImmediateHttpResponse
-from tastypie.exceptions import NotFound
-from tastypie.exceptions import Unauthorized
+from tastypie.exceptions import ImmediateHttpResponse, NotFound, Unauthorized
 from tastypie.http import HttpUnauthorized
-from tastypie.resources import Resource, ModelResource, Bundle
+from tastypie.resources import Bundle, ModelResource, Resource
 from tastypie.serializers import Serializer
 from tastypie.utils import trailing_slash
-
 from uritemplate import URITemplate
 
 from tardis.analytics.tracker import IteratorTracker
+
 from . import tasks
 from .auth.decorators import (
     has_access,
+    has_delete_permissions,
     has_download_access,
     has_sensitive_access,
     has_write,
-    has_delete_permissions,
 )
-from .models.access_control import ExperimentACL, DatasetACL, DatafileACL
+from .models.access_control import DatafileACL, DatasetACL, ExperimentACL
 from .models.datafile import DataFile, DataFileObject, compute_checksums
 from .models.dataset import Dataset
 from .models.experiment import Experiment, ExperimentAuthor
+from .models.facility import Facility, facilities_managed_by
+from .models.instrument import Instrument
 from .models.parameters import (
     DatafileParameter,
     DatafileParameterSet,
@@ -66,9 +66,7 @@ from .models.parameters import (
     ParameterName,
     Schema,
 )
-from .models.storage import StorageBox, StorageBoxOption, StorageBoxAttribute
-from .models.facility import Facility, facilities_managed_by
-from .models.instrument import Instrument
+from .models.storage import StorageBox, StorageBoxAttribute, StorageBoxOption
 
 
 class PrettyJSONSerializer(Serializer):
@@ -864,25 +862,25 @@ class DatasetResource(MyTardisModelResource):
 
     def prepend_urls(self):
         return [
-            url(
+            re_path(
                 r"^(?P<resource_name>%s)/(?P<pk>\w[\w/-]*)/files/"
                 r"(?:(?P<file_path>.+))?$" % self._meta.resource_name,
                 self.wrap_view("get_datafiles"),
                 name="api_get_datafiles_for_dataset",
             ),
-            url(
+            re_path(
                 r"^(?P<resource_name>%s)/(?P<pk>\w[\w/-]*)/root-dir-nodes%s$"
                 % (self._meta.resource_name, trailing_slash()),
                 self.wrap_view("get_root_dir_nodes"),
                 name="api_get_root_dir_nodes",
             ),
-            url(
+            re_path(
                 r"^(?P<resource_name>%s)/(?P<pk>\w[\w/-]*)/child-dir-nodes%s$"
                 % (self._meta.resource_name, trailing_slash()),
                 self.wrap_view("get_child_dir_nodes"),
                 name="api_get_child_dir_nodes",
             ),
-            url(
+            re_path(
                 r"^(?P<resource_name>%s)/(?P<pk>\w[\w/-]*)/child-dir-files%s$"
                 % (self._meta.resource_name, trailing_slash()),
                 self.wrap_view("get_child_dir_files"),
@@ -1351,13 +1349,13 @@ class DataFileResource(MyTardisModelResource):
 
     def prepend_urls(self):
         return [
-            url(
+            re_path(
                 r"^(?P<resource_name>%s)/(?P<pk>\w[\w/-]*)/download%s$"
                 % (self._meta.resource_name, trailing_slash()),
                 self.wrap_view("download_file"),
                 name="api_download_file",
             ),
-            url(
+            re_path(
                 r"^(?P<resource_name>%s)/(?P<pk>\w[\w/-]*)/verify%s$"
                 % (self._meta.resource_name, trailing_slash()),
                 self.wrap_view("verify_file"),

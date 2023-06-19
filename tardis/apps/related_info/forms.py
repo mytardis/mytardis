@@ -1,4 +1,5 @@
-from django.forms import Form, CharField, URLField, Select, Textarea
+from django.forms import CharField, Form, Select, Textarea, URLField
+
 
 class RelatedInfoForm(Form):
 

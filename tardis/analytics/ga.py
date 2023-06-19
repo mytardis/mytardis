@@ -4,9 +4,10 @@ Google analyitics tracking
 
 import logging
 import random
-import requests
 
 from django.conf import settings
+
+import requests
 
 GA_ID = getattr(settings, 'GOOGLE_ANALYTICS_ID', None)
 GA_USER_TRACKING = getattr(settings, 'GOOGLE_ANALYTICS_USER_TRACKING', False)

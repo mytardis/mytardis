@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
+from django.contrib.auth import SESSION_KEY
+from django.http import HttpRequest
 from django.test import TestCase
 from django.test.client import Client
 from django.test.utils import override_settings
 
-from django.http import HttpRequest
-from django.contrib.auth import SESSION_KEY
-from ..models import User
 from ..auth.interfaces import GroupProvider
+from ..models import User
 
 
 class MockSettings(object):
