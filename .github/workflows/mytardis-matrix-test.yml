@@ -78,9 +78,9 @@ jobs:
       id: runMacroTests
       run: |
         mkdir -p var/store
-        poetry run test.py
+        poetry run python test.py
    
     - name: run microacl tests
       if: always() && (steps.runMacroTests.outcome == 'success' || steps.runMacroTests.outcome == 'failure')
       run: |
-        poetry run test_micro.py
+        poetry run python test_micro.py
