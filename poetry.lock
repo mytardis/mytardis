@@ -2045,6 +2045,17 @@ docs = ["sphinx (>=1.6.5)", "sphinx-rtd-theme"]
 tests = ["hypothesis (>=3.27.0)", "pytest (>=3.2.1,!=3.3.0)"]
 
 [[package]]
+name = "pynose"
+version = "1.4.5"
+description = "pynose fixes nose to extend unittest and make testing easier"
+optional = false
+python-versions = ">=3.6"
+files = [
+    {file = "pynose-1.4.5-py3-none-any.whl", hash = "sha256:71b11406719d944385d7587d0b08249fb2bf38f51263f7df716d83b0efa7b8df"},
+    {file = "pynose-1.4.5.tar.gz", hash = "sha256:a21d547b193a1181f5ffe3b9a5af8e7078fec5e20246b4918995cadb88dd442f"},
+]
+
+[[package]]
 name = "pyoai"
 version = "2.5.0"
 description = "The oaipmh module is a Python implementation of an \"Open Archives\nInitiative Protocol for Metadata Harvesting\" (version 2) client and server.\nThe protocol is described here:\n\nhttp://www.openarchives.org/OAI/openarchivesprotocol.html"
@@ -2791,4 +2802,4 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "92e403bf761b34332b9e1e033f990ef0b7073ad742157caa98f271a6f6432412"
+content-hash = "aa2f12047461915bdcaf69593b0b13cf80208d1873083b1333113670e0ed0f12"
