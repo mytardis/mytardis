@@ -29,7 +29,6 @@ html5lib = "^1.1"
 isodate = "^0.6.1"
 pyjwt = "^2.7.0"
 lxml = "^4.9.2"
-paramiko = "^3.2.0"
 pillow = "^9.5.0"
 pyoai = "^2.5.0"
 pystache = "^0.6.0"
@@ -89,6 +88,12 @@ optional = true
 
 [tool.poetry.group.s3.dependencies]
 boto3 = "^1.26.155"
+
+[tool.poetry.group.sftp]
+optional=true
+
+[tool.poetry.group.sftp.dependencies]
+paramiko = "2.7.2"
 
 [tool.isort]
 profile = "black"
