@@ -58,3 +58,4 @@ tardis/apps/*
 *.old
 
 *.txt~
+.vscode/settings.json
