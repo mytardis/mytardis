@@ -1,7 +1,7 @@
 # pylint: disable=wildcard-import,unused-wildcard-import
 from __future__ import absolute_import
 
-import logging  # pylint: disable=wrong-import-order
+# import logging  # pylint: disable=wrong-import-order
 from glob import glob
 from os import path
 
@@ -109,8 +109,8 @@ LDAP_BASE = "dc=example, dc=com"
 LDAP_USER_BASE = "ou=People, " + LDAP_BASE
 LDAP_GROUP_BASE = "ou=Group, " + LDAP_BASE
 
-SYSTEM_LOG_LEVEL = logging.DEBUG
-MODULE_LOG_LEVEL = logging.DEBUG
+SYSTEM_LOG_LEVEL = "DEBUG"
+MODULE_LOG_LEVEL = "DEBUG"
 
 SYSTEM_LOG_FILENAME = "request-test.log"
 MODULE_LOG_FILENAME = "tardis-test.log"
