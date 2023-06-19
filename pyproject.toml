@@ -93,6 +93,10 @@ boto3 = "^1.26.155"
 
 [tool.isort]
 profile = "black"
+default_section = "THIRDPARTY"
+known_first_party = "tardis"  # change it for the name of your django project
+known_django = "django"
+sections = "FUTURE,STDLIB,DJANGO,THIRDPARTY,FIRSTPARTY,LOCALFOLDER"
 
 [build-system]
 requires = ["poetry-core"]
