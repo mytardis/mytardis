@@ -82,6 +82,8 @@ INSTALLED_APPS += get_all_tardis_apps() + (
     "behave_django",
 )
 
+print(INSTALLED_APPS)
+
 DEDUP_INSTALLED_APPS = []
 for app in INSTALLED_APPS:
     if app not in DEDUP_INSTALLED_APPS:
