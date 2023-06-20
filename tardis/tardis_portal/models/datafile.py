@@ -30,9 +30,9 @@ from .storage import StorageBox, StorageBoxAttribute, StorageBoxOption
 
 logger = logging.getLogger(__name__)
 
-IMAGE_FILTER = (Q(mimetype__startswith='image/') &
-                ~Q(mimetype='image/x-icon')) |\
-    (Q(datafileparameterset__datafileparameter__name__units__startswith="image"))  # noqa
+IMAGE_FILTER = (Q(mimetype__startswith="image/") & ~Q(mimetype="image/x-icon")) | (
+    Q(datafileparameterset__datafileparameter__name__units__startswith="image")
+)  # noqa
 
 
 class DataFile(models.Model):
@@ -65,10 +65,10 @@ class DataFile(models.Model):
     PUBLIC_ACCESS_FULL = 100
 
     PUBLIC_ACCESS_CHOICES = (
-        (PUBLIC_ACCESS_NONE, 'No public access (hidden)'),
-        (PUBLIC_ACCESS_EMBARGO, 'Ready to be released pending embargo expiry'),
-        (PUBLIC_ACCESS_METADATA, 'Public Metadata only (no data file access)'),
-        (PUBLIC_ACCESS_FULL, 'Public'),
+        (PUBLIC_ACCESS_NONE, "No public access (hidden)"),
+        (PUBLIC_ACCESS_EMBARGO, "Ready to be released pending embargo expiry"),
+        (PUBLIC_ACCESS_METADATA, "Public Metadata only (no data file access)"),
+        (PUBLIC_ACCESS_FULL, "Public"),
     )
 
     dataset = models.ForeignKey(Dataset, on_delete=models.CASCADE)
@@ -83,16 +83,15 @@ class DataFile(models.Model):
     deleted = models.BooleanField(default=False)
     deleted_time = models.DateTimeField(blank=True, null=True)
     version = models.IntegerField(default=1)
-    public_access = \
-        models.PositiveSmallIntegerField(choices=PUBLIC_ACCESS_CHOICES,
-                                         null=False,
-                                         default=PUBLIC_ACCESS_NONE)
+    public_access = models.PositiveSmallIntegerField(
+        choices=PUBLIC_ACCESS_CHOICES, null=False, default=PUBLIC_ACCESS_NONE
+    )
     objects = OracleSafeManager()
     safe = SafeManager()  # The acl-aware specific manager.
 
     @property
     def file_object(self):
-        return self.get_file()
+        return None if self.pk is None else self.get_file()
 
     @file_object.setter
     def file_object(self, file_object):
@@ -110,8 +109,7 @@ class DataFile(models.Model):
         if not s_boxes:
             s_boxes = [self.get_default_storage_box()]
         for box in s_boxes:
-            newfile = DataFileObject(datafile=self,
-                                     storage_box=box)
+            newfile = DataFileObject(datafile=self, storage_box=box)
             newfile.save()
             newfile.file_object = file_object
         if oldobjs:
@@ -124,8 +122,7 @@ class DataFile(models.Model):
         returns information about the status of the file.
         States are defined in StorageBox
         """
-        return {dfo.storage_type
-                for dfo in self.file_objects.filter(verified=True)}
+        return {dfo.storage_type for dfo in self.file_objects.filter(verified=True)}
 
     @cached_property
     def is_online(self):
@@ -138,10 +135,13 @@ class DataFile(models.Model):
         if dfos.count() == 0:
             return True
         for dfo in dfos:
-            if dfo.storage_box.django_storage_class == \
-                    'tardis.apps.hsm.storage.HsmFileSystemStorage' and \
-                    'tardis.apps.hsm' in settings.INSTALLED_APPS:
+            if (
+                dfo.storage_box.django_storage_class
+                == "tardis.apps.hsm.storage.HsmFileSystemStorage"
+                and "tardis.apps.hsm" in settings.INSTALLED_APPS
+            ):
                 from tardis.apps.hsm.check import dfo_online
+
                 if dfo_online(dfo):
                     return True
             else:
@@ -151,18 +151,18 @@ class DataFile(models.Model):
 
     @classmethod
     def public_access_implies_distribution(cls, public_access_level):
-        '''
+        """
         Determines if a level of public access implies that distribution should
         be allowed, or alternately if it should not be allowed. Used to
         prevent free-distribution licences for essentially private data, and
         overly-restrictive licences for public data.
-        '''
+        """
         return public_access_level > cls.PUBLIC_ACCESS_METADATA
 
     def public_download_allowed(self):
-        '''
+        """
         instance method version of 'public_access_implies_distribution'
-        '''
+        """
         return self.public_access > DataFile.PUBLIC_ACCESS_METADATA
 
     def cache_file(self):
@@ -174,9 +174,9 @@ class DataFile(models.Model):
         return False
 
     def get_default_storage_box(self):
-        '''
+        """
         try to guess appropriate box from dataset or use global default
-        '''
+        """
         if settings.REUSE_DATASET_STORAGE_BOX:
             dataset_boxes = self.dataset.get_all_storage_boxes_used()
             if dataset_boxes.count() == 1:
@@ -185,29 +185,32 @@ class DataFile(models.Model):
         return StorageBox.get_default_storage()
 
     def get_receiving_storage_box(self):
+        breakpoint()
         default_box = self.get_default_storage_box()
         child_boxes = [
-            box for box in default_box.child_boxes.all()
-            if box.attributes.filter(
-                key="type", value="receiving").count() == 1]
+            box
+            for box in default_box.child_boxes.all()
+            if box.attributes.filter(key="type", value="receiving").count() == 1
+        ]
         if child_boxes:
             return child_boxes[0]
 
         loc_boxes = StorageBoxOption.objects.filter(
-            key='location',
-            value=getattr(settings, 'DEFAULT_RECEIVING_DIR', '/tmp'))\
-            .values_list('storage_box', flat=True)
+            key="location", value=getattr(settings, "DEFAULT_RECEIVING_DIR", "/tmp")
+        ).values_list("storage_box", flat=True)
         attr_boxes = StorageBoxAttribute.objects.filter(
-            key="type", value="receiving")\
-            .values_list('storage_box', flat=True)
+            key="type", value="receiving"
+        ).values_list("storage_box", flat=True)
         existing_default = set(loc_boxes) & set(attr_boxes)
         if existing_default:
             return StorageBox.objects.get(id=existing_default.pop())
 
         new_box = StorageBox.create_local_box(
-            location=getattr(settings, 'DEFAULT_RECEIVING_DIR', '/tmp'))
-        new_attr = StorageBoxAttribute(storage_box=new_box,
-                                       key='type', value='receiving')
+            location=getattr(settings, "DEFAULT_RECEIVING_DIR", "/tmp")
+        )
+        new_attr = StorageBoxAttribute(
+            storage_box=new_box, key="type", value="receiving"
+        )
         new_attr.save()
         new_box.attributes.add(new_attr)
         new_box.master_box = default_box
@@ -215,32 +218,33 @@ class DataFile(models.Model):
         return new_box
 
     class Meta:
-        app_label = 'tardis_portal'
-        ordering = ['filename']
-        unique_together = ['dataset', 'directory', 'filename', 'version']
+        app_label = "tardis_portal"
+        ordering = ["filename"]
+        unique_together = ["dataset", "directory", "filename", "version"]
 
     @classmethod
     def sum_sizes(cls, datafiles):
         """
         Takes a query set of datafiles and returns their total size.
         """
-        return datafiles.aggregate(size=Sum('size'))['size'] or 0
+        return datafiles.aggregate(size=Sum("size"))["size"] or 0
 
     # pylint: disable=W0222
     def save(self, *args, **kwargs):
         if self.size is not None:
             self.size = int(self.size)
 
-        require_checksums = kwargs.pop('require_checksums', True)
-        if settings.REQUIRE_DATAFILE_CHECKSUMS and \
-                not self.md5sum and \
-                not self.sha512sum and \
-                require_checksums:
-            raise Exception('Every Datafile requires a checksum')
+        require_checksums = kwargs.pop("require_checksums", True)
+        if (
+            settings.REQUIRE_DATAFILE_CHECKSUMS
+            and not self.md5sum
+            and not self.sha512sum
+            and require_checksums
+        ):
+            raise Exception("Every Datafile requires a checksum")
         if settings.REQUIRE_DATAFILE_SIZES:
             if self.size < 0:
-                raise Exception('Invalid Datafile size (must be >= 0): %d' %
-                                self.size)
+                raise Exception("Invalid Datafile size (must be >= 0): %d" % self.size)
         self.update_mimetype(save=False)
 
         super().save(*args, **kwargs)
@@ -249,19 +253,17 @@ class DataFile(models.Model):
         return self.size
 
     def getParameterSets(self):
-        """Return datafile parametersets associated with this datafile.
-        """
+        """Return datafile parametersets associated with this datafile."""
         from .parameters import Schema
-        return self.datafileparameterset_set.filter(
-            schema__type=Schema.DATAFILE)
+
+        return self.datafileparameterset_set.filter(schema__type=Schema.DATAFILE)
 
     def __str__(self):
         if self.sha512sum is not None and len(self.sha512sum) > 31:
             checksum = str(self.sha512sum)[:32]
         else:
-            checksum = self.md5sum or 'no checksum'
-        return "%s %s # %s" % (checksum,
-                               self.filename, self.mimetype)
+            checksum = self.md5sum or "no checksum"
+        return "%s %s # %s" % (checksum, self.filename, self.mimetype)
 
     def get_mimetype(self):
         if self.mimetype:
@@ -270,36 +272,38 @@ class DataFile(models.Model):
         try:
             return mimetypes.types_map[suffix.lower()]
         except KeyError:
-            return 'application/octet-stream'
+            return "application/octet-stream"
 
     @cached_property
     def view_url(self):
-        render_image_size_limit = getattr(settings, 'RENDER_IMAGE_SIZE_LIMIT',
-                                          0)
+        render_image_size_limit = getattr(settings, "RENDER_IMAGE_SIZE_LIMIT", 0)
         if render_image_size_limit:
             if self.size > render_image_size_limit:
                 return None
 
-        viewable_mimetype_patterns = ('image/.*', 'text/.*', 'application/pdf')
-        if not any(re.match(p, self.get_mimetype())
-                   for p in viewable_mimetype_patterns):
+        viewable_mimetype_patterns = ("image/.*", "text/.*", "application/pdf")
+        if not any(
+            re.match(p, self.get_mimetype()) for p in viewable_mimetype_patterns
+        ):
             return None
-        return reverse('tardis.tardis_portal.download.view_datafile',
-                       kwargs={'datafile_id': self.id})
+        return reverse(
+            "tardis.tardis_portal.download.view_datafile",
+            kwargs={"datafile_id": self.id},
+        )
 
     @cached_property
     def download_url(self):
-        return reverse('api_download_file',
-                       kwargs={'pk': self.id,
-                               'api_name': 'v1',
-                               'resource_name': 'dataset_file'})
+        return reverse(
+            "api_download_file",
+            kwargs={"pk": self.id, "api_name": "v1", "resource_name": "dataset_file"},
+        )
 
     @cached_property
     def recall_url(self):
-        '''
+        """
         Get a URL to request a recall from tape
-        '''
-        if 'tardis.apps.hsm' not in settings.INSTALLED_APPS:
+        """
+        if "tardis.apps.hsm" not in settings.INSTALLED_APPS:
             return None
 
         from tardis.apps.hsm.storage import HsmFileSystemStorage
@@ -308,11 +312,8 @@ class DataFile(models.Model):
 
         for dfo in dfos:
             storage_class_name = dfo.storage_box.django_storage_class
-            if issubclass(
-                    get_storage_class(storage_class_name),
-                    HsmFileSystemStorage):
-                recall_uri_templates = getattr(
-                    settings, 'RECALL_URI_TEMPLATES', {})
+            if issubclass(get_storage_class(storage_class_name), HsmFileSystemStorage):
+                recall_uri_templates = getattr(settings, "RECALL_URI_TEMPLATES", {})
                 if storage_class_name in recall_uri_templates:
                     template = URITemplate(recall_uri_templates[storage_class_name])
                     return template.expand(dfo_id=dfo.id)
@@ -331,14 +332,14 @@ class DataFile(models.Model):
         :returns: Python file object
         :rtype: Python File object
         """
-
         dfo = self.get_preferred_dfo(verified_only)
         if dfo is None:
             return None
         if dfo.storage_type in (StorageBox.TAPE,):
-            shadow = 'dfo_cache_file location:%s' % dfo.storage_box.name
+            shadow = "dfo_cache_file location:%s" % dfo.storage_box.name
             tasks.dfo_cache_file.apply_async(
-                args=[dfo.id], priority=dfo.priority, shadow=shadow)
+                args=[dfo.id], priority=dfo.priority, shadow=shadow
+            )
         return dfo.file_object
 
     def get_preferred_dfo(self, verified_only=True):
@@ -402,8 +403,8 @@ class DataFile(models.Model):
 
         for ps in pss:
             dps = DatafileParameter.objects.filter(
-                parameterset=ps, name__data_type=5,
-                name__units__startswith="image")
+                parameterset=ps, name__data_type=5, name__units__startswith="image"
+            )
 
             if dps:
                 return True
@@ -411,15 +412,17 @@ class DataFile(models.Model):
         return False
 
     def is_image(self):
-        '''
+        """
         returns True if it's an image and not an x-icon and not an img
         the image/img mimetype is made up though and may need revisiting if
         there is an official img mimetype that does not refer to diffraction
         images
-        '''
+        """
         mimetype = self.get_mimetype()
-        return mimetype.startswith('image/') \
-            and mimetype not in ('image/x-icon', 'image/img')
+        return mimetype.startswith("image/") and mimetype not in (
+            "image/x-icon",
+            "image/img",
+        )
 
     def get_image_data(self):
         from .parameters import DatafileParameter, ParameterName
@@ -430,24 +433,27 @@ class DataFile(models.Model):
 
         for ps in pss:
             dps = DatafileParameter.objects.filter(
-                parameterset=ps, name__data_type=ParameterName.FILENAME,
-                name__units__startswith="image")
+                parameterset=ps,
+                name__data_type=ParameterName.FILENAME,
+                name__units__startswith="image",
+            )
 
             if dps:
                 preview_image_par = dps[0]
 
         if preview_image_par:
-            file_path = path.abspath(path.join(settings.METADATA_STORE_PATH,
-                                               preview_image_par.string_value))
+            file_path = path.abspath(
+                path.join(settings.METADATA_STORE_PATH, preview_image_par.string_value)
+            )
 
             if path.exists(file_path):
-                with open(file_path, 'rb') as preview_image_file:
+                with open(file_path, "rb") as preview_image_file:
                     return preview_image_file
 
-        render_image_size_limit = getattr(settings, 'RENDER_IMAGE_SIZE_LIMIT',
-                                          0)
-        if self.is_image() and (self.size <= render_image_size_limit or
-                                render_image_size_limit == 0):
+        render_image_size_limit = getattr(settings, "RENDER_IMAGE_SIZE_LIMIT", 0)
+        if self.is_image() and (
+            self.size <= render_image_size_limit or render_image_size_limit == 0
+        ):
             return self.get_file()
 
         return None
@@ -458,13 +464,15 @@ class DataFile(models.Model):
     def is_public_dl(self):
         # Used only by iiif.py currently
         from .experiment import Experiment
+
         if settings.ONLY_EXPERIMENT_ACLS:
-            return Experiment.objects.filter(datasets=self.dataset,
-                        public_access=Experiment.PUBLIC_ACCESS_FULL).exists()
+            return Experiment.objects.filter(
+                datasets=self.dataset, public_access=Experiment.PUBLIC_ACCESS_FULL
+            ).exists()
         return self.public_download_allowed()
 
     def _has_any_perm(self, user_obj):
-        if not hasattr(self, 'id'):
+        if not hasattr(self, "id"):
             return False
         return self.dataset
 
@@ -490,7 +498,7 @@ class DataFile(models.Model):
         return self._has_any_perm(user_obj)
 
     def update_mimetype(self, mimetype=None, force=False, save=True):
-        if self.mimetype is not None and self.mimetype != '' and not force:
+        if self.mimetype is not None and self.mimetype != "" and not force:
             return self.mimetype
         fo = self.file_object
         if mimetype is None and fo is not None:
@@ -500,11 +508,11 @@ class DataFile(models.Model):
         if mimetype is None:
             mimetype, encoding = mimetypes.guess_type(self.filename)
             if mimetype is not None and encoding is not None:
-                mimetype = '%s; %s' % (mimetype, encoding)
-            mimetype = mimetype or 'application/octet-stream'
-        if ';' in mimetype:
-            mt, enc = mimetype.split(';')
-            if enc.endswith('charset=binary'):
+                mimetype = "%s; %s" % (mimetype, encoding)
+            mimetype = mimetype or "application/octet-stream"
+        if ";" in mimetype:
+            mt, enc = mimetype.split(";")
+            if enc.endswith("charset=binary"):
                 mimetype = mt
         self.mimetype = mimetype
         if save:
@@ -513,14 +521,16 @@ class DataFile(models.Model):
 
     @property
     def verified(self):
-        """Return True if at least one DataFileObject is verified
-        """
+        """Return True if at least one DataFileObject is verified"""
         dfos = [dfo.verified for dfo in self.file_objects.all()]
         return any(dfos)
 
     def verify(self, reverify=False):
-        dfos = [dfo.verify() for dfo in self.file_objects.all()
-                if reverify or not dfo.verified]
+        dfos = [
+            dfo.verify()
+            for dfo in self.file_objects.all()
+            if reverify or not dfo.verified
+        ]
         return all(dfos)
 
 
@@ -546,10 +556,12 @@ class DataFileObject(models.Model):
         with a description of ``dataset1`` and an ID of ``12345``.
     """
 
-    datafile = models.ForeignKey(DataFile, related_name='file_objects',
-                                 on_delete=models.CASCADE)
-    storage_box = models.ForeignKey(StorageBox, related_name='file_objects',
-                                    on_delete=models.CASCADE)
+    datafile = models.ForeignKey(
+        DataFile, related_name="file_objects", on_delete=models.CASCADE
+    )
+    storage_box = models.ForeignKey(
+        StorageBox, related_name="file_objects", on_delete=models.CASCADE
+    )
     uri = models.TextField(blank=True, null=True)  # optional
     created_time = models.DateTimeField(auto_now_add=True)
     verified = models.BooleanField(default=False)
@@ -558,18 +570,18 @@ class DataFileObject(models.Model):
     _initial_values = None
 
     class Meta:
-        app_label = 'tardis_portal'
-        unique_together = ['datafile', 'storage_box']
+        app_label = "tardis_portal"
+        unique_together = ["datafile", "storage_box"]
 
     def __str__(self):
         try:
-            return 'Box: %(storage_box)s, URI: %(uri)s, verified: %(v)s' % {
-                'storage_box': str(self.storage_box),
-                'uri': self.uri,
-                'v': str(self.verified)
+            return "Box: %(storage_box)s, URI: %(uri)s, verified: %(v)s" % {
+                "storage_box": str(self.storage_box),
+                "uri": self.uri,
+                "v": str(self.verified),
             }
         except:
-            return 'undefined'
+            return "undefined"
 
     def __init__(self, *args, **kwargs):
         """Stores values prior to changes for change detection in
@@ -580,9 +592,14 @@ class DataFileObject(models.Model):
 
     @property
     def _current_values(self):
-        return model_to_dict(self, fields=[
-            field.name for field in self._meta.fields
-            if field.name not in ['verified', 'last_verified_time']])
+        return model_to_dict(
+            self,
+            fields=[
+                field.name
+                for field in self._meta.fields
+                if field.name not in ["verified", "last_verified_time"]
+            ],
+        )
 
     @property
     def _changed(self):
@@ -597,8 +614,7 @@ class DataFileObject(models.Model):
 
     # pylint: disable=W0222
     def save(self, *args, **kwargs):
-
-        reverify = kwargs.pop('reverify', False)
+        reverify = kwargs.pop("reverify", False)
         super().save(*args, **kwargs)
         if self._changed:
             self._initial_values = self._current_values
@@ -606,15 +622,16 @@ class DataFileObject(models.Model):
             return
 
         try:
-            shadow = 'dfo_verify location:%s' % self.storage_box.name
+            shadow = "dfo_verify location:%s" % self.storage_box.name
             tasks.dfo_verify.apply_async(
-                args=[self.id],
-                countdown=5,
-                priority=self.priority,
-                shadow=shadow)
+                args=[self.id], countdown=5, priority=self.priority, shadow=shadow
+            )
         except Exception as e:
             logger.exception(
-                "Failed to submit verification task for DFO ID %s due to %s", self.id, str(e))
+                "Failed to submit verification task for DFO ID %s due to %s",
+                self.id,
+                str(e),
+            )
 
     @property
     def storage_type(self):
@@ -625,15 +642,19 @@ class DataFileObject(models.Model):
         return self.storage_box.storage_type
 
     def _create_uri(self):
-        '''
+        """
         the default identifier would be directory and file name, but it may
         not work for all backends. This function aims to abstract it.
-        '''
+        """
 
         def default_identifier(dfo):
-            path_parts = ["%s-%s" % (
-                quote(dfo.datafile.dataset.description, safe='') or 'untitled',
-                dfo.datafile.dataset.id)]
+            path_parts = [
+                "%s-%s"
+                % (
+                    quote(dfo.datafile.dataset.description, safe="") or "untitled",
+                    dfo.datafile.dataset.id,
+                )
+            ]
             if dfo.datafile.directory is not None:
                 path_parts += [quote(dfo.datafile.directory)]
             path_parts += [dfo.datafile.filename.strip()]
@@ -644,9 +665,10 @@ class DataFileObject(models.Model):
         # but it is deprecated. TODO: remove 'build_save_location' after
         # writing docs/changelog about its removal
         build_identifier = getattr(
-            self._storage, 'build_identifier',
-            getattr(self._storage, 'build_save_location',
-                    lambda x: None))
+            self._storage,
+            "build_identifier",
+            getattr(self._storage, "build_save_location", lambda x: None),
+        )
         new_uri = build_identifier(self) or default_identifier(self)
         return new_uri
 
@@ -658,7 +680,7 @@ class DataFileObject(models.Model):
         :return:
         :rtype: basestring
         """
-        if force or self.uri is None or self.uri.strip() != '':
+        if force or self.uri is None or self.uri.strip() != "":
             self.uri = self._create_uri()
             if save:
                 self.save()
@@ -674,11 +696,11 @@ class DataFileObject(models.Model):
         :returns: a file object
         :rtype: Python File object
         """
-        cached_file_object = getattr(self, '_cached_file_object', None)
+        cached_file_object = getattr(self, "_cached_file_object", None)
         if cached_file_object is None or cached_file_object.closed:
-            cached_file_object = self._storage.open(self.uri or
-                                                    self._create_uri(),
-                                                    mode='rb')
+            cached_file_object = self._storage.open(
+                self.uri or self._create_uri(), mode="rb"
+            )
             self._cached_file_object = cached_file_object
         return self._cached_file_object
 
@@ -691,10 +713,11 @@ class DataFileObject(models.Model):
         """
         if file_object.closed:
             file_object = File(file_object)
-            file_object.open(mode='rb')
+            file_object.open(mode="rb")
         file_object.seek(0)
-        self.uri = self._storage.save(self.uri or self.create_set_uri(),
-                                      file_object)  # TODO: define behaviour
+        self.uri = self._storage.save(
+            self.uri or self.create_set_uri(), file_object
+        )  # TODO: define behaviour
         # when overwriting existing files
         file_object.close()
         self.verified = False
@@ -702,10 +725,9 @@ class DataFileObject(models.Model):
 
     @property
     def _storage(self):
-        cached_storage = getattr(self, '_cached_storage', None)
+        cached_storage = getattr(self, "_cached_storage", None)
         if cached_storage is None:
-            cached_storage = self.storage_box\
-                                 .get_initialised_storage_instance()
+            cached_storage = self.storage_box.get_initialised_storage_instance()
             self._cached_storage = cached_storage
         return self._cached_storage
 
@@ -726,39 +748,36 @@ class DataFileObject(models.Model):
         :rtype: DataFileObject
         """
         if not self.verified:
-            logger.debug('DFO (id: %d) could not be copied.'
-                         ' Source not verified' % self.id)
+            logger.debug(
+                "DFO (id: %d) could not be copied." " Source not verified" % self.id
+            )
             return False
         if dest_box is None:
             dest_box = StorageBox.get_default_storage()
         existing = self.datafile.file_objects.filter(storage_box=dest_box)
         if existing.count() > 0:
             if not existing[0].verified and verify:
-                shadow = 'dfo_verify location:%s' % existing[0].storage_box.name
+                shadow = "dfo_verify location:%s" % existing[0].storage_box.name
                 tasks.dfo_verify.apply_async(
-                    args=[existing[0].id],
-                    priority=existing[0].priority,
-                    shadow=shadow)
+                    args=[existing[0].id], priority=existing[0].priority, shadow=shadow
+                )
             return existing[0]
         try:
             with transaction.atomic():
-                copy = DataFileObject(
-                    datafile=self.datafile,
-                    storage_box=dest_box)
+                copy = DataFileObject(datafile=self.datafile, storage_box=dest_box)
                 copy.save()
                 copy.file_object = self.file_object
         except Exception as e:
             logger.error(
-                'file copy failed for dfo id: %s, with error: %s' %
-                (self.id, str(e)))
+                "file copy failed for dfo id: %s, with error: %s" % (self.id, str(e))
+            )
             copy.delete()
             return False
         if verify:
-            shadow = 'dfo_verify location:%s' % copy.storage_box.name
+            shadow = "dfo_verify location:%s" % copy.storage_box.name
             tasks.dfo_verify.apply_async(
-                args=[copy.id],
-                priority=copy.priority,
-                shadow=shadow)
+                args=[copy.id], priority=copy.priority, shadow=shadow
+            )
         return copy
 
     def move_file(self, dest_box=None):
@@ -791,11 +810,11 @@ class DataFileObject(models.Model):
 
         storage_class_name = self.storage_box.django_storage_class
         calculate_checksum_methods = getattr(
-            settings, 'CALCULATE_CHECKSUMS_METHODS', {})
+            settings, "CALCULATE_CHECKSUMS_METHODS", {}
+        )
         if storage_class_name in calculate_checksum_methods:
-            calculate_checksum_method = \
-                calculate_checksum_methods[storage_class_name]
-            module_path, method_name = calculate_checksum_method.rsplit('.', 1)
+            calculate_checksum_method = calculate_checksum_methods[storage_class_name]
+            module_path, method_name = calculate_checksum_method.rsplit(".", 1)
             module = import_module(module_path)
             calculate_checksums = getattr(module, method_name)
             return calculate_checksums(self, compute_md5, compute_sha512)
@@ -803,39 +822,39 @@ class DataFileObject(models.Model):
         return compute_checksums(self.file_object, compute_md5, compute_sha512)
 
     def verify(self, add_checksums=True, add_size=True):  # too complex # noqa
-        compute_md5 = getattr(settings, 'COMPUTE_MD5', True)
-        compute_sha512 = getattr(settings, 'COMPUTE_SHA512', False)
-        comparisons = ['size']
+        compute_md5 = getattr(settings, "COMPUTE_MD5", True)
+        compute_sha512 = getattr(settings, "COMPUTE_SHA512", False)
+        comparisons = ["size"]
         if compute_md5:
-            comparisons.append('md5sum')
+            comparisons.append("md5sum")
         if compute_sha512:
-            comparisons.append('sha512sum')
+            comparisons.append("sha512sum")
 
         df = self.datafile
-        database = {comp_type: getattr(df, comp_type)
-                    for comp_type in comparisons}
+        database = {comp_type: getattr(df, comp_type) for comp_type in comparisons}
         database_update = {}
-        empty_value = {db_key: db_val is None or (
-            isinstance(db_val, str) and db_val.strip() == '')
-            for db_key, db_val in database.items()}
-        same_values = {key: False for key, empty in empty_value.items()
-                       if not empty}
+        empty_value = {
+            db_key: db_val is None or (isinstance(db_val, str) and db_val.strip() == "")
+            for db_key, db_val in database.items()
+        }
+        same_values = {key: False for key, empty in empty_value.items() if not empty}
         io_error = False
-        io_error_str = 'no error'
+        io_error_str = "no error"
         actual = {}
         try:
-            actual['size'] = self.file_object.size
-            if not empty_value['size'] and \
-               actual['size'] == database['size']:
-                same_values['size'] = True
-            elif empty_value['size']:
+            actual["size"] = self.file_object.size
+            if not empty_value["size"] and actual["size"] == database["size"]:
+                same_values["size"] = True
+            elif empty_value["size"]:
                 # only ever empty when settings.REQ...SIZES = False
                 if add_size:
-                    database_update['size'] = actual['size']
-            if same_values.get('size', True):
-                actual.update(self.calculate_checksums(
-                    compute_md5=compute_md5,
-                    compute_sha512=compute_sha512))
+                    database_update["size"] = actual["size"]
+            if same_values.get("size", True):
+                actual.update(
+                    self.calculate_checksums(
+                        compute_md5=compute_md5, compute_sha512=compute_sha512
+                    )
+                )
 
                 def collate_checksums(sum_type):
                     if empty_value[sum_type] and add_checksums:
@@ -845,9 +864,9 @@ class DataFileObject(models.Model):
                         same_values[sum_type] = True
 
                 if compute_md5:
-                    collate_checksums('md5sum')
+                    collate_checksums("md5sum")
                 if compute_sha512:
-                    collate_checksums('sha512sum')
+                    collate_checksums("sha512sum")
 
         except IOError as ioe:
             same_values = {key: False for key in same_values.keys()}
@@ -868,18 +887,19 @@ class DataFileObject(models.Model):
                 for key, the_same in same_values.items():
                     if not the_same:
                         reasons.append(
-                            '%s mismatch, database: %s, disk: %s.' % (
-                                key, getattr(df, key),
-                                actual.get(key, 'undefined')))
-            logger.debug('DataFileObject with id %d did not verify. '
-                         'Reasons: %s' %
-                         (self.id, ' '.join(reasons)))
+                            "%s mismatch, database: %s, disk: %s."
+                            % (key, getattr(df, key), actual.get(key, "undefined"))
+                        )
+            logger.debug(
+                "DataFileObject with id %d did not verify. "
+                "Reasons: %s" % (self.id, " ".join(reasons))
+            )
 
         self.verified = result
         self.last_verified_time = timezone.now()
-        self.save(update_fields=['verified', 'last_verified_time'])
+        self.save(update_fields=["verified", "last_verified_time"])
         df.update_mimetype()
-        if getattr(settings, 'USE_FILTERS', False):
+        if getattr(settings, "USE_FILTERS", False):
             self.apply_filters()
         return result
 
@@ -891,21 +911,19 @@ class DataFileObject(models.Model):
         storage_class = get_storage_class(self.storage_box.django_storage_class)
         if not issubclass(storage_class, FileSystemStorage):
             logger.debug(
-		"Can't apply filters for DFO ID %s with storage class %s",
-                self.id, self.storage_box.django_storage_class)
+                "Can't apply filters for DFO ID %s with storage class %s",
+                self.id,
+                self.storage_box.django_storage_class,
+            )
             return
 
         try:
             tardis_app.send_task(
-                'mytardis.apply_filters',
-                args = [
-                    self.datafile.id,
-                    self.verified,
-                    self.get_full_path(),
-                    self.uri
-                ],
-                queue = 'filters',
-                priority = getattr(settings, 'FILTERS_TASK_PRIORITY', 0))
+                "mytardis.apply_filters",
+                args=[self.datafile.id, self.verified, self.get_full_path(), self.uri],
+                queue="filters",
+                priority=getattr(settings, "FILTERS_TASK_PRIORITY", 0),
+            )
         except Exception:
             logger.exception("Failed to apply filters for DFO ID %s", self.id)
 
@@ -921,38 +939,42 @@ class DataFileObject(models.Model):
 
     @property
     def priority(self):
-        '''
+        """
         Default priority for tasks which take this DFO as an argument
-        '''
+        """
         return self.storage_box.priority
 
 
-@receiver(pre_delete, sender=DataFileObject, dispatch_uid='dfo_delete')
+@receiver(pre_delete, sender=DataFileObject, dispatch_uid="dfo_delete")
 def delete_dfo(sender, instance, **kwargs):
-    '''
+    """
     Deletes the actual file / object, before deleting the database record
-    '''
+    """
     can_delete = getattr(
-        instance.storage_box.attributes.filter(key='can_delete').first(),
-        'value', 'True')
-    if can_delete.lower() == 'true' and instance.uri:
+        instance.storage_box.attributes.filter(key="can_delete").first(),
+        "value",
+        "True",
+    )
+    if can_delete.lower() == "true" and instance.uri:
         try:
             instance.delete_data()
         except NotImplementedError:
-            logger.info('deletion not supported on storage box %s, '
-                        'for dfo id %s' % (str(instance.storage_box),
-                                           str(instance.id)))
+            logger.info(
+                "deletion not supported on storage box %s, "
+                "for dfo id %s" % (str(instance.storage_box), str(instance.id))
+            )
     elif not instance.uri:
-        logger.warning('DFO %s has no URI, so no data to delete' % instance.id)
+        logger.warning("DFO %s has no URI, so no data to delete" % instance.id)
     else:
-        logger.debug('Did not delete file dfo.id '
-                     '%s, because deletes are disabled' % instance.id)
+        logger.debug(
+            "Did not delete file dfo.id "
+            "%s, because deletes are disabled" % instance.id
+        )
 
 
-def compute_checksums(file_object,
-                      compute_md5=True,
-                      compute_sha512=False,
-                      close_file=True):
+def compute_checksums(
+    file_object, compute_md5=True, compute_sha512=False, close_file=True
+):
     """Computes checksums for a python file object
 
     :param object file_object: Python File object
@@ -968,23 +990,27 @@ def compute_checksums(file_object,
     blocksize = 0
     results = {}
     if compute_md5:
-        md5_hasher = hashlib.new('md5')
+        md5_hasher = hashlib.new("md5")
         blocksize = max(md5_hasher.block_size, blocksize)
-        results['md5sum'] = md5_hasher
+        results["md5sum"] = md5_hasher
     if compute_sha512:
-        sha512_hasher = hashlib.new('sha512')
+        sha512_hasher = hashlib.new("sha512")
         blocksize = max(sha512_hasher.block_size, blocksize)
-        results['sha512sum'] = sha512_hasher
-    update_fns = {'md5sum': lambda x, y: x.update(y),
-                  'sha512sum': lambda x, y: x.update(y)}
+        results["sha512sum"] = sha512_hasher
+    update_fns = {
+        "md5sum": lambda x, y: x.update(y),
+        "sha512sum": lambda x, y: x.update(y),
+    }
     file_object.seek(0)
-    for chunk in iter(lambda: file_object.read(32 * blocksize), b''):
+    for chunk in iter(lambda: file_object.read(32 * blocksize), b""):
         for key, val in results.items():
             update_fns[key](val, chunk)
     if close_file:
         file_object.close()
     else:
         file_object.seek(0)
-    final_fns = {'md5sum': lambda x: x.hexdigest(),
-                 'sha512sum': lambda x: x.hexdigest()}
+    final_fns = {
+        "md5sum": lambda x: x.hexdigest(),
+        "sha512sum": lambda x: x.hexdigest(),
+    }
     return {key: final_fns[key](val) for key, val in results.items()}
