@@ -185,7 +185,6 @@ class DataFile(models.Model):
         return StorageBox.get_default_storage()
 
     def get_receiving_storage_box(self):
-        breakpoint()
         default_box = self.get_default_storage_box()
         child_boxes = [
             box

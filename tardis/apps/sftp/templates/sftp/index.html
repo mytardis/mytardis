@@ -1,0 +1,73 @@
+{% extends "tardis_portal/portal_template.html" %}
+{% block content %}
+    <h1>Instructions for file access via SFTP and SSHFS</h1>
+    <div class="row">
+    <div class="col-md-8">
+    <p>
+      You can access all the files you have access to on the web via the SFTP protocol.
+      This allows you to use Desktop programs like Filezilla or <a href="https://cyberduck.io"
+      target="_blank">Cyberduck</a> to browse and download your files. On some systems you can
+      also mount MyTardis as a drive using SSHFS. Instructions for accessing {{ site_name }} via
+      SFTP are given below.
+    </p>
+    <p>
+      <b>Note:</b> You must register your public SSH key in {{ site_name }} first.
+      Proceed <a href="{% url "tardis.apps.sftp:sftp_keys" %}">here</a> to register and
+      manage your SSH keys.
+    </p>
+
+    <h2>Magic URL</h2>
+    <p>Some systems are configured in a way that this link will connect you
+        automatically:<br/><a href="{{ sftp_url }}">{{ sftp_url }}</a></p>
+
+    <h2>SFTP access parameters</h2>
+    <table class="table table-striped table-bordered">
+    <thead>
+      <tr>
+        <th>Parameter</th>
+        <th>Value</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Host</td>
+        <td>{{ sftp_host }}</td>
+      </tr>
+      <tr>
+        <td>Port</td>
+        <td>{{ sftp_port }}</td>
+      </tr>
+      <tr>
+        <td>Username</td>
+        <td>{{ sftp_username }}</td>
+      </tr>
+      <tr>
+        <td>Password</td>
+        <td><i>Leave this blank</i></td>
+      </tr>
+      <tr>
+        <td>SSH Private Key</td>
+        <td>Specify the path to your SSH private key.</td>
+      </tr>
+      <tr>
+        <td>Start folder</td>
+        <td>{{ sftp_start_dir }}</td>
+      </tr>
+    </tbody>
+    </table>
+
+        <h2>Cyberduck example</h2>
+        <p>Get Cyberduck here: <a
+            href="https://cyberduck.io"
+            target="_blank">https://cyberduck.io</a> </p>
+        <p>Hit "Open Connection" and enter your details (Start folder is under
+            'More Options')<br/>
+            Make sure the top dropdown menu reads SFTP<br/>
+            <img src="{% url "tardis.apps.sftp:cyberduck_connection_window" %}"
+	         alt="Cyberduck connection window"/>
+        </p>
+{#        <h2>SSHFS on Linux</h2>#}
+
+    </div>
+</div>
+{% endblock content %}
