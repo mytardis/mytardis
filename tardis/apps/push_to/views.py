@@ -24,19 +24,11 @@ from .ssh_authz import sign_certificate
 
 
 def render_error_message(request, message, status=500):
-    return render(
-        request, 'error.html', {
-            'message': message
-        },
-        status=status)
+    return render(request, "error.html", {"message": message}, status=status)
 
 
 def render_success_message(request, message, status=200):
-    return render(
-        request, 'success.html', {
-            'message': message
-        },
-        status=status)
+    return render(request, "success.html", {"message": message}, status=status)
 
 
 def get_push_url_for_host(remote_host, obj_type, push_obj_id):
@@ -50,19 +42,18 @@ def get_push_url_for_host(remote_host, obj_type, push_obj_id):
     :rtype: basestring
     """
     push_view = None
-    if obj_type == 'experiment':
+    if obj_type == "experiment":
         push_view = initiate_push_experiment
-    elif obj_type == 'dataset':
+    elif obj_type == "dataset":
         push_view = initiate_push_dataset
-    elif obj_type == 'datafile':
+    elif obj_type == "datafile":
         push_view = initiate_push_datafile
 
     if push_view is not None and push_obj_id is not None:
-        return reverse(push_view,
-                       kwargs={
-                           obj_type + '_id': push_obj_id,
-                           'remote_host_id': remote_host.pk
-                       })
+        return reverse(
+            push_view,
+            kwargs={obj_type + "_id": push_obj_id, "remote_host_id": remote_host.pk},
+        )
     return None
 
 
@@ -84,17 +75,17 @@ def get_accessible_hosts(request, obj_type=None, push_obj_id=None):
     for h in hosts:
         try:
             Credential.get_suitable_credential(request.user, h)
-            host = {'id': h.pk, 'name': h.nickname, 'hostname': h.host_name}
+            host = {"id": h.pk, "name": h.nickname, "hostname": h.host_name}
             if h.logo_img is not None:
-                host['logo_img'] = h.logo_img
+                host["logo_img"] = h.logo_img
             push_url = get_push_url_for_host(h, obj_type, push_obj_id)
             if push_url is not None:
-                host['push_url'] = push_url
+                host["push_url"] = push_url
             response.append(host)
         except NoSuitableCredential:
             pass
 
-    return HttpResponse(json.dumps(response), content_type='application/json')
+    return HttpResponse(json.dumps(response), content_type="application/json")
 
 
 @login_required
@@ -108,32 +99,29 @@ def get_signing_services(request, obj_type=None, push_obj_id=None):
     :return: json object with signing services and hosts
     :rtype: HttpResponse
     """
-    services = OAuthSSHCertSigningService.get_available_signing_services(
-        request.user)
+    services = OAuthSSHCertSigningService.get_available_signing_services(request.user)
     response = []
     for svc in services:
         remote_hosts = []
         for h in svc.allowed_remote_hosts.all():
-            host = {'id': h.pk, 'name': h.nickname, 'hostname': h.host_name}
+            host = {"id": h.pk, "name": h.nickname, "hostname": h.host_name}
             if h.logo_img is not None:
-                host['logo_img'] = h.logo_img
+                host["logo_img"] = h.logo_img
             push_url = get_push_url_for_host(h, obj_type, push_obj_id)
             if push_url is not None:
-                push_url = reverse(authorize_remote_access,
-                                   kwargs={
-                                       'remote_host_id': h.pk,
-                                       'service_id': svc.pk
-                                   }) + '?next=%s' % push_url
-                host['push_url'] = push_url
+                push_url = (
+                    reverse(
+                        authorize_remote_access,
+                        kwargs={"remote_host_id": h.pk, "service_id": svc.pk},
+                    )
+                    + "?next=%s" % push_url
+                )
+                host["push_url"] = push_url
             remote_hosts.append(host)
-        service = {
-            'id': svc.pk,
-            'name': svc.nickname,
-            'remote_hosts': remote_hosts
-        }
+        service = {"id": svc.pk, "name": svc.nickname, "remote_hosts": remote_hosts}
         response.append(service)
 
-    return HttpResponse(json.dumps(response), content_type='application/json')
+    return HttpResponse(json.dumps(response), content_type="application/json")
 
 
 @login_required
@@ -145,27 +133,32 @@ def validate_remote_path(request, remote_host_id):
         remote_host = RemoteHost.objects.get(pk=remote_host_id)
     except:
         response["message"] = "Remote host does not exist."
-        return HttpResponseNotFound(json.dumps(response), content_type="application/json")
+        return HttpResponseNotFound(
+            json.dumps(response), content_type="application/json"
+        )
 
     try:
         credential = get_credential(request, remote_host)
     except:
         response["message"] = "You don't have access to this host."
-        return HttpResponseForbidden(json.dumps(response), content_type="application/json")
+        return HttpResponseForbidden(
+            json.dumps(response), content_type="application/json"
+        )
 
     try:
         ssh = credential.get_client_for_host(remote_host)
         sftp = ssh.open_sftp()
     except:
         response["message"] = "Unable to connect to this host."
-        return HttpResponseForbidden(json.dumps(response), content_type="application/json")
-
+        return HttpResponseForbidden(
+            json.dumps(response), content_type="application/json"
+        )
 
     default_path = get_default_push_location(sftp)
 
     response["default"] = {
         "path": default_path,
-        "valid_children": list_subdirectories(sftp, default_path)
+        "valid_children": list_subdirectories(sftp, default_path),
     }
 
     if path is not None:
@@ -178,9 +171,7 @@ def validate_remote_path(request, remote_host_id):
             except:
                 break
         real_path = "/".join(real_path)
-        response[path] = {
-            "valid_children": list_subdirectories(sftp, real_path)
-        }
+        response[path] = {"valid_children": list_subdirectories(sftp, real_path)}
 
     sftp.close()
     ssh.close()
@@ -199,8 +190,9 @@ def initiate_push_experiment(request, experiment_id, remote_host_id=None):
     :return: redirect or status message
     :rtype: HttpResponse
     """
-    return _initiate_push(request, initiate_push_experiment, remote_host_id,
-                          "experiment", experiment_id)
+    return _initiate_push(
+        request, initiate_push_experiment, remote_host_id, "experiment", experiment_id
+    )
 
 
 @login_required
@@ -214,8 +206,9 @@ def initiate_push_dataset(request, dataset_id, remote_host_id=None):
     :return: redirect or status message
     :rtype: HttpResponse
     """
-    return _initiate_push(request, initiate_push_dataset, remote_host_id,
-                          "dataset", dataset_id)
+    return _initiate_push(
+        request, initiate_push_dataset, remote_host_id, "dataset", dataset_id
+    )
 
 
 @login_required
@@ -229,8 +222,9 @@ def initiate_push_datafile(request, datafile_id, remote_host_id=None):
     :return: redirect or status message
     :rtype: HttpResponse
     """
-    return _initiate_push(request, initiate_push_datafile, remote_host_id,
-                          "datafile", datafile_id)
+    return _initiate_push(
+        request, initiate_push_datafile, remote_host_id, "datafile", datafile_id
+    )
 
 
 def _initiate_push(request, callback_view, remote_host_id, obj_type, push_obj_id):
@@ -248,40 +242,37 @@ def _initiate_push(request, callback_view, remote_host_id, obj_type, push_obj_id
     # If the remote_host_id is not given, render a view to show a list of
     # acceptable hosts
     if remote_host_id is None:
-        args = {
-            'obj_type': obj_type,
-            'push_obj_id': push_obj_id
-        }
+        args = {"obj_type": obj_type, "push_obj_id": push_obj_id}
         c = {
-            'cert_signing_services_url': reverse(get_signing_services, kwargs=args),
-            'accessible_hosts_url': reverse(get_accessible_hosts, kwargs=args)
+            "cert_signing_services_url": reverse(get_signing_services, kwargs=args),
+            "accessible_hosts_url": reverse(get_accessible_hosts, kwargs=args),
         }
-        return render(request, 'host_list.html', c)
+        return render(request, "host_list.html", c)
 
     remote_host = RemoteHost.objects.get(pk=remote_host_id)
 
     destination = request.GET.get("path", None)
     if destination is None:
-        args = {
-            "remote_host_id": remote_host_id
-        }
+        args = {"remote_host_id": remote_host_id}
         c = {
-            'remote_path_verify_url': reverse(validate_remote_path, kwargs=args),
-            'remote_destination_name': remote_host.nickname
+            "remote_path_verify_url": reverse(validate_remote_path, kwargs=args),
+            "remote_destination_name": remote_host.nickname,
         }
-        return render(request, 'destination_selector.html', c)
+        return render(request, "destination_selector.html", c)
 
     try:
         credential = get_credential(request, remote_host)
     except:
         callback_args = {
-            'remote_host_id': remote_host_id,
-            obj_type + '_id': push_obj_id
+            "remote_host_id": remote_host_id,
+            obj_type + "_id": push_obj_id,
         }
         callback_url = reverse(callback_view, kwargs=callback_args)
-        redirect_args = {'remote_host_id': remote_host_id}
-        redirect_url = reverse(authorize_remote_access, kwargs=redirect_args) + \
-                       "?next=%s" % callback_url
+        redirect_args = {"remote_host_id": remote_host_id}
+        redirect_url = (
+            reverse(authorize_remote_access, kwargs=redirect_args)
+            + "?next=%s" % callback_url
+        )
         return redirect(redirect_url)
 
     try:
@@ -298,13 +289,7 @@ def _initiate_push(request, callback_view, remote_host_id, obj_type, push_obj_id
 
     priority = settings.DEFAULT_TASK_PRIORITY + 1
 
-    params = [
-        request.user.pk,
-        credential.pk,
-        remote_host_id,
-        push_obj_id,
-        destination
-    ]
+    params = [request.user.pk, credential.pk, remote_host_id, push_obj_id, destination]
 
     if obj_type == "experiment":
         tasks.push_experiment_to_host.apply_async(args=params, priority=priority)
@@ -316,25 +301,23 @@ def _initiate_push(request, callback_view, remote_host_id, obj_type, push_obj_id
     # Log PushTo event
     if getattr(settings, "ENABLE_EVENTLOG", False):
         from tardis.apps.eventlog.utils import log
+
         log(
             action="PUSH_TO",
-            extra={
-                "id": push_obj_id,
-                "type": obj_type
-            },
-            request=request
+            extra={"id": push_obj_id, "type": obj_type},
+            request=request,
         )
 
-    success_message = ('The requested item will be pushed to %s. <strong>You '
-                       'will be notified by email once this has been '
-                       'completed.</strong>'
-                       '<br/>'
-                       'Data will be pushed to '
-                       '<pre>%s</pre>')
+    success_message = (
+        "The requested item will be pushed to %s. <strong>You "
+        "will be notified by email once this has been "
+        "completed.</strong>"
+        "<br/>"
+        "Data will be pushed to "
+        "<pre>%s</pre>"
+    )
     success_message %= (remote_host.nickname, destination)
-    return render_success_message(
-        request,
-        success_message)
+    return render_success_message(request, success_message)
 
 
 def get_credential(request, remote_host):
@@ -348,18 +331,16 @@ def get_credential(request, remote_host):
     :rtype: object
     :raises NoSuitableCredential: raised when no credential is found
     """
-    credential_id = request.GET.get('credential_id', None)
+    credential_id = request.GET.get("credential_id", None)
 
     # See if there are any suitable credentials, should none be supplied
     if credential_id is None:
-        credential = Credential.get_suitable_credential(
-            request.user, remote_host)
+        credential = Credential.get_suitable_credential(request.user, remote_host)
     else:
         try:
             credential = Credential.objects.get(
-                pk=credential_id,
-                user=request.user,
-                remote_hosts=remote_host)
+                pk=credential_id, user=request.user, remote_hosts=remote_host
+            )
             if not credential.verify_remote_access(remote_host):
                 # If the credential contains a certificate, it's probably no
                 # longer valid - delete it
@@ -400,35 +381,33 @@ def authorize_remote_access(request, remote_host_id, service_id=None):
     :return: an error message or OAuth2 redirects
     :rtype: HttpRedirect
     """
-    next_redirect = request.GET.get('next', '/')
+    next_redirect = request.GET.get("next", "/")
 
     # Identify a suitable SSH cert signing service for the requested host
     try:
         if service_id is None:
-            allowed_services = OAuthSSHCertSigningService \
-                .get_available_signing_services(
-                request.user).filter(
-                allowed_remote_hosts__pk=remote_host_id)
+            allowed_services = (
+                OAuthSSHCertSigningService.get_available_signing_services(
+                    request.user
+                ).filter(allowed_remote_hosts__pk=remote_host_id)
+            )
             try:
                 oauth_service = allowed_services[0]
                 service_id = oauth_service.pk
             except IndexError:
-                error_message = ('Could not find suitable cert signing service'
-                                 ' for remote host')
-                return render_error_message(
-                    request,
-                    error_message,
-                    status=400)
+                error_message = (
+                    "Could not find suitable cert signing service for remote host"
+                )
+                return render_error_message(request, error_message, status=400)
         else:
             oauth_service = OAuthSSHCertSigningService.get_oauth_service(
-                request.user, service_id)
+                request.user, service_id
+            )
 
         remote_host = oauth_service.allowed_remote_hosts.get(pk=remote_host_id)
 
     except OAuthSSHCertSigningService.DoesNotExist:
-        return render_error_message(
-            request, 'Invalid OAuth service',
-            status=400)
+        return render_error_message(request, "Invalid OAuth service", status=400)
 
     # Check whether we have a token already
     # get_token_data returns None if the token is missing or invalid
@@ -438,30 +417,33 @@ def authorize_remote_access(request, remote_host_id, service_id=None):
     if auth_token_data is None:
         # No token, so redirect
         return redirect(
-            oauth_service.oauth_authorize_url +
-            '?response_type=code&client_id=%s&redirect_uri=%s&state=%s' %
-            (oauth_service.oauth_client_id, oauth_callback_url(request),
-             (str(service_id) + ',' + next_redirect)))
+            oauth_service.oauth_authorize_url
+            + "?response_type=code&client_id=%s&redirect_uri=%s&state=%s"
+            % (
+                oauth_service.oauth_client_id,
+                oauth_callback_url(request),
+                (str(service_id) + "," + next_redirect),
+            )
+        )
     # We have a token, so try to create a credential and sign it
     # remote_user is overwritten once the cert is signed
-    remote_user = 'unknown'
+    remote_user = "unknown"
     credential = Credential.generate_keypair_credential(
-        request.user, remote_user, [remote_host])
-    signing_result = sign_certificate(
-        credential, auth_token,
-        oauth_service.cert_signing_url) and \
-                     credential.verify_remote_access(
-                     )
+        request.user, remote_user, [remote_host]
+    )
+    signing_result = (
+        sign_certificate(credential, auth_token, oauth_service.cert_signing_url)
+        and credential.verify_remote_access()
+    )
     if signing_result:
         return redirect(
             verify_redirect(
-                request,
-                next_redirect + '?credential_id=%i' % credential.pk))
+                request, next_redirect + "?credential_id=%i" % credential.pk
+            )
+        )
     # If key signing failed, delete the credential
     credential.delete()
-    return render_error_message(
-        request, 'Could not sign SSH certificate',
-        status=500)
+    return render_error_message(request, "Could not sign SSH certificate", status=500)
 
 
 @login_required
@@ -473,42 +455,39 @@ def oauth_callback(request):
     :rtype: HttpResponse
     """
     # Check for OAuth error message
-    error = request.GET.get('error', None)
+    error = request.GET.get("error", None)
     if error is not None:
-        error_message = ('Push failed! MyTardis was not authorized to access '
-                         'the remote system.')
-        return render_error_message(
-            request,
-            error_message)
+        error_message = (
+            "Push failed! MyTardis was not authorized to access the remote system."
+        )
+        return render_error_message(request, error_message)
 
     try:
-        service_id, next_redirect = request.GET.get('state', '/').split(',')
+        service_id, next_redirect = request.GET.get("state", "/").split(",")
     except ValueError:
-        return render_error_message(request, 'Invalid state', status=400)
+        return render_error_message(request, "Invalid state", status=400)
 
     try:
         oauth_service = OAuthSSHCertSigningService.get_oauth_service(
-            request.user, service_id)
+            request.user, service_id
+        )
     except OAuthSSHCertSigningService.DoesNotExist:
-        return render_error_message(
-            request, 'Invalid OAuth service',
-            status=404)
-    auth_code = request.GET.get('code')
+        return render_error_message(request, "Invalid OAuth service", status=404)
+    auth_code = request.GET.get("code")
     data = {
-        'grant_type': 'authorization_code',
-        'code': auth_code,
-        'client_id': oauth_service.oauth_client_id,
-        'redirect_uri': oauth_callback_url(request)
+        "grant_type": "authorization_code",
+        "code": auth_code,
+        "client_id": oauth_service.oauth_client_id,
+        "redirect_uri": oauth_callback_url(request),
     }
 
     r = requests.post(
-        oauth_service.oauth_token_url, data,
-        auth=(
-            oauth_service.oauth_client_id, oauth_service.oauth_client_secret))
+        oauth_service.oauth_token_url,
+        data,
+        auth=(oauth_service.oauth_client_id, oauth_service.oauth_client_secret),
+        timeout=300,
+    )
     token = json.loads(r.text)
     set_token(request, oauth_service, token)
 
-    return redirect(
-        verify_redirect(
-            request,
-            next_redirect))
+    return redirect(verify_redirect(request, next_redirect))

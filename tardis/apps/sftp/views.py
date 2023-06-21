@@ -31,22 +31,22 @@ def sftp_access(request):
     :rtype: HttpResponse
     """
     from tardis.tardis_portal.download import make_mapper
-    object_type = request.GET.get('object_type')
-    object_id = request.GET.get('object_id')
-    sftp_start_dir = ''
+
+    object_type = request.GET.get("object_type")
+    object_id = request.GET.get("object_id")
+    sftp_start_dir = ""
     if object_type and object_id:
-        ct = ContentType.objects.get_by_natural_key(
-            'tardis_portal', object_type)
+        ct = ContentType.objects.get_by_natural_key("tardis_portal", object_type)
         item = ct.model_class().objects.get(id=object_id)
-        if object_type == 'experiment':
+        if object_type == "experiment":
             exps = [item]
             dataset = None
             datafile = None
         else:
-            if object_type == 'dataset':
+            if object_type == "dataset":
                 dataset = item
                 datafile = None
-            elif object_type == 'datafile':
+            elif object_type == "datafile":
                 datafile = item
                 dataset = datafile.dataset
             exps = dataset.experiments.all()
@@ -55,11 +55,14 @@ def sftp_access(request):
             if has_download_access(request, exp.id, "experiment"):
                 allowed_exps.append(exp)
         if allowed_exps:
-            path_mapper = make_mapper(settings.DEFAULT_PATH_MAPPER,
-                                      rootdir=None)
+            path_mapper = make_mapper(settings.DEFAULT_PATH_MAPPER, rootdir=None)
             exp = allowed_exps[0]
-            path_parts = ['/home', request.user.username, 'experiments',
-                          path_mapper(exp)]
+            path_parts = [
+                "/home",
+                request.user.username,
+                "experiments",
+                path_mapper(exp),
+            ]
             if dataset is not None:
                 path_parts.append(path_mapper(dataset))
             if datafile is not None:
@@ -69,26 +72,24 @@ def sftp_access(request):
     if request.user.userprofile.isDjangoAccount:
         sftp_username = request.user.username
     else:
-        login_attr = getattr(settings, 'SFTP_USERNAME_ATTRIBUTE', 'email')
+        login_attr = getattr(settings, "SFTP_USERNAME_ATTRIBUTE", "email")
         sftp_username = getattr(request.user, login_attr)
     c = {
-        'sftp_host': request.get_host().split(':')[0],
-        'sftp_port': getattr(settings, 'SFTP_PORT', 2200),
-        'sftp_username': sftp_username,
-        'sftp_start_dir': sftp_start_dir,
-        'site_name': getattr(settings, 'SITE_TITLE', 'MyTardis'),
+        "sftp_host": request.get_host().split(":")[0],
+        "sftp_port": getattr(settings, "SFTP_PORT", 2200),
+        "sftp_username": sftp_username,
+        "sftp_start_dir": sftp_start_dir,
+        "site_name": getattr(settings, "SITE_TITLE", "MyTardis"),
     }
-    c['sftp_url'] = 'sftp://{}@{}:{}{}'.format(
-        c['sftp_username'],
-        c['sftp_host'],
-        c['sftp_port'],
-        c['sftp_start_dir'])
-    return render(request, template_name='sftp/index.html', context=c)
+    c["sftp_url"] = "sftp://{}@{}:{}{}".format(
+        c["sftp_username"], c["sftp_host"], c["sftp_port"], c["sftp_start_dir"]
+    )
+    return render(request, template_name="sftp/index.html", context=c)
 
 
 @login_required
 def cybderduck_connection_window(request):
-    base_image = ("tardis/apps/sftp/images/cyberduck_connection_blank.png")
+    base_image = "tardis/apps/sftp/images/cyberduck_connection_blank.png"
     font_file = "tardis/apps/sftp/fonts/roboto.ttf"
     base = Image.open(base_image)
     font = ImageFont.truetype(font_file, 22)
@@ -97,27 +98,22 @@ def cybderduck_connection_window(request):
     if request.user.userprofile.isDjangoAccount:
         sftp_username = request.user.username
     else:
-        login_attr = getattr(settings, 'SFTP_USERNAME_ATTRIBUTE', 'email')
+        login_attr = getattr(settings, "SFTP_USERNAME_ATTRIBUTE", "email")
         sftp_username = getattr(request.user, login_attr)
 
-    sftp_host = request.get_host().split(':')[0]
-    sftp_port = str(getattr(settings, 'SFTP_PORT', 2200))
+    sftp_host = request.get_host().split(":")[0]
+    sftp_port = str(getattr(settings, "SFTP_PORT", 2200))
     info = [
-        {'location': (532, 322),
-         'text': sftp_host},
-        {'location': (1096, 322),
-         'text': sftp_port},
-        {'location': (532, 420),
-         'text': sftp_username},
+        {"location": (532, 322), "text": sftp_host},
+        {"location": (1096, 322), "text": sftp_port},
+        {"location": (532, 420), "text": sftp_username},
     ]
-    url = {'location': (532, 370),
-           'text': 'sftp://{}@{}:{}/'.format(
-               sftp_username,
-               sftp_host,
-               sftp_port)}
+    url = {
+        "location": (532, 370),
+        "text": "sftp://{}@{}:{}/".format(sftp_username, sftp_host, sftp_port),
+    }
     for text in info:
-        draw.text(text['location'], text['text'], font=font,
-                  fill=(0, 0, 0))
+        draw.text(text["location"], text["text"], font=font, fill=(0, 0, 0))
 
     def draw_underlined_text(draw, pos, text, font, **options):
         twidth, theight = draw.textsize(text, font=font)
@@ -127,9 +123,8 @@ def cybderduck_connection_window(request):
 
     url_font = ImageFont.truetype(font_file, 18)
     url_colour = (0, 49, 249)
-    draw_underlined_text(draw, url['location'],
-                         url['text'], url_font, fill=url_colour)
-    response = HttpResponse(content_type='image/png')
+    draw_underlined_text(draw, url["location"], url["text"], url_font, fill=url_colour)
+    response = HttpResponse(content_type="image/png")
     base.save(response, "PNG")
     base.save("foo.png")
     return response
@@ -159,31 +154,30 @@ def sftp_keys(request):
                 key.write_private_key(key_file)
             except (IOError, SSHException):
                 return HttpResponseServerError(
-                    json.dumps({
-                        "error": "Oops! Failed to generate key. "
-                        "Please try again later."
-                    }),
-                    content_type="application/json"
+                    json.dumps(
+                        {
+                            "error": "Oops! Failed to generate key. "
+                            "Please try again later."
+                        }
+                    ),
+                    content_type="application/json",
                 )
-            else:
-                # Create SFTPPublicKey record
-                SFTPPublicKey.objects.create(
-                    user=user,
-                    name=key_name,
-                    key_type=key.get_name(),
-                    public_key=key.get_base64()
-                )
+            # Create SFTPPublicKey record
+            SFTPPublicKey.objects.create(
+                user=user,
+                name=key_name,
+                key_type=key.get_name(),
+                public_key=key.get_base64(),
+            )
 
-                # Move to beginning of file and stream HTTPReponse
-                key_file.seek(0)
-                response = StreamingHttpResponse(
-                    FileWrapper(key_file),
-                    content_type="application/octet-stream"
-                )
-                response["Content-Disposition"] =\
-                    "attachment; filename='{}'".format(key_name)
+            # Move to beginning of file and stream HTTPReponse
+            key_file.seek(0)
+            response = StreamingHttpResponse(
+                FileWrapper(key_file), content_type="application/octet-stream"
+            )
+            response["Content-Disposition"] = f"attachment; filename='{key_name}'"
 
-                return response
+            return response
     else:
         form = KeyGenerateForm()
 
@@ -194,18 +188,16 @@ def sftp_keys(request):
             enable_generate = True
 
         if not enable_generate:
-            form.fields['name'].disabled = True
-            form.errors[NON_FIELD_ERRORS] = form.error_class([
-              "The SSH key generation feature has been disabled because your "\
-              "connection is insecure. Please contact your %s service administrator "\
-              "about securing your connection." % getattr(settings, "SITE_TITLE", "MyTardis")
-            ])
+            form.fields["name"].disabled = True
+            form.errors[NON_FIELD_ERRORS] = form.error_class(
+                [
+                    "The SSH key generation feature has been disabled because your "
+                    "connection is insecure. Please contact your %s service administrator "
+                    "about securing your connection."
+                    % getattr(settings, "SITE_TITLE", "MyTardis")
+                ]
+            )
 
     return render(
-        request,
-        'sftp/keys.html',
-        {
-            'form': form,
-            'enable_generate': enable_generate
-        }
+        request, "sftp/keys.html", {"form": form, "enable_generate": enable_generate}
     )

@@ -45,7 +45,7 @@ def _generate_test_image(testfile):
     else:
         # Apparently ImageMagick isn't installed...
         # Write a "fake" TIFF file
-        with open(testfile, "w") as f:
+        with open(testfile, "w", encoding="utf-8") as f:
             f.write("II\x2a\x00")
             f.close()
 
@@ -131,7 +131,7 @@ class DownloadTestCase(TestCase):
             makedirs(self.dest2)
 
         testfile1 = abspath(join(self.dest1, filename1))
-        with open(testfile1, "w") as f:
+        with open(testfile1, "w", encoding="utf-8") as f:
             f.write("Hello World!\n")
             f.close()
 

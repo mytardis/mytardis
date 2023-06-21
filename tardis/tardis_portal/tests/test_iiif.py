@@ -79,7 +79,7 @@ def _create_datafile():
     compute_md5 = getattr(settings, "COMPUTE_MD5", True)
     compute_sha512 = getattr(settings, "COMPUTE_SHA512", False)
     checksums = compute_checksums(
-        open(tempfile.file.name, "rb"),
+        open(tempfile.file.name, "rb"),  # pylint: disable=R1732
         compute_md5=compute_md5,
         compute_sha512=compute_sha512,
     )

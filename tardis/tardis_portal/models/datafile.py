@@ -1,3 +1,4 @@
+# pylint: disable=too-many-lines
 import hashlib
 import logging
 import mimetypes

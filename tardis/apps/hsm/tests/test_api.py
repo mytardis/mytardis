@@ -65,7 +65,9 @@ class HsmAppApiTestCase(MyTardisResourceTestCase):
         location = self.dfo.storage_box.options.get(key="location").value
         self.dfo.uri = "test.txt"
         self.dfo.save()
-        with open(os.path.join(location, self.dfo.uri), "w") as file_obj:
+        with open(
+            os.path.join(location, self.dfo.uri), "w", encoding="utf-8"
+        ) as file_obj:
             file_obj.write("123test\n")
 
     def tearDown(self):

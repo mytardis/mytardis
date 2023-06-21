@@ -35,7 +35,6 @@ class ParameterSetManagerMixin(ParameterSetManager):
 
 
 class Schema(models.Model):
-
     EXPERIMENT = 1
     DATASET = 2
     DATAFILE = 3
@@ -100,7 +99,6 @@ class Schema(models.Model):
 
 
 class ParameterName(models.Model):
-
     EXACT_VALUE_COMPARISON = 1
     NOT_EQUAL_COMPARISON = 2
     RANGE_COMPARISON = 3
@@ -243,7 +241,6 @@ def _get_filename_parameter_as_image_element(parameter):
 
 
 def _get_parameter(parameter):
-
     if parameter.name.isNumeric():
         value = str(parameter.numerical_value)
         units = parameter.name.units
@@ -431,8 +428,8 @@ class Parameter(models.Model):
                 # properly created via the REST API.
 
                 match = resolve(value)
-                if match.view_name == u"api_dispatch_detail":
-                    model_name = match.kwargs.get(u"resource_name", None)
+                if match.view_name == "api_dispatch_detail":
+                    model_name = match.kwargs.get("resource_name", None)
                     if model_name not in ("experiment", "dataset"):
                         model_name, pk = None, None
                     else:
@@ -539,7 +536,6 @@ class ExperimentParameterSet(ParameterSet):
 
 
 class FreeTextSearchField(models.Model):
-
     parameter_name = models.ForeignKey(ParameterName, on_delete=models.CASCADE)
 
     class Meta:

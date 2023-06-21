@@ -101,9 +101,9 @@ class AbstractExperimentProvider(BaseProvider):
 
     def _get_header(self, obj):
         if isinstance(obj, User):
-            time_func = lambda u: u.last_login
+            time_func = lambda u: u.last_login  # pylint: disable=C3001
         else:
-            time_func = lambda e: e.update_time
+            time_func = lambda e: e.update_time  # pylint: disable=C3001
         # Get UTC timestamp
         timestamp = time_func(obj)
         if timestamp is None:
@@ -236,7 +236,7 @@ class RifCsExperimentProvider(AbstractExperimentProvider):
                 parameters["id"] = ps.id
                 return parameters
             except ExperimentParameter.DoesNotExist:
-                return dict()  # drop Related_Info record with missing fields
+                return {}  # drop Related_Info record with missing fields
 
         ns = "http://ands.org.au/standards/rif-cs/registryObjects#relatedInfo"
         related_info = map(

@@ -15,12 +15,12 @@ LOCAL_TZ = pytz.timezone(settings.TIME_ZONE)
 
 
 def get_local_time(dt):
-    '''
+    """
     Ensure datetime is timezone-aware and in local time.
 
     If the USE_TZ setting in the current dev version of Django comes in,
     this *should* keep providing correct behaviour.
-    '''
+    """
 
     # truncate microseconds
     result = dt.replace(microsecond=0)
@@ -36,12 +36,12 @@ def get_local_time(dt):
 
 
 def get_utc_time(dt):
-    '''
+    """
     Ensure datetime is timezone-aware and in UTC time.
 
     If the USE_TZ setting in the current dev version of Django comes in,
     this *should* keep providing correct behaviour.
-    '''
+    """
 
     # truncate microseconds
     result = dt.replace(microsecond=0)
@@ -56,11 +56,12 @@ def get_utc_time(dt):
 
 def _load_template(template_name):
     from jstemplate.loading import find
+
     template_locations = list(find(template_name))
     # Each returned location is a tuple of (template_name, template_path).
     # We'll just use the template_path of the first location
     template_path = template_locations[0][1]
-    with open(template_path, 'r') as f:
+    with open(template_path, "r", encoding="utf-8") as f:
         return f.read()
 
 
@@ -81,11 +82,9 @@ def get_filesystem_safe_dataset_name(dataset):
     """
     dataset_filename = dataset.description
     if settings.DATASET_SPACES_TO_UNDERSCORES:
-        dataset_filename = dataset_filename.replace(' ', '_')
+        dataset_filename = dataset_filename.replace(" ", "_")
 
-    dataset_filename = quote(
-        dataset_filename,
-        safe=settings.SAFE_FILESYSTEM_CHARACTERS)
+    dataset_filename = quote(dataset_filename, safe=settings.SAFE_FILESYSTEM_CHARACTERS)
 
     return dataset_filename
 
@@ -102,19 +101,14 @@ def get_filesystem_safe_experiment_name(experiment):
     """
     exp_title = experiment.title
     if settings.EXP_SPACES_TO_UNDERSCORES:
-        exp_title = exp_title.replace(' ', '_')
+        exp_title = exp_title.replace(" ", "_")
 
-    expt_filename = quote(
-        exp_title, safe=settings.SAFE_FILESYSTEM_CHARACTERS)
-
-    return expt_filename
+    return quote(exp_title, safe=settings.SAFE_FILESYSTEM_CHARACTERS)
 
 
 def query_debugger(func):
-
     @functools.wraps(func)
     def inner_func(*args, **kwargs):
-
         reset_queries()
         start_queries = len(connection.queries)
         start = time.perf_counter()

@@ -44,7 +44,7 @@ class KeyAddForm(forms.Form):
                 body = public_key
 
             raise forms.ValidationError(
-                _("Body of SSH public key is invalid:\n%(body)s\n" "Error: %(err)s"),
+                _("Body of SSH public key is invalid:\n%(body)s\nError: %(err)s"),
                 code="invalid key body",
                 params={"body": body + "...", "err": err},
             )

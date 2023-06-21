@@ -1211,15 +1211,15 @@ class DataFileResource(MyTardisModelResource):
 
         file_object = file_record.get_file()
         wrapper = FileWrapper(file_object)
-        tracker_data = dict(
-            label="file",
-            session_id=request.COOKIES.get("_ga"),
-            ip=request.META.get("REMOTE_ADDR", ""),
-            user=request.user,
-            total_size=file_record.size,
-            num_files=1,
-            ua=request.META.get("HTTP_USER_AGENT", None),
-        )
+        tracker_data = {
+            "label": "file",
+            "session_id": request.COOKIES.get("_ga"),
+            "ip": request.META.get("REMOTE_ADDR", ""),
+            "user": request.user,
+            "total_size": file_record.size,
+            "num_files": 1,
+            "ua": request.META.get("HTTP_USER_AGENT", None),
+        }
         response = StreamingHttpResponse(
             IteratorTracker(wrapper, tracker_data), content_type=file_record.mimetype
         )

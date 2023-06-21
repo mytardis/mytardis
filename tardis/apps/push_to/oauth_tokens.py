@@ -2,7 +2,7 @@ import json
 
 import requests
 
-OAUTH_AUTH_TOKENS = 'push_to_oauth_tokens'
+OAUTH_AUTH_TOKENS = "push_to_oauth_tokens"
 
 
 def get_token(request, oauth_service):
@@ -21,8 +21,8 @@ def get_token(request, oauth_service):
     else:
         tokens = {}
         request.session[OAUTH_AUTH_TOKENS] = tokens
-    if service_id in tokens and 'access_token' in tokens[service_id]:
-        auth_token = tokens[service_id]['access_token']
+    if service_id in tokens and "access_token" in tokens[service_id]:
+        auth_token = tokens[service_id]["access_token"]
     return auth_token
 
 
@@ -37,12 +37,9 @@ def get_token_data(oauth_service, token):
     """
     if token is None:
         return None
-    r = requests.get(
-        oauth_service.oauth_check_token_url, {
-            'token': token
-        })
+    r = requests.get(oauth_service.oauth_check_token_url, {"token": token}, timeout=500)
     decoded_token = json.loads(r.text)
-    if 'error' in decoded_token:
+    if "error" in decoded_token:
         return None
     return decoded_token
 

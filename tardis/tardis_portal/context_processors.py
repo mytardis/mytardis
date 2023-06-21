@@ -9,7 +9,6 @@ from tardis.tardis_portal.templatetags.approved_user_tags import (
 
 
 def single_search_processor(request):
-
     context = {}
     single_search_on = False
     try:
@@ -26,12 +25,10 @@ def single_search_processor(request):
 
 
 def project_app_processor(request):
-
     return {"project_app_enabled": "tardis.apps.projects" in settings.INSTALLED_APPS}
 
 
 def disable_creation_forms_processor(request):
-
     return {"disable_creation_forms": settings.DISABLE_CREATION_FORMS}
 
 
@@ -90,14 +87,14 @@ def user_menu_processor(request):
     link_accounts_enabled = getattr(settings, "LINK_ACCOUNTS_ENABLED", True)
     user_menu = []
     if not request.user.is_authenticated:
-        return dict(user_menu=user_menu)
+        return {"user_menu": user_menu}
     if manage_account_enabled:
         user_menu.append(
-            dict(
-                url=reverse("tardis.tardis_portal.views.manage_user_account"),
-                icon="fa fa-user",
-                label="Manage Account",
-            )
+            {
+                "url": reverse("tardis.tardis_portal.views.manage_user_account"),
+                "icon": "fa fa-user",
+                "label": "Manage Account",
+            }
         )
     if (
         hasattr(request.user, "api_key")
@@ -105,42 +102,46 @@ def user_menu_processor(request):
         and not check_if_user_not_approved(request)
     ):
         user_menu.append(
-            dict(
-                url=reverse("tardis.tardis_portal.download.download_api_key"),
-                icon="fa fa-key",
-                label="Download Api Key",
-            )
+            {
+                "url": reverse("tardis.tardis_portal.download.download_api_key"),
+                "icon": "fa fa-key",
+                "label": "Download Api Key",
+            }
         )
     if link_accounts_enabled and request.user.has_perm(
         "tardis_portal.change_userauthentication"
     ):
         user_menu.append(
-            dict(
-                url=reverse("tardis.tardis_portal.views.manage_auth_methods"),
-                icon="fa fa-tags",
-                label="Link Accounts",
-            )
+            {
+                "url": reverse("tardis.tardis_portal.views.manage_auth_methods"),
+                "icon": "fa fa-tags",
+                "label": "Link Accounts",
+            }
         )
     if request.user.is_superuser:
         user_menu.append(
-            dict(url=reverse("admin:index"), icon="fa fa-key", label="Admin Interface")
+            {
+                "url": reverse("admin:index"),
+                "icon": "fa fa-key",
+                "label": "Admin Interface",
+            }
         )
     if (
         request.user.has_perm("auth.change_user")
         or request.user.has_perm("auth.change_group")
     ) and not check_if_user_not_approved(request):
-        user_menu.append(dict(divider="True"))
+        user_menu.append({"divider": "True"})
         user_menu.append(
-            dict(
-                url=reverse("tardis.tardis_portal.views.manage_groups"),
-                icon="fa fa-user",
-                style="text-shadow: 2px -2px #666666",
-                label="Group Management",
-            )
+            {
+                "url": reverse("tardis.tardis_portal.views.manage_groups"),
+                "icon": "fa fa-user",
+                "style": "text-shadow: 2px -2px #666666",
+                "label": "Group Management",
+            }
         )
-        user_menu.append(dict(divider="True"))
+        user_menu.append({"divider": "True"})
     user_menu.append(
-        dict(url=reverse("logout"), icon="fa fa-sign-out", label="Log Out")
+        {"url": reverse("logout"), "icon": "fa fa-sign-out", "label": "Log Out"}
     )
 
     user_menu_modifiers = getattr(settings, "USER_MENU_MODIFIERS", [])
@@ -149,4 +150,4 @@ def user_menu_processor(request):
         module = import_module(module_path)
         method = getattr(module, method_name)
         user_menu = method(request, user_menu)
-    return dict(user_menu=user_menu)
+    return {"user_menu": user_menu}

@@ -45,6 +45,7 @@ def view_rifcs(request, experiment_id):
         rifcs_provs = ()
 
     from ..publish.publishservice import PublishService
+
     pservice = PublishService(rifcs_provs, experiment)
     context = pservice.get_context()
     if context is None:
@@ -52,28 +53,28 @@ def view_rifcs(request, experiment_id):
         return return_response_error(request)
 
     template = pservice.get_template()
-    return render_response_index(
-        request, template, context, content_type="text/xml")
+    return render_response_index(request, template, context, content_type="text/xml")
 
 
 def site_settings(request):
-
-    if request.method == 'POST':
-        if 'username' in request.POST and 'password' in request.POST:
-
-            user = auth_service.authenticate(request=request,
-                                             authMethod=localdb_auth_key)
+    if request.method == "POST":
+        if "username" in request.POST and "password" in request.POST:
+            user = auth_service.authenticate(
+                request=request, authMethod=localdb_auth_key
+            )
             if user is not None:
                 if user.is_staff:
-
-                    with open(settings.GRID_PROXY_FILE, 'r') as x509:
+                    with open(settings.GRID_PROXY_FILE, "r", encoding="utf-8") as x509:
                         c = {
-                            'baseurl': request.build_absolute_uri('/'),
-                            'proxy': x509.read(), 'filestorepath':
-                            settings.FILE_STORE_PATH}
+                            "baseurl": request.build_absolute_uri("/"),
+                            "proxy": x509.read(),
+                            "filestorepath": settings.FILE_STORE_PATH,
+                        }
                     return render_response_index(
                         request,
-                        'tardis_portal/site_settings.xml',
-                        c, content_type='application/xml')
+                        "tardis_portal/site_settings.xml",
+                        c,
+                        content_type="application/xml",
+                    )
 
     return return_response_error(request)

@@ -4,15 +4,14 @@ from django.utils.safestring import mark_safe
 
 
 class CommaSeparatedInput(TextInput):
-
     def render(self, name, value, attrs=None, renderer=None):
         if isinstance(value, list):
-            value = ', '.join(value)
+            value = ", ".join(value)
         return super().render(name, value, attrs, renderer=None)
 
     def value_from_datadict(self, data, files, name):
         value = super().value_from_datadict(data, files, name)
-        return [v.strip(' ') for v in value.split(',')]
+        return [v.strip(" ") for v in value.split(",")]
 
 
 class Label(Widget):
@@ -20,14 +19,14 @@ class Label(Widget):
 
     def render(self, name, value, attrs=None):
         if value is None:
-            value = ''
+            value = ""
         final_attrs = dict(self.attrs, name=name)
         if attrs:
             final_attrs.update(attrs)
-        return mark_safe(u'<%(tag)s%(attrs)s>%(value)s</%(tag)s>' %
-                         {'attrs': flatatt(final_attrs),
-                          'value': value,
-                          'tag': self.tag})
+        return mark_safe(
+            "<%(tag)s%(attrs)s>%(value)s</%(tag)s>"
+            % {"attrs": flatatt(final_attrs), "value": value, "tag": self.tag}
+        )
 
 
 class Span(Label):

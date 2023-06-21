@@ -177,6 +177,9 @@ class SafeManager(models.Manager):
 
         filter_dict = {}
         exclude_dict = {}
+        OBJECT = None
+        OBJECTACL = None
+        acl_str = ""
         if self.model.get_ct(self.model).model == "project":
             from tardis.apps.projects.models import Project, ProjectACL
 
@@ -202,9 +205,12 @@ class SafeManager(models.Manager):
             OBJECTACL = DatafileACL
             acl_str = "datafileacl"
 
-        if not any(key in ["user", "group", "token", "isOwner"] for key in kwargs):
+        if (
+            not any(key in ["user", "group", "token", "isOwner"] for key in kwargs)
+            and OBJECT
+        ):
             return OBJECT.objects.none()
-
+        related = ""
         if "user" in kwargs:
             related = "user"
             filter_dict[acl_str + "__user"] = kwargs["user"]
@@ -227,15 +233,18 @@ class SafeManager(models.Manager):
         exclude_dict[acl_str + "__effectiveDate__gte"] = datetime.today()
         exclude_dict[acl_str + "__expiryDate__lte"] = datetime.today()
 
-        query = (
-            OBJECT.objects.prefetch_related(
-                Prefetch(
-                    acl_str + "_set", queryset=OBJECTACL.objects.select_related(related)
+        query = None
+        if OBJECT:
+            query = (
+                OBJECT.objects.prefetch_related(
+                    Prefetch(
+                        acl_str + "_set",
+                        queryset=OBJECTACL.objects.select_related(related),
+                    )
                 )
+                .filter(**filter_dict)
+                .exclude(**exclude_dict)
             )
-            .filter(**filter_dict)
-            .exclude(**exclude_dict)
-        )
         return query
 
     def _query_owned(self, **kwargs):

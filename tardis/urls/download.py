@@ -44,7 +44,7 @@ download_urls = [
         name="tardis.tardis_portal.download.streaming_download_dataset",
     ),
     re_path(
-        r"^dataset/(?P<dataset_id>\d+)/" r"(?P<comptype>[a-z]{3})/$",  # tgz or tar
+        r"^dataset/(?P<dataset_id>\d+)/" + r"(?P<comptype>[a-z]{3})/$",  # tgz or tar
         streaming_download_dataset,
         name="tardis.tardis_portal.download.streaming_download_dataset",
     ),

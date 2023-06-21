@@ -80,12 +80,14 @@ class UploadTestCase(TestCase):
         self.filename = "testfile.txt"
         self.filename2 = "testfile2.txt"
 
-        with open(path.join(self.test_dir, self.filename), "w") as self.file1:
+        with open(
+            path.join(self.test_dir, self.filename), "w", encoding="utf-8"
+        ) as self.file1:
             self.file1.write("Test file 1")
             self.file1.close()
 
         self.file1 = open(  # pylint: disable=consider-using-with
-            path.join(self.test_dir, self.filename), "r"
+            path.join(self.test_dir, self.filename), "r", encoding="utf-8"
         )
 
     def tearDown(self):

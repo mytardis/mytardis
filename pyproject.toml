@@ -35,7 +35,7 @@ pystache = "^0.6.0"
 python-dateutil = "^2.8.2"
 python-magic = {git = "https://github.com/mytardis/python-magic.git"}
 pytz = "2021.1"
-requests = "2.25.1"
+requests = "^2.31.0"
 uritemplate = "^4.1.1"
 django-graphql-jwt = "^0.3.4"
 django-taggit = "^4.0.0"
