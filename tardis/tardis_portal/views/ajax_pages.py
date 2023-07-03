@@ -213,7 +213,7 @@ def retrieve_experiment_metadata(request, experiment_id):
     )
 
 
-@method_decorator(never_cache)
+@never_cache
 @authz.datafile_access_required
 def display_datafile_details(request, datafile_id) -> HttpResponse:
     """
@@ -236,10 +236,10 @@ def display_datafile_details(request, datafile_id) -> HttpResponse:
     views = []
     for ns, url in apps:
         if ns == default_view:
-            views.append({"url": "%s/%s/" % (url, datafile_id), "name": default_view})
+            views.append({"url": f"{url}/{datafile_id}/", "name": default_view})
         elif ns in the_schemas:
             schema = Schema.objects.get(namespace__exact=ns)
-            views.append({"url": "%s/%s/" % (url, datafile_id), "name": schema.name})
+            views.append({"url": f"{url}/{datafile_id}/", "name": schema.name})
     context = {
         "datafile_id": datafile_id,
         "views": views,

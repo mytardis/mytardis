@@ -424,9 +424,9 @@ class ExperimentForm(forms.ModelForm):
     def save(self, commit=True):
         # remove m2m field before saving
         del self.cleaned_data["authors"]
-        super().save(commit)
+
         # fix up experiment form
-        if self.instance:
+        if self.instance.pk:
             # return None if self.pk is None else self.get_file()
             authors = self.instance.experimentauthor_set.all()
             for author in authors:
