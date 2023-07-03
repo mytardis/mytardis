@@ -426,7 +426,7 @@ class ExperimentForm(forms.ModelForm):
         del self.cleaned_data["authors"]
 
         # fix up experiment form
-        if self.instance:
+        if self.instance and self.instance.experimentauthor_set:
             authors = self.instance.experimentauthor_set.all()
             for author in authors:
                 author.delete()

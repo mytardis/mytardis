@@ -10,7 +10,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.core.paginator import EmptyPage, InvalidPage, Paginator
 from django.forms import model_to_dict
-from django.http import JsonResponse
+from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.urls import reverse
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import never_cache
@@ -213,9 +213,9 @@ def retrieve_experiment_metadata(request, experiment_id):
     )
 
 
-# @never_cache
+@method_decorator(never_cache)
 @authz.datafile_access_required
-def display_datafile_details(request, datafile_id):
+def display_datafile_details(request, datafile_id) -> HttpResponse:
     """
     Displays a box, with a list of interaction options depending on
     the file type given and displays the one with the highest priority
