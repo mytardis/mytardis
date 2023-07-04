@@ -4,7 +4,6 @@ import base64
 from binascii import hexlify
 
 from paramiko import DSSKey, ECDSAKey, RSAKey
-from paramiko.py3compat import u
 from tastypie.authorization import Authorization
 from tastypie.exceptions import HydrationError, Unauthorized
 from tastypie.resources import ModelResource
@@ -40,13 +39,13 @@ class SFTPPublicKeyAppResource(ModelResource):
         authentication = default_authentication
         authorization = SFTPACLAuthorization()
         validation = key_add_form
-        resource_name = 'publickey'
+        resource_name = "publickey"
         filtering = {
-            'id': ('exact',),
-            'name': ('exact',),
+            "id": ("exact",),
+            "name": ("exact",),
         }
-        list_allowed_methods = ['get', 'post']
-        detail_allowed_methods = ['get', 'delete']
+        list_allowed_methods = ["get", "post"]
+        detail_allowed_methods = ["get", "delete"]
 
     def hydrate(self, bundle):
         # Add user to bundle as this doesn't come from client
@@ -61,10 +60,10 @@ class SFTPPublicKeyAppResource(ModelResource):
         elif bundle.obj.key_type.startswith("ecdsa"):
             key = ECDSAKey(data=base64.b64decode(bundle.obj.public_key))
         else:
-            raise HydrationError(
-                "Unknown key type: %s" % bundle.object.key_type
-            )
+            raise HydrationError("Unknown key type: %s" % bundle.object.key_type)
 
-        bundle.data['fingerprint'] = u(hexlify(key.get_fingerprint()))
+        bundle.data["fingerprint"] = hexlify(key.get_fingerprint()).decode(
+            encoding="utf-8"
+        )
 
         return bundle

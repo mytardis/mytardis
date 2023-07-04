@@ -12,6 +12,7 @@ import socketserver
 import stat
 import time
 import uuid
+from io import StringIO
 
 from django.conf import settings
 
@@ -31,7 +32,6 @@ from paramiko import (
     Transport,
 )
 from paramiko.common import AUTH_FAILED, AUTH_SUCCESSFUL
-from paramiko.py3compat import StringIO
 from paramiko.rsakey import RSAKey
 
 from tardis.analytics import tracker

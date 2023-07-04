@@ -2,7 +2,7 @@
 
 .. moduleauthor:: James Wettenhall <james.wettenhall@monash.edu>
 """
-from io import BytesIO
+from io import BytesIO, StringIO
 from unittest.mock import patch
 
 from django.conf import settings
@@ -12,7 +12,6 @@ from django.test import RequestFactory, TestCase
 
 from flexmock import flexmock
 from paramiko.common import AUTH_FAILED, AUTH_SUCCESSFUL
-from paramiko.py3compat import StringIO
 from paramiko.rsakey import RSAKey
 
 from tardis.apps.sftp.models import SFTPPublicKey
