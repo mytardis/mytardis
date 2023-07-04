@@ -92,7 +92,7 @@ boto3 = "^1.26.155"
 optional=true
 
 [tool.poetry.group.sftp.dependencies]
-paramiko = "2.7.2"
+paramiko = "^3.2.0"
 
 [tool.isort]
 profile = "black"
