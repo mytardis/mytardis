@@ -10,9 +10,8 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.core.paginator import EmptyPage, InvalidPage, Paginator
 from django.forms import model_to_dict
-from django.http import HttpRequest, HttpResponse, JsonResponse
+from django.http import HttpResponse, JsonResponse
 from django.urls import reverse
-from django.utils.decorators import method_decorator
 from django.views.decorators.cache import never_cache
 
 from ..auth import decorators as authz
