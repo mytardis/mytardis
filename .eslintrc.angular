@@ -1,6 +1,14 @@
 {
     "extends": ["angular", "eslint:recommended"],
     "rules": {
-        "camelcase": 2
+        "camelcase": 2,
+        "quotes": [0, "double"],
+        "indent": 0,
+        "complexity": [
+          "error",
+          {
+            "max": 7
+          }
+        ]
     }
 }
