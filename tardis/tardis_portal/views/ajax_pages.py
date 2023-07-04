@@ -12,7 +12,6 @@ from django.core.paginator import EmptyPage, InvalidPage, Paginator
 from django.forms import model_to_dict
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.urls import reverse
-from django.utils.decorators import method_decorator
 from django.views.decorators.cache import never_cache
 
 from ..auth import decorators as authz
@@ -213,7 +212,7 @@ def retrieve_experiment_metadata(request, experiment_id):
     )
 
 
-@never_cache
+@never_cache(render_response_index)
 @authz.datafile_access_required
 def display_datafile_details(request, datafile_id) -> HttpResponse:
     """
