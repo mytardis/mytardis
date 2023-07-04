@@ -213,7 +213,6 @@ def retrieve_experiment_metadata(request, experiment_id):
     )
 
 
-@method_decorator(never_cache(render_response_index), name="dispatch")
 @authz.datafile_access_required
 def display_datafile_details(request, datafile_id) -> HttpResponse:
     """
@@ -245,7 +244,7 @@ def display_datafile_details(request, datafile_id) -> HttpResponse:
         "views": views,
     }
     return render_response_index(
-        request, "tardis_portal/ajax/datafile_details.html", context
+        never_cache(request), "tardis_portal/ajax/datafile_details.html", context
     )
 
 
