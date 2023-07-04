@@ -10,26 +10,19 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("openid_migration", "0001_initial"),
-        ("tardis_portal", "0019_create_and_populate_new_acls"),
+        ('openid_migration', '0001_initial'),
+        ('tardis_portal', '0019_create_and_populate_new_acls'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
-    run_before = [
-        ("tardis_portal", "0020_delete_old_acls"),
-    ]
+
     operations = [
         migrations.RemoveField(
-            model_name="openidaclmigration",
-            name="acl_id",
+            model_name='openidaclmigration',
+            name='acl_id',
         ),
         migrations.AddField(
-            model_name="openidaclmigration",
-            name="acl_id",
-            field=models.ForeignKey(
-                null=True,
-                blank=True,
-                on_delete=django.db.models.deletion.CASCADE,
-                to="tardis_portal.ExperimentACL",
-            ),
+            model_name='openidaclmigration',
+            name='acl_id',
+            field=models.ForeignKey(null=True, blank=True, on_delete=django.db.models.deletion.CASCADE, to='tardis_portal.ExperimentACL'),
         ),
     ]

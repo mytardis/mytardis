@@ -70,12 +70,7 @@ class UserProfile(models.Model):
 @receiver(post_save, sender=User, dispatch_uid="create_user_profile")
 def create_user_profile(sender, instance, created, **kwargs):
     if created:
-        user = instance
-        perms = settings.DEFAULT_PERMISSIONS
-        for permissions in perms:
-            user.user_permissions.add(Permission.objects.get(codename=permissions))
-        user.save()
-        UserProfile(user=user).save()
+        UserProfile(user=instance).save()
 
 
 class GroupAdmin(models.Model):

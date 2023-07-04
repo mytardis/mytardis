@@ -70,8 +70,8 @@ class DatasetTestCase(ModelTestCase):
         target_id = Dataset.objects.first().id
         self.assertEqual(
             dataset.get_absolute_url(),
-            "/dataset/view/%d/" % target_id,
-            dataset.get_absolute_url() + " != /dataset/view/%d/" % target_id,
+            "/dataset/%d" % target_id,
+            dataset.get_absolute_url() + " != /dataset/%d" % target_id,
         )
 
     def test_get_dir_tuples(self):

@@ -13,8 +13,6 @@ from .default_settings import *  # noqa # pylint: disable=W0401,W0614
 
 # TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 
-TEST_RUNNER = "django_nose.NoseTestSuiteRunner"
-
 DEBUG = True
 
 DATABASES = {
@@ -197,13 +195,3 @@ CHUNK_STORAGE = path.join(DEFAULT_STORAGE_BASE_DIR, "chunks")
 RECALL_URI_TEMPLATES = {
     "tardis.apps.hsm.storage.HsmFileSystemStorage": "/api/v1/hsm_replica/{dfo_id}/recall/"
 }
-
-OBJECTS_WITH_IDENTIFIERS = [
-    "dataset",
-    "experiment",
-    "facility",
-    "instrument",
-    "project",
-]
-
-DEFAULT_PERMISSIONS = []

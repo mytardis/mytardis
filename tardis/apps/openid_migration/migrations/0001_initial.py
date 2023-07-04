@@ -12,76 +12,33 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ("tardis_portal", "0012_userauthentication_approved"),
+        ('tardis_portal', '0012_userauthentication_approved'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
-    run_before = [
-        ("tardis_portal", "0019_create_and_populate_new_acls"),
-    ]
+
     operations = [
         migrations.CreateModel(
-            name="OpenidACLMigration",
+            name='OpenidACLMigration',
             fields=[
-                (
-                    "id",
-                    models.AutoField(
-                        auto_created=True,
-                        primary_key=True,
-                        serialize=False,
-                        verbose_name="ID",
-                    ),
-                ),
-                (
-                    "acl_id",
-                    models.ForeignKey(
-                        on_delete=django.db.models.deletion.CASCADE,
-                        to="tardis_portal.ObjectACL",
-                    ),
-                ),
+                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('acl_id', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='tardis_portal.ObjectACL')),
             ],
         ),
         migrations.CreateModel(
-            name="OpenidUserMigration",
+            name='OpenidUserMigration',
             fields=[
-                (
-                    "id",
-                    models.AutoField(
-                        auto_created=True,
-                        primary_key=True,
-                        serialize=False,
-                        verbose_name="ID",
-                    ),
-                ),
-                ("old_user_auth_method", models.CharField(max_length=30)),
-                ("new_user_auth_method", models.CharField(max_length=30)),
-                ("migration_timestamp", models.DateTimeField(auto_now_add=True)),
-                ("migration_status", models.BooleanField(default=False)),
-                (
-                    "new_user",
-                    models.ForeignKey(
-                        null=True,
-                        on_delete=django.db.models.deletion.CASCADE,
-                        related_name="new_user",
-                        to=settings.AUTH_USER_MODEL,
-                    ),
-                ),
-                (
-                    "old_user",
-                    models.ForeignKey(
-                        null=True,
-                        on_delete=django.db.models.deletion.CASCADE,
-                        related_name="old_user",
-                        to=settings.AUTH_USER_MODEL,
-                    ),
-                ),
+                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('old_user_auth_method', models.CharField(max_length=30)),
+                ('new_user_auth_method', models.CharField(max_length=30)),
+                ('migration_timestamp', models.DateTimeField(auto_now_add=True)),
+                ('migration_status', models.BooleanField(default=False)),
+                ('new_user', models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='new_user', to=settings.AUTH_USER_MODEL)),
+                ('old_user', models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='old_user', to=settings.AUTH_USER_MODEL)),
             ],
         ),
         migrations.AddField(
-            model_name="openidaclmigration",
-            name="user_migration",
-            field=models.ForeignKey(
-                on_delete=django.db.models.deletion.CASCADE,
-                to="openid_migration.OpenidUserMigration",
-            ),
+            model_name='openidaclmigration',
+            name='user_migration',
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='openid_migration.OpenidUserMigration'),
         ),
     ]

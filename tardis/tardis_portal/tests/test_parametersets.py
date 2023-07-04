@@ -181,7 +181,7 @@ class ParameterSetManagerTestCase(TestCase):
         self.dataset_link_param = DatafileParameter(
             parameterset=self.datafileparameterset, name=self.parametername_dataset_link
         )
-        dataset_url = self.dataset.get_absolute_url()  # /dataset/view/1/
+        dataset_url = self.dataset.get_absolute_url()  # /dataset/1/
         self.dataset_link_param.set_value(dataset_url)
         self.dataset_link_param.save()
 
@@ -276,7 +276,7 @@ class ParameterSetManagerTestCase(TestCase):
         self.assertTrue(psm.get_param("exp_link").link_gfk == self.exp)
 
         # Check link to dataset
-        dataset_url = self.dataset.get_absolute_url()  # /dataset/view/1/
+        dataset_url = self.dataset.get_absolute_url()  # /dataset/1/
         self.assertTrue(psm.get_param("dataset_link").string_value == dataset_url)
 
         self.assertTrue(psm.get_param("dataset_link").link_id == self.dataset.id)
@@ -300,7 +300,7 @@ class ParameterSetManagerTestCase(TestCase):
             parameterset=self.datafileparameterset2,
             name=self.parametername_dataset_link,
         )
-        # /dataset/view/1/ - no trailing slash
+        # /dataset/1 - no trailing slash
         dataset_url = self.dataset.get_absolute_url()
         self.dataset_link_param2.set_value(dataset_url)
         self.dataset_link_param2.save()

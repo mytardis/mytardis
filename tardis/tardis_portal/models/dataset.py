@@ -6,7 +6,6 @@ from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.urls import reverse
 from django.utils import timezone
-from taggit.managers import TaggableManager
 
 from ..managers import OracleSafeManager, SafeManager
 from .experiment import Experiment
@@ -66,7 +65,6 @@ class Dataset(models.Model):
     )
     objects = OracleSafeManager()
     safe = SafeManager()  # The acl-aware specific manager.
-    tags = TaggableManager(blank=True)
 
     class Meta:
         app_label = "tardis_portal"
@@ -76,13 +74,6 @@ class Dataset(models.Model):
     def save(self, *args, **kwargs):
         self.modified_time = timezone.now()
         super().save(*args, **kwargs)
-
-    @property
-    def tags_for_indexing(self):
-        """Tags for indexing
-        Used in Elasticsearch indexing.
-        """
-        return " ".join([tag.name for tag in self.tags.all()])
 
     @property
     def is_online(self):

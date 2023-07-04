@@ -1,12 +1,11 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import SearchPage from './components/SearchPage';
-import store from './components/store';
-import { Provider } from 'react-redux';
+import Search from './components/Search';
+
+require('./components/Search.css');
+
 
 ReactDOM.render(
-  (<Provider store={store}>
-    <SearchPage />
-  </Provider>),
+  <Search />,
   document.getElementById('search-app'),
 );

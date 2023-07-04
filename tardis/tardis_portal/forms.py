@@ -71,7 +71,7 @@ def getAuthMethodChoices():
     return authMethodChoices
 
 
-attrs_dict = {"class": "form-control"}
+attrs_dict = {"class": "required"}
 
 
 class LoginForm(AuthenticationForm):
@@ -205,9 +205,7 @@ class ManageGroupPermissionsForm(forms.Form):
 class CreateUserPermissionsForm(RegistrationForm):
     authMethod = forms.CharField(
         required=True,
-        widget=forms.Select(
-            choices=getAuthMethodChoices(), attrs={"class": "form-select"}
-        ),
+        widget=forms.Select(choices=getAuthMethodChoices()),
         label="Authentication Method",
     )
 

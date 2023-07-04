@@ -1,7 +1,7 @@
 {
-  "extends": ["eslint:recommended", "plugin:react/recommended"],
+  "extends": "eslint:recommended",
   "parserOptions": {
-    "ecmaVersion": 8,
+    "ecmaVersion": 7,
     "sourceType": "module",
     "ecmaFeatures": {
       "jsx": true
@@ -14,7 +14,7 @@
         "curly": [2, "all"],
         "dot-notation": [2, {"allowKeywords": true}],
         "eqeqeq": [1],
-        "indent": [2, 4, { "SwitchCase": 1 }],
+        "indent": [2, 4],
         "key-spacing": [2, {"beforeColon": false, "afterColon": true}],
         "new-cap": [0, {"newIsCap": true, "capIsNew": true}],
         "no-alert": [0],

@@ -7,7 +7,6 @@ from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.urls import reverse
 from django.utils.safestring import SafeText
-from taggit.managers import TaggableManager
 
 from ..managers import OracleSafeManager, SafeManager
 from .license import License
@@ -77,7 +76,6 @@ class Experiment(models.Model):
     )
     objects = OracleSafeManager()
     safe = SafeManager()  # The acl-aware specific manager.
-    tags = TaggableManager(blank=True)
 
     class Meta:
         app_label = "tardis_portal"
@@ -88,13 +86,6 @@ class Experiment(models.Model):
         from .hooks import publish_public_expt_rifcs
 
         publish_public_expt_rifcs(self)
-
-    @property
-    def tags_for_indexing(self):
-        """Tags for indexing
-        Used in Elasticsearch indexing.
-        """
-        return " ".join([tag.name for tag in self.tags.all()])
 
     def is_publication_draft(self):
         return (

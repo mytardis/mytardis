@@ -8,7 +8,6 @@ from django.db import models
 from django.db.models.signals import post_save
 from django.urls import reverse
 from django.utils.timezone import now as django_time_now
-from taggit.managers import TaggableManager
 
 # from X.models import DataManagementPlan # Hook in place for future proofing
 from tardis.tardis_portal.managers import OracleSafeManager, SafeManager
@@ -72,7 +71,7 @@ class Project(models.Model):
     principal_investigator = models.ForeignKey(
         User, related_name="principal_investigator", on_delete=models.CASCADE
     )
-    institution = models.ManyToManyField(Institution, related_name="projects")
+    institution = models.ManyToManyField(Institution, related_name="institutions")
     embargo_until = models.DateTimeField(null=True, blank=True)
     start_time = models.DateTimeField(default=django_time_now)
     end_time = models.DateTimeField(null=True, blank=True)
@@ -83,7 +82,6 @@ class Project(models.Model):
     )
     objects = OracleSafeManager()
     safe = SafeManager()
-    tags = TaggableManager(blank=True)
 
     # TODO Integrate DMPs into the project.
     # data_management_plan = models.ManyToManyField(DataManagementPlan,
@@ -94,13 +92,6 @@ class Project(models.Model):
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
-
-    @property
-    def tags_for_indexing(self):
-        """Tags for indexing
-        Used in Elasticsearch indexing.
-        """
-        return " ".join([tag.name for tag in self.tags.all()])
 
     def getParameterSets(self):
         """Return the project parametersets associated with this

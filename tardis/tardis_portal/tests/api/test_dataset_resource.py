@@ -49,9 +49,6 @@ class DatasetResourceTest(MyTardisResourceTestCase):
         self.ds_with_instrument2.instrument = self.extra_instrument
         self.ds_with_instrument2.save()
         self.ds_with_instrument2.experiments.add(self.testexp)
-        self.dataset_with_tags = Dataset.objects.create(description="Dataset with tags")
-        self.dataset_with_tags.experiments.add(self.testexp)
-        self.dataset_with_tags.tags.add("keyword1", "keyword2")
 
     def test_get_dataset_no_instrument(self):
         uri = "/api/v1/dataset/?description=%s" % quote(
@@ -121,25 +118,6 @@ class DatasetResourceTest(MyTardisResourceTestCase):
         response = self.api_client.get(uri, authentication=self.get_credentials())
         returned_data = json.loads(response.content.decode())
         self.assertEqual(returned_data["meta"]["total_count"], 0)
-
-    def test_get_tags(self):
-        dataset_id = self.dataset_with_tags.id
-        uri = "/api/v1/dataset/%d/" % dataset_id
-        response = self.api_client.get(uri, authentication=self.get_credentials())
-        returned_data = json.loads(response.content)
-        self.assertEqual(sorted(returned_data["tags"]), ["keyword1", "keyword2"])
-
-    def test_update_tags(self):
-        dataset_id = self.dataset_with_tags.id
-        uri = "/api/v1/dataset/%d/" % dataset_id
-        data = {"tags": ["keyword3", "keyword4"]}
-        response = self.api_client.patch(
-            uri, data=data, authentication=self.get_credentials()
-        )
-        self.assertHttpAccepted(response)
-        response = self.api_client.get(uri, authentication=self.get_credentials())
-        returned_data = json.loads(response.content)
-        self.assertEqual(sorted(returned_data["tags"]), ["keyword3", "keyword4"])
 
     def test_get_root_dir_nodes(self):
         dataset = Dataset.objects.create(

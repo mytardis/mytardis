@@ -97,7 +97,7 @@ class Migration(migrations.Migration):
                 (
                     "institution",
                     models.ManyToManyField(
-                        related_name="projects",
+                        related_name="institutions",
                         to="projects.Institution",
                     ),
                 ),

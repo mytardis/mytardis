@@ -179,7 +179,7 @@
                         <td>{{dataset.owner}}</td>
                         <td>{{dataset.group}}</td>
                         <td><a href="/experiment/view/{{dataset.parent_experiment.id}}/" target="_blank">{{dataset.parent_experiment.title}}</a></td>
-                        <td><a href="/dataset/view/{{dataset.id}}" target="_blank">{{dataset.description}}</a></td>
+                        <td><a href="/dataset/{{dataset.id}}" target="_blank">{{dataset.description}}</a></td>
                         <td>{{dataset.instrument.name}}</td>
                         <td>{{dataset.created_time | date:'yyyy-MM-dd h:mma'}}</td>
                         <td>
@@ -223,7 +223,7 @@
                         <td>{{dataset.owner}}</td>
                         <td>{{dataset.group}}</td>
                         <td><a href="/experiment/view/{{dataset.parent_experiment.id}}/" target="_blank">{{dataset.parent_experiment.title}}</a></td>
-                        <td><a href="/dataset/view/{{dataset.id}}" target="_blank">{{dataset.description}}</a></td>
+                        <td><a href="/dataset/{{dataset.id}}" target="_blank">{{dataset.description}}</a></td>
                         <td>{{dataset.created_time | date:'yyyy-MM-dd h:mma'}}</td>
                         <td>
                           <span ng-include="'showHideFileListButton'"></span>
@@ -263,7 +263,7 @@
                       </tr>
                       <tr ng-repeat-start="dataset in datasetByUser.datasets | filter:facilityCtrl.search_experiment:strict | filter:facilityCtrl.search_instrument:strict">
                         <td><a href="/experiment/view/{{dataset.parent_experiment.id}}/" target="_blank">{{dataset.parent_experiment.title}}</a></td>
-                        <td><a href="/dataset/view/{{dataset.id}}" target="_blank">{{dataset.description}}</a></td>
+                        <td><a href="/dataset/{{dataset.id}}" target="_blank">{{dataset.description}}</a></td>
                         <td>{{dataset.instrument.name}}</td>
                         <td>{{dataset.created_time | date:'yyyy-MM-dd h:mma'}}</td>
                         <td>
