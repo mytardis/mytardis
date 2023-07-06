@@ -162,7 +162,7 @@ def has_X_access(request, obj_id, ct_type, perm_type):
                 obj = DataFile.objects.get(id=obj_id)
     except (Experiment.DoesNotExist, Dataset.DoesNotExist, DataFile.DoesNotExist):
         return False
-    return request.user.has_perm("tardis_acls." + perm_type + "_" + ct_type, obj)
+    return request.user.has_perm(f"tardis_acls.{perm_type}_{ct_type}", obj)
 
 
 def has_access(request, obj_id, ct_type):

@@ -6,6 +6,8 @@ Implemented with Tastypie.
 .. moduleauthor:: Grischa Meyer <grischa@gmail.com>
 .. moduleauthor:: James Wettenhall <james.wettenhall@monash.edu>
 """
+
+import contextlib
 import json
 import re
 from itertools import chain
@@ -301,22 +303,24 @@ class ACLAuthorization(Authorization):
         if isinstance(bundle.obj, Facility):
             facilities = facilities_managed_by(bundle.request.user)
             return [facility for facility in object_list if facility in facilities]
-        if isinstance(bundle.obj, Instrument):
-            if bundle.request.user.is_authenticated:
-                return object_list
-        if isinstance(bundle.obj, StorageBox):
-            if bundle.request.user.is_authenticated:
-                return object_list
-        if isinstance(bundle.obj, StorageBoxOption):
-            if bundle.request.user.is_authenticated:
-                return [
-                    option
-                    for option in object_list
-                    if option.key in StorageBoxOptionResource.accessible_keys
-                ]
-        if isinstance(bundle.obj, StorageBoxAttribute):
-            if bundle.request.user.is_authenticated:
-                return object_list
+        if isinstance(bundle.obj, Instrument) and bundle.request.user.is_authenticated:
+            return object_list
+        if isinstance(bundle.obj, StorageBox) and bundle.request.user.is_authenticated:
+            return object_list
+        if (
+            isinstance(bundle.obj, StorageBoxOption)
+            and bundle.request.user.is_authenticated
+        ):
+            return [
+                option
+                for option in object_list
+                if option.key in StorageBoxOptionResource.accessible_keys
+            ]
+        if (
+            isinstance(bundle.obj, StorageBoxAttribute)
+            and bundle.request.user.is_authenticated
+        ):
+            return object_list
         return []
 
     def read_detail(self, object_list, bundle):  # noqa # too complex
@@ -397,7 +401,7 @@ class ACLAuthorization(Authorization):
     def create_detail(self, object_list, bundle):  # noqa # too complex
         if not bundle.request.user.is_authenticated:
             return False
-        if bundle.request.user.is_authenticated and bundle.request.user.is_superuser:
+        if bundle.request.user.is_superuser:
             return True
         if isinstance(bundle.obj, Experiment):
             return bundle.request.user.has_perm("tardis_portal.add_experiment")
@@ -688,14 +692,12 @@ class FacilityResource(MyTardisModelResource):
             filters = {}
         orm_filters = super().build_filters(filters)
 
-        if "tardis.apps.identifiers" in settings.INSTALLED_APPS:
-            if (
-                "facility" in settings.OBJECTS_WITH_IDENTIFIERS
-                and "identifier" in filters
-            ):
-                query = filters["identifier"]
-                qset = Q(identifiers__identifier__iexact=query)
-                orm_filters.update({"identifier": qset})
+        if "tardis.apps.identifiers" in settings.INSTALLED_APPS and (
+            "facility" in settings.OBJECTS_WITH_IDENTIFIERS and "identifier" in filters
+        ):
+            query = filters["identifier"]
+            qset = Q(identifiers__identifier__iexact=query)
+            orm_filters.update({"identifier": qset})
         return orm_filters
 
     def apply_filters(self, request, applicable_filters):
@@ -759,14 +761,13 @@ class InstrumentResource(MyTardisModelResource):
             filters = {}
         orm_filters = super().build_filters(filters)
 
-        if "tardis.apps.identifiers" in settings.INSTALLED_APPS:
-            if (
-                "instrument" in settings.OBJECTS_WITH_IDENTIFIERS
-                and "identifier" in filters
-            ):
-                query = filters["identifier"]
-                qset = Q(identifiers__identifier__iexact=query)
-                orm_filters.update({"identifier": qset})
+        if "tardis.apps.identifiers" in settings.INSTALLED_APPS and (
+            "instrument" in settings.OBJECTS_WITH_IDENTIFIERS
+            and "identifier" in filters
+        ):
+            query = filters["identifier"]
+            qset = Q(identifiers__identifier__iexact=query)
+            orm_filters.update({"identifier": qset})
         return orm_filters
 
     def apply_filters(self, request, applicable_filters):
@@ -839,14 +840,13 @@ class ExperimentResource(MyTardisModelResource):
             filters = {}
         orm_filters = super().build_filters(filters)
 
-        if "tardis.apps.identifiers" in settings.INSTALLED_APPS:
-            if (
-                "experiment" in settings.OBJECTS_WITH_IDENTIFIERS
-                and "identifier" in filters
-            ):
-                query = filters["identifier"]
-                qset = Q(identifiers__identifier__iexact=query)
-                orm_filters.update({"identifier": qset})
+        if "tardis.apps.identifiers" in settings.INSTALLED_APPS and (
+            "experiment" in settings.OBJECTS_WITH_IDENTIFIERS
+            and "identifier" in filters
+        ):
+            query = filters["identifier"]
+            qset = Q(identifiers__identifier__iexact=query)
+            orm_filters.update({"identifier": qset})
         return orm_filters
 
     def apply_filters(self, request, applicable_filters):
@@ -1093,14 +1093,12 @@ class DatasetResource(MyTardisModelResource):
             filters = {}
         orm_filters = super().build_filters(filters)
 
-        if "tardis.apps.identifiers" in settings.INSTALLED_APPS:
-            if (
-                "dataset" in settings.OBJECTS_WITH_IDENTIFIERS
-                and "identifier" in filters
-            ):
-                query = filters["identifier"]
-                qset = Q(identifiers__identifier__iexact=query)
-                orm_filters.update({"identifier": qset})
+        if "tardis.apps.identifiers" in settings.INSTALLED_APPS and (
+            "dataset" in settings.OBJECTS_WITH_IDENTIFIERS and "identifier" in filters
+        ):
+            query = filters["identifier"]
+            qset = Q(identifiers__identifier__iexact=query)
+            orm_filters.update({"identifier": qset})
         return orm_filters
 
     def apply_filters(self, request, applicable_filters):
@@ -1221,13 +1219,11 @@ class DatasetResource(MyTardisModelResource):
         if getattr(bundle.obj, "id", False):
             dataset = bundle.obj
             for exp_uri in bundle.data.get("experiments", []):
-                try:
+                with contextlib.suppress(NotFound):
                     exp = ExperimentResource.get_via_uri(
                         ExperimentResource(), exp_uri, bundle.request
                     )
                     bundle.obj.experiments.add(exp)
-                except NotFound:
-                    pass
             if not settings.ONLY_EXPERIMENT_ACLS:
                 acl = DatasetACL(
                     dataset=dataset,
@@ -1300,26 +1296,27 @@ class DatasetResource(MyTardisModelResource):
                 # append files to list
         if dfs:
             for df in dfs:
-                children = {}
-                children["name"] = df.filename
-                children["verified"] = df.verified
-                children["id"] = df.id
-                children["is_online"] = df.is_online
-                children["recall_url"] = df.recall_url
+                children = {
+                    "name": df.filename,
+                    "verified": df.verified,
+                    "id": df.id,
+                    "is_online": df.is_online,
+                    "recall_url": df.recall_url,
+                }
                 child_list.append(children)
         if paginator.num_pages - 1 > page_num:
             # append a marker element
-            children = {}
-            children["next_page"] = True
-            children["next_page_num"] = page_num + 1
-            children["display_text"] = "Displaying {current} of {total} ".format(
-                current=(dfs.number * pgresults), total=paginator.count
-            )
+            children = {
+                "next_page": True,
+                "next_page_num": page_num + 1,
+                "display_text": "Displaying {current} of {total} ".format(
+                    current=(dfs.number * pgresults), total=paginator.count
+                ),
+            }
             child_list.append(children)
         if paginator.num_pages - 1 == page_num:
             # append a marker element
-            children = {}
-            children["next_page"] = False
+            children = {"next_page": False}
             child_list.append(children)
 
         return JsonResponse(child_list, status=200, safe=False)
