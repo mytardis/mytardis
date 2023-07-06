@@ -53,7 +53,7 @@ tardis/apps/*
 !tardis/apps/search
 !tardis/apps/eventlog
 !tardis/apps/projects
-
+!tardis/apps/identifiers
 
 *.old
 

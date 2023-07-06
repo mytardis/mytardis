@@ -24,9 +24,7 @@ class DatasetID(models.Model):
     identifier = models.CharField(max_length=400, null=True, blank=True, unique=True)
 
     def __str__(self):
-        if self.identifier:
-            return self.identifier
-        return "No Identifier"
+        return self.identifier or "No Identifier"
 
 
 class ExperimentID(models.Model):
@@ -42,9 +40,7 @@ class ExperimentID(models.Model):
     identifier = models.CharField(max_length=400, null=True, blank=True, unique=True)
 
     def __str__(self):
-        if self.identifier:
-            return self.identifier
-        return "No Identifier"
+        return self.identifier or "No Identifier"
 
 
 class FacilityID(models.Model):
@@ -60,9 +56,7 @@ class FacilityID(models.Model):
     identifier = models.CharField(max_length=400, null=True, blank=True, unique=True)
 
     def __str__(self):
-        if self.identifier:
-            return self.identifier
-        return "No Identifier"
+        return self.identifier or "No Identifier"
 
 
 class InstrumentID(models.Model):
@@ -78,9 +72,7 @@ class InstrumentID(models.Model):
     identifier = models.CharField(max_length=400, null=True, blank=True, unique=True)
 
     def __str__(self):
-        if self.identifier:
-            return self.identifier
-        return "No Identifier"
+        return self.identifier or "No Identifier"
 
 
 class ProjectID(models.Model):
@@ -96,9 +88,7 @@ class ProjectID(models.Model):
     identifier = models.CharField(max_length=400, null=True, blank=True, unique=True)
 
     def __str__(self):
-        if self.identifier:
-            return self.identifier
-        return "No Identifier"
+        return self.identifier or "No Identifier"
 
 
 class InstitutionID(models.Model):
@@ -114,6 +104,4 @@ class InstitutionID(models.Model):
     identifier = models.CharField(max_length=400, null=True, blank=True, unique=True)
 
     def __str__(self):
-        if self.identifier:
-            return self.identifier
-        return "No Identifier"
+        return self.identifier or "No Identifier"
