@@ -828,7 +828,7 @@ class ExperimentResource(MyTardisModelResource):
         full=True,
         null=True,
     )
-    tags = fields.ListField()
+    # tags = fields.ListField()
 
     # Custom filter for identifiers module based on code example from
     # https://stackoverflow.com/questions/10021749/ \
