@@ -195,3 +195,11 @@ RECALL_URI_TEMPLATES = {
 }
 
 ONLY_EXPERIMENT_ACLS = False
+DEFAULT_PERMISSIONS = []
+OBJECTS_WITH_IDENTIFIERS = [
+    "dataset",
+    "experiment",
+    "facility",
+    "instrument",
+    "project",
+]
