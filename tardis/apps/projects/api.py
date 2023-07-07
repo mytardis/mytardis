@@ -279,11 +279,11 @@ class ProjectACLAuthorization(Authorization):
 class InstitutionResource(ModelResource):
     """Tastypie class for accessing Instituions"""
 
-    def filter_id_items(self, bundle):
-        resource = InstitutionIDResource()
-        new_bundle = Bundle(request=bundle.request)
-        objs = resource.obj_get_list(new_bundle)
-        return objs.filter(parent_id=bundle.obj.pk)
+    # def filter_id_items(self, bundle):
+    #    resource = InstitutionIDResource()
+    #    new_bundle = Bundle(request=bundle.request)
+    #    objs = resource.obj_get_list(new_bundle)
+    #    return objs.filter(parent_id=bundle.obj.pk)
 
     instituitionid = None
     identifiers = fields.ListField(null=True, blank=True)
@@ -297,14 +297,13 @@ class InstitutionResource(ModelResource):
             filters = {}
         orm_filters = super().build_filters(filters)
 
-        if "tardis.apps.identifiers" in settings.INSTALLED_APPS:
-            if (
-                "institution" in settings.OBJECTS_WITH_IDENTIFIERS
-                and "identifier" in filters
-            ):
-                query = filters["identifier"]
-                qset = Q(identifiers__identifier__iexact=query)
-                orm_filters.update({"identifier": qset})
+        if "tardis.apps.identifiers" in settings.INSTALLED_APPS and (
+            "institution" in settings.OBJECTS_WITH_IDENTIFIERS
+            and "identifier" in filters
+        ):
+            query = filters["identifier"]
+            qset = Q(identifiers__identifier__iexact=query)
+            orm_filters.update({"identifier": qset})
         return orm_filters
 
     def apply_filters(self, request, applicable_filters):
@@ -383,30 +382,22 @@ class ProjectResource(ModelResource):
             filters = {}
         orm_filters = super().build_filters(filters)
 
-        if "tardis.apps.identifiers" in settings.INSTALLED_APPS:
-            if (
-                "project" in settings.OBJECTS_WITH_IDENTIFIERS
-                and "identifier" in filters
-            ):
-                query = filters["identifier"]
-                qset = Q(identifiers__identifier__iexact=query)
-                orm_filters.update({"identifier": qset})
+        if "tardis.apps.identifiers" in settings.INSTALLED_APPS and (
+            "project" in settings.OBJECTS_WITH_IDENTIFIERS and "identifier" in filters
+        ):
+            query = filters["identifier"]
+            qset = Q(identifiers__identifier__iexact=query)
+            orm_filters.update({"identifier": qset})
         return orm_filters
 
     def apply_filters(self, request, applicable_filters):
-        if "tardis.apps.identifiers" in settings.INSTALLED_APPS:
-            if (
-                "project" in settings.OBJECTS_WITH_IDENTIFIERS
-                and "identifier" in applicable_filters
-            ):
-                custom = applicable_filters.pop("identifier")
-            else:
-                custom = None
-        else:
-            custom = None
-
+        custom = None
+        if "tardis.apps.identifiers" in settings.INSTALLED_APPS and (
+            "project" in settings.OBJECTS_WITH_IDENTIFIERS
+            and "identifier" in applicable_filters
+        ):
+            custom = applicable_filters.pop("identifier")
         semi_filtered = super().apply_filters(request, applicable_filters)
-
         return semi_filtered.filter(custom) if custom else semi_filtered
 
     # End of custom filter code
@@ -665,18 +656,3 @@ class ProjectParameterResource(ParameterResource):
         serializer = default_serializer
         object_class = ProjectParameter
         queryset = ProjectParameter.objects.all()
-
-
-class InstitutionResource(ModelResource):
-    class Meta:
-        authentication = MyTardisAuthentication()
-        authorization = ProjectACLAuthorization()
-        serializer = default_serializer
-        object_class = Institution
-        queryset = Institution.objects.all()
-        filtering = {
-            "id": ("exact",),
-            "name": ("exact",),
-        }
-        ordering = ["id", "name"]
-        always_return_data = True

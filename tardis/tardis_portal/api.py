@@ -870,10 +870,10 @@ class ExperimentResource(MyTardisModelResource):
     def dehydrate_tags(self, bundle):
         return list(map(str, bundle.obj.tags.all()))
 
-    def save_m2m(self, bundle):
-        # tags = bundle.data.get("tags", [])
-        # bundle.obj.tags.set(*tags)
-        return super().save_m2m(bundle)
+    # def save_m2m(self, bundle):
+    # tags = bundle.data.get("tags", [])
+    # bundle.obj.tags.set(*tags)
+    #    return super().save_m2m(bundle)
 
     class Meta(MyTardisModelResource.Meta):
         object_class = Experiment
@@ -959,41 +959,40 @@ class ExperimentResource(MyTardisModelResource):
         """
         user = bundle.request.user
         bundle.data["created_by"] = user
+        identifiers = None
         with transaction.atomic():
             # Clean up bundle to remove PIDS if the identifiers app is being used.
             if (
                 "tardis.apps.identifiers" in settings.INSTALLED_APPS
                 and "experiment" in settings.OBJECTS_WITH_IDENTIFIERS
-            ):
-                identifiers = None
-                if "identifiers" in bundle.data.keys():
-                    identifiers = bundle.data.pop("identifiers")
+            ) and "identifiers" in bundle.data.keys():
+                identifiers = bundle.data.pop("identifiers")
             bundle = super().obj_create(bundle, **kwargs)
             # After the obj has been created
+            experiment = bundle.obj
             if (
                 "tardis.apps.identifiers" in settings.INSTALLED_APPS
                 and "experiment" in settings.OBJECTS_WITH_IDENTIFIERS
-            ):
-                experiment = bundle.obj
-                if identifiers:
-                    for identifier in identifiers:
-                        ExperimentID.objects.create(
-                            experiment=experiment,
-                            identifier=str(identifier),
-                        )
+            ) and identifiers:
+                for identifier in identifiers:
+                    ExperimentID.objects.create(
+                        experiment=experiment,
+                        identifier=str(identifier),
+                    )
 
             if bundle.data.get("users", False):
                 for entry in bundle.data["users"]:
                     username, isOwner, canDownload, canSensitive = entry
-                    acl_user = get_or_create_user(username)
-                    ExperimentACL.objects.create(
-                        experiment=experiment,
-                        user=acl_user,
-                        canRead=True,
-                        canDownload=canDownload,
-                        canSensitive=canSensitive,
-                        isOwner=isOwner,
-                    )
+                    acl_user = User.objects.get(username=username)
+                    if acl_user:
+                        ExperimentACL.objects.create(
+                            experiment=experiment,
+                            user=acl_user,
+                            canRead=True,
+                            canDownload=canDownload,
+                            canSensitive=canSensitive,
+                            isOwner=isOwner,
+                        )
 
                     if not any(
                         acl_user.has_perm("tardis_acls.view_project", parent)
@@ -1430,7 +1429,7 @@ class DatasetResource(MyTardisModelResource):
                     {"name": part2.rpartition("/")[2], "children": children}
                 )
 
-    def obj_create(self, bundle, **kwargs):
+    def obj_create(self, bundle, **kwargs):  # pylint: disable=R1702
         with transaction.atomic():
             # Clean up bundle to remove PIDS if the identifiers app is being used.
             if (
@@ -1456,7 +1455,7 @@ class DatasetResource(MyTardisModelResource):
             if bundle.data.get("users", False):
                 for entry in bundle.data["users"]:
                     username, isOwner, canDownload, canSensitive = entry
-                    acl_user = get_or_create_user(username)
+                    acl_user = User.objects.get(username=username)
                     DatasetACL.objects.create(
                         dataset=dataset,
                         user=acl_user,
@@ -1684,26 +1683,25 @@ class DataFileResource(MyTardisModelResource):
         create ACL before any related objects are created in order to use
         ACL permissions for those objects.
         """
-        if getattr(bundle.obj, "id", False):
-            if not settings.ONLY_EXPERIMENT_ACLS:
-                datafile = bundle.obj
-                # TODO: unify this with the view function's ACL creation,
-                # maybe through an ACL toolbox.
-                acl = DatafileACL(
-                    datafile=datafile,
-                    user=bundle.request.user,
-                    canRead=True,
-                    canDownload=True,
-                    canWrite=True,
-                    canDelete=True,
-                    canSensitive=True,
-                    isOwner=True,
-                    aclOwnershipType=DatafileACL.OWNER_OWNED,
-                )
-                acl.save()
+        if getattr(bundle.obj, "id", False) and not settings.ONLY_EXPERIMENT_ACLS:
+            datafile = bundle.obj
+            # TODO: unify this with the view function's ACL creation,
+            # maybe through an ACL toolbox.
+            acl = DatafileACL(
+                datafile=datafile,
+                user=bundle.request.user,
+                canRead=True,
+                canDownload=True,
+                canWrite=True,
+                canDelete=True,
+                canSensitive=True,
+                isOwner=True,
+                aclOwnershipType=DatafileACL.OWNER_OWNED,
+            )
+            acl.save()
         return super().hydrate_m2m(bundle)
 
-    def obj_create(self, bundle, **kwargs):
+    def obj_create(self, bundle, **kwargs):  # pylint: disable=R1702
         """
         Creates a new DataFile object from the provided bundle.data dict.
 
@@ -1749,7 +1747,7 @@ class DataFileResource(MyTardisModelResource):
             if bundle.data.get("users", False):
                 for entry in bundle.data["users"]:
                     username, isOwner, canDownload, canSensitive = entry
-                    acl_user = get_or_create_user(username)
+                    acl_user = User.objects.get(username=username)
                     DatafileACL.objects.create(
                         datafile=datafile,
                         user=acl_user,
