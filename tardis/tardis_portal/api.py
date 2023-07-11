@@ -1,4 +1,4 @@
-# pylint: disable=C0302
+# pylint: disable=C0302,R1702
 """
 RESTful API for MyTardis models and data.
 Implemented with Tastypie.
