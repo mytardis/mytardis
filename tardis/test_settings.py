@@ -13,6 +13,8 @@ from .default_settings import *  # noqa # pylint: disable=W0401,W0614
 
 # TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 
+TEST_RUNNER = "django_nose.NoseTestSuiteRunner"
+
 DEBUG = True
 
 DATABASES = {

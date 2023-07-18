@@ -219,7 +219,7 @@ class ProjectACLAuthorization(Authorization):
             return True
 
         if isinstance(bundle.obj, Project):
-            if not bundle.request.user.has_perm("tardis_portal.change_project"):
+            if not bundle.request.user.has_perm("projects.change_project"):
                 return False
             perm = False
             if settings.ONLY_EXPERIMENT_ACLS:
@@ -238,7 +238,7 @@ class ProjectACLAuthorization(Authorization):
                 perm = True
             return perm
         if isinstance(bundle.obj, ProjectParameterSet):
-            if not bundle.request.user.has_perm("tardis_portal.change_project"):
+            if not bundle.request.user.has_perm("projects.change_project"):
                 return False
             project_uri = bundle.data.get("project", None)
             if project_uri is not None:
@@ -251,12 +251,12 @@ class ProjectACLAuthorization(Authorization):
             return False
         if isinstance(bundle.obj, ProjectParameter):
             return bundle.request.user.has_perm(
-                "tardis_portal.change_project"
+                "projects.change_project"
             ) and has_write(
                 bundle.request, bundle.obj.parameterset.project.id, "project"
             )
         if isinstance(bundle.obj, ProjectACL):
-            return bundle.request.user.has_perm("tardis_portal.add_projectacl")
+            return bundle.request.user.has_perm("projects.add_projectacl")
         raise NotImplementedError(type(bundle.obj))
 
     def update_list(self, object_list, bundle):
@@ -369,7 +369,7 @@ class ProjectResource(ModelResource):
         null=True,
     )
     institution = fields.ToManyField(
-        PROJECT_INSTITUTION_RESOURCE, "institutions", null=True, full=True
+        InstitutionResource, "institution", related_name="projects"
     )
     principal_investigator = fields.ForeignKey(UserResource, "principal_investigator")
     tags = fields.ListField()
@@ -420,10 +420,14 @@ class ProjectResource(ModelResource):
         filtering = {
             "id": ("exact",),
             "name": ("exact",),
-            "experiments": ALL_WITH_RELATIONS,
             "url": ("exact",),
             "institution": ALL_WITH_RELATIONS,
         }
+        if (
+            "tardis.apps.identifiers" in settings.INSTALLED_APPS
+            and "project" in settings.OBJECTS_WITH_IDENTIFIERS
+        ):
+            filtering.update({"pids": ["pids"]})
         ordering = ["id", "name", "url", "start_time", "end_time"]
         always_return_data = True
 

@@ -20,6 +20,7 @@ from django.forms.models import model_to_dict
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.functional import cached_property
+from taggit.managers import TaggableManager
 
 import magic
 from uritemplate import URITemplate
@@ -89,10 +90,18 @@ class DataFile(models.Model):
     )
     objects = OracleSafeManager()
     safe = SafeManager()  # The acl-aware specific manager.
+    tags = TaggableManager(blank=True)
 
     @property
     def file_object(self):
         return None if self.pk is None else self.get_file()
+
+    @property
+    def tags_for_indexing(self):
+        """Tags for indexing
+        Used in Elasticsearch indexing.
+        """
+        return " ".join([tag.name for tag in self.tags.all()])
 
     @file_object.setter
     def file_object(self, file_object):

@@ -22,9 +22,11 @@ INSTALLED_APPS = (
     "tardis.tardis_portal.templatetags",
     "tardis.analytics",
     # these optional apps, may require extra settings
-    # "tardis.apps.oaipmh",
+    "tardis.apps.oaipmh",
+    "tardis.apps.sftp",
     # 'tardis.apps.push_to',
     # 'tardis.apps.social_auth',
+    "taggit",
 )
 
 USER_MENU_MODIFIERS = []

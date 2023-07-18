@@ -94,6 +94,7 @@ if "tardis.apps.projects" in settings.INSTALLED_APPS:
     from tardis.apps.projects.api import (
         ProjectACLResource,
         ProjectParameterResource,
+        InstitutionResource,
         ProjectParameterSetResource,
         ProjectResource,
     )
@@ -102,6 +103,7 @@ if "tardis.apps.projects" in settings.INSTALLED_APPS:
     v1_api.register(ProjectACLResource())
     v1_api.register(ProjectParameterSetResource())
     v1_api.register(ProjectParameterResource())
+    v1_api.register(InstitutionResource())
 
 
 api_urls = [re_path(r"^", include(v1_api.urls))]

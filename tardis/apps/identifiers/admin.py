@@ -10,6 +10,7 @@ from tardis.apps.identifiers.models import (
     ProjectID,
 )
 
+
 # Register PID models in admin site
 if "dataset" in settings.OBJECTS_WITH_IDENTIFIERS:
     admin.site.register(DatasetID)
@@ -21,6 +22,7 @@ if "instrument" in settings.OBJECTS_WITH_IDENTIFIERS:
     admin.site.register(InstrumentID)
 if "institution" in settings.OBJECTS_WITH_IDENTIFIERS:
     admin.site.register(InstitutionID)
+
 if (
     "tardis.apps.projects" in settings.INSTALLED_APPS
     and "project" in settings.OBJECTS_WITH_IDENTIFIERS

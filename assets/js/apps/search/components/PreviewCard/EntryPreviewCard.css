@@ -1,0 +1,83 @@
+.preview-card__close {
+    position: absolute;
+    right: 5px;
+    top: 5px;
+}
+
+.preview-card__close button {
+    background: none;
+	color: inherit;
+	border: none;
+	padding: 0;
+	font: inherit;
+	cursor: pointer;
+    outline: inherit;
+    background-color: greenyellow;
+}
+
+.preview-card__body {
+    padding: 1.5rem;
+    border-style: solid;
+    border-width: 1px;
+    border-color: #dee2e6;
+    flex: 0 1 450px;
+    overflow-y: auto;
+}
+
+.preview-card__body > * {
+    padding: 0.2em 0em;
+}
+
+.preview-card__button-wrapper--right {
+    text-align: right;
+}
+
+.preview-card__inline-block-wrapper {
+    display: inline-block;
+}
+
+.preview-card__button--right {
+    margin-top: 2em;
+    display: block;
+}
+
+.preview-card__parameter-table {
+    margin: 0.5rem 0rem;
+}
+
+.preview-card__header {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    margin-bottom: 1em;
+}
+
+.preview-card__header > * {
+    display: flex;
+    align-items: center;
+    margin: 0 0.2em;
+}
+
+.preview-card__access-status {
+    display: flex;
+    align-items: center;
+}
+
+.preview-card__access-status > * {
+    display: flex;
+    align-items: center;
+    margin: 0 0.2em;
+}
+
+.switch__label {
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: flex-start;
+    align-items: center;
+    width: 100%;
+    padding: 1rem 0 0 0;
+}
+
+.sensitive__label-text {
+    margin-right: 0.5rem;
+}

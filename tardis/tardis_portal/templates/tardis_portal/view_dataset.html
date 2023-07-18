@@ -197,6 +197,16 @@
 </div>
 <div class="row">
   <div class="col-md-6">
+    <div id="dataset-keywords">
+      <h3>Keyword(s)</h3>
+        <div class="info-box" style="padding: 0;">
+          <select class="keywords form-control" multiple="multiple">
+            {% for tag in dataset.tags.all %}
+              <option value="{{tag}}" selected="selected">{{tag}}</option>
+            {% endfor %}
+          </select>
+        </div>
+    </div>
     {% block dataset_content_preview %}
     {% if dataset.get_images.exists and display_preview %}
     <div style="margin-bottom: 20px">

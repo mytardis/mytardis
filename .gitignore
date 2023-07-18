@@ -58,4 +58,11 @@ tardis/apps/*
 *.old
 
 *.txt~
+venv/
+
+*.py#
+
+tardis/apps/projects/.#api.py
+tardis/apps/identifiers/tests/#test_models.py#
+
 .vscode/settings.json

@@ -8,8 +8,10 @@ from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.urls import include, re_path
 from django.views.static import serve
 
-from tardis.app_config import format_app_name_for_url, get_tardis_apps
-from tardis.tardis_portal.views import IndexView, login, rcauth, upload
+from tardis.app_config import get_tardis_apps
+from tardis.app_config import format_app_name_for_url
+from tardis.apps.search.urls import urlpatterns as search_urls
+from tardis.tardis_portal.views import IndexView
 from tardis.tardis_portal.views.pages import site_routed_view
 
 from .accounts import accounts_urls
@@ -56,7 +58,7 @@ overridable_urls = [
 app_urls = []
 for app_name, app in get_tardis_apps():
     try:
-        if app_name == "projects":
+        if app_name in ["projects", "search"]:
             continue
         app_urls += [
             re_path(
@@ -102,7 +104,9 @@ urlpatterns = [
     # Token login
     re_path(r"^token/", include(token_urls)),
     # Class-based views that may be overriden by apps
-    re_path(r"", include(overridable_urls)),
+    url(r"", include(overridable_urls)),
+    # Explicitly add search, to avoid including /apps/ in url
+    url(r"^search/", include(search_urls)),
 ]
 
 if not settings.DISABLE_CREATION_FORMS:
