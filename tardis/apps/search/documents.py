@@ -7,7 +7,6 @@ from django.contrib.auth.models import User
 from elasticsearch_dsl import analyzer, token_filter
 from django_elasticsearch_dsl import Document, fields
 from django_elasticsearch_dsl.registries import registry
-from elasticsearch_dsl import analysis, analyzer
 
 from tardis.tardis_portal.models import (
     Experiment,
@@ -402,7 +401,7 @@ class DataFileDocument(Document):
         """
         try:
             extension = instance.filename.split(".")[-1]
-        except (IndexError):
+        except IndexError:
             extension = ""
         return extension
 

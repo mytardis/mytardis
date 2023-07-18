@@ -10,11 +10,14 @@ import datetime
 import json
 
 from django.conf import settings
+from django.template.defaultfilters import filesizeformat
 
 import pytz
 from django_elasticsearch_dsl.search import Search
 from elasticsearch_dsl import MultiSearch, Q
 from tastypie import fields
+from tastypie.exceptions import ImmediateHttpResponse
+from tastypie.http import HttpUnauthorized
 from tastypie.resources import Bundle, Resource
 from tastypie.serializers import Serializer
 
@@ -132,9 +135,9 @@ class SchemasAppResource(Resource):
             ],
         }
         safe_dict = {}
-        for key in result_dict:
+        for key, val in result_dict.items():
             safe_dict[key] = {}
-            for value in result_dict[key]:
+            for value in val:
                 if value is not None:
                     schema_id = str(value)
                     schema_dict = {
@@ -1226,10 +1229,10 @@ class SearchAppResource(Resource):
                         *safe_nested_dfs_set.intersection(datafiles_dl)
                     ]
                     size = sum(
-                        [
+                        (
                             preloaded["datafile"]["objects"][id]["size"]
                             for id in safe_nested_dfs_dl
-                        ]
+                        )
                     )
                     # Determine the download state of the "hit" object
                     # safe_nested_dfs_dl_bool = [id in datafiles_dl for id in safe_nested_dfs]

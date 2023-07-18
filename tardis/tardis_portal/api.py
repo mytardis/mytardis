@@ -829,10 +829,6 @@ class FacilityResource(MyTardisModelResource):
         else:
             custom = None
 
-        semi_filtered = super().apply_filters(request, applicable_filters)
-
-        return semi_filtered.filter(custom) if custom else semi_filtered
-
         # End of custom filter code
 
         # Custom filter for identifiers module based on code example from
@@ -908,10 +904,6 @@ class InstrumentResource(MyTardisModelResource):
                 custom = None
         else:
             custom = None
-
-        semi_filtered = super().apply_filters(request, applicable_filters)
-
-        return semi_filtered.filter(custom) if custom else semi_filtered
 
         # End of custom filter code
 
