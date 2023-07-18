@@ -12,6 +12,7 @@ from django.conf import settings
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.auth.models import Group, User
 from django.contrib.sites.models import Site
+from django.core.exceptions import SuspiciousOperation
 from django.db import IntegrityError, transaction
 from django.db.models import Prefetch, Q
 from django.http import HttpResponse, JsonResponse
@@ -402,6 +403,14 @@ def remove_user_from_group(request, group_id, username):
 @transaction.atomic
 @authz.experiment_ownership_required
 def add_experiment_access_user(request, experiment_id, username):
+    try:
+        # cast experiment_id into it's expected integer type
+        experiment_id = int(experiment_id)
+    except ValueError:
+        # Raises badrequest(400) error - if experiment_id isn't castable to int
+        # then either the codebase is wrong, or someone's sending dodgy requests.
+        return SuspiciousOperation("Bad URL: Expected an integer Experiment ID")
+
     canRead = False
     canDownload = False
     canWrite = False
