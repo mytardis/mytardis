@@ -12,22 +12,22 @@ from tardis.tardis_portal.views import (
 
 dataset_urls = [
     re_path(
-        r"^(?P<dataset_id>\d+)$",
+        r"^view/(?P<dataset_id>\d+)/$",
         DatasetView.as_view(),
         name="tardis_portal.view_dataset",
     ),
     re_path(
-        r"^(?P<dataset_id>\d+)/edit$",
+        r"^edit/(?P<dataset_id>\d+)/$",
         edit_dataset,
         name="tardis.tardis_portal.views.edit_dataset",
     ),
     re_path(
-        r"^(?P<dataset_id>\d+)/thumbnail$",
+        r"^thumbnail/(?P<dataset_id>\d+)/$",
         dataset_thumbnail,
         name="tardis.tardis_portal.views.dataset_thumbnail",
     ),
     re_path(
-        r"^(?P<dataset_id>\d+)/checksums$",
+        r"^checksums/(?P<dataset_id>\d+)/$",
         checksums_download,
         name="tardis_portal.dataset_checksums",
     ),

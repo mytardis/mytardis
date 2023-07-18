@@ -833,37 +833,11 @@ class FacilityResource(MyTardisModelResource):
 
         return semi_filtered.filter(custom) if custom else semi_filtered
 
-    # End of custom filter code
+        # End of custom filter code
 
-    # Custom filter for identifiers module based on code example from
-    # https://stackoverflow.com/questions/10021749/ \
-    # django-tastypie-advanced-filtering-how-to-do-complex-lookups-with-q-objects
-
-    def build_filters(self, filters=None, ignore_bad_filters=False):
-        if filters is None:
-            filters = {}
-        orm_filters = super().build_filters(filters)
-
-        if "tardis.apps.identifiers" in settings.INSTALLED_APPS:
-            if "institution" in settings.OBJECTS_WITH_IDENTIFIERS and "pids" in filters:
-                query = filters["pids"]
-                qset = Q(persistent_id__persistent_id__exact=query) | Q(
-                    persistent_id__alternate_ids__contains=query
-                )
-                orm_filters.update({"pids": qset})
-        return orm_filters
-
-    def apply_filters(self, request, applicable_filters):
-        if "tardis.apps.identifiers" in settings.INSTALLED_APPS:
-            if (
-                "institution" in settings.OBJECTS_WITH_IDENTIFIERS
-                and "pids" in applicable_filters
-            ):
-                custom = applicable_filters.pop("pids")
-            else:
-                custom = None
-        else:
-            custom = None
+        # Custom filter for identifiers module based on code example from
+        # https://stackoverflow.com/questions/10021749/ \
+        # django-tastypie-advanced-filtering-how-to-do-complex-lookups-with-q-objects
 
         semi_filtered = super().apply_filters(request, applicable_filters)
 
@@ -939,37 +913,11 @@ class InstrumentResource(MyTardisModelResource):
 
         return semi_filtered.filter(custom) if custom else semi_filtered
 
-    # End of custom filter code
+        # End of custom filter code
 
-    # Custom filter for identifiers module based on code example from
-    # https://stackoverflow.com/questions/10021749/ \
-    # django-tastypie-advanced-filtering-how-to-do-complex-lookups-with-q-objects
-
-    def build_filters(self, filters=None, ignore_bad_filters=False):
-        if filters is None:
-            filters = {}
-        orm_filters = super().build_filters(filters)
-
-        if "tardis.apps.identifiers" in settings.INSTALLED_APPS:
-            if "institution" in settings.OBJECTS_WITH_IDENTIFIERS and "pids" in filters:
-                query = filters["pids"]
-                qset = Q(persistent_id__persistent_id__exact=query) | Q(
-                    persistent_id__alternate_ids__contains=query
-                )
-                orm_filters.update({"pids": qset})
-        return orm_filters
-
-    def apply_filters(self, request, applicable_filters):
-        if "tardis.apps.identifiers" in settings.INSTALLED_APPS:
-            if (
-                "institution" in settings.OBJECTS_WITH_IDENTIFIERS
-                and "pids" in applicable_filters
-            ):
-                custom = applicable_filters.pop("pids")
-            else:
-                custom = None
-        else:
-            custom = None
+        # Custom filter for identifiers module based on code example from
+        # https://stackoverflow.com/questions/10021749/ \
+        # django-tastypie-advanced-filtering-how-to-do-complex-lookups-with-q-objects
 
         semi_filtered = super().apply_filters(request, applicable_filters)
 
@@ -1056,8 +1004,8 @@ class ExperimentResource(MyTardisModelResource):
 
     # End of custom filter code
 
-    def dehydrate_tags(self, bundle):
-        return list(map(str, bundle.obj.tags.all()))
+    # def dehydrate_tags(self, bundle):
+    #    return list(map(str, bundle.obj.tags.all()))
 
     # def save_m2m(self, bundle):
     # tags = bundle.data.get("tags", [])
@@ -1114,13 +1062,6 @@ class ExperimentResource(MyTardisModelResource):
         bundle.data["datafile_count"] = datafile_count
         experiment_size = exp.get_size(bundle.request.user)
         bundle.data["experiment_size"] = experiment_size
-
-        if (
-            "tardis.apps.identifiers" in settings.INSTALLED_APPS
-            and "experiment" in settings.OBJECTS_WITH_IDENTIFIERS
-        ):
-            bundle.data["persistent_id"] = exp.persistent_id.persistent_id
-            bundle.data["alternate_ids"] = exp.persistent_id.alternate_ids
 
         return bundle
 
@@ -1291,7 +1232,7 @@ class DatasetResource(MyTardisModelResource):
         InstrumentResource, "instrument", null=True, full=True
     )
     identifiers = fields.ListField(null=True, blank=True)
-    tags = fields.ListField()
+    # tags = fields.ListField()
 
     # Custom filter for identifiers module based on code example from
     # https://stackoverflow.com/questions/10021749/ \
@@ -1346,13 +1287,13 @@ class DatasetResource(MyTardisModelResource):
         ordering = ["id", "description"]
         always_return_data = True
 
-    def dehydrate_tags(self, bundle):
-        return list(map(str, bundle.obj.tags.all()))
+    # def dehydrate_tags(self, bundle):
+    #    return list(map(str, bundle.obj.tags.all()))
 
-    def save_m2m(self, bundle):
-        tags = bundle.data.get("tags", [])
-        bundle.obj.tags.set(*tags)
-        return super().save_m2m(bundle)
+    # def save_m2m(self, bundle):
+    #    tags = bundle.data.get("tags", [])
+    #    bundle.obj.tags.set(*tags)
+    #    return super().save_m2m(bundle)
 
     def dehydrate(self, bundle):
         dataset = bundle.obj
@@ -1763,15 +1704,15 @@ class DataFileResource(MyTardisModelResource):
         null=True,
     )
     temp_url = None
-    tags = fields.ListField()
+    # tags = fields.ListField()
 
-    def dehydrate_tags(self, bundle):
-        return list(map(str, bundle.obj.tags.all()))
+    # def dehydrate_tags(self, bundle):
+    #    return list(map(str, bundle.obj.tags.all()))
 
-    def save_m2m(self, bundle):
-        tags = bundle.data.get("tags", [])
-        bundle.obj.tags.set(*tags)
-        return super().save_m2m(bundle)
+    # def save_m2m(self, bundle):
+    #    tags = bundle.data.get("tags", [])
+    #    bundle.obj.tags.set(*tags)
+    #    return super().save_m2m(bundle)
 
     class Meta(MyTardisModelResource.Meta):
         object_class = DataFile
