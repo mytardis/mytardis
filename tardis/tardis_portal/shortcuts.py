@@ -3,6 +3,7 @@ import json
 import re
 from html import escape
 
+from django.conf import settings
 from django.contrib.sites.models import Site
 from django.core.exceptions import SuspiciousOperation
 from django.http import HttpResponse, HttpResponseRedirect
@@ -53,7 +54,9 @@ def redirect_back_with_error(request, message):
     if root_url not in redirect_url:
         redirect_url = root_url
 
-    if url_has_allowed_host_and_scheme(redirect_url):
+    if url_has_allowed_host_and_scheme(
+        redirect_url, allowed_hosts=settings.ALLOWED_HOSTS
+    ):
         redirect_url = iri_to_uri(redirect_url)
     else:
         # Raises badrequest(400) error
