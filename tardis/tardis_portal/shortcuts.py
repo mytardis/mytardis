@@ -4,9 +4,11 @@ import re
 from html import escape
 
 from django.contrib.sites.models import Site
+from django.core.exceptions import SuspiciousOperation
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.template.loader import render_to_string
+from django.utils.http import is_safe_url
 
 from .models import ExperimentParameterSet
 from .ParameterSetManager import ParameterSetManager
@@ -43,10 +45,17 @@ def return_response_error(request):
 
 
 def redirect_back_with_error(request, message):
+    # .get_host() enforces that root_url is in ALLOWED_HOSTS
     root_url = "{0}://{1}/".format(request.scheme, request.get_host())
     redirect_url = request.META.get("HTTP_REFERER", root_url)
+    # this is probably too simple
     if root_url not in redirect_url:
         redirect_url = root_url
+
+    if not is_safe_url(redirect_url):
+        # Raises badrequest(400) error
+        return SuspiciousOperation()
+
     return HttpResponseRedirect(f"{redirect_url}#error:{message}")
 
 
