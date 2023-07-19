@@ -8,7 +8,8 @@ from django.core.exceptions import SuspiciousOperation
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.template.loader import render_to_string
-from django.utils.http import is_safe_url
+from django.utils.encoding import iri_to_uri
+from django.utils.http import url_has_allowed_host_and_scheme
 
 from .models import ExperimentParameterSet
 from .ParameterSetManager import ParameterSetManager
@@ -52,7 +53,9 @@ def redirect_back_with_error(request, message):
     if root_url not in redirect_url:
         redirect_url = root_url
 
-    if not is_safe_url(redirect_url):
+    if url_has_allowed_host_and_scheme(redirect_url):
+        redirect_url = iri_to_uri(redirect_url)
+    else:
         # Raises badrequest(400) error
         return SuspiciousOperation()
 
