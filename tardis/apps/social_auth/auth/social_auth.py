@@ -1,22 +1,23 @@
 import logging
 
 from django.conf import settings
+from django.contrib import messages
+from django.contrib.auth.models import Permission, User
 from django.contrib.sites.models import Site
 from django.core import mail
 from django.core.mail import get_connection
-from django.contrib.auth.models import User, Permission
-from django.contrib import messages
 from django.urls import reverse
 
 from celery import shared_task
 
-from tardis.tardis_portal.models import UserAuthentication
-from tardis.tardis_portal.auth.utils import configure_user
-
+from tardis import default_settings
+from tardis.apps.openid_migration import (
+    default_settings as openid_migration_default_settings,
+)
 from tardis.apps.openid_migration.models import OpenidUserMigration
 from tardis.apps.social_auth import default_settings as social_auth_default_settings
-from tardis.apps.openid_migration import default_settings as openid_migration_default_settings
-from tardis import default_settings
+from tardis.tardis_portal.auth.utils import configure_user
+from tardis.tardis_portal.models import UserAuthentication
 
 logger = logging.getLogger(__name__)
 

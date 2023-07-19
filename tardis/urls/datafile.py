@@ -1,30 +1,36 @@
-'''
+"""
 DataFile URLs
-'''
-from django.conf.urls import include, url
+"""
+from django.urls import include, re_path
 
-from tardis.tardis_portal.iiif import (
-    download_image,
-    download_info
-)
 from tardis.tardis_portal.download import view_datafile
+from tardis.tardis_portal.iiif import download_image, download_info
 
 iiif_urls = [
-    url(r'^(?P<datafile_id>\d+)/(?P<region>[^\/]+)/(?P<size>[^\/]+)/'
-        r'(?P<rotation>[\d\.]+)/(?P<quality>\w+)$',
+    re_path(
+        r"^(?P<datafile_id>\d+)/(?P<region>[^\/]+)/(?P<size>[^\/]+)/"
+        r"(?P<rotation>[\d\.]+)/(?P<quality>\w+)$",
         download_image,
-        name='tardis.tardis_portal.iiif.download_image'),
-    url(r'^(?P<datafile_id>\d+)/(?P<region>[^\/]+)/(?P<size>[^\/]+)/'
-        r'(?P<rotation>[\d\.]+)/(?P<quality>\w+).(?P<format>\w+)$',
+        name="tardis.tardis_portal.iiif.download_image",
+    ),
+    re_path(
+        r"^(?P<datafile_id>\d+)/(?P<region>[^\/]+)/(?P<size>[^\/]+)/"
+        r"(?P<rotation>[\d\.]+)/(?P<quality>\w+).(?P<format>\w+)$",
         download_image,
-        name='tardis.tardis_portal.iiif.download_image'),
-    url(r'^(?P<datafile_id>\d+)/info.(?P<format>\w+)$', download_info,
-        name='tardis.tardis_portal.iiif.download_info'),
+        name="tardis.tardis_portal.iiif.download_image",
+    ),
+    re_path(
+        r"^(?P<datafile_id>\d+)/info.(?P<format>\w+)$",
+        download_info,
+        name="tardis.tardis_portal.iiif.download_info",
+    ),
 ]
 
 datafile_urls = [
-    url(r'^view/(?P<datafile_id>\d+)/$',
+    re_path(
+        r"^view/(?P<datafile_id>\d+)/$",
         view_datafile,
-        name='tardis.tardis_portal.download.view_datafile'),
-    url(r'^iiif/', include(iiif_urls)),
+        name="tardis.tardis_portal.download.view_datafile",
+    ),
+    re_path(r"^iiif/", include(iiif_urls)),
 ]

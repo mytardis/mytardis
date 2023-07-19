@@ -1,15 +1,18 @@
 import os
 import unittest
-
 from io import StringIO
 
-from django.core.management import call_command
 from django.conf import settings
 from django.contrib.auth.models import User
+from django.core.management import call_command
 from django.test import TestCase, modify_settings, override_settings
 
-from tardis.tardis_portal.models import Experiment, Dataset, DataFile
-from tardis.apps.search.documents import ExperimentDocument, DatasetDocument, DataFileDocument
+from tardis.apps.search.documents import (
+    DataFileDocument,
+    DatasetDocument,
+    ExperimentDocument,
+)
+from tardis.tardis_portal.models import DataFile, Dataset, Experiment
 
 
 @override_settings(SINGLE_SEARCH_ENABLED=True)

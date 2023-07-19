@@ -34,27 +34,24 @@ def generate_presigned_url(dfo, expiry=None):
         The pre-signed URL
     """
     box = dfo.storage_box
-    endpoint_url = box.options.get(key='endpoint_url').value
-    access_key = box.options.get(key='access_key').value
-    secret_key = box.options.get(key='secret_key').value
-    bucket_name = box.options.get(key='bucket_name').value
+    endpoint_url = box.options.get(key="endpoint_url").value
+    access_key = box.options.get(key="access_key").value
+    secret_key = box.options.get(key="secret_key").value
+    bucket_name = box.options.get(key="bucket_name").value
     if not expiry:
         expiry = getattr(
-            settings, 'S3_SIGNED_URL_EXPIRY',
-            default_settings.S3_SIGNED_URL_EXPIRY)
+            settings, "S3_SIGNED_URL_EXPIRY", default_settings.S3_SIGNED_URL_EXPIRY
+        )
     s3client = boto3.client(
-        's3',
+        "s3",
         aws_access_key_id=access_key,
         aws_secret_access_key=secret_key,
         endpoint_url=endpoint_url,
-        config=Config(signature_version='s3'))
+        config=Config(signature_version="s3"),
+    )
     return s3client.generate_presigned_url(
-        'get_object',
-        Params={
-            'Bucket': bucket_name,
-            'Key': dfo.uri
-        },
-        ExpiresIn=expiry)
+        "get_object", Params={"Bucket": bucket_name, "Key": dfo.uri}, ExpiresIn=expiry
+    )
 
 
 def calculate_checksums(dfo, compute_md5=True, compute_sha512=False):
@@ -76,46 +73,51 @@ def calculate_checksums(dfo, compute_md5=True, compute_sha512=False):
     :rtype: dict
     """
     from botocore.client import Config
+
     options = dfo.storage_box.options.all()
-    boto3_kwargs = dict(config=Config())
+    boto3_kwargs = {"config": Config()}
     for option in options:
         key = option.key
-        if key == 'signature_version':
-            boto3_kwargs['config'] = Config(signature_version=option.value)
+        if key == "signature_version":
+            boto3_kwargs["config"] = Config(signature_version=option.value)
             continue
-        key = key.replace('access_key', 'aws_access_key_id')
-        key = key.replace('secret_key', 'aws_secret_access_key')
+        key = key.replace("access_key", "aws_access_key_id")
+        key = key.replace("secret_key", "aws_secret_access_key")
         if key not in [
-                'region_name', 'api_version', 'use_ssl', 'verify',
-                'endpoint_url', 'aws_access_key_id', 'aws_secret_access_key',
-                'aws_session_token']:
+            "region_name",
+            "api_version",
+            "use_ssl",
+            "verify",
+            "endpoint_url",
+            "aws_access_key_id",
+            "aws_secret_access_key",
+            "aws_session_token",
+        ]:
             continue
         boto3_kwargs[key] = option.value
-    s3resource = boto3.resource('s3', **boto3_kwargs)
-    bucket = s3resource.Bucket(options.get(key='bucket_name').value)
+    s3resource = boto3.resource("s3", **boto3_kwargs)
+    bucket = s3resource.Bucket(options.get(key="bucket_name").value)
 
     checksums = {}
 
     if compute_md5:
-        md5sum_binary = 'md5sum'
-        if sys.platform == 'darwin':
-            md5sum_binary = 'md5'
+        md5sum_binary = "md5sum"
+        if sys.platform == "darwin":
+            md5sum_binary = "md5"
         with subprocess.Popen(
-            [md5sum_binary],
-            stdin=subprocess.PIPE, stdout=subprocess.PIPE) as proc:
+            [md5sum_binary], stdin=subprocess.PIPE, stdout=subprocess.PIPE
+        ) as proc:
             bucket.download_fileobj(dfo.uri, proc.stdin)
             stdout, _ = proc.communicate()
-        checksums['md5sum'] = \
-            re.match(b'\w+', stdout).group(0).decode('utf8')
+        checksums["md5sum"] = re.match(b"\w+", stdout).group(0).decode("utf8")
 
     if compute_sha512:
-        shasum_binary = 'shasum'
+        shasum_binary = "shasum"
         with subprocess.Popen(
-            [shasum_binary, '-a', '512'],
-            stdin=subprocess.PIPE, stdout=subprocess.PIPE) as proc:
+            [shasum_binary, "-a", "512"], stdin=subprocess.PIPE, stdout=subprocess.PIPE
+        ) as proc:
             bucket.download_fileobj(dfo.uri, proc.stdin)
             stdout, _ = proc.communicate()
-        checksums['sha512sum'] = \
-            re.match(b'\w+', stdout).group(0).decode('utf8')
+        checksums["sha512sum"] = re.match(b"\w+", stdout).group(0).decode("utf8")
 
     return checksums

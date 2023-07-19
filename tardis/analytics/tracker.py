@@ -29,23 +29,20 @@ class IteratorTracker(object):
         return self
 
     def close(self):
-        if hasattr(self._iterator, 'close'):
+        if hasattr(self._iterator, "close"):
             self._iterator.close()
 
     def __next__(self):
         try:
-            if six.PY3:
-                return self._iterator.__next__()
-            return self._iterator.next()
-        except StopIteration:
+            return self._iterator.__next__() if six.PY3 else self._iterator.next()
+        except StopIteration as e:
             self.complete = True
-            raise StopIteration()
+            raise StopIteration() from e
 
     def next(self):
         return self.__next__()
 
     def __del__(self):
         if not self.complete:
-            self.tracker_data['label'] = self.tracker_data.get(
-                'label', '') + '-aborted'
+            self.tracker_data["label"] = self.tracker_data.get("label", "") + "-aborted"
         track_download(**self.tracker_data)

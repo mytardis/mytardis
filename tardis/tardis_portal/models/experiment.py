@@ -4,13 +4,12 @@ from os import path
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
-from django.urls import reverse
 from django.db import models
+from django.urls import reverse
 from django.utils.safestring import SafeText
 from taggit.managers import TaggableManager
 
 from ..managers import OracleSafeManager, SafeManager
-
 from .license import License
 
 logger = logging.getLogger(__name__)

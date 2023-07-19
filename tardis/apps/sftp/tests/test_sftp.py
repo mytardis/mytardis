@@ -2,34 +2,29 @@
 
 .. moduleauthor:: James Wettenhall <james.wettenhall@monash.edu>
 """
-from io import BytesIO
-
+from io import BytesIO, StringIO
 from unittest.mock import patch
-from flexmock import flexmock
 
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.management import call_command
-from django.test import RequestFactory
-from django.test import TestCase
+from django.test import RequestFactory, TestCase
 
-from paramiko.common import AUTH_SUCCESSFUL, AUTH_FAILED
+from flexmock import flexmock
+from paramiko.common import AUTH_FAILED, AUTH_SUCCESSFUL
 from paramiko.rsakey import RSAKey
-from paramiko.py3compat import StringIO
-
-from tardis.tardis_portal.download import make_mapper
-
-from tardis.tardis_portal.models import Dataset
-from tardis.tardis_portal.models import DataFile
-from tardis.tardis_portal.models import DataFileObject
-from tardis.tardis_portal.models import Experiment
-from tardis.tardis_portal.models import ExperimentACL
 
 from tardis.apps.sftp.models import SFTPPublicKey
-from tardis.apps.sftp.sftp import MyTSFTPServerInterface
-from tardis.apps.sftp.sftp import MyTServerInterface
-from tardis.apps.sftp.views import sftp_access
-from tardis.apps.sftp.views import cybderduck_connection_window
+from tardis.apps.sftp.sftp import MyTServerInterface, MyTSFTPServerInterface
+from tardis.apps.sftp.views import cybderduck_connection_window, sftp_access
+from tardis.tardis_portal.download import make_mapper
+from tardis.tardis_portal.models import (
+    DataFile,
+    DataFileObject,
+    Dataset,
+    Experiment,
+    ExperimentACL,
+)
 
 
 class SFTPTest(TestCase):

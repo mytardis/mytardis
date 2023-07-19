@@ -1,17 +1,24 @@
 import base64
-
 from io import StringIO
 
 from django import forms
 from django.apps import apps
 from django.contrib import admin
-from django.contrib.auth.models import User, Group
+from django.contrib.auth.models import Group, User
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
 
-from paramiko import RSAKey, SSHClient, MissingHostKeyPolicy, \
-    AutoAddPolicy, PKey, DSSKey, ECDSAKey, PublicBlob
+from paramiko import (
+    AutoAddPolicy,
+    DSSKey,
+    ECDSAKey,
+    MissingHostKeyPolicy,
+    PKey,
+    PublicBlob,
+    RSAKey,
+    SSHClient,
+)
 from paramiko.config import SSH_PORT
 
 from tardis.tardis_portal.models import DataFile
@@ -25,29 +32,22 @@ class KeyPair(models.Model):
     A key pair
     """
 
-    key_type = models.CharField('Key type',
-                                max_length=100,
-                                blank=True,
-                                null=True)
-    public_key = models.TextField('Public key',
-                                  blank=True,
-                                  null=True)
-    private_key = models.TextField('Private key', blank=True, null=True)
+    key_type = models.CharField("Key type", max_length=100, blank=True, null=True)
+    public_key = models.TextField("Public key", blank=True, null=True)
+    private_key = models.TextField("Private key", blank=True, null=True)
 
     class Meta:
         abstract = True
 
     # pylint: disable=W0222
     def save(self, *args, **kwargs):
-
         # Attempt to auto-complete the public key & key type if missing
         if not self.key_type and not self.public_key and self.private_key:
             # Attempt to guess the key type from private key:
-            if self.private_key.startswith('-----BEGIN RSA PRIVATE KEY-----'):
-                self.key_type = 'ssh-rsa'
-            elif self.private_key.startswith(
-                    '-----BEGIN DSA PRIVATE KEY-----'):
-                self.key_type = 'ssh-dss'
+            if self.private_key.startswith("-----BEGIN RSA PRIVATE KEY-----"):
+                self.key_type = "ssh-rsa"
+            elif self.private_key.startswith("-----BEGIN DSA PRIVATE KEY-----"):
+                self.key_type = "ssh-dss"
                 # TODO: work out what to do with EC keys
         if self.key_type and self.private_key and not self.public_key:
             self.public_key = self.key.get_base64()
@@ -76,17 +76,17 @@ class KeyPair(models.Model):
         if self.private_key:
             private_key = StringIO(self.private_key)
 
-        if self.key_type == 'ssh-dss':
+        if self.key_type == "ssh-dss":
             pkey = DSSKey(data=public_key, file_obj=private_key)
-        elif self.key_type == 'ssh-rsa':
+        elif self.key_type == "ssh-rsa":
             pkey = RSAKey(data=public_key, file_obj=private_key)
-        elif self.key_type.startswith('ecdsa'):
+        elif self.key_type.startswith("ecdsa"):
             pkey = ECDSAKey(data=public_key, file_obj=private_key)
-        elif self.key_type == 'ssh-rsa-cert-v01@openssh.com':
+        elif self.key_type == "ssh-rsa-cert-v01@openssh.com":
             pkey = RSAKey(data=public_key, file_obj=private_key)
             pkey.public_blob = PublicBlob(self.key_type, public_key)
         else:
-            raise ValidationError('Unsupported key type: ' + self.key_type)
+            raise ValidationError("Unsupported key type: " + self.key_type)
 
         return pkey
 
@@ -99,7 +99,7 @@ class KeyPair(models.Model):
         :raises ValueError:
         """
         if not isinstance(pkey, PKey):
-            raise ValueError('invalid PKey object supplied')
+            raise ValueError("invalid PKey object supplied")
         if pkey.public_blob is not None:
             self.key_type = pkey.public_blob.key_type
             self.public_key = base64.b64encode(pkey.public_blob.key_blob).decode()
@@ -117,22 +117,15 @@ class RemoteHost(KeyPair):
     """
     A remote host that may be connected to via SSH
     """
+
     administrator = models.ForeignKey(User, on_delete=models.CASCADE)
-    nickname = models.CharField(
-        'Nickname',
-        max_length=50,
-        blank=False,
-        null=False)
-    logo_img = models.CharField(
-        'Image url',
-        max_length=255,
-        blank=True,
-        null=True)
-    host_name = models.CharField('Host name', max_length=50)
-    port = models.IntegerField('Port', default=SSH_PORT)
+    nickname = models.CharField("Nickname", max_length=50, blank=False, null=False)
+    logo_img = models.CharField("Image url", max_length=255, blank=True, null=True)
+    host_name = models.CharField("Host name", max_length=50)
+    port = models.IntegerField("Port", default=SSH_PORT)
 
     def __str__(self):
-        return self.nickname + ' | ' + self.host_name + ':' + str(self.port)
+        return self.nickname + " | " + self.host_name + ":" + str(self.port)
 
 
 class OAuthSSHCertSigningService(models.Model):
@@ -141,21 +134,22 @@ class OAuthSSHCertSigningService(models.Model):
     Supports certificate signing server available here:
     https://github.com/monash-merc/ssh-authz
     """
-    nickname = models.CharField('Nickname', max_length=50)
-    oauth_authorize_url = models.CharField('Authorize url', max_length=255)
-    oauth_token_url = models.CharField('Token url', max_length=255)
-    oauth_check_token_url = models.CharField('Check token url', max_length=255)
-    oauth_client_id = models.CharField('Client id', max_length=255)
-    oauth_client_secret = models.CharField('Client secret', max_length=255)
-    cert_signing_url = models.CharField('Cert signing url', max_length=255)
+
+    nickname = models.CharField("Nickname", max_length=50)
+    oauth_authorize_url = models.CharField("Authorize url", max_length=255)
+    oauth_token_url = models.CharField("Token url", max_length=255)
+    oauth_check_token_url = models.CharField("Check token url", max_length=255)
+    oauth_client_id = models.CharField("Client id", max_length=255)
+    oauth_client_secret = models.CharField("Client secret", max_length=255)
+    cert_signing_url = models.CharField("Cert signing url", max_length=255)
     allowed_remote_hosts = models.ManyToManyField(RemoteHost)
     allowed_groups = models.ManyToManyField(Group, blank=True)
     allowed_users = models.ManyToManyField(User, blank=True)
-    allow_for_all = models.BooleanField('Allow for all', default=False)
+    allow_for_all = models.BooleanField("Allow for all", default=False)
 
     class Meta:
-        verbose_name = 'OAuth2 SSH cert signing service'
-        verbose_name_plural = 'OAuth2 SSH cert signing services'
+        verbose_name = "OAuth2 SSH cert signing service"
+        verbose_name_plural = "OAuth2 SSH cert signing services"
 
     def __str__(self):
         return self.nickname
@@ -169,12 +163,10 @@ class OAuthSSHCertSigningService(models.Model):
         :rtype: User
         """
         return (
-            OAuthSSHCertSigningService.objects.filter(
-                allowed_users=user) |
-            OAuthSSHCertSigningService.objects.filter(
-                allowed_groups__user=user) |
-            OAuthSSHCertSigningService.objects.filter(
-                allow_for_all=True)).distinct()
+            OAuthSSHCertSigningService.objects.filter(allowed_users=user)
+            | OAuthSSHCertSigningService.objects.filter(allowed_groups__user=user)
+            | OAuthSSHCertSigningService.objects.filter(allow_for_all=True)
+        ).distinct()
 
     @staticmethod
     def get_oauth_service(user, service_id):
@@ -182,12 +174,12 @@ class OAuthSSHCertSigningService(models.Model):
         @type user: User
         @type service_id: int
         """
-        return (OAuthSSHCertSigningService.objects.filter(
-            allowed_users=user,
-            pk=service_id) |
-                OAuthSSHCertSigningService.objects.filter(
-                    allow_for_all=True,
-                    pk=service_id)).first()
+        return (
+            OAuthSSHCertSigningService.objects.filter(allowed_users=user, pk=service_id)
+            | OAuthSSHCertSigningService.objects.filter(
+                allow_for_all=True, pk=service_id
+            )
+        ).first()
 
 
 class DBHostKeyPolicy(MissingHostKeyPolicy):
@@ -200,11 +192,11 @@ class DBHostKeyPolicy(MissingHostKeyPolicy):
         @type key: PKey
         """
         acceptable_key_fingerprint = RemoteHost.objects.get(
-            host_name=hostname).key.get_fingerprint()
+            host_name=hostname
+        ).key.get_fingerprint()
         host_key_fingerprint = key.get_fingerprint()
         if acceptable_key_fingerprint != host_key_fingerprint:
-            raise Exception(
-                'Host key for host %s not accepted' % hostname)
+            raise Exception("Host key for host %s not accepted" % hostname)
 
 
 class Credential(KeyPair):
@@ -213,31 +205,26 @@ class Credential(KeyPair):
     depends on the credentials available, allowed auth methods, and priorities
     defined by the SSH client.
     """
+
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     remote_hosts = models.ManyToManyField(RemoteHost)
-    remote_user = models.CharField('User name', max_length=50)
-    password = models.CharField(
-        'Password',
-        max_length=255,
-        blank=True,
-        null=True)
+    remote_user = models.CharField("User name", max_length=50)
+    password = models.CharField("Password", max_length=255, blank=True, null=True)
 
     def _hostname_list(self):
         return [h.host_name for h in self.remote_hosts.all()]
 
     def __str__(self):
-        hosts = str.join(', ', self._hostname_list())
-        return self.user.username + ' | ' + \
-               self.remote_user + ' (' + hosts + ')'
+        hosts = str.join(", ", self._hostname_list())
+        return self.user.username + " | " + self.remote_user + " (" + hosts + ")"
 
     @staticmethod
     def get_suitable_credential(tardis_user, remote_host, remote_user=None):
         existing_credentials = Credential.objects.filter(
-            user=tardis_user,
-            remote_hosts=remote_host)
+            user=tardis_user, remote_hosts=remote_host
+        )
         if remote_user is not None:
-            existing_credentials = existing_credentials.filter(
-                remote_user=remote_user)
+            existing_credentials = existing_credentials.filter(remote_user=remote_user)
 
         for credential in existing_credentials:
             if credential.verify_remote_access(remote_host):
@@ -247,8 +234,8 @@ class Credential(KeyPair):
 
     @staticmethod
     def generate_keypair_credential(
-            tardis_user, remote_user, remote_hosts,
-            bit_length=2048):
+        tardis_user, remote_user, remote_hosts, bit_length=2048
+    ):
         """
         Generates and saves an RSA key pair credential. Credentials returned
         by this method are intended to be registered on remote systems before
@@ -288,11 +275,13 @@ class Credential(KeyPair):
         else:
             ssh.set_missing_host_key_policy(AutoAddPolicy())
 
-        ssh.connect(hostname=remote_host.host_name,
-                    port=remote_host.port,
-                    username=self.remote_user,
-                    password=self.password,
-                    pkey=self.key)
+        ssh.connect(
+            hostname=remote_host.host_name,
+            port=remote_host.port,
+            username=self.remote_user,
+            password=self.password,
+            pkey=self.key,
+        )
 
         return ssh
 
@@ -317,6 +306,7 @@ class Request(models.Model):
     """
     PushTo request
     """
+
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     timestamp = models.DateTimeField(null=False, default=timezone.now)
     object_type = models.CharField(max_length=10, null=False)
@@ -331,6 +321,7 @@ class Progress(models.Model):
     """
     Files copy progress
     """
+
     request = models.ForeignKey(Request, on_delete=models.CASCADE)
     datafile = models.ForeignKey(DataFile, on_delete=models.CASCADE)
     status = models.PositiveIntegerField(null=False, default=0)
@@ -343,15 +334,23 @@ class RemoteHostAdmin(admin.ModelAdmin):
     """
     Hides the private key field, which is not necessary for host keys
     """
-    fields = ['nickname', 'administrator', 'host_name', 'port', 'key_type',
-              'public_key', 'logo_img']
+
+    fields = [
+        "nickname",
+        "administrator",
+        "host_name",
+        "port",
+        "key_type",
+        "public_key",
+        "logo_img",
+    ]
 
 
 class CredentialForm(forms.ModelForm):
     class Meta:
-        fields = '__all__'
+        fields = "__all__"
         model = Credential
-        widgets = {'password': forms.PasswordInput()}
+        widgets = {"password": forms.PasswordInput()}
 
 
 class CredentialAdmin(admin.ModelAdmin):

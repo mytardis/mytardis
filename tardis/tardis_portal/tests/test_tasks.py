@@ -5,8 +5,7 @@ from django.conf import settings
 from django.core.files.base import ContentFile
 from django.test import TestCase
 
-from ..models import Experiment, Dataset, DataFile, User
-
+from ..models import DataFile, Dataset, Experiment, User
 from ..tasks import verify_dfos
 
 

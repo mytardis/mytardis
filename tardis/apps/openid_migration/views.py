@@ -1,10 +1,7 @@
-from django.contrib.auth.decorators import login_required, \
-    permission_required
+from django.contrib.auth.decorators import login_required, permission_required
 from django.views.decorators.debug import sensitive_post_parameters
 
-from .migration import do_migration, \
-    openid_migration_method, \
-    confirm_migration
+from .migration import confirm_migration, do_migration, openid_migration_method
 
 
 @sensitive_post_parameters('password')

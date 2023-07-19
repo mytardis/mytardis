@@ -30,15 +30,14 @@
 #
 # pylint: disable=R1702
 
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import User, Group
-from django.contrib.sessions.models import Session
-from django.http import HttpResponse, HttpRequest
-from django.http import HttpResponseRedirect
-from django.db.models import Q
 from django.conf import settings
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import Group, User
+from django.contrib.sessions.models import Session
+from django.db.models import Q
+from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 
-from ..models import Experiment, Dataset, DataFile, GroupAdmin
+from ..models import DataFile, Dataset, Experiment, GroupAdmin
 from ..shortcuts import return_response_error
 
 
@@ -163,7 +162,7 @@ def has_X_access(request, obj_id, ct_type, perm_type):
                 obj = DataFile.objects.get(id=obj_id)
     except (Experiment.DoesNotExist, Dataset.DoesNotExist, DataFile.DoesNotExist):
         return False
-    return request.user.has_perm("tardis_acls." + perm_type + "_" + ct_type, obj)
+    return request.user.has_perm(f"tardis_acls.{perm_type}_{ct_type}", obj)
 
 
 def has_access(request, obj_id, ct_type):

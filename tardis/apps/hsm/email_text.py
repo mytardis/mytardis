@@ -1,9 +1,10 @@
 from urllib.parse import quote
+
 from django.conf import settings
 from django.contrib.sites.models import Site
 
+from ...tardis_portal.models import StorageBoxAttribute, StorageBoxOption
 from . import default_settings
-from ...tardis_portal.models import StorageBoxOption, StorageBoxAttribute
 
 
 def interpolate_template(template_name, **kwargs):

@@ -7,8 +7,8 @@ from django.db import transaction
 from django.db.models import Q
 
 from tardis.celery import tardis_app
-from .email import email_user
 
+from .email import email_user
 
 logger = logging.getLogger(__name__)
 
@@ -31,9 +31,12 @@ def cleanup_dfs(**kwargs):
 
 @tardis_app.task(name="tardis_portal.cleanup_dfos", ignore_result=True)
 def cleanup_dfos(**kwargs):
-    import pytz
     from datetime import datetime, timedelta
+
     from django.conf import settings
+
+    import pytz
+
     from .models import DataFile, DataFileObject
     tz = pytz.timezone(settings.TIME_ZONE)
     wait_until = datetime.now(tz) - timedelta(hours=24*7)
@@ -148,8 +151,7 @@ def sbox_cache_files(sbox_id):
     data can always be accessed quickly from Object Storage, and the
     Vault can be used for disaster recovery if necessary.
     """
-    from .models import DataFileObject
-    from .models import StorageBox
+    from .models import DataFileObject, StorageBox
     sbox = StorageBox.objects.get(id=sbox_id)
     shadow = 'dfo_cache_file location:%s' % sbox.name
     for dfo in DataFileObject.objects.filter(storage_box=sbox, verified=True):
@@ -213,6 +215,7 @@ def dfo_cache_file(dfo_id):
 @tardis_app.task(name="tardis_portal.dfo.verify", ignore_result=True)
 def dfo_verify(dfo_id, *args, **kwargs):
     from .models import DataFileObject
+
     # Get dfo locked for write (to prevent concurrent actions)
     if kwargs.pop('transaction_lock', False):
         with transaction.atomic():
@@ -233,8 +236,13 @@ def clear_sessions(**kwargs):
                  ignore_result=True)
 def df_save_metadata(df_id, name, schema, metadata):
     """Save all the metadata to a DatafileParameterSet."""
-    from .models import ParameterName, Schema, DataFile,\
-                        DatafileParameterSet, DatafileParameter
+    from .models import (
+        DataFile,
+        DatafileParameter,
+        DatafileParameterSet,
+        ParameterName,
+        Schema,
+    )
 
     def get_schema(schema, name):
         """

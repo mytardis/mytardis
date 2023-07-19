@@ -6,9 +6,8 @@ from .signals import event_logged
 
 
 def log(action, user=None, obj=None, extra=None, request=None):
-
     enabled_actions = getattr(settings, "EVENTLOG_ACTIONS", [])
-    if len(enabled_actions) != 0 and action not in enabled_actions:
+    if enabled_actions and action not in enabled_actions:
         return None
 
     if user is None and request is not None:
@@ -34,7 +33,7 @@ def log(action, user=None, obj=None, extra=None, request=None):
         user=user,
         content_type=content_type,
         object_id=object_id,
-        extra=extra
+        extra=extra,
     )
 
     event_logged.send(sender=Log, event=event)
@@ -43,22 +42,15 @@ def log(action, user=None, obj=None, extra=None, request=None):
 
 
 def get_request_data(request):
-    data = {}
-
-    x_forwarded_for = request.META.get("HTTP_X_FORWARDED_FOR")
-    if x_forwarded_for:
+    if x_forwarded_for := request.META.get("HTTP_X_FORWARDED_FOR"):
         user_ip = x_forwarded_for.split(",")[0]
     else:
         user_ip = request.META.get("REMOTE_ADDR")
-    data["ip"] = user_ip
-
-    # This might not be useful as can be easily spoofed
-    user_agent = request.META.get("HTTP_USER_AGENT")
-    if user_agent:
+    data = {"ip": user_ip}
+    if user_agent := request.META.get("HTTP_USER_AGENT"):
         data["ua"] = user_agent
 
-    user_name = request.POST.get("username")
-    if user_name:
+    if user_name := request.POST.get("username"):
         data["username"] = user_name
 
     return data

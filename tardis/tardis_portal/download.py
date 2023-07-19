@@ -9,9 +9,9 @@ download.py
 
 """
 import logging
-import urllib
 import os
 import time
+import urllib
 from importlib import import_module
 
 try:
@@ -24,30 +24,33 @@ except ImportError:
 
     crc32 = binascii.crc32
 
-from itertools import chain
-import tarfile
-from tarfile import TarFile
 import gzip
 import io
+import tarfile
+from itertools import chain
+from tarfile import TarFile
 from wsgiref.util import FileWrapper
 
-from django.http import StreamingHttpResponse
 from django.conf import settings
-from django.utils.dateformat import format as dateformatter
-from django.core.exceptions import ImproperlyConfigured
 from django.contrib.auth.decorators import login_required
+from django.core.exceptions import ImproperlyConfigured
+from django.http import StreamingHttpResponse
+from django.utils.dateformat import format as dateformatter
 
 from tardis.analytics.tracker import IteratorTracker
-from .models import Dataset
-from .models import DataFile
-from .models import DataFileObject
-from .models import Experiment
-from .auth.decorators import has_download_access
-from .auth.decorators import experiment_download_required
-from .auth.decorators import dataset_download_required
-from .shortcuts import render_error_message
-from .shortcuts import return_response_not_found, return_response_error
-from .shortcuts import redirect_back_with_error
+
+from .auth.decorators import (
+    dataset_download_required,
+    experiment_download_required,
+    has_download_access,
+)
+from .models import DataFile, DataFileObject, Dataset, Experiment
+from .shortcuts import (
+    redirect_back_with_error,
+    render_error_message,
+    return_response_error,
+    return_response_not_found,
+)
 from .util import get_filesystem_safe_dataset_name, get_filesystem_safe_experiment_name
 
 logger = logging.getLogger(__name__)
@@ -94,7 +97,7 @@ def _create_download_response(
         ignore_verif = request.GET.get("ignore_verification_status", "0")
         # Ensure ignore_verification_status=0 etc works as expected
         # a bare ?ignore_verification_status is True
-        if ignore_verif.lower() in [u"", u"1", u"true"]:
+        if ignore_verif.lower() in ["", "1", "true"]:
             verified_only = False
 
         # Get file object for datafile
@@ -104,7 +107,7 @@ def _create_download_response(
             if verified_only:
                 return render_error_message(
                     request,
-                    "File is unverified, " "please try again later.",
+                    "File is unverified, please try again later.",
                     status=503,
                 )
             return return_response_not_found(request)
@@ -147,7 +150,7 @@ def _get_mapper_makers():
     if not __mapper_makers:
         __mapper_makers = {}
         mappers = getattr(settings, "DOWNLOAD_PATH_MAPPERS", {})
-        for (organization, mapper_desc) in mappers.items():
+        for organization, mapper_desc in mappers.items():
             mapper_fn = _safe_import(mapper_desc[0])
             if len(mapper_desc) >= 2:
                 kwarg = mapper_desc[1]
@@ -427,7 +430,9 @@ def _streaming_downloader(
     mapper = make_mapper(organization, rootdir)
     if not mapper:
         return render_error_message(
-            request, "Unknown download organization: %s" % organization, status=400
+            request,
+            f"Unknown download organization: {organization}",
+            status=400,
         )
 
     if getattr(settings, "ENABLE_EVENTLOG", False):
@@ -443,15 +448,15 @@ def _streaming_downloader(
     try:
         files = _get_datafile_details_for_archive(mapper, datafiles)
         tfs = UncachedTarStream(files, filename=filename, do_gzip=comptype != "tar")
-        tracker_data = dict(
-            label="tar",
-            session_id=request.COOKIES.get("_ga"),
-            ip=request.META.get("REMOTE_ADDR", ""),
-            user=request.user,
-            total_size=tfs.tar_size,
-            num_files=len(datafiles),
-            ua=request.META.get("HTTP_USER_AGENT", None),
-        )
+        tracker_data = {
+            "label": "tar",
+            "session_id": request.COOKIES.get("_ga"),
+            "ip": request.META.get("REMOTE_ADDR", ""),
+            "user": request.user,
+            "total_size": tfs.tar_size,
+            "num_files": len(datafiles),
+            "ua": request.META.get("HTTP_USER_AGENT", None),
+        }
         return tfs.get_response(tracker_data)
     except ValueError:  # raised when replica not verified TODO: custom excptn
         message = """The experiment you are trying to access has not yet been
@@ -556,7 +561,6 @@ def streaming_download_datafiles(request):  # too complex # noqa
 
     if "datafile" in request.POST or "dataset" in request.POST:
         if request.POST.getlist("datafile") or request.POST.getlist("dataset"):
-
             datasets = request.POST.getlist("dataset")
             datafiles = request.POST.getlist("datafile")
 
@@ -606,12 +610,12 @@ def streaming_download_datafiles(request):  # too complex # noqa
             if has_download_access(
                 request=request, obj_id=datafile.id, ct_type="datafile"
             ):
-                df_set = set([datafile])
+                df_set = {datafile}
     else:
         message = "No datasets or datafiles were selected for download"
         return redirect_back_with_error(request, message)
 
-    logger.info("Files for archive command: %s" % df_set)
+    logger.info(f"Files for archive command: {df_set}")
 
     if not df_set:
         message = (
@@ -627,8 +631,8 @@ def streaming_download_datafiles(request):  # too complex # noqa
         experiment = next(iter(df_set)).dataset.get_first_experiment()
 
     exp_title = get_filesystem_safe_experiment_name(experiment)
-    filename = "%s-selection.tar" % exp_title
-    rootdir = "%s-selection" % exp_title
+    filename = f"{exp_title}-selection.tar"
+    rootdir = f"{exp_title}-selection"
     return _streaming_downloader(
         request, df_set, rootdir, filename, comptype, organization
     )
@@ -638,7 +642,7 @@ def streaming_download_datafiles(request):  # too complex # noqa
 def download_api_key(request):
     user = request.user
     api_key_file = io.StringIO()
-    api_key_file.write(u"ApiKey {0}:{1}".format(user, user.api_key.key))
+    api_key_file.write("ApiKey {0}:{1}".format(user, user.api_key.key))
     api_key_file.seek(0)
     response = StreamingHttpResponse(
         FileWrapper(api_key_file), content_type="text/plain"

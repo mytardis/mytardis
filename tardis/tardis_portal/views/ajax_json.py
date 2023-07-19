@@ -11,9 +11,9 @@ from django.contrib.auth.decorators import login_required
 from django.core.serializers.json import DjangoJSONEncoder
 from django.forms import model_to_dict
 from django.http import (
-    HttpResponseNotFound,
-    HttpResponseForbidden,
     HttpResponse,
+    HttpResponseForbidden,
+    HttpResponseNotFound,
     JsonResponse,
 )
 from django.views.decorators.cache import never_cache
@@ -21,8 +21,7 @@ from django.views.decorators.cache import never_cache
 from ..auth import decorators as authz
 from ..models import Dataset, Experiment, License
 from ..shortcuts import return_response_not_found
-from ..views.utils import HttpResponseMethodNotAllowed
-from ..views.utils import get_dataset_info
+from ..views.utils import HttpResponseMethodNotAllowed, get_dataset_info
 
 logger = logging.getLogger(__name__)
 

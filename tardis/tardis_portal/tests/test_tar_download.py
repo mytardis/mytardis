@@ -1,21 +1,19 @@
 import hashlib
 import os
-
+from io import BytesIO
 from tarfile import TarFile
 from tempfile import NamedTemporaryFile
-
-from io import BytesIO
 from unittest import skipIf
 from urllib.parse import quote
 
 from django.conf import settings
 from django.contrib.auth.models import User
-from django.urls import reverse
 from django.test import Client, TestCase
+from django.urls import reverse
 
-from ..models.experiment import Experiment
-from ..models.dataset import Dataset
 from ..models.datafile import DataFile
+from ..models.dataset import Dataset
+from ..models.experiment import Experiment
 
 
 class TarDownloadTestCase(TestCase):

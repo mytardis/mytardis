@@ -8,14 +8,19 @@ test_parameter.py
 """
 import os
 
-from tardis.tardis_portal.models import Experiment
-
-from tardis.tardis_portal.models import Dataset, DataFile
-
 from tardis.tardis_portal.models import (
-    Schema, ParameterName, DatafileParameterSet, DatafileParameter,
-    DatasetParameterSet, DatasetParameter, ExperimentParameterSet,
-    ExperimentParameter)
+    DataFile,
+    DatafileParameter,
+    DatafileParameterSet,
+    Dataset,
+    DatasetParameter,
+    DatasetParameterSet,
+    Experiment,
+    ExperimentParameter,
+    ExperimentParameterSet,
+    ParameterName,
+    Schema,
+)
 
 from . import ModelTestCase
 

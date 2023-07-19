@@ -8,9 +8,9 @@ managers.py
 from datetime import datetime
 
 from django.conf import settings
-from django.db import models
+from django.contrib.auth.models import Group, User
 from django.core.exceptions import PermissionDenied
-from django.contrib.auth.models import User, Group
+from django.db import models
 from django.db.models import Prefetch
 
 
@@ -177,6 +177,9 @@ class SafeManager(models.Manager):
 
         filter_dict = {}
         exclude_dict = {}
+        OBJECT = None
+        OBJECTACL = None
+        acl_str = ""
         if self.model.get_ct(self.model).model == "project":
             from tardis.apps.projects.models import Project, ProjectACL
 
@@ -202,9 +205,12 @@ class SafeManager(models.Manager):
             OBJECTACL = DatafileACL
             acl_str = "datafileacl"
 
-        if not any(key in ["user", "group", "token", "isOwner"] for key in kwargs):
+        if (
+            not any(key in ["user", "group", "token", "isOwner"] for key in kwargs)
+            and OBJECT
+        ):
             return OBJECT.objects.none()
-
+        related = ""
         if "user" in kwargs:
             related = "user"
             filter_dict[acl_str + "__user"] = kwargs["user"]
@@ -215,6 +221,10 @@ class SafeManager(models.Manager):
             related = "token"
             filter_dict[acl_str + "__token"] = kwargs["token"]
 
+        for perm in ["canDownload", "canWrite", "canDelete", "canSensitive"]:
+            if perm in kwargs:
+                filter_dict[acl_str + "__" + perm] = kwargs[perm]
+
         if "isOwner" in kwargs:
             filter_dict[acl_str + "__isOwner"] = True
         else:
@@ -223,15 +233,18 @@ class SafeManager(models.Manager):
         exclude_dict[acl_str + "__effectiveDate__gte"] = datetime.today()
         exclude_dict[acl_str + "__expiryDate__lte"] = datetime.today()
 
-        query = (
-            OBJECT.objects.prefetch_related(
-                Prefetch(
-                    acl_str + "_set", queryset=OBJECTACL.objects.select_related(related)
+        query = None
+        if OBJECT:
+            query = (
+                OBJECT.objects.prefetch_related(
+                    Prefetch(
+                        acl_str + "_set",
+                        queryset=OBJECTACL.objects.select_related(related),
+                    )
                 )
+                .filter(**filter_dict)
+                .exclude(**exclude_dict)
             )
-            .filter(**filter_dict)
-            .exclude(**exclude_dict)
-        )
         return query
 
     def _query_owned(self, **kwargs):
@@ -420,7 +433,7 @@ class SafeManager(models.Manager):
         :returns: QuerySet of ACLs
         :rtype: QuerySet
         """
-        from .models.access_control import ExperimentACL, DatasetACL, DatafileACL
+        from .models.access_control import DatafileACL, DatasetACL, ExperimentACL
 
         obj = super().get(pk=obj_id)
         if self.model.get_ct(self.model).model == "project":
@@ -463,7 +476,7 @@ class SafeManager(models.Manager):
         :returns: QuerySet of non system Groups
         :rtype: QuerySet
         """
-        from .models.access_control import ExperimentACL, DatasetACL, DatafileACL
+        from .models.access_control import DatafileACL, DatasetACL, ExperimentACL
 
         obj = super().get(pk=obj_id)
         if self.model.get_ct(self.model).model == "project":
@@ -494,7 +507,7 @@ class SafeManager(models.Manager):
         :returns: QuerySet of ACLs
         :rtype: QuerySet
         """
-        from .models.access_control import ExperimentACL, DatasetACL, DatafileACL
+        from .models.access_control import DatafileACL, DatasetACL, ExperimentACL
 
         obj = super().get(pk=obj_id)
         if self.model.get_ct(self.model).model == "project":
@@ -524,7 +537,7 @@ class SafeManager(models.Manager):
         :returns: QuerySet of system-owned ACLs for proj/exp/set/file
         :rtype: QuerySet
         """
-        from .models.access_control import ExperimentACL, DatasetACL, DatafileACL
+        from .models.access_control import DatafileACL, DatasetACL, ExperimentACL
 
         obj = super().get(pk=obj_id)
         if self.model.get_ct(self.model).model == "project":
@@ -556,7 +569,7 @@ class SafeManager(models.Manager):
         :returns: system owned groups for proj/exp/set/file
         :rtype: QuerySet
         """
-        from .models.access_control import ExperimentACL, DatasetACL, DatafileACL
+        from .models.access_control import DatafileACL, DatasetACL, ExperimentACL
 
         obj = super().get(pk=obj_id)
         if self.model.get_ct(self.model).model == "project":

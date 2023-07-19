@@ -1,16 +1,17 @@
 # pylint: disable=wildcard-import,unused-wildcard-import
 from __future__ import absolute_import
 
-from os import path
+# import logging  # pylint: disable=wrong-import-order
 from glob import glob
+from os import path
 
-from celery import Celery  # pylint: disable=import-error
 from django.apps import apps  # pylint: disable=wrong-import-order
 
-from .default_settings import *  # noqa # pylint: disable=W0401,W0614
-import logging  # pylint: disable=wrong-import-order
+from celery import Celery  # pylint: disable=import-error
 
-TEST_RUNNER = "django_nose.NoseTestSuiteRunner"
+from .default_settings import *  # noqa # pylint: disable=W0401,W0614
+
+# TEST_RUNNER = "django_nose.NoseTestSuiteRunner"
 
 DEBUG = True
 
@@ -77,7 +78,7 @@ def get_all_tardis_apps():
 
 
 INSTALLED_APPS += get_all_tardis_apps() + (
-    "django_nose",
+    # "django_nose",
     "behave_django",
 )
 
@@ -108,8 +109,8 @@ LDAP_BASE = "dc=example, dc=com"
 LDAP_USER_BASE = "ou=People, " + LDAP_BASE
 LDAP_GROUP_BASE = "ou=Group, " + LDAP_BASE
 
-SYSTEM_LOG_LEVEL = logging.DEBUG
-MODULE_LOG_LEVEL = logging.DEBUG
+SYSTEM_LOG_LEVEL = "DEBUG"
+MODULE_LOG_LEVEL = "DEBUG"
 
 SYSTEM_LOG_FILENAME = "request-test.log"
 MODULE_LOG_FILENAME = "tardis-test.log"
@@ -195,3 +196,10 @@ RECALL_URI_TEMPLATES = {
 
 ONLY_EXPERIMENT_ACLS = False
 DEFAULT_PERMISSIONS = []
+OBJECTS_WITH_IDENTIFIERS = [
+    "dataset",
+    "experiment",
+    "facility",
+    "instrument",
+    "project",
+]

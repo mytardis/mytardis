@@ -1,4 +1,5 @@
 from django import template
+
 from ..models.facility import is_facility_manager
 
 register = template.Library()

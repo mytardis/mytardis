@@ -1,29 +1,27 @@
 # pylint: disable=model-no-explicit-unicode
+import json
 import logging
 import operator
-import json
 
+from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ObjectDoesNotExist, SuspiciousOperation
-from django.urls import reverse, resolve, Resolver404
-from django.conf import settings
 from django.db import models
+from django.urls import Resolver404, resolve, reverse
 from django.utils.safestring import mark_safe
 from django.utils.timezone import is_aware, is_naive, make_aware, make_naive
 
 import dateutil.parser
 import pytz
 
-from ..ParameterSetManager import ParameterSetManager
 from ..managers import OracleSafeManager, ParameterNameManager, SchemaManager
-
-from .experiment import Experiment
-from .dataset import Dataset
+from ..ParameterSetManager import ParameterSetManager
 from .datafile import DataFile
-from .storage import StorageBox
+from .dataset import Dataset
+from .experiment import Experiment
 from .instrument import Instrument
-
+from .storage import StorageBox
 
 LOCAL_TZ = pytz.timezone(settings.TIME_ZONE)
 logger = logging.getLogger(__name__)
@@ -37,7 +35,6 @@ class ParameterSetManagerMixin(ParameterSetManager):
 
 
 class Schema(models.Model):
-
     EXPERIMENT = 1
     DATASET = 2
     DATAFILE = 3
@@ -102,7 +99,6 @@ class Schema(models.Model):
 
 
 class ParameterName(models.Model):
-
     EXACT_VALUE_COMPARISON = 1
     NOT_EQUAL_COMPARISON = 2
     RANGE_COMPARISON = 3
@@ -245,7 +241,6 @@ def _get_filename_parameter_as_image_element(parameter):
 
 
 def _get_parameter(parameter):
-
     if parameter.name.isNumeric():
         value = str(parameter.numerical_value)
         units = parameter.name.units
@@ -433,8 +428,8 @@ class Parameter(models.Model):
                 # properly created via the REST API.
 
                 match = resolve(value)
-                if match.view_name == u"api_dispatch_detail":
-                    model_name = match.kwargs.get(u"resource_name", None)
+                if match.view_name == "api_dispatch_detail":
+                    model_name = match.kwargs.get("resource_name", None)
                     if model_name not in ("experiment", "dataset"):
                         model_name, pk = None, None
                     else:
@@ -541,7 +536,6 @@ class ExperimentParameterSet(ParameterSet):
 
 
 class FreeTextSearchField(models.Model):
-
     parameter_name = models.ForeignKey(ParameterName, on_delete=models.CASCADE)
 
     class Meta:

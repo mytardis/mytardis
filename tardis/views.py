@@ -1,7 +1,7 @@
 from django.conf import settings
+from django.contrib.auth.models import AnonymousUser
 from django.http import HttpResponseServerError
 from django.shortcuts import render
-from django.contrib.auth.models import AnonymousUser
 
 
 def error_handler(request, **kwargs):

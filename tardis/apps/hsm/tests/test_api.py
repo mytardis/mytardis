@@ -9,11 +9,10 @@ from django.conf import settings
 
 import six
 
-from tardis.tardis_portal.models.access_control import DatasetACL, DatafileACL
+from tardis.tardis_portal.models.access_control import DatafileACL, DatasetACL
 from tardis.tardis_portal.models.datafile import DataFile, DataFileObject
 from tardis.tardis_portal.models.dataset import Dataset
 from tardis.tardis_portal.models.storage import StorageBox, StorageBoxOption
-
 from tardis.tardis_portal.tests.api import MyTardisResourceTestCase
 
 
@@ -66,7 +65,9 @@ class HsmAppApiTestCase(MyTardisResourceTestCase):
         location = self.dfo.storage_box.options.get(key="location").value
         self.dfo.uri = "test.txt"
         self.dfo.save()
-        with open(os.path.join(location, self.dfo.uri), "w") as file_obj:
+        with open(
+            os.path.join(location, self.dfo.uri), "w", encoding="utf-8"
+        ) as file_obj:
             file_obj.write("123test\n")
 
     def tearDown(self):
@@ -286,8 +287,8 @@ class HsmAppApiTestCase(MyTardisResourceTestCase):
         """
         Test the task for updating a dataset's Online Status metadata
         """
-        from tardis.tardis_portal.models.parameters import DatasetParameterSet
-        from tardis.tardis_portal.models.parameters import Schema
+        from tardis.tardis_portal.models.parameters import DatasetParameterSet, Schema
+
         from ..tasks import ds_check
 
         # Ensure this dataset's one and only file is in an HSM storage box:

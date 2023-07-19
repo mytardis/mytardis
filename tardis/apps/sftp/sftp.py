@@ -4,19 +4,23 @@ SFTP Server
 # pylint: disable=C0411,C0412,C0413
 # disabling import order check for monkey patching
 
-import socketserver
 import base64
 import collections
 import logging
 import os
+import socketserver
 import stat
 import time
 import uuid
-
-from paramiko.py3compat import StringIO
+from io import StringIO
 
 from django.conf import settings
+
 from paramiko import (
+    OPEN_FAILED_ADMINISTRATIVELY_PROHIBITED,
+    OPEN_SUCCEEDED,
+    SFTP_NO_SUCH_FILE,
+    SFTP_OP_UNSUPPORTED,
     InteractiveQuery,
     RSAKey,
     ServerInterface,
@@ -24,14 +28,8 @@ from paramiko import (
     SFTPHandle,
     SFTPServer,
     SFTPServerInterface,
-    Transport,
     SSHException,
-)
-from paramiko import (
-    OPEN_SUCCEEDED,
-    OPEN_FAILED_ADMINISTRATIVELY_PROHIBITED,
-    SFTP_OP_UNSUPPORTED,
-    SFTP_NO_SUCH_FILE,
+    Transport,
 )
 from paramiko.common import AUTH_FAILED, AUTH_SUCCESSFUL
 from paramiko.rsakey import RSAKey
@@ -50,9 +48,10 @@ paramiko_log = logging.getLogger("paramiko.transport")
 paramiko_log.disabled = True
 
 
+from django.contrib.auth.models import AnonymousUser  # noqa
+
 # django db related modules must be imported after monkey-patching
 from django.contrib.sites.models import Site  # noqa
-from django.contrib.auth.models import AnonymousUser  # noqa
 
 
 class DynamicTree(object):

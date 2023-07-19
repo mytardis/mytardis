@@ -30,7 +30,9 @@
 #
 import logging
 import os
+
 from django.conf import settings
+
 from .shortcuts import render_to_file
 
 logger = logging.getLogger(__name__)
@@ -46,7 +48,6 @@ A set of static methods for writing xml files.
 
 
 class XMLWriter:
-
     @staticmethod
     def write_template_to_dir(dest_dir, dest_filename, template_path, context):
         """
@@ -69,11 +70,9 @@ class XMLWriter:
         return filename
 
     @staticmethod
-    def write_template_to_file(prefix_dir,
-        objectprefix,
-        uniqueid,
-        templatepath,
-        context):
+    def write_template_to_file(
+        prefix_dir, objectprefix, uniqueid, templatepath, context
+    ):
         """
         :param prefix_dir: The subdirectory off of the OAI_DOCS_PATH to store \
             the resulting document in
@@ -94,19 +93,23 @@ class XMLWriter:
         :rtype: string
         """
 
-        filename = settings.OAI_DOCS_PATH + os.path.sep + prefix_dir + \
-            os.path.sep + str(objectprefix) + "-" + str(uniqueid) + ".xml"
+        filename = (
+            settings.OAI_DOCS_PATH
+            + os.path.sep
+            + prefix_dir
+            + os.path.sep
+            + str(objectprefix)
+            + "-"
+            + str(uniqueid)
+            + ".xml"
+        )
 
-        render_to_file(templatepath,
-            filename, context)
+        render_to_file(templatepath, filename, context)
 
         return filename
 
     @staticmethod
-    def write_xml_to_file(prefix_dir,
-            objectprefix,
-            uniqueid,
-            xmlstring):
+    def write_xml_to_file(prefix_dir, objectprefix, uniqueid, xmlstring):
         """
         :param prefix_dir: The subdirectory off of the OAI_DOCS_PATH to store
             the resulting document in
@@ -123,11 +126,18 @@ class XMLWriter:
         :rtype: string
         """
 
-        filename = settings.OAI_DOCS_PATH + os.path.sep + prefix_dir + \
-            os.path.sep + str(objectprefix) + "-" + \
-            uniqueid + ".xml"
+        filename = (
+            settings.OAI_DOCS_PATH
+            + os.path.sep
+            + prefix_dir
+            + os.path.sep
+            + str(objectprefix)
+            + "-"
+            + uniqueid
+            + ".xml"
+        )
 
-        with open(filename, "w") as f:
-            f.write(xmlstring.encode('UTF-8'))
+        with open(filename, "w", encoding="utf-8") as f:
+            f.write(xmlstring.encode("UTF-8"))
             f.close()
         return filename

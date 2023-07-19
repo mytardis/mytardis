@@ -1,6 +1,7 @@
 from django.core.files.storage import Storage
 
 from .file_system import MyTardisLocalFileSystemStorage
+
 default_storage = MyTardisLocalFileSystemStorage()
 
 

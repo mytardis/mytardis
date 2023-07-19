@@ -7,11 +7,11 @@ import logging
 
 from django.conf import settings
 from django.core.mail import EmailMessage
-from django.urls import reverse
 from django.forms import model_to_dict
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import redirect
 from django.template.defaultfilters import filesizeformat
+from django.urls import reverse
 
 from ..models.datafile import DataFile
 

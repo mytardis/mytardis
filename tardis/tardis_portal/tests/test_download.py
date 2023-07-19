@@ -2,31 +2,26 @@
 
 import hashlib
 import re
-
 from functools import reduce
 from os import makedirs
-from os.path import abspath, basename, join, exists, getsize
+from os.path import abspath, basename, exists, getsize, join
 from shutil import rmtree
-from zipfile import is_zipfile, ZipFile
-from tarfile import is_tarfile, TarFile
+from tarfile import TarFile, is_tarfile
 from tempfile import NamedTemporaryFile
-from urllib.parse import quote
-
-from unittest.mock import patch
 from unittest import skipIf
-
-from django.test import TestCase
-from django.test.client import Client
+from unittest.mock import patch
+from urllib.parse import quote
+from zipfile import ZipFile, is_zipfile
 
 from django.conf import settings
 from django.contrib.auth.models import User
+from django.test import TestCase
+from django.test.client import Client
 
-from ..models.experiment import Experiment
-from ..models.access_control import ExperimentACL, DatasetACL, DatafileACL
-
-from ..models.dataset import Dataset
+from ..models.access_control import DatafileACL, DatasetACL, ExperimentACL
 from ..models.datafile import DataFile, DataFileObject
-
+from ..models.dataset import Dataset
+from ..models.experiment import Experiment
 
 try:
     from wand.image import Image  # pylint: disable=C0411
@@ -50,7 +45,7 @@ def _generate_test_image(testfile):
     else:
         # Apparently ImageMagick isn't installed...
         # Write a "fake" TIFF file
-        with open(testfile, "w") as f:
+        with open(testfile, "w", encoding="utf-8") as f:
             f.write("II\x2a\x00")
             f.close()
 
@@ -136,7 +131,7 @@ class DownloadTestCase(TestCase):
             makedirs(self.dest2)
 
         testfile1 = abspath(join(self.dest1, filename1))
-        with open(testfile1, "w") as f:
+        with open(testfile1, "w", encoding="utf-8") as f:
             f.write("Hello World!\n")
             f.close()
 

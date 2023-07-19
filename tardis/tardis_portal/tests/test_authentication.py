@@ -4,13 +4,12 @@ Created on 19/01/2011
 .. moduleauthor:: Gerson Galang <gerson.galang@versi.edu.au>
 '''
 import json
-
 from unittest.mock import patch
 
 from django.conf import settings
+from django.contrib.auth.models import Permission, User
 from django.test import TestCase
 from django.test.client import Client
-from django.contrib.auth.models import User, Permission
 
 
 class AuthenticationTestCase(TestCase):

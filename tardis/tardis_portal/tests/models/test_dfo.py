@@ -8,7 +8,7 @@ tests_datafileobject.py
 """
 from django.conf import settings
 
-from tardis.tardis_portal.models import Dataset, DataFile, DataFileObject
+from tardis.tardis_portal.models import DataFile, DataFileObject, Dataset
 
 from . import ModelTestCase
 

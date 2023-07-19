@@ -10,21 +10,21 @@ Tests for view methods supplying context data to templates
 """
 from unittest import skipIf
 
+from django.conf import settings
+from django.contrib.auth.models import User
+from django.test import TestCase
+
 from flexmock import flexmock
 
-from django.conf import settings
-from django.test import TestCase
-from django.contrib.auth.models import User
-
 from ...models import (
-    ExperimentACL,
-    Experiment,
-    Dataset,
     DataFile,
-    Schema,
-    DatafileParameterSet,
-    DatasetACL,
     DatafileACL,
+    DatafileParameterSet,
+    Dataset,
+    DatasetACL,
+    Experiment,
+    ExperimentACL,
+    Schema,
 )
 
 

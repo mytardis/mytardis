@@ -428,7 +428,8 @@ class ExperimentForm(forms.ModelForm):
         del self.cleaned_data["authors"]
 
         # fix up experiment form
-        if self.instance:
+        if self.instance.pk:
+            # return None if self.pk is None else self.get_file()
             authors = self.instance.experimentauthor_set.all()
             for author in authors:
                 author.delete()

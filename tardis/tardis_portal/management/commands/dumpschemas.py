@@ -2,10 +2,10 @@
  Command for dumping soft schema definitions
 """
 import sys
+
+from django.core import serializers
 from django.core.management.base import BaseCommand, CommandError
 from django.db import DEFAULT_DB_ALIAS
-from django.core import serializers
-
 
 from ... import models
 

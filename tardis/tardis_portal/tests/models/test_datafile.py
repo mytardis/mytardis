@@ -9,37 +9,40 @@ test_datafile.py
 import os
 import re
 from io import StringIO
-
 from unittest.mock import patch
 
 from django.conf import settings
 from django.db import models
 from django.test import override_settings
+
 from tastypie.utils import trailing_slash
 
-from tardis.tardis_portal.models import Experiment, ExperimentACL
-
-from tardis.tardis_portal.models import Dataset, DataFile, DataFileObject
+from tardis.tardis_portal.models import (
+    DataFile,
+    DataFileObject,
+    Dataset,
+    Experiment,
+    ExperimentACL,
+)
 
 from . import ModelTestCase
 
 
 class DataFileTestCase(ModelTestCase):
-
     @override_settings(USE_FILTERS=True)
-    @patch('celery.app.base.Celery.send_task')
+    @patch("celery.app.base.Celery.send_task")
     def test_datafile(self, mock_send_task):
-
         def _build(dataset, filename, url=None):
             datafile = DataFile(dataset=dataset, filename=filename)
             datafile.save()
             if url is None:
-                datafile.file_object = StringIO(u'bla')
+                datafile.file_object = StringIO("bla")
                 return datafile
             dfo = DataFileObject(
                 datafile=datafile,
                 storage_box=datafile.get_default_storage_box(),
-                uri=url)
+                uri=url,
+            )
             dfo.save()
             # Tests are run with CELERY_ALWAYS_EAGER = True,
             # so saving a DFO will trigger an immediate attempt
@@ -49,11 +52,13 @@ class DataFileTestCase(ModelTestCase):
             self.assertNotEqual(mock_send_task.call_count, 0)
             return datafile
 
-        exp = Experiment(title='test exp1',
-                         institution_name='monash',
-                         approved=True,
-                         created_by=self.user,
-                         public_access=Experiment.PUBLIC_ACCESS_NONE)
+        exp = Experiment(
+            title="test exp1",
+            institution_name="monash",
+            approved=True,
+            created_by=self.user,
+            public_access=Experiment.PUBLIC_ACCESS_NONE,
+        )
         exp.save()
 
         acl = ExperimentACL(
@@ -73,42 +78,43 @@ class DataFileTestCase(ModelTestCase):
 
         save1 = settings.REQUIRE_DATAFILE_SIZES
         save2 = settings.REQUIRE_DATAFILE_CHECKSUMS
-        saved_render_image_size_limit = getattr(
-            settings, 'RENDER_IMAGE_SIZE_LIMIT', 0)
+        saved_render_image_size_limit = getattr(settings, "RENDER_IMAGE_SIZE_LIMIT", 0)
         try:
             settings.REQUIRE_DATAFILE_SIZES = False
             settings.REQUIRE_DATAFILE_CHECKSUMS = False
-            df_file = _build(dataset, 'file.txt', 'path/file.txt')
+            df_file = _build(dataset, "file.txt", "path/file.txt")
             first_id = df_file.id
-            self.assertEqual(df_file.filename, 'file.txt')
-            self.assertEqual(df_file.file_objects.all()[0].uri,
-                             'path/file.txt')
+            self.assertEqual(df_file.filename, "file.txt")
+            self.assertEqual(df_file.file_objects.all()[0].uri, "path/file.txt")
             self.assertEqual(df_file.dataset, dataset)
             self.assertEqual(df_file.size, None)
-            self.assertEqual(df_file.download_url,
-                             '/api/v1/dataset_file/%d/download%s' %
-                             (first_id, trailing_slash()))
+            self.assertEqual(
+                df_file.download_url,
+                "/api/v1/dataset_file/%d/download%s" % (first_id, trailing_slash()),
+            )
 
             # Test string representation of DataFileObject:
             dfo = df_file.get_preferred_dfo()
             self.assertEqual(
                 str(dfo),
                 "Box: %s, URI: %s, verified: %s"
-                % (str(dfo.storage_box), dfo.uri, str(dfo.verified)))
+                % (str(dfo.storage_box), dfo.uri, str(dfo.verified)),
+            )
 
             # Test constructing absolute file path:
             self.assertEqual(
                 df_file.get_absolute_filepath(),
-                os.path.join(settings.DEFAULT_STORAGE_BASE_DIR, dfo.uri))
+                os.path.join(settings.DEFAULT_STORAGE_BASE_DIR, dfo.uri),
+            )
 
             # get_as_temporary_file() doesn't work for a StringIO file object:
             if not os.path.exists(os.path.dirname(dfo.get_full_path())):
                 os.makedirs(os.path.dirname(dfo.get_full_path()))
-            with open (dfo.get_full_path(), 'w') as file_obj:
-                file_obj.write(u'bla')
+            with open(dfo.get_full_path(), "w", encoding="utf-8") as file_obj:
+                file_obj.write("bla")
             # Test ability to check out a temporary copy of file:
             with df_file.get_as_temporary_file() as temp_file_obj:
-                self.assertEqual(temp_file_obj.read().decode(), u'bla')
+                self.assertEqual(temp_file_obj.read().decode(), "bla")
 
             self.assertFalse(df_file.has_image)
             # Test checking online status, i.e. whether the DataFile
@@ -130,8 +136,7 @@ class DataFileTestCase(ModelTestCase):
             self.assertEqual(df_file.get_mimetype(), "text/plain")
             df_file.filename = "file.unknown-extension"
             models.Model.save(df_file)
-            self.assertEqual(
-                df_file.get_mimetype(), "application/octet-stream")
+            self.assertEqual(df_file.get_mimetype(), "application/octet-stream")
 
             # Test method for getting view URL for file types which can
             # be displayed in the browser.
@@ -143,8 +148,7 @@ class DataFileTestCase(ModelTestCase):
             # Clear cache for view_url @cached_property by creating new instance:
             df_file = DataFile.objects.get(id=df_file.id)
             self.assertEqual(df_file.mimetype, "text/plain")
-            self.assertEqual(
-                df_file.view_url, "/datafile/view/%s/" % df_file.id)
+            self.assertEqual(df_file.view_url, "/datafile/view/%s/" % df_file.id)
             # This setting will prevent files larger than 2 bytes
             # from being rendered in the browser:
             settings.RENDER_IMAGE_SIZE_LIMIT = 2
@@ -154,60 +158,59 @@ class DataFileTestCase(ModelTestCase):
             df_file = DataFile.objects.get(id=df_file.id)
             self.assertIsNone(df_file.view_url)
 
-            df_file = _build(dataset, 'file1.txt', 'path/file1.txt')
-            self.assertEqual(df_file.filename, 'file1.txt')
-            self.assertEqual(df_file.file_objects.all()[0].uri,
-                             'path/file1.txt')
+            df_file = _build(dataset, "file1.txt", "path/file1.txt")
+            self.assertEqual(df_file.filename, "file1.txt")
+            self.assertEqual(df_file.file_objects.all()[0].uri, "path/file1.txt")
             self.assertEqual(df_file.dataset, dataset)
             self.assertEqual(df_file.size, None)
-            self.assertEqual(df_file.download_url,
-                             '/api/v1/dataset_file/%d/download%s' %
-                             (first_id + 1, trailing_slash()))
+            self.assertEqual(
+                df_file.download_url,
+                "/api/v1/dataset_file/%d/download%s" % (first_id + 1, trailing_slash()),
+            )
 
-            df_file = _build(dataset, 'file2.txt', 'path/file2#txt')
-            self.assertEqual(df_file.filename, 'file2.txt')
+            df_file = _build(dataset, "file2.txt", "path/file2#txt")
+            self.assertEqual(df_file.filename, "file2.txt")
             self.assertEqual(df_file.dataset, dataset)
             self.assertEqual(df_file.size, None)
-            self.assertEqual(df_file.download_url,
-                             '/api/v1/dataset_file/%d/download%s' %
-                             (first_id + 2, trailing_slash()))
+            self.assertEqual(
+                df_file.download_url,
+                "/api/v1/dataset_file/%d/download%s" % (first_id + 2, trailing_slash()),
+            )
 
-            df_file = _build(dataset, 'f.txt',
-                             'http://localhost:8080/filestore/f.txt')
-            self.assertEqual(df_file.filename, 'f.txt')
+            df_file = _build(dataset, "f.txt", "http://localhost:8080/filestore/f.txt")
+            self.assertEqual(df_file.filename, "f.txt")
             self.assertEqual(df_file.dataset, dataset)
             self.assertEqual(df_file.size, None)
-            self.assertEqual(df_file.download_url,
-                             '/api/v1/dataset_file/%d/download%s' %
-                             (first_id + 3, trailing_slash()))
+            self.assertEqual(
+                df_file.download_url,
+                "/api/v1/dataset_file/%d/download%s" % (first_id + 3, trailing_slash()),
+            )
 
-            df_file = _build(dataset, 'f-bad-ds.txt')
-            self.assertEqual(df_file.filename, 'f-bad-ds.txt')
+            df_file = _build(dataset, "f-bad-ds.txt")
+            self.assertEqual(df_file.filename, "f-bad-ds.txt")
             self.assertEqual(df_file.dataset, dataset)
             self.assertEqual(df_file.size, None)
-            self.assertEqual(df_file.download_url,
-                             '/api/v1/dataset_file/%d/download%s' %
-                             (first_id + 4, trailing_slash()))
-            pattern = re.compile( '\n|;')
+            self.assertEqual(
+                df_file.download_url,
+                "/api/v1/dataset_file/%d/download%s" % (first_id + 4, trailing_slash()),
+            )
+            pattern = re.compile("\n|;")
             self.assertFalse(pattern.search(df_file.file_objects.first().uri))
 
             # check that can't save negative byte sizes
             with self.assertRaises(Exception):
                 settings.REQUIRE_DATAFILE_SIZES = True
-                DataFile(dataset=dataset, filename='lessthanempty.txt',
-                         size=-1).save()
+                DataFile(dataset=dataset, filename="lessthanempty.txt", size=-1).save()
 
             # Now check the 'REQUIRE' config params
             with self.assertRaises(Exception):
                 settings.REQUIRE_DATAFILE_SIZES = True
                 settings.REQUIRE_DATAFILE_CHECKSUMS = False
-                DataFile(dataset=dataset, filename='foo.txt',
-                         md5sum='bad').save()
+                DataFile(dataset=dataset, filename="foo.txt", md5sum="bad").save()
             with self.assertRaises(Exception):
                 settings.REQUIRE_DATAFILE_SIZES = False
                 settings.REQUIRE_DATAFILE_CHECKSUMS = True
-                DataFile(dataset=dataset, filename='foo.txt',
-                         size=1).save()
+                DataFile(dataset=dataset, filename="foo.txt", size=1).save()
 
         finally:
             settings.REQUIRE_DATAFILE_SIZES = save1

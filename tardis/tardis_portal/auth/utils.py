@@ -5,7 +5,7 @@ Created on 15/03/2011
 '''
 
 from django.conf import settings
-from django.contrib.auth.models import User, Group
+from django.contrib.auth.models import Group, User
 
 from ..models.access_control import UserAuthentication
 

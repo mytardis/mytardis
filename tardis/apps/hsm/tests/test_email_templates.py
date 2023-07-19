@@ -5,13 +5,11 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.test import TestCase
 
+from tardis.tardis_portal.models.datafile import DataFile, DataFileObject
 from tardis.tardis_portal.models.dataset import Dataset
-from tardis.tardis_portal.models.datafile import DataFile
-from tardis.tardis_portal.models.datafile import DataFileObject
 from tardis.tardis_portal.models.storage import StorageBox
 
-from ..email_text import email_dfo_recall_complete
-from ..email_text import email_dfo_recall_failed
+from ..email_text import email_dfo_recall_complete, email_dfo_recall_failed
 
 
 class HsmAppEmailTemplateTestCase(TestCase):

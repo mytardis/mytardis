@@ -1,8 +1,10 @@
 from django.conf import settings
 from django.views.decorators.cache import never_cache
+
+import tardis.tardis_portal.auth.decorators as authz
 from tardis.tardis_portal.models import Experiment
 from tardis.tardis_portal.shortcuts import render_response_index
-import tardis.tardis_portal.auth.decorators as authz
+
 from .models import Project
 
 
@@ -10,17 +12,17 @@ from .models import Project
 # @authz.experiment_access_required
 def project_latest_experiment(request, project_id):
     if settings.ONLY_EXPERIMENT_ACLS:
-        context = dict(
-            experiments=Experiment.objects.prefetch_related("projects").filter(
+        context = {
+            "experiments": Experiment.objects.prefetch_related("projects").filter(
                 projects__id=project_id
             )
-        )
+        }
     else:
-        context = dict(
-            experiments=Experiment.safe.all(user=request.user).filter(
+        context = {
+            "experiments": Experiment.safe.all(user=request.user).filter(
                 projects__id=project_id
             )
-        )
+        }
     return render_response_index(
         request, "ajax/project_latest_experiment.html", context
     )
@@ -30,17 +32,17 @@ def project_latest_experiment(request, project_id):
 # @authz.experiment_access_required
 def project_recent_experiments(request, project_id):
     if settings.ONLY_EXPERIMENT_ACLS:
-        context = dict(
-            experiments=Experiment.objects.prefetch_related("projects").filter(
+        context = {
+            "experiments": Experiment.objects.prefetch_related("projects").filter(
                 projects__id=project_id
             )
-        )
+        }
     else:
-        context = dict(
-            experiments=Experiment.safe.all(user=request.user).filter(
+        context = {
+            "experiments": Experiment.safe.all(user=request.user).filter(
                 projects__id=project_id
             )
-        )
+        }
     return render_response_index(
         request, "ajax/project_recent_experiments.html", context
     )

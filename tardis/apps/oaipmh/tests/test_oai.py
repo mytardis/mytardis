@@ -5,7 +5,7 @@ from django.test.client import Client
 
 from lxml import etree
 
-from tardis.tardis_portal.models import Experiment, License, ExperimentACL
+from tardis.tardis_portal.models import Experiment, ExperimentACL, License
 
 
 def _create_test_data():

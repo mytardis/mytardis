@@ -1,7 +1,7 @@
 from django.apps import apps
-from django.db import models
 from django.contrib import admin
 from django.contrib.auth.models import User
+from django.db import models
 
 from tardis.tardis_portal.models.access_control import ExperimentACL
 

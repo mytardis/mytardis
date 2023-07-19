@@ -1,33 +1,33 @@
 """
 views that return HTML that is injected into pages
 """
-import logging
 import json
-
+import logging
 from urllib.parse import urlencode
 
 from django.conf import settings
-from django.core.exceptions import PermissionDenied
-from django.core.paginator import Paginator, EmptyPage, InvalidPage
-from django.forms import model_to_dict
-from django.urls import reverse
-from django.http import JsonResponse
-from django.views.decorators.cache import never_cache
 from django.contrib.auth.decorators import login_required
+from django.core.exceptions import PermissionDenied
+from django.core.paginator import EmptyPage, InvalidPage, Paginator
+from django.forms import model_to_dict
+from django.http import HttpResponse, JsonResponse
+from django.urls import reverse
+from django.views.decorators.cache import never_cache
+
 from ..auth import decorators as authz
 from ..forms import RightsForm
 from ..models import (
-    Experiment,
     DataFile,
-    Dataset,
-    Schema,
     DatafileParameterSet,
+    Dataset,
+    Experiment,
+    Schema,
     UserProfile,
 )
 from ..shortcuts import (
+    render_response_index,
     return_response_error,
     return_response_not_found,
-    render_response_index,
 )
 from ..views.pages import ExperimentView
 from ..views.utils import _add_protocols_and_organizations
@@ -115,17 +115,17 @@ def experiment_datasets(request, experiment_id):
 @authz.experiment_access_required
 def experiment_latest_dataset(request, experiment_id):
     if settings.ONLY_EXPERIMENT_ACLS:
-        context = dict(
-            datasets=Dataset.objects.prefetch_related("experiments").filter(
+        context = {
+            "datasets": Dataset.objects.prefetch_related("experiments").filter(
                 experiments__id=experiment_id
             )
-        )
+        }
     else:
-        context = dict(
-            datasets=Dataset.safe.all(user=request.user).filter(
+        context = {
+            "datasets": Dataset.safe.all(user=request.user).filter(
                 experiments__id=experiment_id
             )
-        )
+        }
     return render_response_index(
         request, "tardis_portal/ajax/experiment_latest_dataset.html", context
     )
@@ -135,17 +135,17 @@ def experiment_latest_dataset(request, experiment_id):
 @authz.experiment_access_required
 def experiment_recent_datasets(request, experiment_id):
     if settings.ONLY_EXPERIMENT_ACLS:
-        context = dict(
-            datasets=Dataset.objects.prefetch_related("experiments").filter(
+        context = {
+            "datasets": Dataset.objects.prefetch_related("experiments").filter(
                 experiments__id=experiment_id
             )
-        )
+        }
     else:
-        context = dict(
-            datasets=Dataset.safe.all(user=request.user).filter(
+        context = {
+            "datasets": Dataset.safe.all(user=request.user).filter(
                 experiments__id=experiment_id
             )
-        )
+        }
     return render_response_index(
         request, "tardis_portal/ajax/experiment_recent_datasets.html", context
     )
@@ -212,9 +212,8 @@ def retrieve_experiment_metadata(request, experiment_id):
     )
 
 
-@never_cache
 @authz.datafile_access_required
-def display_datafile_details(request, datafile_id):
+def display_datafile_details(request, datafile_id) -> HttpResponse:
     """
     Displays a box, with a list of interaction options depending on
     the file type given and displays the one with the highest priority
@@ -235,16 +234,16 @@ def display_datafile_details(request, datafile_id):
     views = []
     for ns, url in apps:
         if ns == default_view:
-            views.append({"url": "%s/%s/" % (url, datafile_id), "name": default_view})
+            views.append({"url": f"{url}/{datafile_id}/", "name": default_view})
         elif ns in the_schemas:
             schema = Schema.objects.get(namespace__exact=ns)
-            views.append({"url": "%s/%s/" % (url, datafile_id), "name": schema.name})
+            views.append({"url": f"{url}/{datafile_id}/", "name": schema.name})
     context = {
         "datafile_id": datafile_id,
         "views": views,
     }
     return render_response_index(
-        request, "tardis_portal/ajax/datafile_details.html", context
+        never_cache(request), "tardis_portal/ajax/datafile_details.html", context
     )
 
 

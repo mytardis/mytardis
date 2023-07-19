@@ -8,7 +8,7 @@ jobs:
     runs-on: [ubuntu-22.04]
     strategy:
       matrix:
-        python-version: ['3.8', '3.9', '3.10', '3.11']
+        python-version: ['3.10', '3.11']
     name: Python ${{ matrix.python-version }}
     steps:
     - uses: actions/checkout@v3
@@ -66,13 +66,8 @@ jobs:
     # Install dependencies. `--no-root` means "install all dependencies but not the project
     # itself", which is what you want to avoid caching _your_ code. The `if` statement
     # ensures this only runs on a cache miss.
-    - run: poetry install --no-interaction --no-root
+    - run: poetry install --no-interaction --no-root --with s3,ldap,postgres,social_auth,sftp
       if: steps.cache-deps.outputs.cache-hit != 'true'
-    
-    # Temporarily deactivate pylint tests
-    #- name: run pylint
-    #  run: |
-    #    poetry run pylint --rcfile .pylintrc --django-settings-module=tardis.test_settings tardis
     
     - name: run macroacl tests
       id: runMacroTests
@@ -84,3 +79,6 @@ jobs:
       if: always() && (steps.runMacroTests.outcome == 'success' || steps.runMacroTests.outcome == 'failure')
       run: |
         poetry run python test_micro.py
+    - name: run pylint
+      run: |
+        poetry run pylint --rcfile .pylintrc --django-settings-module=tardis.test_settings tardis

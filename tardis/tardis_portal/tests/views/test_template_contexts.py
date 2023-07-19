@@ -9,15 +9,15 @@ Tests for view methods supplying context data to templates
 
 """
 import sys
-
 from unittest.mock import patch
-from flexmock import flexmock
 
 from django.conf import settings
-from django.test import TestCase
 from django.contrib.auth.models import User
+from django.test import TestCase
 
-from ...models import ExperimentACL, Experiment, Dataset, DataFile, DatasetACL
+from flexmock import flexmock
+
+from ...models import DataFile, Dataset, DatasetACL, Experiment, ExperimentACL
 
 
 class ViewTemplateContextsTest(TestCase):
@@ -63,8 +63,9 @@ class ViewTemplateContextsTest(TestCase):
         """
         test some template context parameters for an experiment view
         """
-        from ...views.pages import ExperimentView
         from django.http import HttpRequest
+
+        from ...views.pages import ExperimentView
 
         # Default behavior
         views_module = flexmock(sys.modules["tardis.tardis_portal.views"])
@@ -126,8 +127,9 @@ class ViewTemplateContextsTest(TestCase):
         """
         test some context parameters for a dataset view
         """
-        from ...views.pages import DatasetView
         from django.http import HttpRequest
+
+        from ...views.pages import DatasetView
 
         views_module = flexmock(sys.modules["tardis.tardis_portal.views"])
         request = HttpRequest()
@@ -223,9 +225,10 @@ class ExperimentListsTest(TestCase):
         """
         Test My Data view
         """
-        from django.http import QueryDict, HttpRequest
-        from ...views.pages import my_data
+        from django.http import HttpRequest, QueryDict
+
         from ...views.ajax_pages import retrieve_owned_exps_list
+        from ...views.pages import my_data
 
         request = HttpRequest()
         request.method = "GET"
@@ -271,9 +274,10 @@ class ExperimentListsTest(TestCase):
         """
         Test Shared view
         """
-        from django.http import QueryDict, HttpRequest
-        from ...views.pages import shared
+        from django.http import HttpRequest, QueryDict
+
         from ...views.ajax_pages import retrieve_shared_exps_list
+        from ...views.pages import shared
 
         request = HttpRequest()
         request.method = "GET"

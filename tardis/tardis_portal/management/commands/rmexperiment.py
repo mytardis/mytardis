@@ -12,13 +12,19 @@ some cascading.
 import sys
 
 from django.core.management.base import BaseCommand, CommandError
-from django.db import transaction, DEFAULT_DB_ALIAS
+from django.db import DEFAULT_DB_ALIAS, transaction
 
-from ...models import Experiment, Dataset, DataFile
-from ...models import ExperimentAuthor, ExperimentACL
-from ...models import ExperimentParameterSet, ExperimentParameter
-from ...models import DatasetParameterSet
-from ...models import DatafileParameterSet
+from ...models import (
+    DataFile,
+    DatafileParameterSet,
+    Dataset,
+    DatasetParameterSet,
+    Experiment,
+    ExperimentACL,
+    ExperimentAuthor,
+    ExperimentParameter,
+    ExperimentParameterSet,
+)
 
 
 class Command(BaseCommand):

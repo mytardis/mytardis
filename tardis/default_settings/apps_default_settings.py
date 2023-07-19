@@ -1,7 +1,7 @@
-import sys
 import importlib
-from django.conf import settings
+import sys
 
+from django.conf import settings
 
 this_module = sys.modules[__name__]
 

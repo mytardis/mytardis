@@ -2,40 +2,40 @@
 views that render full pages
 """
 
+import inspect
 import logging
 import re
-from os import path
-import inspect
 import types
+from os import path
 
 from django.conf import settings
-from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required, permission_required
+from django.contrib.auth.models import User
 from django.contrib.sites.shortcuts import get_current_site
-from django.core.exceptions import PermissionDenied, ImproperlyConfigured
-from django.core.paginator import Paginator, EmptyPage, InvalidPage
-from django.urls import reverse
+from django.core.exceptions import ImproperlyConfigured, PermissionDenied
+from django.core.paginator import EmptyPage, InvalidPage, Paginator
 from django.db import connection
 from django.http import HttpResponse, HttpResponseForbidden, JsonResponse
+from django.urls import reverse
 from django.views.decorators.cache import cache_page
 from django.views.generic.base import TemplateView, View
 
 from ..auth import decorators as authz
 from ..auth.decorators import has_write
-from ..forms import ExperimentForm, DatasetForm
-from ..models import Experiment, Dataset, DataFile, ExperimentACL, DatasetACL
+from ..forms import DatasetForm, ExperimentForm
+from ..models import DataFile, Dataset, DatasetACL, Experiment, ExperimentACL
 from ..shortcuts import (
+    get_experiment_referer,
     render_response_index,
     return_response_error,
     return_response_not_found,
-    get_experiment_referer,
-)
-from ..views.utils import (
-    _redirect_303,
-    _add_protocols_and_organizations,
-    HttpResponseSeeAlso,
 )
 from ..util import get_filesystem_safe_dataset_name
+from ..views.utils import (
+    HttpResponseSeeAlso,
+    _add_protocols_and_organizations,
+    _redirect_303,
+)
 
 logger = logging.getLogger(__name__)
 

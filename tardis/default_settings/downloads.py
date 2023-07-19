@@ -1,11 +1,11 @@
 DOWNLOAD_PATH_MAPPERS = {
-    'deep-storage': (
-        'tardis.apps.deep_storage_download_mapper.mapper.deep_storage_mapper',
+    "deep-storage": (
+        "tardis.apps.deep_storage_download_mapper.mapper.deep_storage_mapper",
     ),
 }
 
 # Site's default archive organization (i.e. path structure)
-DEFAULT_PATH_MAPPER = 'deep-storage'
+DEFAULT_PATH_MAPPER = "deep-storage"
 
 # Don't percent-encode characters in the SAFE_FILESYSTEM_CHARACTERS
 # string when creating TARs and SFTP views.
@@ -38,14 +38,14 @@ EXP_SPACES_TO_UNDERSCORES = True
 # Convert dataset description spaces to underscores in TARs and SFTP:
 DATASET_SPACES_TO_UNDERSCORES = True
 
-DEFAULT_ARCHIVE_FORMATS = ['tar']
-'''
+DEFAULT_ARCHIVE_FORMATS = ["tar"]
+"""
 Site's preferred archive types, with the most preferred first
 other available option: 'tgz'. Add to list if desired
-'''
+"""
 
 DOWNLOAD_URI_TEMPLATES = {}
-'''
+"""
 When a file download is requested, by default, MyTardis will create
 a StreamingHttpResponse to serve the download which requires reading
 the file from a file-like object.  For some storage backends, e.g.
@@ -70,10 +70,10 @@ For example,
 
 The '/api/v1/s3utils_replica/{dfo_id}/download/' endpoint is provided
 by the 's3utils' tardis app which needs to be in your INSTALLED_APPS
-'''
+"""
 
 DOWNLOAD_URI_TEMPLATES = {}
-'''
+"""
 When a file download is requested, by default, MyTardis will create
 a StreamingHttpResponse to serve the download which requires reading
 the file from a file-like object.  For some storage backends, e.g.
@@ -98,15 +98,15 @@ For example,
 
 The '/api/v1/s3utils_replica/{dfo_id}/download/' endpoint is provided
 by the 's3utils' tardis app which needs to be in your INSTALLED_APPS
-'''
+"""
 
 PROXY_DOWNLOADS = False
-'''
+"""
 Enable proxying of downloads to NGINX (or another web server)
-'''
+"""
 
 PROXY_DOWNLOAD_PREFIXES = {}
-'''
+"""
 The PROXY_DOWNLOAD_PREFIXES dictionary describes the mapping between
 each directory prefix and the corresponding internal URL prefix:
 
@@ -144,10 +144,10 @@ which corresponds to the following PROXY_DOWNLOAD_PREFIXES setting:
   PROXY_DOWNLOAD_PREFIXES = {
       '/srv/': '/protected/'
   }
-'''
+"""
 
 RECALL_URI_TEMPLATES = {}
-'''
+"""
 When a file recall (from tape/archive) is requested, MyTardis can
 direct the request to an API endpoint provided by the tardis.apps.hsm
 app, or to another API endpoint which can take a DataFileObject ID
@@ -160,4 +160,4 @@ For example,
       'tardis.apps.hsm.storage.HsmFileSystemStorage':
       '/api/v1/hsm_replica/{dfo_id}/recall/'
   }
-'''
+"""

@@ -4,25 +4,25 @@ test_parameters.py
 
 .. moduleauthor::  James Wettenhall <james.wettenhall@monash.edu>
 """
-import pytz
-
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.test import TestCase
 from django.utils import timezone
 
+import pytz
+
 from ..models.datafile import DataFile
 from ..models.dataset import Dataset
 from ..models.experiment import Experiment
 from ..models.parameters import (
-    Schema,
-    ParameterName,
-    DatafileParameterSet,
     DatafileParameter,
-    DatasetParameterSet,
+    DatafileParameterSet,
     DatasetParameter,
-    ExperimentParameterSet,
+    DatasetParameterSet,
     ExperimentParameter,
+    ExperimentParameterSet,
+    ParameterName,
+    Schema,
 )
 
 
@@ -61,7 +61,7 @@ class ParametersTestCase(TestCase):
         self.schema.save()
 
         # Define some parameter names, one for each date type:
-        self.pnames = dict()
+        self.pnames = {}
 
         for data_type_str in [
             "NUMERIC",
@@ -279,7 +279,7 @@ class ParametersTestCase(TestCase):
         dataset_link_param = DatasetParameter.objects.create(
             parameterset=dataset_parameterset, name=self.pnames[ParameterName.LINK]
         )
-        dataset_url = self.dataset.get_absolute_url()  # /dataset/view/1/
+        dataset_url = self.dataset.get_absolute_url()  # /dataset/1/
         dataset_link_param.set_value(dataset_url)
         dataset_link_param.save()
         self.assertEqual(
@@ -296,7 +296,7 @@ class ParametersTestCase(TestCase):
         datafile_link_param = DatafileParameter.objects.create(
             parameterset=datafile_parameterset, name=self.pnames[ParameterName.LINK]
         )
-        dataset_url = self.dataset.get_absolute_url()  # /dataset/view/1/
+        dataset_url = self.dataset.get_absolute_url()  # /dataset/1/
         datafile_link_param.set_value(dataset_url)
         datafile_link_param.save()
         self.assertEqual(

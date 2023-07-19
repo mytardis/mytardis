@@ -5,7 +5,6 @@ Testing the Group resource in MyTardis's Tastypie-based REST API
 .. moduleauthor:: James Wettenhall <james.wettenhall@monash.edu>
 '''
 import json
-
 from urllib.parse import quote
 
 from django.contrib.auth.models import Group

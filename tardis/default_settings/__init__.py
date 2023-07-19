@@ -1,10 +1,9 @@
 # pylint: disable=wildcard-import
 
 # first apps, so other files can add to INSTALLED_APPS
-from .apps import *
-
 from .admins import *
 from .analytics import *
+from .apps import *
 from .auth import *
 from .caches import *
 from .celery_settings import *

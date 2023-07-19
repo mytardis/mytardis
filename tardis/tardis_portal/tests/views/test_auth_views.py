@@ -10,15 +10,14 @@ and authorization
 
 """
 import json
-
 from unittest.mock import patch
 
-from django.urls import reverse
+from django.contrib.auth.models import Group, User
 from django.test import TestCase
 from django.test.client import Client
-from django.contrib.auth.models import User, Group
+from django.urls import reverse
 
-from ...models import ExperimentACL, Experiment
+from ...models import Experiment, ExperimentACL
 
 
 class UserGroupListsTestCase(TestCase):

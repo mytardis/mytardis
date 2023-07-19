@@ -1,5 +1,5 @@
 from django.conf import settings
-from django.conf.urls import url
+from django.urls import re_path
 
 from .ajax_pages import (
     project_latest_experiment,
@@ -8,61 +8,62 @@ from .ajax_pages import (
 )
 from .views import (
     ProjectView,
+    add_project_par,
     create_project,
     edit_project,
+    edit_project_par,
     my_projects,
     public_projects,
     retrieve_owned_proj_list,
-    add_project_par,
-    edit_project_par,
 )
-
 
 # TODO point these to alterntive pages when they are developed
 
 project_urls = [
-    url(
+    re_path(
         r"^view/(?P<project_id>\d+)/$",
         ProjectView.as_view(),
         name="tardis.apps.projects.view_project",
     ),
-    url(
+    re_path(
         r"^edit/(?P<project_id>\d+)/$",
         edit_project,
         name="tardis.apps.projects.edit_project",
     ),
-    url(r"^myprojects/$", my_projects, name="tardis.apps.projects.views.my_projects"),
-    url(
+    re_path(
+        r"^myprojects/$", my_projects, name="tardis.apps.projects.views.my_projects"
+    ),
+    re_path(
         r"^public_projects/$",
         public_projects,
         name="tardis.apps.projects.views.public_projects",
     ),
-    url(
+    re_path(
         r"^ajax/owned_proj_list/$",
         retrieve_owned_proj_list,
         name="tardis.apps.projects.retrieve_owned_proj_list",
     ),
-    url(
+    re_path(
         r"^ajax/(?P<project_id>\d+)/latest_experiment$",
         project_latest_experiment,
         name="tardis.apps.projects.project_latest_experiment",
     ),
-    url(
+    re_path(
         r"^ajax/(?P<project_id>\d+)/recent_experiments$",
         project_recent_experiments,
         name="tardis.apps.projects.project_recent_experiments",
     ),
-    url(
+    re_path(
         r"^ajax/project_metadata/(?P<project_id>\d+)/$",
         retrieve_project_metadata,
         name="tardis.apps.projects.retrieve_project_metadata",
     ),
-    url(
+    re_path(
         r"^ajax/add_project_parameters/(?P<project_id>\d+)/$",
         add_project_par,
         name="tardis.apps.projects.views.add_project_par",
     ),
-    url(
+    re_path(
         r"^ajax/edit_project_parameters/(?P<parameterset_id>\d+)/$",
         edit_project_par,
         name="tardis.apps.projects.views.edit_project_par",
@@ -72,5 +73,7 @@ project_urls = [
 
 if not settings.DISABLE_CREATION_FORMS:
     project_urls += [
-        url(r"^create/$", create_project, name="tardis.apps.projects.create_project"),
+        re_path(
+            r"^create/$", create_project, name="tardis.apps.projects.create_project"
+        ),
     ]

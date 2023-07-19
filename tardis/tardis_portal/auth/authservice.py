@@ -36,14 +36,13 @@ models.py
 .. moduleauthor:: Russell Sim <russell.sim@monash.edu>
 
 """
-from functools import cmp_to_key
 import logging
+from functools import cmp_to_key
 from importlib import import_module
 
 from django.conf import settings
+from django.contrib.auth.models import Permission, User
 from django.core.exceptions import ImproperlyConfigured
-from django.contrib.auth.models import User
-from django.contrib.auth.models import Permission
 
 from ..auth.localdb_auth import auth_key as localdb_auth_key
 from ..auth.utils import get_or_create_user

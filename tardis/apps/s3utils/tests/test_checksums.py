@@ -3,17 +3,16 @@ Testing the s3util app's ability to calculate checksums for S3 objects
 
 .. moduleauthor:: James Wettenhall <james.wettenhall@monash.edu>
 '''
-import unittest
 import sys
-
+import unittest
 from unittest.mock import patch
 
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.test import TestCase
 
-from tardis.tardis_portal.models.dataset import Dataset
 from tardis.tardis_portal.models.datafile import DataFile, DataFileObject
+from tardis.tardis_portal.models.dataset import Dataset
 from tardis.tardis_portal.models.storage import StorageBox, StorageBoxOption
 
 

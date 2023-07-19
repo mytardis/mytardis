@@ -1,5 +1,6 @@
 # Celery queue
 from datetime import timedelta
+
 from kombu import Exchange, Queue
 
 CELERY_IMPORTS = ('tardis.tardis_portal.tasks',)

@@ -9,16 +9,16 @@ import os
 
 from django.core.files.storage import get_storage_class
 
-from tardis.tardis_portal.models import DataFile
-from tardis.tardis_portal.models import DataFileObject
-from tardis.tardis_portal.models import StorageBox
-from tardis.tardis_portal.models import StorageBoxOption
+from tardis.tardis_portal.models import (
+    DataFile,
+    DataFileObject,
+    StorageBox,
+    StorageBoxOption,
+)
 
-from .exceptions import (DataFileObjectNotVerified,
-                         StorageClassNotSupportedError)
+from .exceptions import DataFileObjectNotVerified, StorageClassNotSupportedError
 from .storage import HsmFileSystemStorage
 from .utils import file_is_online
-
 
 logger = logging.getLogger(__name__)
 

@@ -5,7 +5,6 @@ from tardis.default_settings import site_customisations
 from . import default_settings
 
 
-
 def interpolate_template(template_name, **kwargs):
     openid_migration_email_messages = getattr(
         settings, 'OPENID_MIGRATION_EMAIL_MESSAGES',

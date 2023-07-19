@@ -31,24 +31,18 @@
 """
 test_tokens.py
 """
+import datetime
 import json
 import re
 import sys
-
-import datetime
 from datetime import datetime as old_datetime
-
 from unittest.mock import patch
 
-from django.test import RequestFactory
-from django.test import TestCase
 from django.conf import settings
 from django.contrib.auth.models import User
+from django.test import RequestFactory, TestCase
 
-from ..models import Experiment
-from ..models import ExperimentACL
-from ..models import Token
-
+from ..models import Experiment, ExperimentACL, Token
 from ..views.authorisation import retrieve_access_list_tokens
 
 

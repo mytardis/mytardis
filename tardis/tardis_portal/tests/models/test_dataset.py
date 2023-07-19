@@ -10,14 +10,14 @@ from django.conf import settings
 from django.contrib.auth.models import Group
 
 from tardis.tardis_portal.models import (
-    Dataset,
     DataFile,
+    DatafileACL,
+    Dataset,
+    DatasetACL,
     Experiment,
     ExperimentACL,
     Facility,
     Instrument,
-    DatasetACL,
-    DatafileACL,
 )
 
 from . import ModelTestCase

@@ -6,27 +6,37 @@ Implemented with Tastypie.
 .. moduleauthor:: Grischa Meyer <grischa@gmail.com>
 .. moduleauthor:: James Wettenhall <james.wettenhall@monash.edu>
 """
+
+import contextlib
 import json
 import re
 from itertools import chain
 from urllib.parse import quote
+from typing import Optional
 from wsgiref.util import FileWrapper
 
 from django.conf import settings
-from django.conf.urls import url
-from django.contrib.auth.models import AnonymousUser, User, Group, Permission
+from django.contrib.auth.models import AnonymousUser, Group, User, Permission
 from django.core.paginator import EmptyPage, InvalidPage, Paginator
 from django.db import IntegrityError, transaction
-from django.db.models import Q
-from django.http import (HttpResponse, HttpResponseForbidden,
-                         HttpResponseNotFound, JsonResponse,
-                         StreamingHttpResponse)
+from django.db.models import Model, Q
+from django.http import (
+    HttpResponse,
+    HttpResponseForbidden,
+    HttpResponseNotFound,
+    JsonResponse,
+    StreamingHttpResponse,
+)
 from django.shortcuts import redirect
+from django.urls import re_path
 
 import ldap3
 from tastypie import fields
-from tastypie.authentication import (ApiKeyAuthentication, BasicAuthentication,
-                                     SessionAuthentication)
+from tastypie.authentication import (
+    ApiKeyAuthentication,
+    BasicAuthentication,
+    SessionAuthentication,
+)
 from tastypie.authorization import Authorization
 from tastypie.constants import ALL_WITH_RELATIONS
 from tastypie.exceptions import ImmediateHttpResponse, NotFound, Unauthorized
@@ -37,22 +47,42 @@ from tastypie.utils import trailing_slash
 from uritemplate import URITemplate
 
 from tardis.analytics.tracker import IteratorTracker
+from tardis.apps.identifiers.models import (
+    DatasetID,
+    ExperimentID,
+    FacilityID,
+    InstrumentID,
+)
 
 from . import tasks
-from .auth.decorators import (has_access, has_delete_permissions,
-                              has_download_access, has_sensitive_access,
-                              has_write)
-from .models.access_control import (DatafileACL, DatasetACL, ExperimentACL,
-                                    UserAuthentication)
+from .auth.decorators import (
+    has_access,
+    has_delete_permissions,
+    has_download_access,
+    has_sensitive_access,
+    has_write,
+)
+from .models.access_control import (
+    DatafileACL,
+    DatasetACL,
+    ExperimentACL,
+    UserAuthentication,
+)
 from .models.datafile import DataFile, DataFileObject, compute_checksums
 from .models.dataset import Dataset
 from .models.experiment import Experiment, ExperimentAuthor
 from .models.facility import Facility, facilities_managed_by
 from .models.instrument import Instrument
-from .models.parameters import (DatafileParameter, DatafileParameterSet,
-                                DatasetParameter, DatasetParameterSet,
-                                ExperimentParameter, ExperimentParameterSet,
-                                ParameterName, Schema)
+from .models.parameters import (
+    DatafileParameter,
+    DatafileParameterSet,
+    DatasetParameter,
+    DatasetParameterSet,
+    ExperimentParameter,
+    ExperimentParameterSet,
+    ParameterName,
+    Schema,
+)
 from .models.storage import StorageBox, StorageBoxAttribute, StorageBoxOption
 
 
@@ -360,22 +390,24 @@ class ACLAuthorization(Authorization):
         if isinstance(bundle.obj, Facility):
             facilities = facilities_managed_by(bundle.request.user)
             return [facility for facility in object_list if facility in facilities]
-        if isinstance(bundle.obj, Instrument):
-            if bundle.request.user.is_authenticated:
-                return object_list
-        if isinstance(bundle.obj, StorageBox):
-            if bundle.request.user.is_authenticated:
-                return object_list
-        if isinstance(bundle.obj, StorageBoxOption):
-            if bundle.request.user.is_authenticated:
-                return [
-                    option
-                    for option in object_list
-                    if option.key in StorageBoxOptionResource.accessible_keys
-                ]
-        if isinstance(bundle.obj, StorageBoxAttribute):
-            if bundle.request.user.is_authenticated:
-                return object_list
+        if isinstance(bundle.obj, Instrument) and bundle.request.user.is_authenticated:
+            return object_list
+        if isinstance(bundle.obj, StorageBox) and bundle.request.user.is_authenticated:
+            return object_list
+        if (
+            isinstance(bundle.obj, StorageBoxOption)
+            and bundle.request.user.is_authenticated
+        ):
+            return [
+                option
+                for option in object_list
+                if option.key in StorageBoxOptionResource.accessible_keys
+            ]
+        if (
+            isinstance(bundle.obj, StorageBoxAttribute)
+            and bundle.request.user.is_authenticated
+        ):
+            return object_list
         return []
 
     def read_detail(self, object_list, bundle):  # noqa # too complex
@@ -456,7 +488,7 @@ class ACLAuthorization(Authorization):
     def create_detail(self, object_list, bundle):  # noqa # too complex
         if not bundle.request.user.is_authenticated:
             return False
-        if bundle.request.user.is_authenticated and bundle.request.user.is_superuser:
+        if bundle.request.user.is_superuser:
             return True
         if isinstance(bundle.obj, Experiment):
             return bundle.request.user.has_perm("tardis_portal.add_experiment")
@@ -660,7 +692,6 @@ class IntrospectionResource(Resource):
         try:
             profiled_objects = settings.OBJECTS_WITH_PROFILES
         except Exception:  # Ugly hack should tidy this up to catch specific errors
-
             profiled_objects = []
         return [
             IntrospectionObject(
@@ -759,13 +790,15 @@ class MyTardisModelResource(ModelResource):
         authentication = default_authentication
         authorization = ACLAuthorization()
         serializer = default_serializer
-        object_class = None
+        object_class: Optional[Model] = None
 
 
 class FacilityResource(MyTardisModelResource):
     manager_group = fields.ForeignKey(
         GroupResource, "manager_group", null=True, full=True
     )
+    facilityid = None
+    identifiers = fields.ListField(null=True, blank=True)
 
     # Custom filter for identifiers module based on code example from
     # https://stackoverflow.com/questions/10021749/ \
@@ -776,26 +809,31 @@ class FacilityResource(MyTardisModelResource):
             filters = {}
         orm_filters = super().build_filters(filters)
 
-        if "tardis.apps.identifiers" in settings.INSTALLED_APPS:
-            if "institution" in settings.OBJECTS_WITH_IDENTIFIERS and "pids" in filters:
-                query = filters["pids"]
-                qset = Q(persistent_id__persistent_id__exact=query) | Q(
-                    persistent_id__alternate_ids__contains=query
-                )
-                orm_filters.update({"pids": qset})
+        if "tardis.apps.identifiers" in settings.INSTALLED_APPS and (
+            "facility" in settings.OBJECTS_WITH_IDENTIFIERS and "identifier" in filters
+        ):
+            query = filters["identifier"]
+            qset = Q(identifiers__identifier__iexact=query)
+            orm_filters.update({"identifier": qset})
         return orm_filters
 
     def apply_filters(self, request, applicable_filters):
         if "tardis.apps.identifiers" in settings.INSTALLED_APPS:
             if (
-                "institution" in settings.OBJECTS_WITH_IDENTIFIERS
-                and "pids" in applicable_filters
+                "facility" in settings.OBJECTS_WITH_IDENTIFIERS
+                and "identifier" in applicable_filters
             ):
-                custom = applicable_filters.pop("pids")
+                custom = applicable_filters.pop("identifier")
             else:
                 custom = None
         else:
             custom = None
+
+        # End of custom filter code
+
+        # Custom filter for identifiers module based on code example from
+        # https://stackoverflow.com/questions/10021749/ \
+        # django-tastypie-advanced-filtering-how-to-do-complex-lookups-with-q-objects
 
         semi_filtered = super().apply_filters(request, applicable_filters)
 
@@ -806,27 +844,36 @@ class FacilityResource(MyTardisModelResource):
     class Meta(MyTardisModelResource.Meta):
         object_class = Facility
         queryset = Facility.objects.all()
+        allowed_methods = ["get"]
         filtering = {
             "id": ("exact",),
             "manager_group": ALL_WITH_RELATIONS,
             "name": ("exact",),
         }
-        ordering = ["id", "name"]
-        always_return_data = True
-
-    def dehydrate(self, bundle):
-        facility = bundle.obj
         if (
             "tardis.apps.identifiers" in settings.INSTALLED_APPS
             and "facility" in settings.OBJECTS_WITH_IDENTIFIERS
         ):
-            bundle.data["persistent_id"] = facility.persistent_id.persistent_id
-            bundle.data["alternate_ids"] = facility.persistent_id.alternate_ids
+            filtering.update({"facilityid": ALL_WITH_RELATIONS})
+        ordering = ["id", "name"]
+        always_return_data = True
+
+    def dehydrate(self, bundle):
+        if (
+            "tardis.apps.identifiers" in settings.INSTALLED_APPS
+            and "facility" in settings.OBJECTS_WITH_IDENTIFIERS
+        ):
+            bundle.data["identifiers"] = list(
+                map(str, FacilityID.objects.filter(facility=bundle.obj))
+            )
+            if bundle.data["identifiers"] == []:
+                bundle.data.pop("identifiers")
         return bundle
 
 
 class InstrumentResource(MyTardisModelResource):
     facility = fields.ForeignKey(FacilityResource, "facility", null=True, full=True)
+    identifiers = fields.ListField(null=True, blank=True)
 
     # Custom filter for identifiers module based on code example from
     # https://stackoverflow.com/questions/10021749/ \
@@ -837,26 +884,32 @@ class InstrumentResource(MyTardisModelResource):
             filters = {}
         orm_filters = super().build_filters(filters)
 
-        if "tardis.apps.identifiers" in settings.INSTALLED_APPS:
-            if "institution" in settings.OBJECTS_WITH_IDENTIFIERS and "pids" in filters:
-                query = filters["pids"]
-                qset = Q(persistent_id__persistent_id__exact=query) | Q(
-                    persistent_id__alternate_ids__contains=query
-                )
-                orm_filters.update({"pids": qset})
+        if "tardis.apps.identifiers" in settings.INSTALLED_APPS and (
+            "instrument" in settings.OBJECTS_WITH_IDENTIFIERS
+            and "identifier" in filters
+        ):
+            query = filters["identifier"]
+            qset = Q(identifiers__identifier__iexact=query)
+            orm_filters.update({"identifier": qset})
         return orm_filters
 
     def apply_filters(self, request, applicable_filters):
         if "tardis.apps.identifiers" in settings.INSTALLED_APPS:
             if (
-                "institution" in settings.OBJECTS_WITH_IDENTIFIERS
-                and "pids" in applicable_filters
+                "instrument" in settings.OBJECTS_WITH_IDENTIFIERS
+                and "identifier" in applicable_filters
             ):
-                custom = applicable_filters.pop("pids")
+                custom = applicable_filters.pop("identifier")
             else:
                 custom = None
         else:
             custom = None
+
+        # End of custom filter code
+
+        # Custom filter for identifiers module based on code example from
+        # https://stackoverflow.com/questions/10021749/ \
+        # django-tastypie-advanced-filtering-how-to-do-complex-lookups-with-q-objects
 
         semi_filtered = super().apply_filters(request, applicable_filters)
 
@@ -876,13 +929,15 @@ class InstrumentResource(MyTardisModelResource):
         always_return_data = True
 
     def dehydrate(self, bundle):
-        instrument = bundle.obj
         if (
             "tardis.apps.identifiers" in settings.INSTALLED_APPS
             and "instrument" in settings.OBJECTS_WITH_IDENTIFIERS
         ):
-            bundle.data["persistent_id"] = instrument.persistent_id.persistent_id
-            bundle.data["alternate_ids"] = instrument.persistent_id.alternate_ids
+            bundle.data["identifiers"] = list(
+                map(str, InstrumentID.objects.filter(instrument=bundle.obj))
+            )
+            if bundle.data["identifiers"] == []:
+                bundle.data.pop("identifiers")
         return bundle
 
 
@@ -894,6 +949,7 @@ class ExperimentResource(MyTardisModelResource):
     TODO: catch duplicate schema submissions for parameter sets
     """
 
+    identifiers = fields.ListField(null=True, blank=True)
     created_by = fields.ForeignKey(UserResource, "created_by")
     parameter_sets = fields.ToManyField(
         "tardis.tardis_portal.api.ExperimentParameterSetResource",
@@ -902,7 +958,7 @@ class ExperimentResource(MyTardisModelResource):
         full=True,
         null=True,
     )
-    tags = fields.ListField()
+    # tags = fields.ListField()
 
     # Custom filter for identifiers module based on code example from
     # https://stackoverflow.com/questions/10021749/ \
@@ -913,22 +969,22 @@ class ExperimentResource(MyTardisModelResource):
             filters = {}
         orm_filters = super().build_filters(filters)
 
-        if "tardis.apps.identifiers" in settings.INSTALLED_APPS:
-            if "institution" in settings.OBJECTS_WITH_IDENTIFIERS and "pids" in filters:
-                query = filters["pids"]
-                qset = Q(persistent_id__persistent_id__exact=query) | Q(
-                    persistent_id__alternate_ids__contains=query
-                )
-                orm_filters.update({"pids": qset})
+        if "tardis.apps.identifiers" in settings.INSTALLED_APPS and (
+            "experiment" in settings.OBJECTS_WITH_IDENTIFIERS
+            and "identifier" in filters
+        ):
+            query = filters["identifier"]
+            qset = Q(identifiers__identifier__iexact=query)
+            orm_filters.update({"identifier": qset})
         return orm_filters
 
     def apply_filters(self, request, applicable_filters):
         if "tardis.apps.identifiers" in settings.INSTALLED_APPS:
             if (
-                "institution" in settings.OBJECTS_WITH_IDENTIFIERS
-                and "pids" in applicable_filters
+                "experiment" in settings.OBJECTS_WITH_IDENTIFIERS
+                and "identifier" in applicable_filters
             ):
-                custom = applicable_filters.pop("pids")
+                custom = applicable_filters.pop("identifier")
             else:
                 custom = None
         else:
@@ -940,13 +996,13 @@ class ExperimentResource(MyTardisModelResource):
 
     # End of custom filter code
 
-    def dehydrate_tags(self, bundle):
-        return list(map(str, bundle.obj.tags.all()))
+    # def dehydrate_tags(self, bundle):
+    #    return list(map(str, bundle.obj.tags.all()))
 
-    def save_m2m(self, bundle):
-        tags = bundle.data.get("tags", [])
-        bundle.obj.tags.set(*tags)
-        return super().save_m2m(bundle)
+    # def save_m2m(self, bundle):
+    # tags = bundle.data.get("tags", [])
+    # bundle.obj.tags.set(*tags)
+    #    return super().save_m2m(bundle)
 
     class Meta(MyTardisModelResource.Meta):
         object_class = Experiment
@@ -975,6 +1031,15 @@ class ExperimentResource(MyTardisModelResource):
             }
         owners = exp.get_owners()
         bundle.data["owner_ids"] = [o.id for o in owners]
+        if (
+            "tardis.apps.identifiers" in settings.INSTALLED_APPS
+            and "experiment" in settings.OBJECTS_WITH_IDENTIFIERS
+        ):
+            bundle.data["identifiers"] = list(
+                map(str, ExperimentID.objects.filter(experiment=bundle.obj))
+            )
+            if bundle.data["identifiers"] == []:
+                bundle.data.pop("identifiers")
 
         if settings.ONLY_EXPERIMENT_ACLS:
             dataset_count = exp.datasets.all().count()
@@ -989,13 +1054,6 @@ class ExperimentResource(MyTardisModelResource):
         bundle.data["datafile_count"] = datafile_count
         experiment_size = exp.get_size(bundle.request.user)
         bundle.data["experiment_size"] = experiment_size
-
-        if (
-            "tardis.apps.identifiers" in settings.INSTALLED_APPS
-            and "experiment" in settings.OBJECTS_WITH_IDENTIFIERS
-        ):
-            bundle.data["persistent_id"] = exp.persistent_id.persistent_id
-            bundle.data["alternate_ids"] = exp.persistent_id.alternate_ids
 
         return bundle
 
@@ -1044,43 +1102,40 @@ class ExperimentResource(MyTardisModelResource):
         """
         user = bundle.request.user
         bundle.data["created_by"] = user
+        identifiers = None
         with transaction.atomic():
             # Clean up bundle to remove PIDS if the identifiers app is being used.
             if (
                 "tardis.apps.identifiers" in settings.INSTALLED_APPS
                 and "experiment" in settings.OBJECTS_WITH_IDENTIFIERS
-            ):
-                pid = None
-                alternate_ids = None
-                if "persistent_id" in bundle.data.keys():
-                    pid = bundle.data.pop("persistent_id")
-                if "alternate_ids" in bundle.data.keys():
-                    alternate_ids = bundle.data.pop("alternate_ids")
+            ) and "identifiers" in bundle.data.keys():
+                identifiers = bundle.data.pop("identifiers")
             bundle = super().obj_create(bundle, **kwargs)
             # After the obj has been created
+            experiment = bundle.obj
             if (
                 "tardis.apps.identifiers" in settings.INSTALLED_APPS
                 and "experiment" in settings.OBJECTS_WITH_IDENTIFIERS
-            ):
-                experiment = bundle.obj
-                pid_obj = experiment.persistent_id
-                if pid:
-                    pid_obj.persistent_id = pid
-                if alternate_ids:
-                    pid_obj.alternate_ids = alternate_ids
-                pid_obj.save()
+            ) and identifiers:
+                for identifier in identifiers:
+                    ExperimentID.objects.create(
+                        experiment=experiment,
+                        identifier=str(identifier),
+                    )
+
             if bundle.data.get("users", False):
                 for entry in bundle.data["users"]:
                     username, isOwner, canDownload, canSensitive = entry
-                    acl_user = get_or_create_user(username)
-                    ExperimentACL.objects.create(
-                        experiment=experiment,
-                        user=acl_user,
-                        canRead=True,
-                        canDownload=canDownload,
-                        canSensitive=canSensitive,
-                        isOwner=isOwner,
-                    )
+                    acl_user = User.objects.get(username=username)
+                    if acl_user:
+                        ExperimentACL.objects.create(
+                            experiment=experiment,
+                            user=acl_user,
+                            canRead=True,
+                            canDownload=canDownload,
+                            canSensitive=canSensitive,
+                            isOwner=isOwner,
+                        )
 
                     if not any(
                         acl_user.has_perm("tardis_acls.view_project", parent)
@@ -1168,7 +1223,8 @@ class DatasetResource(MyTardisModelResource):
     instrument = fields.ForeignKey(
         InstrumentResource, "instrument", null=True, full=True
     )
-    tags = fields.ListField()
+    identifiers = fields.ListField(null=True, blank=True)
+    # tags = fields.ListField()
 
     # Custom filter for identifiers module based on code example from
     # https://stackoverflow.com/questions/10021749/ \
@@ -1179,22 +1235,21 @@ class DatasetResource(MyTardisModelResource):
             filters = {}
         orm_filters = super().build_filters(filters)
 
-        if "tardis.apps.identifiers" in settings.INSTALLED_APPS:
-            if "institution" in settings.OBJECTS_WITH_IDENTIFIERS and "pids" in filters:
-                query = filters["pids"]
-                qset = Q(persistent_id__persistent_id__exact=query) | Q(
-                    persistent_id__alternate_ids__contains=query
-                )
-                orm_filters.update({"pids": qset})
+        if "tardis.apps.identifiers" in settings.INSTALLED_APPS and (
+            "dataset" in settings.OBJECTS_WITH_IDENTIFIERS and "identifier" in filters
+        ):
+            query = filters["identifier"]
+            qset = Q(identifiers__identifier__iexact=query)
+            orm_filters.update({"identifier": qset})
         return orm_filters
 
     def apply_filters(self, request, applicable_filters):
         if "tardis.apps.identifiers" in settings.INSTALLED_APPS:
             if (
-                "institution" in settings.OBJECTS_WITH_IDENTIFIERS
-                and "pids" in applicable_filters
+                "dataset" in settings.OBJECTS_WITH_IDENTIFIERS
+                and "identifier" in applicable_filters
             ):
-                custom = applicable_filters.pop("pids")
+                custom = applicable_filters.pop("identifier")
             else:
                 custom = None
         else:
@@ -1216,16 +1271,21 @@ class DatasetResource(MyTardisModelResource):
             "directory": ("exact",),
             "instrument": ALL_WITH_RELATIONS,
         }
+        """if (
+            "tardis.apps.identifiers" in settings.INSTALLED_APPS
+            and "dataset" in settings.OBJECTS_WITH_IDENTIFIERS
+        ):
+            filtering.update({"identifiers": ALL_WITH_RELATIONS})"""
         ordering = ["id", "description"]
         always_return_data = True
 
-    def dehydrate_tags(self, bundle):
-        return list(map(str, bundle.obj.tags.all()))
+    # def dehydrate_tags(self, bundle):
+    #    return list(map(str, bundle.obj.tags.all()))
 
-    def save_m2m(self, bundle):
-        tags = bundle.data.get("tags", [])
-        bundle.obj.tags.set(*tags)
-        return super().save_m2m(bundle)
+    # def save_m2m(self, bundle):
+    #    tags = bundle.data.get("tags", [])
+    #    bundle.obj.tags.set(*tags)
+    #    return super().save_m2m(bundle)
 
     def dehydrate(self, bundle):
         dataset = bundle.obj
@@ -1246,31 +1306,34 @@ class DatasetResource(MyTardisModelResource):
             "tardis.apps.identifiers" in settings.INSTALLED_APPS
             and "dataset" in settings.OBJECTS_WITH_IDENTIFIERS
         ):
-            bundle.data["persistent_id"] = dataset.persistent_id.persistent_id
-            bundle.data["alternate_ids"] = dataset.persistent_id.alternate_ids
+            bundle.data["identifiers"] = list(
+                map(str, DatasetID.objects.filter(dataset=bundle.obj))
+            )
+            if bundle.data["identifiers"] == []:
+                bundle.data.pop("identifiers")
         return bundle
 
     def prepend_urls(self):
         return [
-            url(
+            re_path(
                 r"^(?P<resource_name>%s)/(?P<pk>\w[\w/-]*)/files/"
                 r"(?:(?P<file_path>.+))?$" % self._meta.resource_name,
                 self.wrap_view("get_datafiles"),
                 name="api_get_datafiles_for_dataset",
             ),
-            url(
+            re_path(
                 r"^(?P<resource_name>%s)/(?P<pk>\w[\w/-]*)/root-dir-nodes%s$"
                 % (self._meta.resource_name, trailing_slash()),
                 self.wrap_view("get_root_dir_nodes"),
                 name="api_get_root_dir_nodes",
             ),
-            url(
+            re_path(
                 r"^(?P<resource_name>%s)/(?P<pk>\w[\w/-]*)/child-dir-nodes%s$"
                 % (self._meta.resource_name, trailing_slash()),
                 self.wrap_view("get_child_dir_nodes"),
                 name="api_get_child_dir_nodes",
             ),
-            url(
+            re_path(
                 r"^(?P<resource_name>%s)/(?P<pk>\w[\w/-]*)/child-dir-files%s$"
                 % (self._meta.resource_name, trailing_slash()),
                 self.wrap_view("get_child_dir_files"),
@@ -1306,13 +1369,11 @@ class DatasetResource(MyTardisModelResource):
         if getattr(bundle.obj, "id", False):
             dataset = bundle.obj
             for exp_uri in bundle.data.get("experiments", []):
-                try:
+                with contextlib.suppress(NotFound):
                     exp = ExperimentResource.get_via_uri(
                         ExperimentResource(), exp_uri, bundle.request
                     )
                     bundle.obj.experiments.add(exp)
-                except NotFound:
-                    pass
             if not settings.ONLY_EXPERIMENT_ACLS:
                 acl = DatasetACL(
                     dataset=dataset,
@@ -1385,26 +1446,27 @@ class DatasetResource(MyTardisModelResource):
                 # append files to list
         if dfs:
             for df in dfs:
-                children = {}
-                children["name"] = df.filename
-                children["verified"] = df.verified
-                children["id"] = df.id
-                children["is_online"] = df.is_online
-                children["recall_url"] = df.recall_url
+                children = {
+                    "name": df.filename,
+                    "verified": df.verified,
+                    "id": df.id,
+                    "is_online": df.is_online,
+                    "recall_url": df.recall_url,
+                }
                 child_list.append(children)
         if paginator.num_pages - 1 > page_num:
             # append a marker element
-            children = {}
-            children["next_page"] = True
-            children["next_page_num"] = page_num + 1
-            children["display_text"] = "Displaying {current} of {total} ".format(
-                current=(dfs.number * pgresults), total=paginator.count
-            )
+            children = {
+                "next_page": True,
+                "next_page_num": page_num + 1,
+                "display_text": "Displaying {current} of {total} ".format(
+                    current=(dfs.number * pgresults), total=paginator.count
+                ),
+            }
             child_list.append(children)
         if paginator.num_pages - 1 == page_num:
             # append a marker element
-            children = {}
-            children["next_page"] = False
+            children = {"next_page": False}
             child_list.append(children)
 
         return JsonResponse(child_list, status=200, safe=False)
@@ -1518,19 +1580,16 @@ class DatasetResource(MyTardisModelResource):
                     {"name": part2.rpartition("/")[2], "children": children}
                 )
 
-    def obj_create(self, bundle, **kwargs):
+    def obj_create(self, bundle, **kwargs):  # pylint: disable=R1702
         with transaction.atomic():
             # Clean up bundle to remove PIDS if the identifiers app is being used.
             if (
                 "tardis.apps.identifiers" in settings.INSTALLED_APPS
                 and "dataset" in settings.OBJECTS_WITH_IDENTIFIERS
             ):
-                pid = None
-                alternate_ids = None
-                if "persistent_id" in bundle.data.keys():
-                    pid = bundle.data.pop("persistent_id")
-                if "alternate_ids" in bundle.data.keys():
-                    alternate_ids = bundle.data.pop("alternate_ids")
+                identifiers = None
+                if "identifiers" in bundle.data.keys():
+                    identifiers = bundle.data.pop("identifiers")
             bundle = super().obj_create(bundle, **kwargs)
             # After the obj has been created
             if (
@@ -1538,16 +1597,16 @@ class DatasetResource(MyTardisModelResource):
                 and "dataset" in settings.OBJECTS_WITH_IDENTIFIERS
             ):
                 dataset = bundle.obj
-                pid_obj = dataset.persistent_id
-                if pid:
-                    pid_obj.persistent_id = pid
-                if alternate_ids:
-                    pid_obj.alternate_ids = alternate_ids
-                pid_obj.save()
+                if identifiers:
+                    for identifier in identifiers:
+                        DatasetID.objects.create(
+                            dataset=dataset,
+                            identifier=str(identifier),
+                        )
             if bundle.data.get("users", False):
                 for entry in bundle.data["users"]:
                     username, isOwner, canDownload, canSensitive = entry
-                    acl_user = get_or_create_user(username)
+                    acl_user = User.objects.get(username=username)
                     DatasetACL.objects.create(
                         dataset=dataset,
                         user=acl_user,
@@ -1575,10 +1634,8 @@ class DatasetResource(MyTardisModelResource):
                                 )
                                 for grandparent in parent.projects.all()
                             ):
-
                                 for grandparent in parent.projects.all():
-                                    from tardis.apps.projects.models import \
-                                        ProjectACL
+                                    from tardis.apps.projects.models import ProjectACL
 
                                     ProjectACL.objects.create(
                                         project=grandparent,
@@ -1639,15 +1696,15 @@ class DataFileResource(MyTardisModelResource):
         null=True,
     )
     temp_url = None
-    tags = fields.ListField()
+    # tags = fields.ListField()
 
-    def dehydrate_tags(self, bundle):
-        return list(map(str, bundle.obj.tags.all()))
+    # def dehydrate_tags(self, bundle):
+    #    return list(map(str, bundle.obj.tags.all()))
 
-    def save_m2m(self, bundle):
-        tags = bundle.data.get("tags", [])
-        bundle.obj.tags.set(*tags)
-        return super().save_m2m(bundle)
+    # def save_m2m(self, bundle):
+    #    tags = bundle.data.get("tags", [])
+    #    bundle.obj.tags.set(*tags)
+    #    return super().save_m2m(bundle)
 
     class Meta(MyTardisModelResource.Meta):
         object_class = DataFile
@@ -1692,16 +1749,12 @@ class DataFileResource(MyTardisModelResource):
             full_path = preferred_dfo.get_full_path()
             for key, value in settings.PROXY_DOWNLOAD_PREFIXES.items():
                 if full_path.startswith(key):
-                    cd = 'attachment; filename="{}"'.format(
-                        file_record.filename)
+                    cd = 'attachment; filename="{}"'.format(file_record.filename)
                     xar = quote("{}{}".format(value, full_path.split(key)[1]))
                     response = HttpResponse(
                         status=200,
                         content_type="application/force-download",
-                        headers={
-                            "Content-Disposition": cd,
-                            "X-Accel-Redirect": xar
-                        }
+                        headers={"Content-Disposition": cd, "X-Accel-Redirect": xar},
                     )
                     return response
 
@@ -1717,15 +1770,15 @@ class DataFileResource(MyTardisModelResource):
 
         file_object = file_record.get_file()
         wrapper = FileWrapper(file_object)
-        tracker_data = dict(
-            label="file",
-            session_id=request.COOKIES.get("_ga"),
-            ip=request.META.get("REMOTE_ADDR", ""),
-            user=request.user,
-            total_size=file_record.size,
-            num_files=1,
-            ua=request.META.get("HTTP_USER_AGENT", None),
-        )
+        tracker_data = {
+            "label": "file",
+            "session_id": request.COOKIES.get("_ga"),
+            "ip": request.META.get("REMOTE_ADDR", ""),
+            "user": request.user,
+            "total_size": file_record.size,
+            "num_files": 1,
+            "ua": request.META.get("HTTP_USER_AGENT", None),
+        }
         response = StreamingHttpResponse(
             IteratorTracker(wrapper, tracker_data), content_type=file_record.mimetype
         )
@@ -1791,42 +1844,31 @@ class DataFileResource(MyTardisModelResource):
         create ACL before any related objects are created in order to use
         ACL permissions for those objects.
         """
-        if getattr(bundle.obj, "id", False):
-            if not settings.ONLY_EXPERIMENT_ACLS:
-                datafile = bundle.obj
-                # TODO: unify this with the view function's ACL creation,
-                # maybe through an ACL toolbox.
-                acl = DatafileACL(
-                    datafile=datafile,
-                    user=bundle.request.user,
-                    canRead=True,
-                    canDownload=True,
-                    canWrite=True,
-                    canDelete=True,
-                    canSensitive=True,
-                    isOwner=True,
-                    aclOwnershipType=DatafileACL.OWNER_OWNED,
-                )
-                acl.save()
+        if getattr(bundle.obj, "id", False) and not settings.ONLY_EXPERIMENT_ACLS:
+            datafile = bundle.obj
+            # TODO: unify this with the view function's ACL creation,
+            # maybe through an ACL toolbox.
+            acl = DatafileACL(
+                datafile=datafile,
+                user=bundle.request.user,
+                canRead=True,
+                canDownload=True,
+                canWrite=True,
+                canDelete=True,
+                canSensitive=True,
+                isOwner=True,
+                aclOwnershipType=DatafileACL.OWNER_OWNED,
+            )
+            acl.save()
         return super().hydrate_m2m(bundle)
 
-    def obj_create(self, bundle, **kwargs):
+    def obj_create(self, bundle, **kwargs):  # pylint: disable=R1702
         """
         Creates a new DataFile object from the provided bundle.data dict.
 
         If a duplicate key error occurs, responds with HTTP Error 409: CONFLICT
         """
         with transaction.atomic():
-            if (
-                "tardis.apps.identifiers" in settings.INSTALLED_APPS
-                and "datafile" in settings.OBJECTS_WITH_IDENTIFIERS
-            ):
-                pid = None
-                alternate_ids = None
-                if "persistent_id" in bundle.data.keys():
-                    pid = bundle.data.pop("persistent_id")
-                if "alternate_ids" in bundle.data.keys():
-                    alternate_ids = bundle.data.pop("alternate_ids")
             try:
                 retval = super().obj_create(bundle, **kwargs)
             except IntegrityError as err:
@@ -1857,16 +1899,6 @@ class DataFileResource(MyTardisModelResource):
 
             # After the obj has been created
             datafile = retval.obj
-            if (
-                "tardis.apps.identifiers" in settings.INSTALLED_APPS
-                and "datafile" in settings.OBJECTS_WITH_IDENTIFIERS
-            ):
-                pid_obj = datafile.persistent_id
-                if pid:
-                    pid_obj.persistent_id = pid
-                if alternate_ids:
-                    pid_obj.alternate_ids = alternate_ids
-                pid_obj.save()
             try:
                 dataset = DatasetResource.get_via_uri(
                     DatasetResource(), bundle.data["dataset"], bundle.request
@@ -1876,7 +1908,7 @@ class DataFileResource(MyTardisModelResource):
             if bundle.data.get("users", False):
                 for entry in bundle.data["users"]:
                     username, isOwner, canDownload, canSensitive = entry
-                    acl_user = get_or_create_user(username)
+                    acl_user = User.objects.get(username=username)
                     DatafileACL.objects.create(
                         datafile=datafile,
                         user=acl_user,
@@ -1911,10 +1943,10 @@ class DataFileResource(MyTardisModelResource):
                                     )
                                     for grandparent in parent.projects.all()
                                 ):
-
                                     for grandparent in parent.projects.all():
-                                        from tardis.apps.projects.models import \
-                                            ProjectACL
+                                        from tardis.apps.projects.models import (
+                                            ProjectACL,
+                                        )
 
                                         ProjectACL.objects.create(
                                             project=grandparent,
@@ -1964,13 +1996,13 @@ class DataFileResource(MyTardisModelResource):
 
     def prepend_urls(self):
         return [
-            url(
+            re_path(
                 r"^(?P<resource_name>%s)/(?P<pk>\w[\w/-]*)/download%s$"
                 % (self._meta.resource_name, trailing_slash()),
                 self.wrap_view("download_file"),
                 name="api_download_file",
             ),
-            url(
+            re_path(
                 r"^(?P<resource_name>%s)/(?P<pk>\w[\w/-]*)/verify%s$"
                 % (self._meta.resource_name, trailing_slash()),
                 self.wrap_view("verify_file"),

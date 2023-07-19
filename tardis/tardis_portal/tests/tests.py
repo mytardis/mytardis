@@ -39,15 +39,14 @@ http://docs.djangoproject.com/en/dev/topics/testing/
 """
 
 import unittest
-
 from unittest.mock import patch
 
 from django.conf import settings
+from django.contrib.auth.models import User
 from django.test import TestCase
 from django.test.client import Client
-from django.contrib.auth.models import User
 
-from ..models import Experiment, ExperimentACL, Dataset, DatasetACL
+from ..models import Dataset, DatasetACL, Experiment, ExperimentACL
 
 
 # http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html

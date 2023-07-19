@@ -6,11 +6,9 @@ Testing the Schema resource in MyTardis's Tastypie-based REST API
 
 '''
 import json
-
 from urllib.parse import quote
 
 from ...models.parameters import Schema
-
 from . import MyTardisResourceTestCase
 
 

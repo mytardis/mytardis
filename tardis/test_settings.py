@@ -1,6 +1,7 @@
 # pylint: disable=wildcard-import,unused-wildcard-import
 from __future__ import absolute_import
 
+# import logging  # pylint: disable=wrong-import-order
 from glob import glob
 from os import path
 
@@ -10,9 +11,7 @@ from celery import Celery  # pylint: disable=import-error
 
 from .default_settings import *  # noqa # pylint: disable=W0401,W0614
 
-import logging  # pylint: disable=wrong-import-order isort: skip
-
-TEST_RUNNER = "django_nose.NoseTestSuiteRunner"
+# TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 
 DEBUG = True
 
@@ -79,9 +78,11 @@ def get_all_tardis_apps():
 
 
 INSTALLED_APPS += get_all_tardis_apps() + (
-    "django_nose",
+    #'django_nose',
     "behave_django",
 )
+
+print(INSTALLED_APPS)
 
 DEDUP_INSTALLED_APPS = []
 for app in INSTALLED_APPS:
@@ -110,8 +111,8 @@ LDAP_BASE = "dc=example, dc=com"
 LDAP_USER_BASE = "ou=People, " + LDAP_BASE
 LDAP_GROUP_BASE = "ou=Group, " + LDAP_BASE
 
-SYSTEM_LOG_LEVEL = logging.DEBUG
-MODULE_LOG_LEVEL = logging.DEBUG
+SYSTEM_LOG_LEVEL = "DEBUG"
+MODULE_LOG_LEVEL = "DEBUG"
 
 SYSTEM_LOG_FILENAME = "request-test.log"
 MODULE_LOG_FILENAME = "tardis-test.log"
@@ -194,7 +195,7 @@ CHUNK_STORAGE = path.join(DEFAULT_STORAGE_BASE_DIR, "chunks")
 RECALL_URI_TEMPLATES = {
     "tardis.apps.hsm.storage.HsmFileSystemStorage": "/api/v1/hsm_replica/{dfo_id}/recall/"
 }
-
+DEFAULT_PERMISSIONS = []
 OBJECTS_WITH_IDENTIFIERS = [
     "dataset",
     "experiment",
@@ -202,5 +203,3 @@ OBJECTS_WITH_IDENTIFIERS = [
     "instrument",
     "project",
 ]
-
-DEFAULT_PERMISSIONS = []

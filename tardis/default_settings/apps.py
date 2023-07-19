@@ -15,7 +15,7 @@ INSTALLED_APPS = (
     "registration",
     "jstemplate",
     "tastypie",
-    "tastypie_swagger",
+    #'tastypie_swagger', Deprecated
     "webpack_loader",
     "widget_tweaks",
     "tardis.tardis_portal",

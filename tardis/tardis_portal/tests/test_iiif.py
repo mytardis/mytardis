@@ -3,18 +3,18 @@ import os
 
 from django.conf import settings
 from django.contrib.auth.models import User
-from django.urls import reverse
 from django.core.files.uploadedfile import TemporaryUploadedFile
 from django.test import TestCase
 from django.test.client import Client
+from django.urls import reverse
 
-from wand.image import Image
 from lxml import etree
+from wand.image import Image
 
-from ..models.experiment import Experiment
-from ..models.access_control import ExperimentACL, DatasetACL, DatafileACL
-from ..models.dataset import Dataset
+from ..models.access_control import DatafileACL, DatasetACL, ExperimentACL
 from ..models.datafile import DataFile, compute_checksums
+from ..models.dataset import Dataset
+from ..models.experiment import Experiment
 
 """
 Tests for IIIF API.
@@ -79,7 +79,7 @@ def _create_datafile():
     compute_md5 = getattr(settings, "COMPUTE_MD5", True)
     compute_sha512 = getattr(settings, "COMPUTE_SHA512", False)
     checksums = compute_checksums(
-        open(tempfile.file.name, "rb"),
+        open(tempfile.file.name, "rb"),  # pylint: disable=R1732
         compute_md5=compute_md5,
         compute_sha512=compute_sha512,
     )

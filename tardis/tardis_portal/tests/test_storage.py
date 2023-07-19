@@ -9,9 +9,7 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.test import TestCase
 
-from ..models import StorageBox, StorageBoxOption
-from ..models import Dataset
-from ..models import DataFile
+from ..models import DataFile, Dataset, StorageBox, StorageBoxOption
 
 
 class ModelTestCase(TestCase):

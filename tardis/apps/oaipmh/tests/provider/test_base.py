@@ -6,6 +6,7 @@ import oaipmh.interfaces
 
 from ...provider.base import BaseProvider
 
+
 class BaseProviderTestCase(TestCase):
 
     def setUp(self):

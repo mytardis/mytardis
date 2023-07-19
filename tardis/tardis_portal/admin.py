@@ -30,10 +30,10 @@
 #
 
 
-from django import forms
-from django.forms import TextInput
 import django.db
+from django import forms
 from django.contrib import admin
+from django.forms import TextInput
 
 from . import models
 

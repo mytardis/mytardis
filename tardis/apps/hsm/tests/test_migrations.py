@@ -3,8 +3,8 @@ Tests for HSM app's migrations
 '''
 from unittest import skipIf
 
+from django.db import DEFAULT_DB_ALIAS, connections
 from django.db.migrations.executor import MigrationExecutor
-from django.db import connections, DEFAULT_DB_ALIAS
 from django.test import TestCase
 
 

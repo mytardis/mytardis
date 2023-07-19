@@ -6,18 +6,24 @@ from django.test import TestCase
 
 import oaipmh.error
 import oaipmh.interfaces
-
 import pytz
 
-from tardis.tardis_portal.models import Experiment, License, User, \
-     ExperimentParameterSet
+from tardis.apps.related_info.views import SCHEMA_URI
+from tardis.tardis_portal.models import (
+    Experiment,
+    ExperimentParameterSet,
+    License,
+    User,
+)
 from tardis.tardis_portal.ParameterSetManager import ParameterSetManager
 from tardis.tardis_portal.util import get_local_time
 
-from tardis.apps.related_info.views import SCHEMA_URI
+from ...provider.experiment import (
+    AbstractExperimentProvider,
+    DcExperimentProvider,
+    RifCsExperimentProvider,
+)
 
-from ...provider.experiment import AbstractExperimentProvider, \
-    DcExperimentProvider, RifCsExperimentProvider
 
 def _create_test_data():
     user = User(username='testuser',

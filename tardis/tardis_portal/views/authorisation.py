@@ -6,15 +6,15 @@ views that have to do with authorisations
 import json
 import logging
 from operator import itemgetter
-from urllib.parse import urlencode, urlparse, parse_qs
+from urllib.parse import parse_qs, urlencode, urlparse
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required, permission_required
-from django.contrib.auth.models import User, Group
+from django.contrib.auth.models import Group, User
 from django.contrib.sites.models import Site
-from django.db import transaction
-from django.db import IntegrityError
-from django.db.models import Q, Prefetch
+from django.core.exceptions import SuspiciousOperation
+from django.db import IntegrityError, transaction
+from django.db.models import Prefetch, Q
 from django.http import HttpResponse, JsonResponse
 from django.utils.html import escape
 from django.views.decorators.cache import never_cache
@@ -22,12 +22,12 @@ from django.views.decorators.http import require_POST
 
 from ..auth import decorators as authz
 from ..models import (
+    Experiment,
+    ExperimentACL,
+    GroupAdmin,
+    Token,
     UserAuthentication,
     UserProfile,
-    Experiment,
-    Token,
-    GroupAdmin,
-    ExperimentACL,
 )
 from ..shortcuts import render_response_index
 
@@ -79,7 +79,7 @@ def retrieve_user_list(request):
     user_auths = list(
         UserAuthentication.objects.filter(userProfile__user__in=first_n_users)
     )
-    auth_methods = dict((ap[0], ap[1]) for ap in settings.AUTH_PROVIDERS)
+    auth_methods = {ap[0]: ap[1] for ap in settings.AUTH_PROVIDERS}
     users = []
     for u in users_query:
         fields = ("first_name", "last_name", "username", "email")
@@ -323,10 +323,10 @@ def add_user_to_group(request, group_id, username):
         user = User.objects.get(username=username)
     except User.DoesNotExist:
         return JsonResponse(
-            dict(
-                message="User %s does not exist." % username,
-                field="id_adduser-%s" % group_id,
-            ),
+            {
+                "message": "User %s does not exist." % username,
+                "field": "id_adduser-%s" % group_id,
+            },
             status=400,
         )
 
@@ -334,18 +334,18 @@ def add_user_to_group(request, group_id, username):
         group = Group.objects.get(pk=group_id)
     except Group.DoesNotExist:
         return JsonResponse(
-            dict(
-                message="Group does not exist",
-            ),
+            {
+                "message": "Group does not exist",
+            },
             status=400,
         )
 
     if user.groups.filter(name=group.name).count() > 0:
         return JsonResponse(
-            dict(
-                message="User %s is already a member of this group." % username,
-                field="id_adduser-%s" % group_id,
-            ),
+            {
+                "message": "User %s is already a member of this group." % username,
+                "field": "id_adduser-%s" % group_id,
+            },
             status=400,
         )
 
@@ -403,6 +403,14 @@ def remove_user_from_group(request, group_id, username):
 @transaction.atomic
 @authz.experiment_ownership_required
 def add_experiment_access_user(request, experiment_id, username):
+    try:
+        # cast experiment_id into it's expected integer type
+        experiment_id = int(experiment_id)
+    except ValueError:
+        # Raises badrequest(400) error - if experiment_id isn't castable to int
+        # then either the codebase is wrong, or someone's sending dodgy requests.
+        return SuspiciousOperation("Bad URL: Expected an integer Experiment ID")
+
     canRead = False
     canDownload = False
     canWrite = False
@@ -446,7 +454,7 @@ def add_experiment_access_user(request, experiment_id, username):
         experiment = Experiment.objects.get(pk=experiment_id)
     except Experiment.DoesNotExist:
         return HttpResponse(
-            "Experiment (id=%d) does not exist." % (experiment.id), status=400
+            "Experiment (id=%d) does not exist." % (experiment_id), status=400
         )
 
     acl = ExperimentACL.objects.filter(
@@ -541,7 +549,8 @@ def create_group(request):
 
     if not groupname:
         return JsonResponse(
-            dict(message="Group name cannot be blank", field="id_addgroup"), status=400
+            {"message": "Group name cannot be blank", "field": "id_addgroup"},
+            status=400,
         )
 
     if "admin" in request.GET:
@@ -553,13 +562,13 @@ def create_group(request):
             group.save()
     except IntegrityError:
         return JsonResponse(
-            dict(
-                message=(
+            {
+                "message": (
                     "Could not create group %s "
                     "(It is likely that it already exists)" % escape(groupname)
                 ),
-                field="id_addgroup",
-            ),
+                "field": "id_addgroup",
+            },
             status=409,
         )
 
@@ -569,7 +578,7 @@ def create_group(request):
             adminuser = User.objects.get(username=admin)
         except User.DoesNotExist:
             return JsonResponse(
-                dict(message="User %s does not exist" % admin, field="id_groupadmin"),
+                {"message": "User %s does not exist" % admin, "field": "id_groupadmin"},
                 status=400,
             )
 

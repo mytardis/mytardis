@@ -1,20 +1,20 @@
 from django.conf import settings
 from django.contrib.auth.models import User
-from django.test import TestCase
 from django.core.management import call_command
+from django.test import TestCase
 
 from ...models import (
-    Experiment,
-    Dataset,
     DataFile,
-    ExperimentACL,
-    DatasetACL,
     DatafileACL,
-    License,
-    ExperimentParameterSet,
-    ExperimentParameter,
-    DatasetParameterSet,
     DatafileParameterSet,
+    Dataset,
+    DatasetACL,
+    DatasetParameterSet,
+    Experiment,
+    ExperimentACL,
+    ExperimentParameter,
+    ExperimentParameterSet,
+    License,
 )
 
 

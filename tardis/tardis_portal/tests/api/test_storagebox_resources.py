@@ -6,7 +6,6 @@ Testing the StorageBox resources in MyTardis's Tastypie-based REST API
 import json
 
 from ...models.storage import StorageBox
-
 from . import MyTardisResourceTestCase
 
 

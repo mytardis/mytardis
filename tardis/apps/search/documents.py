@@ -1,5 +1,7 @@
 import logging
+
 from django.conf import settings
+from django.contrib.auth.models import User
 
 from django.contrib.auth.models import User
 from elasticsearch_dsl import analyzer, token_filter
@@ -399,7 +401,7 @@ class DataFileDocument(Document):
         """
         try:
             extension = instance.filename.split(".")[-1]
-        except (IndexError):
+        except IndexError:
             extension = ""
         return extension
 

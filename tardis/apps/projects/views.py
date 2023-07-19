@@ -14,18 +14,18 @@ from django.views.decorators.cache import never_cache
 from django.views.generic.base import TemplateView
 
 from tardis.tardis_portal.auth import decorators as authz
+from tardis.tardis_portal.models import Experiment, Schema
 from tardis.tardis_portal.shortcuts import (
     render_response_index,
     return_response_error,
     return_response_not_found,
 )
-from tardis.tardis_portal.models import Experiment, Schema
-from tardis.tardis_portal.views.utils import _redirect_303
 from tardis.tardis_portal.views.pages import _resolve_view
 from tardis.tardis_portal.views.parameters import add_par, edit_parameters
+from tardis.tardis_portal.views.utils import _redirect_303
 
-from .models import Project, ProjectACL, ProjectParameterSet
 from .forms import ProjectForm
+from .models import Project, ProjectACL, ProjectParameterSet
 
 logger = logging.getLogger(__name__)
 
@@ -219,24 +219,37 @@ def create_project(request):
 def edit_project(request, project_id):
     project = Project.objects.get(id=project_id)
 
+    c = {
+        "subtitle": "Edit Project",
+        "project_id": project_id,
+    }
+
     # Process form or prepopulate it
     if request.method == "POST":
         form = ProjectForm(request.POST, instance=project, user=request.user)
         if form.is_valid():
-            with transaction.atomic():
-                project.name = form.cleaned_data["name"]
-                project.description = form.cleaned_data["description"]
-                project.institution = form.cleaned_data["institution"]
-                # for experiment in form.cleaned_data["experiments"]:
-                #    if has_write(request, project_id, "experiment"):
-                #        # TODO finish this section
-                #        pass
-                project.save()
-            return _redirect_303("tardis.apps.projects.view_project", project.id)
+            if settings.ONLY_EXPERIMENT_ACLS and not form.cleaned_data["experiments"]:
+                c["status"] = "Please specify one or more experiments."
+            else:
+                with transaction.atomic():
+                    project.name = form.cleaned_data["name"]
+                    project.description = form.cleaned_data["description"]
+                    project.institution.clear()
+                    for inst in form.cleaned_data["institution"]:
+                        project.institution.add(inst)
+                    project.experiments.clear()
+                    for exp in form.cleaned_data["experiments"]:
+                        project.experiments.add(exp)
+                    project.save()
+                return _redirect_303("tardis.apps.projects.view_project", project.id)
+        if c["status"] != "Please specify one or more experiments.":
+            c["status"] = "Errors exist in form."
+        c["error"] = "true"
     else:
         form = ProjectForm(instance=project, user=request.user)
 
-    c = {"form": form, "project": project}
+    c["form"] = form
+    # c["project"] = project
     return render_response_index(request, "create_project.html", c)
 
 

@@ -4,7 +4,6 @@ Testing the User resource in MyTardis's Tastypie-based REST API
 .. moduleauthor:: James Wettenhall <james.wettenhall@monash.edu>
 '''
 import json
-
 from urllib.parse import quote
 
 from . import MyTardisResourceTestCase
