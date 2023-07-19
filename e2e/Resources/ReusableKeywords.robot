@@ -122,8 +122,7 @@ Change Experiment Public Access
     wait until element is enabled       ${PublicAccess}
     select from list by label           ${PublicAccess}           ${AccessLevel}
 
-
-    click button                        xpath://*[@class='use-button btn btn-info']
+    run keyword if   click button                        xpath://*[@class='use-button btn btn-info']
 
 
     wait until element is enabled       id:publishing-consent
