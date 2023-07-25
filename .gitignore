@@ -54,6 +54,10 @@ tardis/apps/*
 !tardis/apps/eventlog
 !tardis/apps/projects
 !tardis/apps/identifiers
+!tardis/apps/data_classification
+!tardis/apps/autoarchive
+
+.DS_Store
 
 *.old
 
