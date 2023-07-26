@@ -5,8 +5,9 @@ Implemented with Tastypie.
 .. moduleauthor:: Mike Laverick <mike.laverick@auckland.ac.nz>
 .. moduleauthor:: Chris Seal <c.seal@auckland.ac.nz>
 """
-
+import logging
 from itertools import chain
+from typing import Dict, List, Optional, Tuple
 
 from django.conf import settings
 from django.contrib.auth.models import Group, Permission, User
@@ -20,14 +21,25 @@ from ldap3.utils.conv import escape_filter_chars
 from ldap3.utils.dn import escape_rdn
 from tastypie import fields
 from tastypie.authorization import Authorization
-
-# from tastypie.bundle import Bundle
+from tastypie.bundle import Bundle
 from tastypie.constants import ALL_WITH_RELATIONS
 from tastypie.exceptions import NotFound, Unauthorized
 from tastypie.resources import ModelResource
 from tastypie.serializers import Serializer
 from tastypie.utils import trailing_slash
 
+# Autoarchive app
+from tardis.apps.autoarchive.models import ProjectAutoArchive
+
+# Data classification app
+from tardis.apps.data_classification.models import (
+    DATA_CLASSIFICATION_INTERNAL,
+    DATA_CLASSIFICATION_PUBLIC,
+    DATA_CLASSIFICATION_SENSITIVE,
+    ProjectDataClassification,
+)
+
+# Identifiers app
 from tardis.apps.identifiers.models import InstitutionID, ProjectID
 from tardis.tardis_portal.api import (
     ExperimentResource,
@@ -43,6 +55,11 @@ from tardis.tardis_portal.auth.decorators import (
     has_write,
 )
 from tardis.tardis_portal.models.access_control import UserAuthentication
+from tardis.tardis_portal.models.storage import (
+    StorageBox,
+    StorageBoxAttribute,
+    StorageBoxOption,
+)
 
 from .models import (
     Institution,
@@ -55,6 +72,23 @@ from .models import (
 default_serializer = PrettyJSONSerializer() if settings.DEBUG else Serializer()
 PROJECT_INSTITUTION_RESOURCE = "tardis.apps.projects.api.Institution"
 
+logger = logging.getLogger(__name__)
+
+
+def classification_to_string(classification: int) -> str:
+    """Helper function to turn the classification into a String
+
+    Note: Relies on the order of operations in order to distinguish between
+    PUBLIC and INTERNAL. Any PUBLIC data should have been filtered out prior to
+    testing the INTERNAL classification, which simplifies the function."""
+    if classification < DATA_CLASSIFICATION_SENSITIVE:
+        return "Restricted"
+    if classification >= DATA_CLASSIFICATION_PUBLIC:
+        return "Public"
+    if classification >= DATA_CLASSIFICATION_INTERNAL:
+        return "Internal"
+    return "Sensitive"
+
 
 def get_user_from_upi(upi):
     upi = escape_rdn(upi)
@@ -65,61 +99,62 @@ def get_user_from_upi(upi):
         user=settings.LDAP_ADMIN_USER,
         password=settings.LDAP_ADMIN_PASSWORD,
     ) as connection:
-        connection.bind()
-        connection.search(
-            settings.LDAP_USER_BASE,
-            escape_filter_chars(search_filter),
-            attributes=["*"],
-        )
-        if len(connection.entries) > 1:
-            error_message = (
-                "More than one person with {}: {} has been found in the LDAP".format(
-                    settings.LDAP_USER_LOGIN_ATTR, upi
-                )
-            )
-            # if logger:
-            #    logger.error(error_message)
-            raise ValueError(error_message)
-        if len(connection.entries) == 0:
-            error_message = "No one with {}: {} has been found in the LDAP".format(
-                settings.LDAP_USER_LOGIN_ATTR, upi
-            )
-            # if logger:
-            #    logger.warning(error_message)
-            return None
-        person = connection.entries[0]
-        first_name_key = "givenName"
-        last_name_key = "sn"
-        email_key = "mail"
-        username = person[settings.LDAP_USER_LOGIN_ATTR].value
-        first_name = person[first_name_key].value
-        last_name = person[last_name_key].value
-        try:
-            email = person[email_key].value
-        except KeyError:
-            email = ""
-        details = {
-            "username": username,
-            "first_name": first_name,
-            "last_name": last_name,
-            "email": email,
-        }
-        return details
+        return _get_data_from_active_directory_(connection, search_filter, upi)
 
 
+def _get_data_from_active_directory_(connection, search_filter, upi):
+    connection.bind()
+    connection.search(
+        settings.LDAP_USER_BASE,
+        escape_filter_chars(search_filter),
+        attributes=["*"],
+    )
+    if len(connection.entries) > 1:
+        error_message = f"More than one person with {settings.LDAP_USER_LOGIN_ATTR}: {upi} has been found in the LDAP"
+        if logger:
+            logger.error(error_message)
+        raise ValueError(error_message)
+    if len(connection.entries) == 0:
+        error_message = f"No one with {settings.LDAP_USER_LOGIN_ATTR}: {upi} has been found in the LDAP"
+        if logger:
+            logger.warning(error_message)
+        return None
+    person = connection.entries[0]
+    first_name_key = "givenName"
+    last_name_key = "sn"
+    email_key = "mail"
+    username = person[settings.LDAP_USER_LOGIN_ATTR].value
+    first_name = person[first_name_key].value
+    last_name = person[last_name_key].value
+    try:
+        email = person[email_key].value
+    except KeyError:
+        email = ""
+    return {
+        "username": username,
+        "first_name": first_name,
+        "last_name": last_name,
+        "email": email,
+    }
+
+
+# TODO: Migrate this out to settings?
 def gen_random_password():
     import random
 
     random.seed()
     characters = "abcdefghijklmnopqrstuvwxyzABCDFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()?"
     passlen = 16
-    password = "".join(random.sample(characters, passlen))
-    return password
+    return "".join(random.sample(characters, passlen))
 
 
 def get_or_create_user(username):
     if not User.objects.filter(username=username).exists():
         new_user = get_user_from_upi(username)
+        if not new_user:
+            error_message = f"Unable to create user with username: {username}"
+            logger.warning(error_message)
+            raise ValueError(error_message)
         user = User.objects.create(
             username=new_user["username"],
             first_name=new_user["first_name"],
@@ -457,6 +492,16 @@ class ProjectResource(ModelResource):
             )
             if bundle.data["identifiers"] == []:
                 bundle.data.pop("identifiers")
+        if "tardis.apps.data_classification" in settings.INSTALLED_APPS:
+            bundle.data["classification"] = classification_to_string(
+                bundle.obj.data_classification.classification
+            )
+        if "tardis.apps.autoarchive" in settings.INSTALLED_APPS:
+            bundle.data["autoarchive"] = {
+                "archive_offset": bundle.obj.autoarchive.offset,
+                "archives": bundle.obj.autoarchive.archives,
+                "delete_offset": bundle.obj.autoarchive.delete_offset,
+            }
         # admins = project.get_admins()
         # bundle.data["admin_groups"] = [acl.id for acl in admins]
         # members = project.get_groups()

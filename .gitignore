@@ -55,7 +55,7 @@ tardis/apps/*
 !tardis/apps/projects
 !tardis/apps/identifiers
 !tardis/apps/data_classification
-!tardis/apps/autoarchive
+tardis/apps/autoarchive
 
 .DS_Store
 
