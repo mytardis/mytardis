@@ -5,6 +5,8 @@ Implemented with Tastypie.
 .. moduleauthor:: Mike Laverick <mike.laverick@auckland.ac.nz>
 .. moduleauthor:: Chris Seal <c.seal@auckland.ac.nz>
 """
+
+import contextlib
 import logging
 from itertools import chain
 from typing import Dict, List, Optional, Tuple
@@ -28,15 +30,13 @@ from tastypie.resources import ModelResource
 from tastypie.serializers import Serializer
 from tastypie.utils import trailing_slash
 
-# Autoarchive app
-from tardis.apps.autoarchive.models import ProjectAutoArchive
-
 # Data classification app
 from tardis.apps.data_classification.models import (
     DATA_CLASSIFICATION_INTERNAL,
     DATA_CLASSIFICATION_PUBLIC,
     DATA_CLASSIFICATION_SENSITIVE,
     ProjectDataClassification,
+    classification_to_string,
 )
 
 # Identifiers app
@@ -55,11 +55,6 @@ from tardis.tardis_portal.auth.decorators import (
     has_write,
 )
 from tardis.tardis_portal.models.access_control import UserAuthentication
-from tardis.tardis_portal.models.storage import (
-    StorageBox,
-    StorageBoxAttribute,
-    StorageBoxOption,
-)
 
 from .models import (
     Institution,
@@ -69,25 +64,19 @@ from .models import (
     ProjectParameterSet,
 )
 
+# Autoarchive app
+# from tardis.apps.autoarchive.models import ProjectAutoArchive
+# from tardis.tardis_portal.models.storage import (
+#    StorageBox,
+#    StorageBoxAttribute,
+#    StorageBoxOption,
+# )
+
+
 default_serializer = PrettyJSONSerializer() if settings.DEBUG else Serializer()
 PROJECT_INSTITUTION_RESOURCE = "tardis.apps.projects.api.Institution"
 
 logger = logging.getLogger(__name__)
-
-
-def classification_to_string(classification: int) -> str:
-    """Helper function to turn the classification into a String
-
-    Note: Relies on the order of operations in order to distinguish between
-    PUBLIC and INTERNAL. Any PUBLIC data should have been filtered out prior to
-    testing the INTERNAL classification, which simplifies the function."""
-    if classification < DATA_CLASSIFICATION_SENSITIVE:
-        return "Restricted"
-    if classification >= DATA_CLASSIFICATION_PUBLIC:
-        return "Public"
-    if classification >= DATA_CLASSIFICATION_INTERNAL:
-        return "Internal"
-    return "Sensitive"
 
 
 def get_user_from_upi(upi):
@@ -496,12 +485,12 @@ class ProjectResource(ModelResource):
             bundle.data["classification"] = classification_to_string(
                 bundle.obj.data_classification.classification
             )
-        if "tardis.apps.autoarchive" in settings.INSTALLED_APPS:
-            bundle.data["autoarchive"] = {
-                "archive_offset": bundle.obj.autoarchive.offset,
-                "archives": bundle.obj.autoarchive.archives,
-                "delete_offset": bundle.obj.autoarchive.delete_offset,
-            }
+        # if "tardis.apps.autoarchive" in settings.INSTALLED_APPS:
+        #    bundle.data["autoarchive"] = {
+        #        "archive_offset": bundle.obj.autoarchive.offset,
+        #        "archives": bundle.obj.autoarchive.archives,
+        #        "delete_offset": bundle.obj.autoarchive.delete_offset,
+        #    }
         # admins = project.get_admins()
         # bundle.data["admin_groups"] = [acl.id for acl in admins]
         # members = project.get_groups()
@@ -518,6 +507,81 @@ class ProjectResource(ModelResource):
             ),
         ]
 
+    def __clean_bundle_of_identifiers(
+        self, bundle
+    ) -> Tuple[Bundle, Optional[List[str]]]:
+        """If the bundle has identifiers in it, clean these out prior to
+        creating the project.
+
+        Args:
+            bundle (Bundle): The bundle to be cleaned.
+
+        Returns:
+            Bundle: The cleaned bundle
+            list(str): A list of the identifiers cleaned from the bundle
+        """
+        identifiers = None
+        if (
+            "tardis.apps.identifiers" in settings.INSTALLED_APPS
+            and "project" in settings.OBJECTS_WITH_IDENTIFIERS
+            and "identifiers" in bundle.data.keys()
+        ):
+            identifiers = bundle.data.pop("identifiers")
+        return (bundle, identifiers)
+
+    def __clean_bundle_of_data_classification(
+        self, bundle
+    ) -> Tuple[Bundle, Optional[int]]:
+        """If the bundle has data_classification in it, clean it out.
+
+        Args:
+            bundle (Bundle): The bundle to be cleaned.
+
+        Returns:
+            Bundle: The cleaned bundle
+            int: An integer representing the data classification, defaults to Sensitive
+        """
+        classification = None
+        if "tardis.apps.data_classification" in settings.INSTALLED_APPS:
+            classification = DATA_CLASSIFICATION_SENSITIVE
+            if "classification" in bundle.data.keys():
+                classification = bundle.data.pop("classification")
+        return (bundle, classification)
+
+    def __create_identifiers(
+        self,
+        bundle: Bundle,
+        identifiers: List[str],
+    ) -> None:
+        """Create the project identifier model.
+
+        Args:
+            bundle (Bundle): The bundle created when the project is created
+            identifiers (List[str]): A list of identifiers to associate with the project
+        """
+        project = bundle.obj
+        for identifier in identifiers:
+            ProjectID.objects.create(
+                project=project,
+                identifier=str(identifier),
+            )
+
+    def __create_data_classification(
+        self,
+        bundle: Bundle,
+        classification: int,
+    ) -> None:
+        """Create the data classification model.
+
+        Args:
+            bundle (Bundle): The bundle created when the project is created
+            data_classification (int): The iteger representaion of the data classification
+        """
+        project = bundle.obj
+        ProjectDataClassification.objects.create(
+            project=project, classification=classification
+        )
+
     def hydrate_m2m(self, bundle):
         """
         Create project-experiment associations first, in case they affect
@@ -526,13 +590,11 @@ class ProjectResource(ModelResource):
         if getattr(bundle.obj, "id", False):
             project = bundle.obj
             for exp_uri in bundle.data.get("experiments", []):
-                try:
+                with contextlib.suppress(NotFound):
                     exp = ExperimentResource.get_via_uri(
                         ExperimentResource(), exp_uri, bundle.request
                     )
                     bundle.obj.experiments.add(exp)
-                except NotFound:
-                    pass
             if not settings.ONLY_EXPERIMENT_ACLS:
                 # ACL for ingestor
                 acl = ProjectACL(
@@ -570,29 +632,20 @@ class ProjectResource(ModelResource):
         user = bundle.request.user
         bundle.data["created_by"] = user
         with transaction.atomic():
+            identifiers = None
             project_lead = get_or_create_user(bundle.data["principal_investigator"])
             bundle.data["principal_investigator"] = project_lead
             # Clean up bundle to remove PIDS if the identifiers app is being used.
-            if (
-                "tardis.apps.identifiers" in settings.INSTALLED_APPS
-                and "project" in settings.OBJECTS_WITH_IDENTIFIERS
-            ):
-                identifiers = None
-                if "identifiers" in bundle.data.keys():
-                    identifiers = bundle.data.pop("identifiers")
+            bundle, identifiers = self.__clean_bundle_of_identifiers(bundle)
+            # Clean up bundle to remove Data classifications if the app is being used
+            bundle, classification = self.__clean_bundle_of_data_classification(bundle)
             bundle = super().obj_create(bundle, **kwargs)
             # After the obj has been created
-            if (
-                "tardis.apps.identifiers" in settings.INSTALLED_APPS
-                and "project" in settings.OBJECTS_WITH_IDENTIFIERS
-            ):
-                project = bundle.obj
-                if identifiers:
-                    for identifier in identifiers:
-                        ProjectID.objects.create(
-                            project=project,
-                            identifier=str(identifier),
-                        )
+            project = bundle.obj
+            if identifiers:
+                self.__create_identifiers(bundle, identifiers)
+            if classification:
+                self.__create_data_classification(bundle, classification)
             if bundle.data.get("users", False):
                 for entry in bundle.data["users"]:
                     username, isOwner, canDownload, canSensitive = entry
@@ -617,7 +670,6 @@ class ProjectResource(ModelResource):
                         canSensitive=canSensitive,
                         isOwner=isOwner,
                     )
-
             return bundle
 
     def get_project_experiments(self, request, **kwargs):
