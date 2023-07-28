@@ -9,7 +9,7 @@ Implemented with Tastypie.
 import contextlib
 import logging
 from itertools import chain
-from typing import Dict, List, Optional, Tuple
+from typing import List, Optional, Tuple
 
 from django.conf import settings
 from django.contrib.auth.models import Group, Permission, User
@@ -32,8 +32,6 @@ from tastypie.utils import trailing_slash
 
 # Data classification app
 from tardis.apps.data_classification.models import (
-    DATA_CLASSIFICATION_INTERNAL,
-    DATA_CLASSIFICATION_PUBLIC,
     DATA_CLASSIFICATION_SENSITIVE,
     ProjectDataClassification,
     classification_to_string,
