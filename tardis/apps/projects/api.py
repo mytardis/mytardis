@@ -9,7 +9,7 @@ Implemented with Tastypie.
 import contextlib
 import logging
 from itertools import chain
-from typing import List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 from django.conf import settings
 from django.contrib.auth.models import Group, Permission, User
@@ -31,11 +31,12 @@ from tastypie.serializers import Serializer
 from tastypie.utils import trailing_slash
 
 # Data classification app
-from tardis.apps.data_classification.models import (
+from tardis.apps.dataclassification import (
     DATA_CLASSIFICATION_SENSITIVE,
     ProjectDataClassification,
     classification_to_string,
 )
+from tardis.apps.identifiers.enumerators import IdentifierObjects
 
 # Identifiers app
 from tardis.apps.identifiers.models import InstitutionID, ProjectID
@@ -52,6 +53,7 @@ from tardis.tardis_portal.auth.decorators import (
     has_sensitive_access,
     has_write,
 )
+from tardis.tardis_portal.enumerators import AppList, CustomFilters
 from tardis.tardis_portal.models.access_control import UserAuthentication
 
 from .models import (
@@ -77,7 +79,20 @@ PROJECT_INSTITUTION_RESOURCE = "tardis.apps.projects.api.Institution"
 logger = logging.getLogger(__name__)
 
 
-def get_user_from_upi(upi):
+def get_user_from_upi(upi: str) -> Optional[Dict[str, str]]:
+    # sourcery skip: raise-from-previous-error
+    """Helper function to access the Active Directory and get details for a user to
+    pass back to the create user functions.
+
+    Note: This is pretty fragile at the moment and will need some rework to ensure
+    robustness.
+
+    Args:
+        upi (str): The UPI of the person to be searched for
+
+    Returns:
+        Dict[str,str]: A dictionary of fields needed to create a user
+    """
     upi = escape_rdn(upi)
     server = ldap3.Server(settings.LDAP_URL)
     search_filter = f"({settings.LDAP_USER_LOGIN_ATTR}={upi})"
@@ -86,10 +101,35 @@ def get_user_from_upi(upi):
         user=settings.LDAP_ADMIN_USER,
         password=settings.LDAP_ADMIN_PASSWORD,
     ) as connection:
-        return _get_data_from_active_directory_(connection, search_filter, upi)
+        try:
+            data = _get_data_from_active_directory_(connection, search_filter)
+            if not data:
+                error_message = f"No one with {settings.LDAP_USER_LOGIN_ATTR}: {upi} has been found in the LDAP"
+                if logger:
+                    logger.warning(error_message)
+            return data
+        except ValueError:
+            error_message = f"More than one person with {settings.LDAP_USER_LOGIN_ATTR}: {upi} has  been found in the LDAP"
+            if logger:
+                logger.error(error_message)
+            raise ValueError(error_message)
 
 
-def _get_data_from_active_directory_(connection, search_filter, upi):
+def _get_data_from_active_directory_(
+    connection: ldap3.Connection, search_filter: str
+) -> Optional[Dict[str, str]]:
+    """With connection to Active Directory, run a query
+
+    Args:
+        connection (ldap3.Connection): An established connection to the active directory
+        search_filter (str): The search query to run
+
+    Raises:
+        ValueError: Represents a lack of uniqueness in the query
+
+    Returns:
+        Optional[Dict[str, str]]: The dictionary of resutls from the search query run or None
+    """
     connection.bind()
     connection.search(
         settings.LDAP_USER_BASE,
@@ -97,14 +137,8 @@ def _get_data_from_active_directory_(connection, search_filter, upi):
         attributes=["*"],
     )
     if len(connection.entries) > 1:
-        error_message = f"More than one person with {settings.LDAP_USER_LOGIN_ATTR}: {upi} has been found in the LDAP"
-        if logger:
-            logger.error(error_message)
-        raise ValueError(error_message)
+        raise ValueError()
     if len(connection.entries) == 0:
-        error_message = f"No one with {settings.LDAP_USER_LOGIN_ATTR}: {upi} has been found in the LDAP"
-        if logger:
-            logger.warning(error_message)
         return None
     person = connection.entries[0]
     first_name_key = "givenName"
@@ -126,7 +160,12 @@ def _get_data_from_active_directory_(connection, search_filter, upi):
 
 
 # TODO: Migrate this out to settings?
-def gen_random_password():
+def gen_random_password() -> str:
+    """Helper function to generate a random password internally.
+
+    Returns:
+        str: A string of random characters
+    """
     import random
 
     random.seed()
@@ -135,9 +174,28 @@ def gen_random_password():
     return "".join(random.sample(characters, passlen))
 
 
-def get_or_create_user(username):
+def get_or_create_user(username: str) -> User:
+    """Search the database by username to determine if a user with that name exists.
+    If one does, return that, otherwise use the username to search the Active Directory
+    for the user and create them using that data.
+
+    Note: This is UoA specific and should be genericised somehow.
+
+    Args:
+        username (str): the username of the user - a unique identifer like a UPI
+
+    Raises:
+        ValueError: The error raised when it is not possible to create a user
+        Exception: Any other error
+
+    Returns:
+        User: A User object identified or created by the username
+    """
     if not User.objects.filter(username=username).exists():
-        new_user = get_user_from_upi(username)
+        try:
+            new_user = get_user_from_upi(username)
+        except Exception as error:
+            raise error
         if not new_user:
             error_message = f"Unable to create user with username: {username}"
             logger.warning(error_message)
@@ -161,6 +219,56 @@ def get_or_create_user(username):
     else:
         user = User.objects.get(username=username)
     return user
+
+
+def build_identifier_aware_filter(
+    model_type: IdentifierObjects,
+    orm_filters: Dict[str, Any],
+    filters: Dict[str, Any],
+) -> Dict[str, Any]:
+    """Function to check if the identifier app is active and if the identifier key is present in
+    the query. If both are, update the orm_filters to query on these.
+
+    Args:
+        model_type (IdentifierObjects): The name of the model that has an identifier model added.
+        orm_filters (Dict[str,Any]): The partial ORM filter to be updated
+        filters (Dict[str,Any]): Any filters that have been passed
+
+    Returns:
+        Dict[str, Any]: The updated ORM filter
+    """
+    if (
+        AppList.IDENTIFIERS in settings.INSTALLED_APPS
+        and model_type in settings.OBJECTS_WITH_IDENTIFIERS
+        and CustomFilters.IDENTIFIERS in filters
+    ):
+        query = filters[CustomFilters.IDENTIFIERS]
+        qset = Q(identifiers__identifier__iexact=query)
+        orm_filters[CustomFilters.IDENTIFIERS] = qset
+    return orm_filters
+
+
+def apply_identifier_aware_filter(
+    model_type: IdentifierObjects,
+    applicable_filters: Dict[str, Any],
+) -> Tuple[Any, Dict[str, Any]]:
+    """Function to check if the identifier app is active. Clean the filter if it is and return
+    a custom filter value for semi-filtering.
+
+    Args:
+        model_type (IdentifierObjects): The name of the model that has an identifier model added.
+        applicable_filters (Dict[str,Any]): Filters to be applied
+
+    Returns:
+        Tuple[Any, Dict[str, Any]]: The custom filter and the cleaned filters.
+    """
+    custom = None
+    if (
+        AppList.IDENTIFIERS in settings.INSTALLED_APPS
+        and model_type in settings.OBJECTS_WITH_IDENTIFIERS
+    ):
+        custom = applicable_filters.pop(CustomFilters.IDENTIFIERS, None)
+    return (custom, applicable_filters)
 
 
 class ProjectACLAuthorization(Authorization):
@@ -300,49 +408,40 @@ class ProjectACLAuthorization(Authorization):
 
 
 class InstitutionResource(ModelResource):
-    """Tastypie class for accessing Instituions"""
+    """Tastypie class for accessing Instituions
 
-    # def filter_id_items(self, bundle):
-    #    resource = InstitutionIDResource()
-    #    new_bundle = Bundle(request=bundle.request)
-    #    objs = resource.obj_get_list(new_bundle)
-    #    return objs.filter(parent_id=bundle.obj.pk)
+    Attributes:
+        identifiers (fields.ListField): Django ListField to hold 0-X identifiers for the
+            institution.
+    """
 
-    instituitionid = None
     identifiers = fields.ListField(null=True, blank=True)
 
     # Custom filter for identifiers module based on code example from
     # https://stackoverflow.com/questions/10021749/ \
     # django-tastypie-advanced-filtering-how-to-do-complex-lookups-with-q-objects
 
-    def build_filters(self, filters=None, ignore_bad_filters=False):
+    def build_filters(
+        self,
+        filters: Optional[Dict[str, Any]] = None,
+        ignore_bad_filters: bool = False,
+    ) -> Dict[str, Any]:
         if filters is None:
             filters = {}
         orm_filters = super().build_filters(filters)
-
-        if "tardis.apps.identifiers" in settings.INSTALLED_APPS and (
-            "institution" in settings.OBJECTS_WITH_IDENTIFIERS
-            and "identifier" in filters
-        ):
-            query = filters["identifier"]
-            qset = Q(identifiers__identifier__iexact=query)
-            orm_filters.update({"identifier": qset})
+        orm_filters = build_identifier_aware_filter(
+            IdentifierObjects.INSTITUTION,
+            orm_filters,
+            filters,
+        )
         return orm_filters
 
     def apply_filters(self, request, applicable_filters):
-        if "tardis.apps.identifiers" in settings.INSTALLED_APPS:
-            if (
-                "institution" in settings.OBJECTS_WITH_IDENTIFIERS
-                and "identifier" in applicable_filters
-            ):
-                custom = applicable_filters.pop("identifier")
-            else:
-                custom = None
-        else:
-            custom = None
-
+        custom, applicable_filters = apply_identifier_aware_filter(
+            IdentifierObjects.INSTITUTION,
+            applicable_filters,
+        )
         semi_filtered = super().apply_filters(request, applicable_filters)
-
         return semi_filtered.filter(custom) if custom else semi_filtered
 
     # End of custom filter code
@@ -400,26 +499,26 @@ class ProjectResource(ModelResource):
     # https://stackoverflow.com/questions/10021749/ \
     # django-tastypie-advanced-filtering-how-to-do-complex-lookups-with-q-objects
 
-    def build_filters(self, filters=None, ignore_bad_filters=False):
+    def build_filters(
+        self,
+        filters: Optional[Dict[str, Any]] = None,
+        ignore_bad_filters: bool = False,
+    ) -> Dict[str, Any]:
         if filters is None:
             filters = {}
         orm_filters = super().build_filters(filters)
-
-        if "tardis.apps.identifiers" in settings.INSTALLED_APPS and (
-            "project" in settings.OBJECTS_WITH_IDENTIFIERS and "identifier" in filters
-        ):
-            query = filters["identifier"]
-            qset = Q(identifiers__identifier__iexact=query)
-            orm_filters.update({"identifier": qset})
+        orm_filters = build_identifier_aware_filter(
+            IdentifierObjects.PROJECT,
+            orm_filters,
+            filters,
+        )
         return orm_filters
 
     def apply_filters(self, request, applicable_filters):
-        custom = None
-        if "tardis.apps.identifiers" in settings.INSTALLED_APPS and (
-            "project" in settings.OBJECTS_WITH_IDENTIFIERS
-            and "identifier" in applicable_filters
-        ):
-            custom = applicable_filters.pop("identifier")
+        custom, applicable_filters = apply_identifier_aware_filter(
+            IdentifierObjects.PROJECT,
+            applicable_filters,
+        )
         semi_filtered = super().apply_filters(request, applicable_filters)
         return semi_filtered.filter(custom) if custom else semi_filtered
 
@@ -445,11 +544,6 @@ class ProjectResource(ModelResource):
             "url": ("exact",),
             "institution": ALL_WITH_RELATIONS,
         }
-        if (
-            "tardis.apps.identifiers" in settings.INSTALLED_APPS
-            and "project" in settings.OBJECTS_WITH_IDENTIFIERS
-        ):
-            filtering.update({"pids": ["pids"]})
         ordering = ["id", "name", "url", "start_time", "end_time"]
         always_return_data = True
 
@@ -573,7 +667,7 @@ class ProjectResource(ModelResource):
 
         Args:
             bundle (Bundle): The bundle created when the project is created
-            data_classification (int): The iteger representaion of the data classification
+            classification (int): The iteger representaion of the data classification
         """
         project = bundle.obj
         ProjectDataClassification.objects.create(

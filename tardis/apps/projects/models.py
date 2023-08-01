@@ -8,6 +8,7 @@ from django.db import models
 from django.db.models.signals import post_save
 from django.urls import reverse
 from django.utils.timezone import now as django_time_now
+
 from taggit.managers import TaggableManager
 
 # from X.models import DataManagementPlan # Hook in place for future proofing
@@ -39,8 +40,8 @@ class Institution(models.Model):
     status = models.CharField(max_length=255, blank=True, null=True)
     country = models.CharField(max_length=255, blank=True, null=True)
 
-    def __str__(self):
-        return self.name
+    def __str__(self) -> str:
+        return f"{self.name}"
 
 
 class Project(models.Model):

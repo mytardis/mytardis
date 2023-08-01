@@ -70,20 +70,18 @@ def get_all_tardis_apps():
     tardis_app_dir = path.join(base_dir, *TARDIS_APP_ROOT.split("."))
     contents = glob(path.join(tardis_app_dir, "*"))
     apps = [
-        "tardis.apps.%s" % path.basename(item)
+        f"tardis.apps.{path.basename(item)}"
         for item in contents
         if (path.isdir(item) and path.basename(item) != "__pycache__")
     ]
+    apps.append("behave_django")
     return tuple(sorted(apps))
 
 
-INSTALLED_APPS += get_all_tardis_apps() + (
-    # "django_nose",
-    "behave_django",
-)
+DUPED_INSTALLED_APPS = get_all_tardis_apps()
 
 DEDUP_INSTALLED_APPS = []
-for app in INSTALLED_APPS:
+for app in DUPED_INSTALLED_APPS:
     if app not in DEDUP_INSTALLED_APPS:
         DEDUP_INSTALLED_APPS.append(app)
 INSTALLED_APPS = tuple(DEDUP_INSTALLED_APPS)

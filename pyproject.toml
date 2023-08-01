@@ -39,6 +39,7 @@ requests = "^2.31.0"
 uritemplate = "^4.1.1"
 django-graphql-jwt = "^0.3.4"
 django-taggit = "^4.0.0"
+pylint = "^2.17.5"
 
 
 [tool.poetry.group.docs.dependencies]
