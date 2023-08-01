@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.contrib import admin
 
-from tardis.apps.dataclassification import (
+from tardis.apps.dataclassification.models import (
     DatasetDataClassification,
     ExperimentDataClassification,
     ProjectDataClassification,
