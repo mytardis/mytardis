@@ -3,7 +3,7 @@
 Library    SeleniumLibrary
 
 Resource   ../../Resources/InputData.robot
-Resource   ../../Resources/SetUp.robot
+Resource   ../../Resources/LocalSetUp.robot
 Resource   ../../Resources/Actions.robot
 Resource   ../../Resources/ReusableKeywords.robot
 
@@ -14,26 +14,26 @@ Suite Teardown      close all browsers
 
 *** Test Cases ***
 
-TEST CASE 1.1:Login as user
+TEST CASE 1.1: Login as user
 
-    Login       joe     12345
+    Login       nouran      nouran
 
 TEST CASE 1.2: Create Experiment
 
     Create Experiment        ${ExperimentName}       Testuser   TestInstitution   Testing description
-    sleep   5
+
 TEST CASE 1.3: Verify Experiment is displayed on MyData page
 
     Verify page contains item    ${ExperimentName}     xpath://*[@class='nav-link' and @href='/mydata/']
-    sleep   5
+
 TEST CASE 1.4: Verify Experiment is displayed on Home page
 
     Verify page contains item   ${ExperimentName}    xpath://*[@class='nav-link' and @href='/']
-    sleep   5
+
 TEST CASE 1.5: Edit Experiment
 
     Edit Experiment         ${EditExperimentName}   EditTestuser  EditTestInstitution  EditTestingDescription
-    sleep   5
+
 TEST CASE 1.6: Add Experiment Metadata
 
     Add Experiment Metadata     ${ExpSchema}   ${ExpSchemaParam1}    ${ExpSchemaParam2}
@@ -60,9 +60,9 @@ TEST CASE 1.11: Edit Dataset
     sleep   5
 TEST CASE 1.12: Add Dataset Metadata
 
-    Add Dataset MetaData    DatasetSchema   Adding value to Param 1    Adding value to Param 2
+    Add Dataset MetaData    Dataset     Param 1    Param 2
     sleep   5
 TEST CASE 1.13: Edit Dataset Metadata
 
-    Edit Dataset MetaData   Edit Adding value to Param 1        Edit Adding value to Param 2
+    Edit Dataset MetaData   Edit Param 1        Edit Param 2
     sleep   5
