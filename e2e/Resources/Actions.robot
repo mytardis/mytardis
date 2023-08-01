@@ -34,22 +34,22 @@ Add Experiment Metadata
     wait until element is enabled       xpath://*[@title='Add']
     click element                       xpath://*[@title='Add']
 
-    wait until element is enabled       id:schemaselect
+    wait until element is enabled       id:schemaselect            15
     select from list by label           id:schemaselect                 ${Schema}
 
-    wait until element is enabled       id:id_Test Parameter 1__1
-    input text                          id:id_Test Parameter 1__1       ${Param1}
+    wait until element is enabled       id:id_Description__1        15
+    input text                          id:id_Description__1            ${Param1}
 
-    wait until element is enabled       id:id_Test Parameter 2__1
-    input text                          id:id_Test Parameter 2__1       ${Param2}
+    wait until element is enabled       id:id_ID__1                 15
+    input text                          id:id_ID__1                     ${Param2}
 
-    wait until element is enabled       xpath://*[@class='col-md-12 text-right']//*[@class='submit-button btn btn-primary']
-    click button                        xpath://*[@class='col-md-12 text-right']//*[@class='submit-button btn btn-primary']
+    wait until element is enabled       xpath://*[@class='col-md-12']//*[@class='submit-button btn btn-primary']
+    click button                        xpath://*[@class='col-md-12']//*[@class='submit-button btn btn-primary']
 
-    press keys    None      ESC
+    seleniumLibrary.press keys    None      ESC
 
     #Verify Experiment Metadata are displayed under Metadata section
-    wait until page contains            ${Param1}
+    wait until page contains            ${Param1}           15
     page should contain                 ${Param2}
 
 
@@ -57,30 +57,31 @@ Edit Experiment Metadata
     [Arguments]                         ${Param1}       ${Param2}
     wait until element is enabled       xpath://*[@class='edit-metadata btn btn-sm btn-outline-secondary']
     click element                       xpath://*[@class='edit-metadata btn btn-sm btn-outline-secondary']
-    wait until element is enabled       id:id_Test Parameter 1__1
-    input text                          id:id_Test Parameter 1__1       ${Param1}
 
-    wait until element is enabled       id:id_Test Parameter 2__1
-    input text                          id:id_Test Parameter 2__1       ${Param2}
+    wait until element is enabled       id:id_Description__1        15
+    input text                          id:id_Description__1            ${Param1}
 
-    wait until element is enabled       xpath://*[@class='col-md-12 text-right']//*[@class='submit-button btn btn-primary']
-    click button                        xpath://*[@class='col-md-12 text-right']//*[@class='submit-button btn btn-primary']
+    wait until element is enabled       id:id_ID__1                 15
+    input text                          id:id_ID__1                     ${Param2}
 
-    press keys    None      ESC
+    wait until element is enabled       xpath://*[@class='col-md-12']//*[@class='submit-button btn btn-primary']
+    click button                        xpath://*[@class='col-md-12']//*[@class='submit-button btn btn-primary']
+
+    seleniumLibrary.press keys    None      ESC
 
     #Verify Experiment Metadata are displayed under Metadata section
-    wait until page contains            ${Param1}
+    wait until page contains            ${Param1}                   15
     page should contain                 ${Param2}
 
 
 Add DataSet
     [Arguments]                         ${Description}   ${Directory}    ${Instrument}
 
-    wait until element is enabled       id:add-dataset
+    wait until element is enabled       id:add-dataset   30
     click element                       id:add-dataset
 
     Add DataSet Details                 ${Description}   ${Directory}    ${Instrument}
-    page should contain                 ${Description}
+    Wait Until Page Contains            ${Description}    30
 
 Edit DataSet
     [Arguments]                         ${Description}   ${Directory}    ${Instrument}
@@ -154,8 +155,8 @@ Add Experiment Details
     wait until element is enabled       id:description
     input text                          id:description                   ${Description}
 
-    wait until element is enabled       xpath://*[@class='offset-md-2 col-md-9 text-right']//button
-    click button                        xpath://*[@class='offset-md-2 col-md-9 text-right']//button
+    wait until element is enabled       xpath://*[@class='btn btn-primary me-2']
+    click button                        xpath://*[@class='btn btn-primary me-2']
 
 Add DataSet Details
     [Arguments]                         ${Description}   ${Directory}    ${Instrument}
@@ -166,8 +167,8 @@ Add DataSet Details
     wait until element is enabled       id:id_directory
     input text                          id:id_directory           ${Directory}
 
-    wait until element is enabled       xpath://*[@class='offset-md-2 col-md-9 text-right']//button
-    click button                        xpath://*[@class='offset-md-2 col-md-9 text-right']//button
+    wait until element is enabled       xpath://*[@class='btn btn-primary me-2']
+    click button                        xpath://*[@class='btn btn-primary me-2']
 
 Verify Mytardis Home Page
     [Arguments]                         ${Page}     ${Text1}    ${Text2}    ${Text3}

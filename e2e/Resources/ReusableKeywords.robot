@@ -1,5 +1,6 @@
 *** Settings ***
 Library    SeleniumLibrary
+Library    RPA.Desktop
 
 *** Keywords ***
 
@@ -97,10 +98,6 @@ Add new group to Sharing
 
     press keys    None      ESC
 
-
-
-
-
 #-------------------------------------------------------------------------------------------------------------------------------------
 #Change Experiment Public Access settings
 #-------------------------------------------------------------------------------------------------------------------------------------
@@ -122,7 +119,7 @@ Change Experiment Public Access
     wait until element is enabled       ${PublicAccess}
     select from list by label           ${PublicAccess}           ${AccessLevel}
 
-    run keyword if   click button                        xpath://*[@class='use-button btn btn-info']
+    click button                        xpath://*[@class='use-button btn btn-info']
 
 
     wait until element is enabled       id:publishing-consent
@@ -135,4 +132,26 @@ Change Experiment Public Access
     sleep   10
     press keys    None      ESC
 
+#-------------------------------------------------------------------------------------------------------------------------------------
+#File Handling
+#-------------------------------------------------------------------------------------------------------------------------------------
+Upload Files
 
+    Wait Until Element Is Enabled    id:fileupload    30
+    Choose File    id:fileupload     C:\\TardisTestFile1.txt
+
+Download Files
+    [Arguments]         ${Downloadbtn}
+
+
+
+#-------------------------------------------------------------------------------------------------------------------------------------
+#Workaround for insecure connection
+#-------------------------------------------------------------------------------------------------------------------------------------
+
+WorkAround
+    Wait Until Element Is Enabled    id:details-button    30
+    Click Element                    id:details-button
+    
+    Wait Until Element Is Enabled    id:proceed-link    30
+    Click Element    id:proceed-link
