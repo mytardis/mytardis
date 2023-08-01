@@ -31,7 +31,7 @@ from tastypie.serializers import Serializer
 from tastypie.utils import trailing_slash
 
 # Data classification app
-from tardis.apps.dataclassification import (
+from tardis.apps.dataclassification.models import (
     DATA_CLASSIFICATION_SENSITIVE,
     ProjectDataClassification,
     classification_to_string,
