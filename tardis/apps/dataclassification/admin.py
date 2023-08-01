@@ -9,5 +9,5 @@ from tardis.apps.dataclassification import (
 
 admin.site.register(DatasetDataClassification)
 admin.site.register(ExperimentDataClassification)
-if "tardis.apps.projects" in settings.INSTALLED_APPS:
-    admin.site.register(ProjectDataClassification)
+
+admin.site.register(ProjectDataClassification)
