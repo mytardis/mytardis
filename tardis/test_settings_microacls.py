@@ -74,14 +74,13 @@ def get_all_tardis_apps():
         for item in contents
         if (path.isdir(item) and path.basename(item) != "__pycache__")
     ]
-    apps.append("behave_django")
     return tuple(sorted(apps))
 
 
-DUPED_INSTALLED_APPS = get_all_tardis_apps()
+INSTALLED_APPS += get_all_tardis_apps() + ("behave_django",)
 
 DEDUP_INSTALLED_APPS = []
-for app in DUPED_INSTALLED_APPS:
+for app in INSTALLED_APPS:
     if app not in DEDUP_INSTALLED_APPS:
         DEDUP_INSTALLED_APPS.append(app)
 INSTALLED_APPS = tuple(DEDUP_INSTALLED_APPS)
