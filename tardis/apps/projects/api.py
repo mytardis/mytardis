@@ -238,13 +238,13 @@ def build_identifier_aware_filter(
         Dict[str, Any]: The updated ORM filter
     """
     if (
-        AppList.IDENTIFIERS in settings.INSTALLED_APPS
-        and model_type in settings.OBJECTS_WITH_IDENTIFIERS
-        and CustomFilters.IDENTIFIERS in filters
+        AppList.IDENTIFIERS.value in settings.INSTALLED_APPS
+        and model_type.value in settings.OBJECTS_WITH_IDENTIFIERS
+        and CustomFilters.IDENTIFIERS.value in filters
     ):
-        query = filters[CustomFilters.IDENTIFIERS]
+        query = filters[CustomFilters.IDENTIFIERS.value]
         qset = Q(identifiers__identifier__iexact=query)
-        orm_filters[CustomFilters.IDENTIFIERS] = qset
+        orm_filters[CustomFilters.IDENTIFIERS.value] = qset
     return orm_filters
 
 
@@ -264,10 +264,10 @@ def apply_identifier_aware_filter(
     """
     custom = None
     if (
-        AppList.IDENTIFIERS in settings.INSTALLED_APPS
-        and model_type in settings.OBJECTS_WITH_IDENTIFIERS
+        AppList.IDENTIFIERS.value in settings.INSTALLED_APPS
+        and model_type.value in settings.OBJECTS_WITH_IDENTIFIERS
     ):
-        custom = applicable_filters.pop(CustomFilters.IDENTIFIERS, None)
+        custom = applicable_filters.pop(CustomFilters.IDENTIFIERS.value, None)
     return (custom, applicable_filters)
 
 
@@ -573,7 +573,7 @@ class ProjectResource(ModelResource):
             )
             if bundle.data["identifiers"] == []:
                 bundle.data.pop("identifiers")
-        if "tardis.apps.data_classification" in settings.INSTALLED_APPS:
+        if AppList.DATA_CLASSIFICATION.value in settings.INSTALLED_APPS:
             bundle.data["classification"] = classification_to_string(
                 bundle.obj.data_classification.classification
             )
@@ -634,7 +634,7 @@ class ProjectResource(ModelResource):
             int: An integer representing the data classification, defaults to Sensitive
         """
         classification = None
-        if "tardis.apps.data_classification" in settings.INSTALLED_APPS:
+        if AppList.DATA_CLASSIFICATION.value in settings.INSTALLED_APPS:
             classification = DATA_CLASSIFICATION_SENSITIVE
             if "classification" in bundle.data.keys():
                 classification = bundle.data.pop("classification")

@@ -11,12 +11,12 @@ import contextlib
 import json
 import re
 from itertools import chain
-from urllib.parse import quote
 from typing import Optional
+from urllib.parse import quote
 from wsgiref.util import FileWrapper
 
 from django.conf import settings
-from django.contrib.auth.models import AnonymousUser, Group, User, Permission
+from django.contrib.auth.models import AnonymousUser, Group, Permission, User
 from django.core.paginator import EmptyPage, InvalidPage, Paginator
 from django.db import IntegrityError, transaction
 from django.db.models import Model, Q
@@ -47,12 +47,19 @@ from tastypie.utils import trailing_slash
 from uritemplate import URITemplate
 
 from tardis.analytics.tracker import IteratorTracker
+from tardis.apps.dataclassification.models import (
+    DATA_CLASSIFICATION_SENSITIVE,
+    DatasetDataClassification,
+    ExperimentDataClassification,
+    classification_to_string,
+)
 from tardis.apps.identifiers.models import (
     DatasetID,
     ExperimentID,
     FacilityID,
     InstrumentID,
 )
+from tardis.tardis_portal.enumerators.applist import AppList
 
 from . import tasks
 from .auth.decorators import (
@@ -646,6 +653,7 @@ class IntrospectionObject(object):
         identified_objects=[],
         profiles_enabled=None,
         profiled_objects=[],
+        data_classification_enabled=None,
         id=None,
     ):
         self.projects_enabled = projects_enabled
@@ -654,6 +662,7 @@ class IntrospectionObject(object):
         self.identified_objects = identified_objects
         self.profiles_enabled = profiles_enabled
         self.profiled_objects = profiled_objects
+        self.data_classification_enabled = data_classification_enabled
         self.id = id
 
 
@@ -666,6 +675,9 @@ class IntrospectionResource(Resource):
     identified_objects = fields.ApiField(attribute="identified_objects", null=True)
     profiles_enabled = fields.ApiField(attribute="profiles_enabled", null=True)
     profiled_objects = fields.ApiField(attribute="profiled_objects", null=True)
+    data_classification_enabled = fields.ApiField(
+        attribute="data_classificiation_enababled", null=True
+    )
 
     class Meta:
         resource_name = "introspection"
@@ -702,6 +714,8 @@ class IntrospectionResource(Resource):
                 identified_objects=identified_objects,
                 profiles_enabled="tardis.apps.profiles" in settings.INSTALLED_APPS,
                 profiled_objects=profiled_objects,
+                data_classification_enabled=AppList.DATA_CLASSIFICATION.value
+                in settings.INSTALLED_APPS,
             )
         ]
 
@@ -958,6 +972,13 @@ class ExperimentResource(MyTardisModelResource):
         full=True,
         null=True,
     )
+    if AppList.PROJECTS.value in settings.INSTALLED_APPS:
+        projects = fields.ToManyField(
+            "tardis.apps.projects.api.ProjectResource",
+            "projects",
+            related_name="experiments",
+            full=True,
+        )
     # tags = fields.ListField()
 
     # Custom filter for identifiers module based on code example from
@@ -969,7 +990,7 @@ class ExperimentResource(MyTardisModelResource):
             filters = {}
         orm_filters = super().build_filters(filters)
 
-        if "tardis.apps.identifiers" in settings.INSTALLED_APPS and (
+        if AppList.IDENTIFIERS.value in settings.INSTALLED_APPS and (
             "experiment" in settings.OBJECTS_WITH_IDENTIFIERS
             and "identifier" in filters
         ):
@@ -979,7 +1000,7 @@ class ExperimentResource(MyTardisModelResource):
         return orm_filters
 
     def apply_filters(self, request, applicable_filters):
-        if "tardis.apps.identifiers" in settings.INSTALLED_APPS:
+        if AppList.IDENTIFIERS.value in settings.INSTALLED_APPS:
             if (
                 "experiment" in settings.OBJECTS_WITH_IDENTIFIERS
                 and "identifier" in applicable_filters
@@ -1040,6 +1061,10 @@ class ExperimentResource(MyTardisModelResource):
             )
             if bundle.data["identifiers"] == []:
                 bundle.data.pop("identifiers")
+        if AppList.DATA_CLASSIFICATION.value in settings.INSTALLED_APPS:
+            bundle.data["classification"] = classification_to_string(
+                bundle.obj.data_classification.classification
+            )
 
         if settings.ONLY_EXPERIMENT_ACLS:
             dataset_count = exp.datasets.all().count()
@@ -1103,13 +1128,18 @@ class ExperimentResource(MyTardisModelResource):
         user = bundle.request.user
         bundle.data["created_by"] = user
         identifiers = None
+        classification = None
         with transaction.atomic():
             # Clean up bundle to remove PIDS if the identifiers app is being used.
             if (
                 "tardis.apps.identifiers" in settings.INSTALLED_APPS
                 and "experiment" in settings.OBJECTS_WITH_IDENTIFIERS
-            ) and "identifiers" in bundle.data.keys():
-                identifiers = bundle.data.pop("identifiers")
+            ):
+                identifiers = bundle.data.pop("identifiers", None)
+
+            # Clean up bundle to remove Data Classification if the app is enabled
+            if AppList.DATA_CLASSIFICATION.value in settings.INSTALLED_APPS:
+                classification = bundle.data.pop("classification", None)
             bundle = super().obj_create(bundle, **kwargs)
             # After the obj has been created
             experiment = bundle.obj
@@ -1122,7 +1152,26 @@ class ExperimentResource(MyTardisModelResource):
                         experiment=experiment,
                         identifier=str(identifier),
                     )
-
+            if AppList.DATA_CLASSIFICATION.value in settings.INSTALLED_APPS:
+                if (
+                    not classification
+                    and AppList.PROJECTS.value in settings.INSTALLED_APPS
+                ):
+                    if classifications := [
+                        parent.data_classification.classification
+                        for parent in experiment.projects.all()
+                    ]:
+                        classification = min(classifications)
+                if not classification:
+                    classification = DATA_CLASSIFICATION_SENSITIVE
+                # At this point the classification should be one of:
+                # - an explicit classification as defined in the input bundle
+                # - An inherited classification which is the most secure of the
+                # parent projects
+                # - Sensitive if neither of the previous apply
+                ExperimentDataClassification.objects.create(
+                    experiment=bundle.obj, classification=classification
+                )
             if bundle.data.get("users", False):
                 for entry in bundle.data["users"]:
                     username, isOwner, canDownload, canSensitive = entry
@@ -1311,6 +1360,10 @@ class DatasetResource(MyTardisModelResource):
             )
             if bundle.data["identifiers"] == []:
                 bundle.data.pop("identifiers")
+        if AppList.DATA_CLASSIFICATION.value in settings.INSTALLED_APPS:
+            bundle.data["classification"] = classification_to_string(
+                bundle.obj.data_classification.classification
+            )
         return bundle
 
     def prepend_urls(self):
@@ -1582,15 +1635,20 @@ class DatasetResource(MyTardisModelResource):
 
     def obj_create(self, bundle, **kwargs):  # pylint: disable=R1702
         with transaction.atomic():
+            identifiers = None
+            classification = None
             # Clean up bundle to remove PIDS if the identifiers app is being used.
             if (
                 "tardis.apps.identifiers" in settings.INSTALLED_APPS
                 and "dataset" in settings.OBJECTS_WITH_IDENTIFIERS
             ):
-                identifiers = None
-                if "identifiers" in bundle.data.keys():
-                    identifiers = bundle.data.pop("identifiers")
+                identifiers = bundle.data.pop("identifiers", None)
             bundle = super().obj_create(bundle, **kwargs)
+            # Clean up bundel to remove data classification if the app is being used
+            if "tardis.apps.data_classification" in settings.INSTALLED_APPS:
+                classification = None
+                if "classification" in bundle.data.keys():
+                    classification = bundle.data.pop("classification")
             # After the obj has been created
             if (
                 "tardis.apps.identifiers" in settings.INSTALLED_APPS
@@ -1603,6 +1661,23 @@ class DatasetResource(MyTardisModelResource):
                             dataset=dataset,
                             identifier=str(identifier),
                         )
+            if AppList.DATA_CLASSIFICATION.value in settings.INSTALLED_APPS:
+                if not classification:
+                    if classifications := [
+                        parent.data_classification.classification
+                        for parent in dataset.experiments.all()
+                    ]:
+                        classification = min(classifications)
+                    else:
+                        classification = DATA_CLASSIFICATION_SENSITIVE
+                # At this point the classification should be one of:
+                # - an explicit classification as defined in the input bundle
+                # - An inherited classification which is the most secure of the
+                # parent projects
+                # - Sensitive if neither of the previous apply
+                DatasetDataClassification.objects.create(
+                    dataset=bundle.obj, classification=classification
+                )
             if bundle.data.get("users", False):
                 for entry in bundle.data["users"]:
                     username, isOwner, canDownload, canSensitive = entry
