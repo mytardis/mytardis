@@ -30,6 +30,7 @@ class DataClassification(models.Model):
     )
 
     class Meta:
+        abstract = True
         app_label = "dataclassification"
 
 
