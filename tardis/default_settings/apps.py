@@ -27,6 +27,8 @@ INSTALLED_APPS = (
     # 'tardis.apps.push_to',
     # 'tardis.apps.social_auth',
     "taggit",
+    "tardis.apps.projects",
+    "tardis.apps.dataclassification",
 )
 
 USER_MENU_MODIFIERS = []

@@ -43,6 +43,9 @@ class Institution(models.Model):
     def __str__(self) -> str:
         return f"{self.name}"
 
+    class Meta:
+        app_label = "projects"
+
 
 class Project(models.Model):
     """A project is a collection of :class: '~tardis.tardis_portal.experiment.Experiment'

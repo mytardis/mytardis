@@ -29,6 +29,9 @@ class DataClassification(models.Model):
         default=DATA_CLASSIFICATION_SENSITIVE,
     )
 
+    class Meta:
+        app_label = "dataclassification"
+
 
 class ProjectDataClassification(DataClassification):
     """A concrete model that holds the data classification for a project"""
@@ -36,6 +39,9 @@ class ProjectDataClassification(DataClassification):
     project = models.OneToOneField(
         Project, on_delete=models.CASCADE, related_name="data_classification"
     )
+
+    class Meta:
+        app_label = "dataclassification"
 
 
 class ExperimentDataClassification(DataClassification):
@@ -45,6 +51,9 @@ class ExperimentDataClassification(DataClassification):
         Experiment, on_delete=models.CASCADE, related_name="data_classification"
     )
 
+    class Meta:
+        app_label = "dataclassification"
+
 
 class DatasetDataClassification(DataClassification):
     """A concrete model that holds the data classification for a project"""
@@ -52,6 +61,9 @@ class DatasetDataClassification(DataClassification):
     dataset = models.OneToOneField(
         Dataset, on_delete=models.CASCADE, related_name="data_classification"
     )
+
+    class Meta:
+        app_label = "dataclassification"
 
 
 def classification_to_string(classification: int) -> str:
