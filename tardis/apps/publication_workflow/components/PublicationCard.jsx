@@ -39,7 +39,7 @@ const PublicationCard = ({
                 <>
                   {data.doi ? (
                     <span className="badge bg-info mr-2">
-                      <a href="https://dx.doi.org/10.1371/journal.pone.0210842" className="card-link" style={{ color: 'Black' }}>{data.doi}</a>
+                      <a href={`https://dx.doi.org/${data.doi}`} target="_blank"  className="card-link" style={{ color: 'Black' }}>{data.doi}</a>
                     </span>
                   ) : <></>}
                   {data.releaseDate ? (
@@ -54,7 +54,7 @@ const PublicationCard = ({
                   {data.doi
                     ? (
                       <span className="badge bg-info mr-2">
-                        <a href="https://dx.doi.org/10.1371/journal.pone.0210842" className="card-link" style={{ color: 'Black' }}>{data.doi}</a>
+                        <a href={`https://dx.doi.org/${data.doi}`} target="_blank" className="card-link" style={{ color: 'Black' }}>{data.doi}</a>
                       </span>
                     ) : <></>
                     }
@@ -68,7 +68,7 @@ const PublicationCard = ({
                 <>
                   {data.doi ? (
                     <span className="badge bg-info mr-2">
-                      <a href="https://dx.doi.org/10.1371/journal.pone.0210842" className="card-link" style={{ color: 'Black' }}>{data.doi}</a>
+                      <a href={`https://dx.doi.org/${data.doi}`} target="_blank" className="card-link" style={{ color: 'Black' }}>{data.doi}</a>
                     </span>
                   ) : <></>}
                   <div>
@@ -88,7 +88,7 @@ const PublicationCard = ({
                 <>
                   {data.doi ? (
                     <span className="badge bg-info me-2">
-                      <a href="https://dx.doi.org/10.1371/journal.pone.0210842" className="card-link" style={{ color: 'Black' }}>{data.doi}</a>
+                      <a href={`https://dx.doi.org/${data.doi}`} target="_blank" className="card-link" style={{ color: 'Black' }}>{data.doi}</a>
                     </span>
                   ) : <></>}
 

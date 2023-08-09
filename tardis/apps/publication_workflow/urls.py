@@ -31,8 +31,8 @@ urlpatterns = [
         name='tardis.apps.publication_workflow.views.delete_publication'),
     re_path(r'^publication/retract/(?P<publication_id>\d+)/$', views.retract_publication,
         name='tardis.apps.publication_workflow.views.retract_publication'),
-    re_path(r'^publication/mint_doi/(?P<experiment_id>\d+)/$', views.mint_doi_and_deactivate,
-         name='tardis.apps.publication_workflow.views.mint_doi_and_deactivate'),
+    re_path(r'^publication/mint_doi/(?P<experiment_id>\d+)/$', views.mint_doi,
+            name='tardis.apps.publication_workflow.views.mint_doi_and_deactivate'),
     re_path(r'^licenses', views.get_licenses,
         name='tardis.apps.publication_workflow.views.get_licenses')
 ]

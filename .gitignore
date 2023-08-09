@@ -30,6 +30,7 @@ parts/
 venv/
 wheelhouse/
 tardis/settings.py
+tardis/settings.yaml
 tardis/tardis_portal/tests/rifcs/MyTARDIS-1.xml
 var/
 versions.cfg

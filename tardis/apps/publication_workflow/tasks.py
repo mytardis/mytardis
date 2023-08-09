@@ -8,7 +8,7 @@ from django.utils import timezone
 from celery import shared_task  # pylint: disable=E0401
 
 from tardis.tardis_portal.models import Experiment, ExperimentParameter
-from .doi import DOI
+from .ardc_doi import ArdcDOI
 from .utils import send_mail_to_authors
 from .email_text import email_pub_released
 from . import default_settings
@@ -61,6 +61,9 @@ def process_embargos():
                          default_settings.PUBLICATION_SCHEMA_ROOT)
     PUB_SCHEMA_DRAFT = getattr(settings, 'PUBLICATION_DRAFT_SCHEMA',
                                default_settings.PUBLICATION_DRAFT_SCHEMA)
+    # get the doi event draft | register | publish
+    doi_event = getattr(settings, 'DOI_EVENT', default_settings.DOI_EVENT)
+
     restricted_publications = Experiment.objects.filter(
         experimentparameterset__schema__namespace=PUB_SCHEMA,
         public_access=Experiment.PUBLIC_ACCESS_EMBARGO) \
@@ -73,8 +76,7 @@ def process_embargos():
         if embargo_expired:
             pub.public_access = Experiment.PUBLIC_ACCESS_FULL
             doi_value = None
-            if getattr(settings, 'MODC_DOI_ENABLED',
-                       default_settings.MODC_DOI_ENABLED):
+            if getattr(settings, 'DOI_MINT_ENABLED', default_settings.DOI_MINT_ENABLED):
                 try:
                     doi_value = ExperimentParameter.objects.get(
                         name__name='doi',
@@ -83,11 +85,9 @@ def process_embargos():
                             'PUBLICATION_DETAILS_SCHEMA',
                             default_settings.PUBLICATION_DETAILS_SCHEMA),
                         parameterset__experiment=pub).string_value
-                    doi = DOI(doi_value)
-                    doi.activate()
-                    logger.info(
-                        "DOI %s for publication id %i is now active." %
-                        (doi.doi, pub.id))
+                    doi = ArdcDOI()
+                    doi.activate(doi_value, event=doi_event)
+                    logger.info("DOI %s for publication id %i is now active." % (doi_value, pub.id))
                 except ExperimentParameter.DoesNotExist:
                     pass
 

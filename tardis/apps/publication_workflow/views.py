@@ -2,33 +2,30 @@
 import json
 import logging
 
-from django.contrib.auth.decorators import login_required
-from django.core.exceptions import ObjectDoesNotExist
-from django.urls import reverse
-from django.db import transaction
-from django.views.decorators.cache import never_cache
-from django.views.decorators.http import require_POST
-from django.http import HttpResponse, HttpResponseForbidden
-from django.http import JsonResponse
-from django.conf import settings
-from django.utils import timezone
-
 # pylint: disable=E0401
 import dateutil.parser
-from requests.exceptions import SSLError
+from django.conf import settings
+from django.contrib.auth.decorators import login_required
+from django.core.exceptions import ObjectDoesNotExist
+from django.db import transaction
+from django.http import JsonResponse
+from django.urls import reverse
+from django.utils import timezone
+from django.views.decorators.cache import never_cache
+from django.views.decorators.http import require_POST
 
+from tardis.apps.publication_workflow.exceptions import DoiException
 from tardis.tardis_portal.auth import decorators as authz
-from tardis.tardis_portal.shortcuts import render_response_index
 from tardis.tardis_portal.models import Experiment, Dataset, \
     Schema, ParameterName, ExperimentParameterSet, ExperimentParameter, \
     ExperimentAuthor, License, Token
-
-from .doi import DOI
+from tardis.tardis_portal.shortcuts import render_response_index
+from . import default_settings
+from . import tasks
+from .ardc_doi import ArdcDOI
+from .email_text import email_pub_released
 from .models import Publication
 from .utils import send_mail_to_authors
-from .email_text import email_pub_released
-from . import tasks
-from . import default_settings
 
 logger = logging.getLogger(__name__)
 
@@ -57,62 +54,74 @@ def validation_error(error=None):
 def process_form(request):
     # Decode the form data
     form_state = json.loads(request.body)
+    form_state_parameter = None
+    publication = None
+    try:
+        # Check if the form data contains a publication ID
+        # If it does, then this publication needs to be updated
+        # rather than created.
+        if 'publicationId' not in form_state:
+            if not form_state['publicationTitle'].strip():
+                return validation_error()
+            # create a draft
+            publication = Publication.safe.create_draft_publication(request.user,
+                                                                    form_state['publicationTitle'],
+                                                                    form_state['publicationDescription'])
+            # set the publication id
+            form_state['publicationId'] = publication.id
+        else:
+            publication = get_draft_publication(request.user, form_state['publicationId'])
+            # Check if the publication is finalised (i.e. not in draft)
+            # if it is, then refuse to process the form.
+            if publication is None or not publication.is_publication_draft():
+                raise DoiException('Action forbidden, publication is None or publication is not a draft')
 
-    # Check if the form data contains a publication ID
-    # If it does, then this publication needs to be updated
-    # rather than created.
-    if 'publicationId' not in form_state:
-        if not form_state['publicationTitle'].strip():
-            return validation_error()
-        publication = Publication.safe.create_draft_publication(
-            request.user, form_state['publicationTitle'],
-            form_state['publicationDescription'])
-        form_state['publicationId'] = publication.id
-    else:
-        publication = get_draft_publication(
-            request.user, form_state['publicationId'])
-        # Check if the publication is finalised (i.e. not in draft)
-        # if it is, then refuse to process the form.
-        if publication is None or not publication.is_publication_draft():
-            return HttpResponseForbidden()
+        # Get the form state database object - ExperimentParameter
+        form_state_parameter = publication.get_form_state_parameter()
 
-    # Get the form state database object
-    form_state_parameter = publication.get_form_state_parameter()
+        # Check if the form state needs to be loaded (i.e. a publication draft
+        # is resumed)
+        # no database changes are made if the form is resumed
+        if form_state['action'] == 'resume':
+            # load experiment parameter's string value.
+            form_state = json.loads(form_state_parameter.string_value)
+            return JsonResponse(form_state)
+        if form_state['action'] == 'update-dataset-selection':
+            update_dataset_basic_info(request, form_state, publication)
+        elif form_state['action'] == 'update-extra-info':
+            update_extra_info(request, form_state, publication)
+        elif form_state['action'] == 'update-attribution-and-licensing':
+            update_attribution_and_licensing(request, form_state, publication)
+        elif form_state['action'] == 'submit':
+            # mint the doi
+            doi = submit_form(request, form_state, publication)
+            # return the doi value.
+            return JsonResponse({'success': True, 'doi': doi})
 
-    # Check if the form state needs to be loaded (i.e. a publication draft
-    # is resumed)
-    # no database changes are made if the form is resumed
-    if form_state['action'] == 'resume':
-        form_state = json.loads(form_state_parameter.string_value)
-        return JsonResponse(form_state)
+        # form post process to clear the form action and save the state
+        __post_form_process(request, form_state_parameter, form_state, publication)
+    except Exception as ex:
+        if form_state_parameter and publication:
+            # handle any unsaved data
+            __post_form_process(request, form_state_parameter, form_state, publication)
+        # return the error response
+        error_dict = {'error': '{}'.format(ex)}
+        return JsonResponse(error_dict, status=400)
+    # return the form state data
+    return JsonResponse(form_state)
 
-    if form_state['action'] == 'update-dataset-selection':
-        response = update_dataset_basic_info(request, form_state, publication)
-        # trigger only if an error occurred
-        if response:
-            return response
-    elif form_state['action'] == 'update-extra-info':
-        update_extra_info(request, form_state, publication)
-    elif form_state['action'] == 'update-attribution-and-licensing':
-        update_attribution_and_licensing(request, form_state, publication)
-    elif form_state['action'] == 'submit':
-        response = submit_form(request, form_state, publication)
-        # trigger only if an error occurred
-        if response:
-            return response
 
-    # Clear the form action and save the state
+def __post_form_process(request, experiment_parameter, form_state, publication):
+    # to clear the form action and save the state
     form_state['action'] = ''
-    form_state_parameter.string_value = json.dumps(form_state)
-    form_state_parameter.save()
+    experiment_parameter.string_value = json.dumps(form_state)
+    experiment_parameter.save()
 
     # Set the authors even if the form hasn't been submitted yet,
     # because we want to be able to mint DOIs for draft publications
     # so they need to have at least one author:
     set_publication_authors(form_state['authors'], publication)
     update_data_selection(request, form_state, publication)
-
-    return JsonResponse(form_state)
 
 
 def update_dataset_basic_info(request, form_state, publication):
@@ -128,9 +137,7 @@ def update_dataset_basic_info(request, form_state, publication):
     if publication.description != form_state['publicationDescription']:
         publication.description = form_state['publicationDescription']
         publication.save()
-
     # No need to return an HttpResponse yet, continue processing form:
-    return None
 
 
 def update_data_selection(request, form_state, publication):
@@ -247,13 +254,9 @@ def submit_form(request, form_state, publication):
         return validation_error('You must confirm that you are '
                                 'authorised to submit this publication')
 
-    # Remove the draft status
-    publication.remove_draft_status()
-
-    finalize_publication(request, publication, send_email=False)
-    form_state['action'] = ''
-    # return JsonResponse(form_state)
-    return None
+    # Remove the draft status, it should be inside finalize_publication method as transaction.
+    # publication.remove_draft_status()
+    return finalize_publication(request, publication, send_email=False)
 
 
 def map_form_to_schemas(extraInfo, publication):
@@ -397,85 +400,123 @@ def fetch_experiments_and_datasets(request):
 
 @transaction.atomic
 def finalize_publication(request, publication, send_email=True):
+    # remove the draft status first
+    publication.remove_draft_status()
+
     if publication.is_publication() and not publication.is_publication_draft() \
             and publication.public_access == Experiment.PUBLIC_ACCESS_NONE:
         # Change the access level
-        if timezone.now() >= tasks.get_release_date(publication):
+        release_date = tasks.get_release_date(publication)
+        if timezone.now() >= release_date:
             publication.public_access = Experiment.PUBLIC_ACCESS_FULL
         else:
             publication.public_access = Experiment.PUBLIC_ACCESS_EMBARGO
+        # save the publication
         publication.save()
-
-        response = mint_doi_and_deactivate(request, publication.id)
-        if response.status_code == 200:
-            response_dict = json.loads(response.content)
-
-            if send_email:
-                subject, email_message = email_pub_released(
-                    publication.title, response_dict['doi'])
-                send_mail_to_authors(publication, subject, email_message)
-
-        # Trigger publication update
+        # do doi minting.
+        doi_value = __mint_doi(request, publication.id)
+        # send an email
+        if send_email:
+            subject, email_message = email_pub_released(publication.title, doi_value)
+            send_mail_to_authors(publication, subject, email_message)
+        # Trigger publication update celery task
         tasks.update_publication_records.apply_async()
+        # return the doi value.
+        return doi_value
+    return None
 
-        return True
 
-    return False
+def __mint_doi(request, experiment_id):
+    url = request.build_absolute_uri(reverse('tardis_portal.view_experiment', args=(experiment_id,)))
+
+    doi_mint_enabled = getattr(settings, 'DOI_MINT_ENABLED', default_settings.DOI_MINT_ENABLED)
+    doi_event = getattr(settings, 'DOI_EVENT', default_settings.DOI_EVENT)
+    if doi_mint_enabled:
+        pub_details_schema = Publication.get_details_schema()
+        try:
+            pub_details_parameter_set = Publication.objects.get(id=experiment_id).get_details_schema_pset()
+            doi_parameter_name = ParameterName.objects.get(schema=pub_details_schema, name='doi')
+            # instantiated doi client.
+            doi = ArdcDOI()
+            # call ARDC api to mint a doi
+            doi_value = doi.mint(experiment_id, doi_event)
+            exp_param = ExperimentParameter(name=doi_parameter_name,
+                                            parameterset=pub_details_parameter_set,
+                                            string_value=doi_value)
+            exp_param.save()
+            logger.info("DOI %s minted for publication ID %s" % (doi_value, experiment_id))
+            return doi_value
+        except Exception as err:
+            err_msg = '{}'.format(err)
+            raise DoiException(err_msg)
+    else:
+        msg = "Can't mint DOI, because DOI_MINT_ENABLED is False."
+        logger.error(msg)
+        raise DoiException(msg)
 
 
 @login_required
-def mint_doi_and_deactivate(request, experiment_id):
-    doi = None
-    url = request.build_absolute_uri(
-        reverse('tardis_portal.view_experiment',
-                args=(experiment_id,)))
-    if getattr(settings, 'MODC_DOI_ENABLED',
-               default_settings.MODC_DOI_ENABLED):
-        try:
-            pub_details_schema = Publication.get_details_schema()
-            pub_details_parameter_set = \
-                Publication.objects.get(id=experiment_id).get_details_schema_pset()
+def mint_doi(request, experiment_id):
+    url = request.build_absolute_uri(reverse('tardis_portal.view_experiment', args=(experiment_id,)))
+    try:
+        doi = __mint_doi(request, experiment_id)
+        return JsonResponse(dict(doi=doi, url=url, message='doi minting success'))
+    except DoiException as ex:
+        return JsonResponse(dict(doi=None, url=url, message='{}'.format(ex)), status=400)
 
-            doi = DOI()
-            doi_parameter_name = ParameterName.objects.get(
-                schema=pub_details_schema, name='doi')
-            try:
-                ExperimentParameter(
-                    name=doi_parameter_name,
-                    parameterset=pub_details_parameter_set,
-                    string_value=doi.mint(
-                        experiment_id,
-                        reverse(
-                            'tardis_portal.view_experiment',
-                            args=(experiment_id,)))
-                ).save()
-                logger.info(
-                    "DOI %s minted for publication ID %s" %
-                    (doi.doi, experiment_id))
-                doi.deactivate()
-                logger.info(
-                    "DOI %s deactivated, pending publication release criteria" %
-                    doi.doi)
-                return JsonResponse(dict(doi=doi.doi, url=url))
-            except SSLError:
-                # FIXME: Give the user some feedback here:
-                logger.error("SSL error occurred while attempting to mint DOI")
-                return JsonResponse(dict(doi=None, url=url))
-        except ObjectDoesNotExist as err:
-            if isinstance(err, ParameterName.DoesNotExist):
-                logger.error(
-                    "Could not find the DOI parameter name "
-                    "(check schema definitions)")
-                raise
-            if isinstance(err, ExperimentParameterSet.DoesNotExist):
-                logger.error(
-                    "Could not find the publication details parameter set")
-                raise
-            return JsonResponse(dict(doi=None, url=url))
-    else:
-        msg = "Can't mint DOI, because MODC_DOI_ENABLED is False."
-        logger.error(msg)
-        return HttpResponse(msg, status=500)
+
+# def mint_doi_and_deactivate(request, experiment_id):
+#     doi = None
+#     url = request.build_absolute_uri(
+#         reverse('tardis_portal.view_experiment',
+#                 args=(experiment_id,)))
+#     if getattr(settings, 'MODC_DOI_ENABLED',
+#                default_settings.MODC_DOI_ENABLED):
+#         try:
+#             pub_details_schema = Publication.get_details_schema()
+#             pub_details_parameter_set = \
+#                 Publication.objects.get(id=experiment_id).get_details_schema_pset()
+#
+#             doi = DOI()
+#             doi_parameter_name = ParameterName.objects.get(
+#                 schema=pub_details_schema, name='doi')
+#             try:
+#                 ExperimentParameter(
+#                     name=doi_parameter_name,
+#                     parameterset=pub_details_parameter_set,
+#                     string_value=doi.mint(
+#                         experiment_id,
+#                         reverse(
+#                             'tardis_portal.view_experiment',
+#                             args=(experiment_id,)))
+#                 ).save()
+#                 logger.info(
+#                     "DOI %s minted for publication ID %s" %
+#                     (doi.doi, experiment_id))
+#                 doi.deactivate()
+#                 logger.info(
+#                     "DOI %s deactivated, pending publication release criteria" %
+#                     doi.doi)
+#                 return JsonResponse(dict(doi=doi.doi, url=url))
+#             except SSLError:
+#                 # FIXME: Give the user some feedback here:
+#                 logger.error("SSL error occurred while attempting to mint DOI")
+#                 return JsonResponse(dict(doi=None, url=url))
+#         except ObjectDoesNotExist as err:
+#             if isinstance(err, ParameterName.DoesNotExist):
+#                 logger.error(
+#                     "Could not find the DOI parameter name "
+#                     "(check schema definitions)")
+#                 raise
+#             if isinstance(err, ExperimentParameterSet.DoesNotExist):
+#                 logger.error(
+#                     "Could not find the publication details parameter set")
+#                 raise
+#             return JsonResponse(dict(doi=None, url=url))
+#     else:
+#         msg = "Can't mint DOI, because MODC_DOI_ENABLED is False."
+#         logger.error(msg)
+#         return HttpResponse(msg, status=500)
 
 
 @login_required

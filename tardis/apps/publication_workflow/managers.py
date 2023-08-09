@@ -9,6 +9,7 @@ class PublicationManager(ExperimentManager):
     Extends the ExperimentManager class, added methods for
     draft, scheduled and published publications.
     """
+
     def draft_publications(self, user):
         """
         Return all draft publications which are owned by a particular user,
@@ -195,20 +196,20 @@ class PublicationManager(ExperimentManager):
         draft_publication_schema = Schema.objects.get(
             namespace=getattr(settings, 'PUBLICATION_DRAFT_SCHEMA',
                               default_settings.PUBLICATION_DRAFT_SCHEMA))
-        ExperimentParameterSet(schema=draft_publication_schema,
-                               experiment=publication).save()
-
+        # create publication draft schema based ExperimentParameterSet
+        draft_ep_set = ExperimentParameterSet(schema=draft_publication_schema, experiment=publication)
+        draft_ep_set.save()
         # Attach root schema and blank form_state parameter
         publication_root_schema = Schema.objects.get(
             namespace=getattr(settings, 'PUBLICATION_SCHEMA_ROOT',
                               default_settings.PUBLICATION_SCHEMA_ROOT))
-        publication_root_parameter_set = ExperimentParameterSet(
-            schema=publication_schema,
-            experiment=publication)
+
+        # create publication root schema based ExperimentParameterSet
+        publication_root_parameter_set = ExperimentParameterSet(schema=publication_schema, experiment=publication)
         publication_root_parameter_set.save()
         form_state_param_name = ParameterName.objects.get(
             schema=publication_root_schema, name='form_state')
-        ExperimentParameter(name=form_state_param_name,
-                            parameterset=publication_root_parameter_set).save()
-
+        # save experiment parameter
+        ep = ExperimentParameter(name=form_state_param_name, parameterset=publication_root_parameter_set)
+        ep.save()
         return publication

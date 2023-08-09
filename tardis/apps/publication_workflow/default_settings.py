@@ -51,15 +51,29 @@ GENERIC_PUBLICATION_DATASET_SCHEMA = PUBLICATION_SCHEMA_ROOT + 'generic/'
 
 # Put your API_ID for the Monash DOI minting service here. For other DOI
 # minting, please contact the developers
-MODC_DOI_ENABLED = False  # Change me to true if you use this service
-MODC_DOI_API_ID = ''
-MODC_DOI_API_PASSWORD = ''
-MODC_DOI_MINT_DEFINITION = 'https://doiserver/modc/ws/MintDoiService.wsdl'
-MODC_DOI_ACTIVATE_DEFINITION = 'https://doiserver/modc/ws/' \
-                               'ActivateDoiService.wsdl'
-MODC_DOI_DEACTIVATE_DEFINITION = 'https://doiserver/modc/ws/' \
-                                 'DeactivateDoiService.wsdl'
-MODC_DOI_MINT_URL_ROOT = 'http://mytardisserver/'
+####  old setting for doi minting, not required anymore
+# MODC_DOI_ENABLED = False  # Change me to true if you use this service
+# MODC_DOI_API_ID = ''
+# MODC_DOI_API_PASSWORD = ''
+# MODC_DOI_MINT_DEFINITION = 'https://doiserver/modc/ws/MintDoiService.wsdl'
+# MODC_DOI_ACTIVATE_DEFINITION = 'https://doiserver/modc/ws/' \
+#                                'ActivateDoiService.wsdl'
+# MODC_DOI_DEACTIVATE_DEFINITION = 'https://doiserver/modc/ws/' \
+#                                  'DeactivateDoiService.wsdl'
+# MODC_DOI_MINT_URL_ROOT = 'http://mytardisserver'
+
+
+### Using the following ARDC DOI settings
+### ARDC datacite settings:
+DOI_MINT_ENABLED = True
+DOI_ENDPOINT = 'https://ardc_doi_mint_url'
+DOI_PREFIX = 'doi_prefix_here'
+# DOI events: draft | register | publish
+DOI_EVENT = 'draft'
+DOI_USERNAME = 'user_name'
+DOI_PASSWORD = 'password'
+DOI_PUBLISHER = 'publisher name'
+DOI_MINT_ROOT_URL = 'http://mytardisserver'
 
 # A dictionary of length=2 tuples, where the first entry is the email
 # subject line, and the second is the message text
@@ -88,7 +102,7 @@ Your publication, "{pub_title}", is now public!
 You may view your publication here: http://dx.doi.org/{doi}
 '''),
     'retracted': ('[TARDIS] Publication retracted',
-                          '''\
+                  '''\
 Hello!
 Your publication, "{pub_title}", has been retracted and is no longer public.
 ''')
