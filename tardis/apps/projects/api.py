@@ -33,7 +33,6 @@ from tastypie.utils import trailing_slash
 # Data classification app
 from tardis.apps.dataclassification.models import (
     DATA_CLASSIFICATION_SENSITIVE,
-    ProjectDataClassification,
     classification_to_string,
 )
 from tardis.apps.identifiers.enumerators import IdentifierObjects
@@ -278,7 +277,7 @@ class ProjectACLAuthorization(Authorization):
     reducing verboseness of the class and removing this specific project ACLAuth class.
     """
 
-    def read_list(self, object_list, bundle):  # noqa # too complex
+    def read_list(self, object_list, bundle: Bundle):  # noqa # too complex
         if bundle.request.user.is_authenticated and bundle.request.user.is_superuser:
             return object_list
         if isinstance(bundle.obj, Project):
@@ -322,7 +321,7 @@ class ProjectACLAuthorization(Authorization):
             return query
         return []
 
-    def read_detail(self, object_list, bundle):  # noqa # too complex
+    def read_detail(self, object_list, bundle: Bundle):  # noqa # too complex
         if bundle.request.user.is_authenticated and bundle.request.user.is_superuser:
             return True
         if isinstance(bundle.obj, Project):
@@ -547,7 +546,7 @@ class ProjectResource(ModelResource):
         ordering = ["id", "name", "url", "start_time", "end_time"]
         always_return_data = True
 
-    def dehydrate(self, bundle):
+    def dehydrate(self, bundle: Bundle):
         from tardis.tardis_portal.models import Experiment
 
         project = bundle.obj
@@ -600,7 +599,8 @@ class ProjectResource(ModelResource):
         ]
 
     def __clean_bundle_of_identifiers(
-        self, bundle
+        self,
+        bundle: Bundle,
     ) -> Tuple[Bundle, Optional[List[str]]]:
         """If the bundle has identifiers in it, clean these out prior to
         creating the project.
@@ -622,7 +622,8 @@ class ProjectResource(ModelResource):
         return (bundle, identifiers)
 
     def __clean_bundle_of_data_classification(
-        self, bundle
+        self,
+        bundle: Bundle,
     ) -> Tuple[Bundle, Optional[int]]:
         """If the bundle has data_classification in it, clean it out.
 
@@ -670,9 +671,8 @@ class ProjectResource(ModelResource):
             classification (int): The iteger representaion of the data classification
         """
         project = bundle.obj
-        ProjectDataClassification.objects.create(
-            project=project, classification=classification
-        )
+        project.data_classification.classification = classification
+        return project
 
     def hydrate_m2m(self, bundle):
         """
@@ -717,7 +717,7 @@ class ProjectResource(ModelResource):
                     acl.save()
         return super().hydrate_m2m(bundle)
 
-    def obj_create(self, bundle, **kwargs):
+    def obj_create(self, bundle: Bundle, **kwargs):
         """Currently not tested for failed db transactions as sqlite does not
         enforce limits.
         """
@@ -737,7 +737,7 @@ class ProjectResource(ModelResource):
             if identifiers:
                 self.__create_identifiers(bundle, identifiers)
             if classification:
-                self.__create_data_classification(bundle, classification)
+                bundle = self.__create_data_classification(bundle, classification)
             if bundle.data.get("users", False):
                 for entry in bundle.data["users"]:
                     username, isOwner, canDownload, canSensitive = entry
