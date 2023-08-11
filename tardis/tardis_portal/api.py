@@ -1135,6 +1135,7 @@ class ExperimentResource(MyTardisModelResource):
             # Clean up bundle to remove Data Classification if the app is enabled
             if AppList.DATA_CLASSIFICATION.value in settings.INSTALLED_APPS:
                 classification = bundle.data.pop("classification", None)
+            print(bundle.data)
             bundle = super().obj_create(bundle, **kwargs)
             # After the obj has been created
             experiment = bundle.obj
@@ -1153,7 +1154,8 @@ class ExperimentResource(MyTardisModelResource):
                 # - An inherited classification which is the most secure of the
                 # parent projects
                 # - Sensitive if neither of the previous apply
-                experiment.data_classification.classification = classification
+                if classification:
+                    experiment.data_classification.classification = classification
             if bundle.data.get("users", False):
                 for entry in bundle.data["users"]:
                     username, isOwner, canDownload, canSensitive = entry
