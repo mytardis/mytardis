@@ -151,7 +151,9 @@ def get_classification_from_parents(obj: Experiment | Dataset) -> int:
     parents = (
         obj.projects.all() if isinstance(obj, Experiment) else obj.experiments.all()
     )
-    classifications = [parent.data_classification.classification for parent in parents]
-    if classifications:
-        return min(classifications)
+    if parents:
+        if classifications := [
+            parent.data_classification.classification for parent in parents
+        ]:
+            return min(classifications)
     return DATA_CLASSIFICATION_SENSITIVE
