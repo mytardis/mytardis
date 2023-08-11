@@ -74,6 +74,7 @@ class ExperimentResourceTest(MyTardisResourceTestCase):
                 },
             ],
             "title": "testing parset creation2",
+            "classification": 25,
         }
         experiment_count = Experiment.objects.count()
         parameterset_count = ExperimentParameterSet.objects.count()
