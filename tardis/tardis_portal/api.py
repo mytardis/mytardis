@@ -1131,11 +1131,11 @@ class ExperimentResource(MyTardisModelResource):
                 and "experiment" in settings.OBJECTS_WITH_IDENTIFIERS
             ):
                 identifiers = bundle.data.pop("identifiers", None)
-
-            # Clean up bundle to remove Data Classification if the app is enabled
-            if AppList.DATA_CLASSIFICATION.value in settings.INSTALLED_APPS:
-                classification = bundle.data.pop("classification", None)
-            print(bundle.data)
+            # Clean up bundle to remove data classification if the app is being used
+            if "tardis.apps.data_classification" in settings.INSTALLED_APPS:
+                classification = None
+                if "classification" in bundle.data.keys():
+                    classification = bundle.data.pop("classification")
             bundle = super().obj_create(bundle, **kwargs)
             # After the obj has been created
             experiment = bundle.obj
@@ -1149,7 +1149,7 @@ class ExperimentResource(MyTardisModelResource):
                         identifier=str(identifier),
                     )
             if (
-                AppList.DATA_CLASSIFICATION.value in settings.INSTALLED_APPS
+                "tardis.apps.data_classification" in settings.INSTALLED_APPS
                 and classification
             ):
                 experiment.data_classification.classification = classification
