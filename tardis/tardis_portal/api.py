@@ -1148,14 +1148,12 @@ class ExperimentResource(MyTardisModelResource):
                         experiment=experiment,
                         identifier=str(identifier),
                     )
-            if AppList.DATA_CLASSIFICATION.value in settings.INSTALLED_APPS:
-                # At this point the classification should be one of:
-                # - an explicit classification as defined in the input bundle
-                # - An inherited classification which is the most secure of the
-                # parent projects
-                # - Sensitive if neither of the previous apply
-                if classification:
-                    experiment.data_classification.classification = classification
+            if (
+                AppList.DATA_CLASSIFICATION.value in settings.INSTALLED_APPS
+                and classification
+            ):
+                experiment.data_classification.classification = classification
+            print(experiment.data_classification.classification)
             if bundle.data.get("users", False):
                 for entry in bundle.data["users"]:
                     username, isOwner, canDownload, canSensitive = entry
