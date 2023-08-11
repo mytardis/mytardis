@@ -148,6 +148,8 @@ def get_classification_from_parents(obj: Experiment | Dataset) -> int:
     Returns:
         int: the data classification of the parent class or the most restrictive if multiple parents exist
     """
-    parents = obj.projects if isinstance(obj, Experiment) else obj.experiments
+    parents = (
+        obj.projects.all() if isinstance(obj, Experiment) else obj.experiments.all()
+    )
     classifications = [parent.data_classification.classification for parent in parents]
     return min(classifications)
