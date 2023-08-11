@@ -663,7 +663,7 @@ class ProjectResource(ModelResource):
         self,
         bundle: Bundle,
         classification: int,
-    ) -> None:
+    ) -> Bundle:
         """Create the data classification model.
 
         Args:

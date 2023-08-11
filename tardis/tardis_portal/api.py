@@ -1153,7 +1153,6 @@ class ExperimentResource(MyTardisModelResource):
                 and classification
             ):
                 experiment.data_classification.classification = classification
-            print(experiment.data_classification.classification)
             if bundle.data.get("users", False):
                 for entry in bundle.data["users"]:
                     username, isOwner, canDownload, canSensitive = entry

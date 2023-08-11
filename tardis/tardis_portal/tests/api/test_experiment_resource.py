@@ -11,6 +11,8 @@ from unittest import skipIf
 from django.conf import settings
 from django.contrib.auth.models import User
 
+from tardis.apps.dataclassification.models import classification_to_string
+
 from ...models.access_control import DatafileACL, DatasetACL, ExperimentACL
 from ...models.datafile import DataFile
 from ...models.dataset import Dataset
@@ -127,6 +129,7 @@ class ExperimentResourceTest(MyTardisResourceTestCase):
             "/api/v1/experiment/%d/" % exp_id, authentication=self.get_credentials()
         )
         returned_data = json.loads(output.content.decode())
+        print(returned_data)
         for key, value in expected_output.items():
             self.assertTrue(key in returned_data)
             if not key.endswith("_time"):
