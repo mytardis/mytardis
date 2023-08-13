@@ -1,3 +1,5 @@
+from pprint import pprint
+
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
@@ -151,9 +153,11 @@ def get_classification_from_parents(obj: Experiment | Dataset) -> int:
     parents = (
         obj.projects.all() if isinstance(obj, Experiment) else obj.experiments.all()
     )
+    pprint(parents)
     if parents:
         if classifications := [
             parent.data_classification.classification for parent in parents
         ]:
+            pprint(classifications)
             return min(classifications)
     return DATA_CLASSIFICATION_SENSITIVE
