@@ -1125,6 +1125,7 @@ class ExperimentResource(MyTardisModelResource):
         Currently not tested for failed db transactions as sqlite does not
         enforce limits.
         """
+        pprint("In obj_create")
         user = bundle.request.user
         pprint(bundle.data)
         pprint(settings.INSTALLED_APPS)
@@ -1140,10 +1141,9 @@ class ExperimentResource(MyTardisModelResource):
                 identifiers = bundle.data.pop("identifiers", None)
             # Clean up bundle to remove data classification if the app is being used
             if "tardis.apps.dataclassification" in settings.INSTALLED_APPS:
-                classification = None
+                pprint("cleaning classification")
                 if "classification" in bundle.data.keys():
                     classification = bundle.data.pop("classification")
-            pprint("In obj_create")
             pprint(bundle.data)
             pprint(classification)
             bundle = super().obj_create(bundle, **kwargs)
@@ -1166,6 +1166,7 @@ class ExperimentResource(MyTardisModelResource):
                 pprint("Here trying to change the classification")
                 experiment.data_classification.classification = classification
             if "tardis.apps.dataclassification" in settings.INSTALLED_APPS:
+                pprint("Current classification")
                 pprint(experiment.data_classification.classification)
             if bundle.data.get("users", False):
                 for entry in bundle.data["users"]:
