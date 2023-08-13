@@ -1127,6 +1127,7 @@ class ExperimentResource(MyTardisModelResource):
         """
         user = bundle.request.user
         pprint(bundle.data)
+        pprint(settings.INSTALLED_APPS)
         bundle.data["created_by"] = user
         identifiers = None
         classification = None
