@@ -1138,7 +1138,7 @@ class ExperimentResource(MyTardisModelResource):
             ):
                 identifiers = bundle.data.pop("identifiers", None)
             # Clean up bundle to remove data classification if the app is being used
-            if "tardis.apps.data_classification" in settings.INSTALLED_APPS:
+            if "tardis.apps.dataclassification" in settings.INSTALLED_APPS:
                 classification = None
                 if "classification" in bundle.data.keys():
                     classification = bundle.data.pop("classification")
@@ -1159,11 +1159,13 @@ class ExperimentResource(MyTardisModelResource):
                         identifier=str(identifier),
                     )
             if (
-                "tardis.apps.data_classification" in settings.INSTALLED_APPS
+                "tardis.apps.dataclassification" in settings.INSTALLED_APPS
                 and classification
             ):
                 pprint("Here trying to change the classification")
                 experiment.data_classification.classification = classification
+            if "tardis.apps.dataclassification" in settings.INSTALLED_APPS:
+                pprint(experiment.data_classification.classification)
             if bundle.data.get("users", False):
                 for entry in bundle.data["users"]:
                     username, isOwner, canDownload, canSensitive = entry
