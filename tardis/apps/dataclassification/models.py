@@ -155,6 +155,7 @@ def get_classification_from_parents(obj: Experiment | Dataset) -> int:
     )
     pprint(parents)
     if parents:
+        pprint("here")
         if classifications := [
             parent.data_classification.classification for parent in parents
         ]:
