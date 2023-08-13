@@ -1142,7 +1142,11 @@ class ExperimentResource(MyTardisModelResource):
                 classification = None
                 if "classification" in bundle.data.keys():
                     classification = bundle.data.pop("classification")
+            pprint("In obj_create")
+            pprint(bundle.data)
+            pprint(classification)
             bundle = super().obj_create(bundle, **kwargs)
+            pprint(bundle.obj)
             # After the obj has been created
             experiment = bundle.obj
             if (
@@ -1158,6 +1162,7 @@ class ExperimentResource(MyTardisModelResource):
                 "tardis.apps.data_classification" in settings.INSTALLED_APPS
                 and classification
             ):
+                pprint("Here trying to change the classification")
                 experiment.data_classification.classification = classification
             if bundle.data.get("users", False):
                 for entry in bundle.data["users"]:
