@@ -9,9 +9,9 @@ Implemented with Tastypie.
 
 import contextlib
 import json
-import pprint
 import re
 from itertools import chain
+from pprint import pprint
 from typing import Optional
 from urllib.parse import quote
 from wsgiref.util import FileWrapper
