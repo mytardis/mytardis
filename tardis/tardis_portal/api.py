@@ -1126,113 +1126,112 @@ class ExperimentResource(MyTardisModelResource):
         enforce limits.
         """
         pprint("In obj_create")
+        pprint(kwargs)
         user = bundle.request.user
         pprint(bundle.data)
         pprint(settings.INSTALLED_APPS)
         bundle.data["created_by"] = user
         identifiers = None
         classification = None
-        with transaction.atomic():
-            # Clean up bundle to remove PIDS if the identifiers app is being used.
-            if (
-                "tardis.apps.identifiers" in settings.INSTALLED_APPS
-                and "experiment" in settings.OBJECTS_WITH_IDENTIFIERS
-            ):
-                identifiers = bundle.data.pop("identifiers", None)
-            # Clean up bundle to remove data classification if the app is being used
-            if "tardis.apps.dataclassification" in settings.INSTALLED_APPS:
-                pprint("cleaning classification")
-                if "classification" in bundle.data.keys():
-                    classification = bundle.data.pop("classification")
-            pprint(bundle.data)
-            pprint(classification)
-            pprint("creating bundle")
-            bundle = super().obj_create(bundle, **kwargs)
-            pprint("bundle created")
-            pprint(bundle.obj)
-            # After the obj has been created
-            pprint("tardis.apps.dataclassification" in settings.INSTALLED_APPS)
-            if "tardis.apps.dataclassification" in settings.INSTALLED_APPS:
-                pprint("Current classification")
-                pprint(bundle.obj.data_classification.classification)
-            experiment = bundle.obj
-            if (
-                "tardis.apps.identifiers" in settings.INSTALLED_APPS
-                and "experiment" in settings.OBJECTS_WITH_IDENTIFIERS
-            ) and identifiers:
-                for identifier in identifiers:
-                    ExperimentID.objects.create(
-                        experiment=experiment,
-                        identifier=str(identifier),
-                    )
-            if (
-                "tardis.apps.dataclassification" in settings.INSTALLED_APPS
-                and classification
-            ):
-                pprint("Here trying to change the classification")
-                experiment.data_classification.classification = classification
+        # with transaction.atomic():
+        # Clean up bundle to remove PIDS if the identifiers app is being used.
+        if (
+            "tardis.apps.identifiers" in settings.INSTALLED_APPS
+            and "experiment" in settings.OBJECTS_WITH_IDENTIFIERS
+        ):
+            identifiers = bundle.data.pop("identifiers", None)
+        # Clean up bundle to remove data classification if the app is being used
+        if "tardis.apps.dataclassification" in settings.INSTALLED_APPS:
+            pprint("cleaning classification")
+            if "classification" in bundle.data.keys():
+                classification = bundle.data.pop("classification")
+        pprint(bundle.data)
+        pprint(classification)
+        pprint("creating bundle")
+        bundle = super().obj_create(bundle, **kwargs)
+        pprint("bundle created")
+        pprint(bundle.obj)
+        # After the obj has been created
+        pprint("tardis.apps.dataclassification" in settings.INSTALLED_APPS)
+        if "tardis.apps.dataclassification" in settings.INSTALLED_APPS:
+            pprint("Current classification")
+            pprint(bundle.obj.data_classification.classification)
+        experiment = bundle.obj
+        if (
+            "tardis.apps.identifiers" in settings.INSTALLED_APPS
+            and "experiment" in settings.OBJECTS_WITH_IDENTIFIERS
+        ) and identifiers:
+            for identifier in identifiers:
+                ExperimentID.objects.create(
+                    experiment=experiment,
+                    identifier=str(identifier),
+                )
+        if (
+            "tardis.apps.dataclassification" in settings.INSTALLED_APPS
+            and classification
+        ):
+            pprint("Here trying to change the classification")
+            experiment.data_classification.classification = classification
 
-            if bundle.data.get("users", False):
-                for entry in bundle.data["users"]:
-                    username, isOwner, canDownload, canSensitive = entry
-                    acl_user = User.objects.get(username=username)
-                    if acl_user:
-                        ExperimentACL.objects.create(
-                            experiment=experiment,
-                            user=acl_user,
-                            canRead=True,
-                            canDownload=canDownload,
-                            canSensitive=canSensitive,
-                            isOwner=isOwner,
-                        )
-
-                    if not any(
-                        acl_user.has_perm("tardis_acls.view_project", parent)
-                        for parent in experiment.projects.all()
-                    ):
-                        for parent in experiment.projects.all():
-                            from tardis.apps.projects.models import ProjectACL
-
-                            ProjectACL.objects.create(
-                                project=parent,
-                                user=acl_user,
-                                canRead=True,
-                                aclOwnershipType=ProjectACL.OWNER_OWNED,
-                            )
-
-            if bundle.data.get("groups", False):
-                for entry in bundle.data["groups"]:
-                    groupname, isOwner, canDownload, canSensitive = entry
-                    acl_group, _ = Group.objects.get_or_create(name=groupname)
+        if bundle.data.get("users", False):
+            for entry in bundle.data["users"]:
+                username, isOwner, canDownload, canSensitive = entry
+                acl_user = User.objects.get(username=username)
+                if acl_user:
                     ExperimentACL.objects.create(
                         experiment=experiment,
-                        group=acl_group,
+                        user=acl_user,
                         canRead=True,
                         canDownload=canDownload,
                         canSensitive=canSensitive,
                         isOwner=isOwner,
                     )
-            if not any(
-                [bundle.data.get("users", False), bundle.data.get("groups", False)]
-            ):
-                for parent in experiment.projects.all():
-                    for parent_acl in parent.projectacl_set.all():
-                        ExperimentACL.objects.create(
-                            experiment=experiment,
-                            user=parent_acl.user,
-                            group=parent_acl.group,
-                            token=parent_acl.token,
-                            canRead=parent_acl.canRead,
-                            canDownload=parent_acl.canDownload,
-                            canWrite=parent_acl.canWrite,
-                            canSensitive=parent_acl.canSensitive,
-                            canDelete=parent_acl.canDelete,
-                            isOwner=parent_acl.isOwner,
-                            effectiveDate=parent_acl.effectiveDate,
-                            expiryDate=parent_acl.expiryDate,
-                            aclOwnershipType=parent_acl.aclOwnershipType,
+
+                if not any(
+                    acl_user.has_perm("tardis_acls.view_project", parent)
+                    for parent in experiment.projects.all()
+                ):
+                    for parent in experiment.projects.all():
+                        from tardis.apps.projects.models import ProjectACL
+
+                        ProjectACL.objects.create(
+                            project=parent,
+                            user=acl_user,
+                            canRead=True,
+                            aclOwnershipType=ProjectACL.OWNER_OWNED,
                         )
-            return bundle
+
+        if bundle.data.get("groups", False):
+            for entry in bundle.data["groups"]:
+                groupname, isOwner, canDownload, canSensitive = entry
+                acl_group, _ = Group.objects.get_or_create(name=groupname)
+                ExperimentACL.objects.create(
+                    experiment=experiment,
+                    group=acl_group,
+                    canRead=True,
+                    canDownload=canDownload,
+                    canSensitive=canSensitive,
+                    isOwner=isOwner,
+                )
+        if not any([bundle.data.get("users", False), bundle.data.get("groups", False)]):
+            for parent in experiment.projects.all():
+                for parent_acl in parent.projectacl_set.all():
+                    ExperimentACL.objects.create(
+                        experiment=experiment,
+                        user=parent_acl.user,
+                        group=parent_acl.group,
+                        token=parent_acl.token,
+                        canRead=parent_acl.canRead,
+                        canDownload=parent_acl.canDownload,
+                        canWrite=parent_acl.canWrite,
+                        canSensitive=parent_acl.canSensitive,
+                        canDelete=parent_acl.canDelete,
+                        isOwner=parent_acl.isOwner,
+                        effectiveDate=parent_acl.effectiveDate,
+                        expiryDate=parent_acl.expiryDate,
+                        aclOwnershipType=parent_acl.aclOwnershipType,
+                    )
+        return bundle
 
 
 class ExperimentAuthorResource(MyTardisModelResource):
