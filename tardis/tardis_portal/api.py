@@ -974,12 +974,11 @@ class ExperimentResource(MyTardisModelResource):
             related_name="experiments",
             full=True,
         )
-    """if "tardis.apps.dataclassification" in settings.INSTALLED_APPS:
+    if "tardis.apps.dataclassification" in settings.INSTALLED_APPS:
         classification = fields.IntegerField(
-            "tardis.apps.dataclassification.ExperimentDataClassification",
-            "dataclassification_classification",
+            attribute="dataclassification.classification",
             null=True,
-        )"""
+        )
     # tags = fields.ListField()
 
     # Custom filter for identifiers module based on code example from
