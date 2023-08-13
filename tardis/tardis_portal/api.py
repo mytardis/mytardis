@@ -47,7 +47,6 @@ from tastypie.utils import trailing_slash
 from uritemplate import URITemplate
 
 from tardis.analytics.tracker import IteratorTracker
-from tardis.apps.dataclassification.models import classification_to_string
 from tardis.apps.identifiers.models import (
     DatasetID,
     ExperimentID,
@@ -1057,9 +1056,9 @@ class ExperimentResource(MyTardisModelResource):
             if bundle.data["identifiers"] == []:
                 bundle.data.pop("identifiers")
         if AppList.DATA_CLASSIFICATION.value in settings.INSTALLED_APPS:
-            bundle.data["classification"] = classification_to_string(
-                bundle.obj.data_classification.classification
-            )
+            bundle.data[
+                "classification"
+            ] = bundle.obj.data_classification.classification
 
         if settings.ONLY_EXPERIMENT_ACLS:
             dataset_count = exp.datasets.all().count()
@@ -1342,9 +1341,9 @@ class DatasetResource(MyTardisModelResource):
             if bundle.data["identifiers"] == []:
                 bundle.data.pop("identifiers")
         if AppList.DATA_CLASSIFICATION.value in settings.INSTALLED_APPS:
-            bundle.data["classification"] = classification_to_string(
-                bundle.obj.data_classification.classification
-            )
+            bundle.data[
+                "classification"
+            ] = bundle.obj.data_classification.classification
         return bundle
 
     def prepend_urls(self):

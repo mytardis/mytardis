@@ -11,8 +11,6 @@ from unittest import skipIf
 from django.conf import settings
 from django.contrib.auth.models import User
 
-from tardis.apps.dataclassification.models import classification_to_string
-
 from ...models.access_control import DatafileACL, DatasetACL, ExperimentACL
 from ...models.datafile import DataFile
 from ...models.dataset import Dataset
@@ -74,7 +72,6 @@ class ExperimentResourceTest(MyTardisResourceTestCase):
                 },
             ],
             "title": "testing parset creation2",
-            "classification": 25,
         }
         experiment_count = Experiment.objects.count()
         parameterset_count = ExperimentParameterSet.objects.count()

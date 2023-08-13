@@ -31,10 +31,7 @@ from tastypie.serializers import Serializer
 from tastypie.utils import trailing_slash
 
 # Data classification app
-from tardis.apps.dataclassification.models import (
-    DATA_CLASSIFICATION_SENSITIVE,
-    classification_to_string,
-)
+from tardis.apps.dataclassification.models import DATA_CLASSIFICATION_SENSITIVE
 from tardis.apps.identifiers.enumerators import IdentifierObjects
 
 # Identifiers app
@@ -573,9 +570,9 @@ class ProjectResource(ModelResource):
             if bundle.data["identifiers"] == []:
                 bundle.data.pop("identifiers")
         if AppList.DATA_CLASSIFICATION.value in settings.INSTALLED_APPS:
-            bundle.data["classification"] = classification_to_string(
-                bundle.obj.data_classification.classification
-            )
+            bundle.data[
+                "classification"
+            ] = bundle.obj.data_classification.classification
         # if "tardis.apps.autoarchive" in settings.INSTALLED_APPS:
         #    bundle.data["autoarchive"] = {
         #        "archive_offset": bundle.obj.autoarchive.offset,
