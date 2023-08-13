@@ -976,7 +976,7 @@ class ExperimentResource(MyTardisModelResource):
         )
     if "tardis.apps.dataclassification" in settings.INSTALLED_APPS:
         classification = fields.IntegerField(
-            attribute="classification",
+            attribute="data_classification.classification",
             null=True,
         )
     # tags = fields.ListField()
