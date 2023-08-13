@@ -1146,7 +1146,9 @@ class ExperimentResource(MyTardisModelResource):
                     classification = bundle.data.pop("classification")
             pprint(bundle.data)
             pprint(classification)
+            pprint("creating bundle")
             bundle = super().obj_create(bundle, **kwargs)
+            pprint("bundle created")
             pprint(bundle.obj)
             # After the obj has been created
             pprint("tardis.apps.dataclassification" in settings.INSTALLED_APPS)
