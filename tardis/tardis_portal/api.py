@@ -708,7 +708,7 @@ class IntrospectionResource(Resource):
                 identified_objects=identified_objects,
                 profiles_enabled="tardis.apps.profiles" in settings.INSTALLED_APPS,
                 profiled_objects=profiled_objects,
-                data_classification_enabled=AppList.DATA_CLASSIFICATION.value
+                data_classification_enabled="tardis.apps.dataclassification"
                 in settings.INSTALLED_APPS,
             )
         ]
@@ -966,7 +966,7 @@ class ExperimentResource(MyTardisModelResource):
         full=True,
         null=True,
     )
-    if AppList.PROJECTS.value in settings.INSTALLED_APPS:
+    if "tardis.apps.projects" in settings.INSTALLED_APPS:
         projects = fields.ToManyField(
             "tardis.apps.projects.api.ProjectResource",
             "projects",
@@ -984,7 +984,7 @@ class ExperimentResource(MyTardisModelResource):
             filters = {}
         orm_filters = super().build_filters(filters)
 
-        if AppList.IDENTIFIERS.value in settings.INSTALLED_APPS and (
+        if "tardis.apps.identifiers" in settings.INSTALLED_APPS and (
             "experiment" in settings.OBJECTS_WITH_IDENTIFIERS
             and "identifier" in filters
         ):
@@ -994,7 +994,7 @@ class ExperimentResource(MyTardisModelResource):
         return orm_filters
 
     def apply_filters(self, request, applicable_filters):
-        if AppList.IDENTIFIERS.value in settings.INSTALLED_APPS:
+        if "tardis.apps.identifers" in settings.INSTALLED_APPS:
             if (
                 "experiment" in settings.OBJECTS_WITH_IDENTIFIERS
                 and "identifier" in applicable_filters
@@ -1055,7 +1055,7 @@ class ExperimentResource(MyTardisModelResource):
             )
             if bundle.data["identifiers"] == []:
                 bundle.data.pop("identifiers")
-        if AppList.DATA_CLASSIFICATION.value in settings.INSTALLED_APPS:
+        if "tardis.apps.dataclassification" in settings.INSTALLED_APPS:
             bundle.data[
                 "classification"
             ] = bundle.obj.data_classification.classification
@@ -1340,7 +1340,7 @@ class DatasetResource(MyTardisModelResource):
             )
             if bundle.data["identifiers"] == []:
                 bundle.data.pop("identifiers")
-        if AppList.DATA_CLASSIFICATION.value in settings.INSTALLED_APPS:
+        if "tardis.apps.dataclassification" in settings.INSTALLED_APPS:
             bundle.data[
                 "classification"
             ] = bundle.obj.data_classification.classification
@@ -1641,7 +1641,7 @@ class DatasetResource(MyTardisModelResource):
                         identifier=str(identifier),
                     )
             if (
-                AppList.DATA_CLASSIFICATION.value in settings.INSTALLED_APPS
+                "tardis.apps.dataclassification" in settings.INSTALLED_APPS
                 and classification
             ):
                 dataset.data_classification.classification = classification
