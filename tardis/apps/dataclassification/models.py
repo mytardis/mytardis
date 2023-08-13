@@ -150,6 +150,9 @@ def get_classification_from_parents(obj: Experiment | Dataset) -> int:
     Returns:
         int: the data classification of the parent class or the most restrictive if multiple parents exist
     """
+    pprint(obj)
+    pprint(isinstance(obj,Experiment))
+    pprint(obj.title if isinstance(obj,Experiment))
     parents = (
         obj.projects.all() if isinstance(obj, Experiment) else obj.experiments.all()
     )
