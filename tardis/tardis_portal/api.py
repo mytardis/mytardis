@@ -1149,6 +1149,10 @@ class ExperimentResource(MyTardisModelResource):
             bundle = super().obj_create(bundle, **kwargs)
             pprint(bundle.obj)
             # After the obj has been created
+            pprint("tardis.apps.dataclassification" in settings.INSTALLED_APPS)
+            if "tardis.apps.dataclassification" in settings.INSTALLED_APPS:
+                pprint("Current classification")
+                pprint(bundle.obj.data_classification.classification)
             experiment = bundle.obj
             if (
                 "tardis.apps.identifiers" in settings.INSTALLED_APPS
@@ -1165,9 +1169,7 @@ class ExperimentResource(MyTardisModelResource):
             ):
                 pprint("Here trying to change the classification")
                 experiment.data_classification.classification = classification
-            if "tardis.apps.dataclassification" in settings.INSTALLED_APPS:
-                pprint("Current classification")
-                pprint(experiment.data_classification.classification)
+
             if bundle.data.get("users", False):
                 for entry in bundle.data["users"]:
                     username, isOwner, canDownload, canSensitive = entry
