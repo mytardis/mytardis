@@ -9,6 +9,7 @@ Implemented with Tastypie.
 
 import contextlib
 import json
+import pprint
 import re
 from itertools import chain
 from typing import Optional
@@ -973,6 +974,12 @@ class ExperimentResource(MyTardisModelResource):
             related_name="experiments",
             full=True,
         )
+    if "tardis.apps.dataclassification" in settings.INSTALLED_APPS:
+        classification = fields.IntegerField(
+            "tardis.apps.dataclassification.ExperimentDataClassification",
+            "dataclassification_classification",
+            null=True,
+        )
     # tags = fields.ListField()
 
     # Custom filter for identifiers module based on code example from
@@ -1120,6 +1127,7 @@ class ExperimentResource(MyTardisModelResource):
         enforce limits.
         """
         user = bundle.request.user
+        pprint(bundle.data)
         bundle.data["created_by"] = user
         identifiers = None
         classification = None
