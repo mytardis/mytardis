@@ -11,7 +11,6 @@ import contextlib
 import json
 import re
 from itertools import chain
-from pprint import pprint
 from typing import Optional
 from urllib.parse import quote
 from wsgiref.util import FileWrapper
@@ -1126,11 +1125,7 @@ class ExperimentResource(MyTardisModelResource):
         Currently not tested for failed db transactions as sqlite does not
         enforce limits.
         """
-        pprint("In obj_create")
-        pprint(kwargs)
         user = bundle.request.user
-        pprint(bundle.data)
-        pprint(settings.INSTALLED_APPS)
         bundle.data["created_by"] = user
         identifiers = None
         classification = None
@@ -1143,20 +1138,11 @@ class ExperimentResource(MyTardisModelResource):
                 identifiers = bundle.data.pop("identifiers", None)
             # Clean up bundle to remove data classification if the app is being used
             if "tardis.apps.dataclassification" in settings.INSTALLED_APPS:
-                pprint("cleaning classification")
                 if "classification" in bundle.data.keys():
                     classification = bundle.data.pop("classification")
-            pprint(bundle.data)
-            pprint(classification)
-            pprint("creating bundle")
             bundle = super().obj_create(bundle, **kwargs)
-            pprint("bundle created")
-            pprint(bundle.obj)
             # After the obj has been created
-            pprint("tardis.apps.dataclassification" in settings.INSTALLED_APPS)
             if "tardis.apps.dataclassification" in settings.INSTALLED_APPS:
-                pprint("Current classification")
-                pprint(bundle.obj.data_classification.classification)
             experiment = bundle.obj
             if (
                 "tardis.apps.identifiers" in settings.INSTALLED_APPS
@@ -1171,7 +1157,6 @@ class ExperimentResource(MyTardisModelResource):
                 "tardis.apps.dataclassification" in settings.INSTALLED_APPS
                 and classification
             ):
-                pprint("Here trying to change the classification")
                 experiment.data_classification.classification = classification
 
             if bundle.data.get("users", False):

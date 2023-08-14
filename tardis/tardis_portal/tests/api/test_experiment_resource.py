@@ -6,7 +6,6 @@ Testing the Experiment resource in MyTardis's Tastypie-based REST API
 .. moduleauthor:: Mike Laverick <mike.laverick@auckland.ac.nz>
 """
 import json
-from pprint import pprint
 from unittest import skipIf
 
 from django.conf import settings
@@ -77,16 +76,6 @@ class ExperimentResourceTest(MyTardisResourceTestCase):
         experiment_count = Experiment.objects.count()
         parameterset_count = ExperimentParameterSet.objects.count()
         parameter_count = ExperimentParameter.objects.count()
-        pprint("Posting")
-        response = self.api_client.post(
-            "/api/v1/experiment/",
-            data=post_data,
-            authentication=self.get_credentials(),
-        )
-        pprint(response)
-        pprint(response.request)
-        pprint(response.json())
-        pprint("End post")
         self.assertHttpCreated(
             self.api_client.post(
                 "/api/v1/experiment/",

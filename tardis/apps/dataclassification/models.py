@@ -1,5 +1,3 @@
-from pprint import pprint
-
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
@@ -83,19 +81,14 @@ def create_experiment_data_classification(sender, instance, created, **kwargs) -
     Returns:
         _type_: None
     """
-    pprint("In post save receiver")
-    pprint(instance)
     if created:
         data_classification = kwargs.pop(
             "classification", get_classification_from_parents(instance)
         )
-        pprint(data_classification)
         classification = ExperimentDataClassification(
             experiment=instance, classification=data_classification
         )
         classification.save()
-        pprint(classification)
-        pprint("ending post save reciever")
 
 
 class DatasetDataClassification(DataClassification):
