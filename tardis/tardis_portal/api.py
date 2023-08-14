@@ -1142,7 +1142,6 @@ class ExperimentResource(MyTardisModelResource):
                     classification = bundle.data.pop("classification")
             bundle = super().obj_create(bundle, **kwargs)
             # After the obj has been created
-            if "tardis.apps.dataclassification" in settings.INSTALLED_APPS:
             experiment = bundle.obj
             if (
                 "tardis.apps.identifiers" in settings.INSTALLED_APPS
