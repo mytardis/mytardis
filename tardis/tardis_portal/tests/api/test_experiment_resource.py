@@ -83,9 +83,10 @@ class ExperimentResourceTest(MyTardisResourceTestCase):
             data=post_data,
             authentication=self.get_credentials(),
         )
+        pprint(response)
+        pprint(response.request)
         pprint(response.json())
-        pprint(response.headers)
-        pprint(response.reason)
+        pprint("End post")
         self.assertHttpCreated(
             self.api_client.post(
                 "/api/v1/experiment/",
@@ -93,7 +94,6 @@ class ExperimentResourceTest(MyTardisResourceTestCase):
                 authentication=self.get_credentials(),
             )
         )
-        pprint("End post")
         self.assertEqual(experiment_count + 1, Experiment.objects.count())
         self.assertEqual(parameterset_count + 2, ExperimentParameterSet.objects.count())
         self.assertEqual(parameter_count + 4, ExperimentParameter.objects.count())
