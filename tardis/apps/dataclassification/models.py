@@ -84,6 +84,7 @@ def create_experiment_data_classification(sender, instance, created, **kwargs) -
         _type_: None
     """
     pprint("In post save receiver")
+    pprint(instance)
     if created:
         data_classification = kwargs.pop(
             "classification", get_classification_from_parents(instance)
