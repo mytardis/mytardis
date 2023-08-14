@@ -8,9 +8,11 @@ test_models.py
 .. moduleauthor::  Mike Laverick <mike.laverick@auckland.ac.nz>
 
 """
-# from django.conf import settings
-
 import os
+from unittest import skipIf
+
+from django.conf import settings
+
 from tardis.apps.projects.models import Project, ProjectParameter, ProjectParameterSet
 from tardis.tardis_portal.models import (
     ParameterName,
@@ -20,6 +22,7 @@ from tardis.tardis_portal.models import (
 from . import ModelTestCase
 
 
+@skipIf(settings.ONLY_EXPERIMENT_ACLS is True, "skipping Micro ACL specific test")
 class ProjectTestCase(ModelTestCase):
     def test_project(self):
         proj = Project(
@@ -39,6 +42,7 @@ class ProjectTestCase(ModelTestCase):
         )
 
 
+@skipIf(settings.ONLY_EXPERIMENT_ACLS is True, "skipping Micro ACL specific test")
 class ParameterTestCase(ModelTestCase):
     def test_parameter(self):
         proj = Project(
@@ -75,7 +79,7 @@ class ParameterTestCase(ModelTestCase):
             proj_parameter.save()
 
             self.assertEqual(
-                "<a href='/display/ProjectImage/load/%i/' target='_blank'><img style='width: 300px;' src='/display/ProjectImage/load/%i/' /></a>"
+                "<a href='/project/display/ProjectImage/load/%i/' target='_blank'><img style='width: 300px;' src='/project/display/ProjectImage/load/%i/' /></a>"
                 % (proj_parameter.id, proj_parameter.id),  # noqa
                 proj_parameter.get(),
             )

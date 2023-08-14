@@ -226,6 +226,8 @@ def _get_filename_parameter_as_image_element(parameter):
             viewname = "tardis.tardis_portal.views.load_dataset_image"
         elif parset == "ExperimentParameterSet":
             viewname = "tardis.tardis_portal.views.load_experiment_image"
+        elif parset == "ProjectParameterSet":
+            viewname = "tardis.apps.projects.views.load_project_image"
         if viewname is not None:
             value = (
                 "<a href='%s' target='_blank'>"
