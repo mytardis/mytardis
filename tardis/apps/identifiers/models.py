@@ -23,6 +23,9 @@ class DatasetID(models.Model):
     )
     identifier = models.CharField(max_length=400, null=True, blank=True, unique=True)
 
+    class Meta:
+        app_label = "identifiers"
+
     def __str__(self):
         return self.identifier or "No Identifier"
 
@@ -38,6 +41,9 @@ class ExperimentID(models.Model):
         related_name="identifiers",
     )
     identifier = models.CharField(max_length=400, null=True, blank=True, unique=True)
+
+    class Meta:
+        app_label = "identifiers"
 
     def __str__(self):
         return self.identifier or "No Identifier"
@@ -58,6 +64,9 @@ class FacilityID(models.Model):
     def __str__(self):
         return self.identifier or "No Identifier"
 
+    class Meta:
+        app_label = "identifiers"
+
 
 class InstrumentID(models.Model):
     """A model that adds a ID field to an instrument model
@@ -70,6 +79,9 @@ class InstrumentID(models.Model):
         related_name="identifiers",
     )
     identifier = models.CharField(max_length=400, null=True, blank=True, unique=True)
+
+    class Meta:
+        app_label = "identifiers"
 
     def __str__(self):
         return self.identifier or "No Identifier"
@@ -87,6 +99,9 @@ class ProjectID(models.Model):
     )
     identifier = models.CharField(max_length=400, null=True, blank=True, unique=True)
 
+    class Meta:
+        app_label = "identifiers"
+
     def __str__(self):
         return self.identifier or "No Identifier"
 
@@ -102,6 +117,9 @@ class InstitutionID(models.Model):
         related_name="identifiers",
     )
     identifier = models.CharField(max_length=400, null=True, blank=True, unique=True)
+
+    class Meta:
+        app_label = "identifiers"
 
     def __str__(self):
         return self.identifier or "No Identifier"

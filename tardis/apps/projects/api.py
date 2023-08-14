@@ -6,7 +6,10 @@ Implemented with Tastypie.
 .. moduleauthor:: Chris Seal <c.seal@auckland.ac.nz>
 """
 
+import contextlib
+import logging
 from itertools import chain
+from typing import Any, Dict, List, Optional, Tuple
 
 from django.conf import settings
 from django.contrib.auth.models import Group, Permission, User
@@ -20,14 +23,18 @@ from ldap3.utils.conv import escape_filter_chars
 from ldap3.utils.dn import escape_rdn
 from tastypie import fields
 from tastypie.authorization import Authorization
-
-# from tastypie.bundle import Bundle
+from tastypie.bundle import Bundle
 from tastypie.constants import ALL_WITH_RELATIONS
 from tastypie.exceptions import NotFound, Unauthorized
 from tastypie.resources import ModelResource
 from tastypie.serializers import Serializer
 from tastypie.utils import trailing_slash
 
+# Data classification app
+from tardis.apps.dataclassification.models import DATA_CLASSIFICATION_SENSITIVE
+from tardis.apps.identifiers.enumerators import IdentifierObjects
+
+# Identifiers app
 from tardis.apps.identifiers.models import InstitutionID, ProjectID
 from tardis.tardis_portal.api import (
     ExperimentResource,
@@ -42,6 +49,7 @@ from tardis.tardis_portal.auth.decorators import (
     has_sensitive_access,
     has_write,
 )
+from tardis.tardis_portal.enumerators import AppList, CustomFilters
 from tardis.tardis_portal.models.access_control import UserAuthentication
 
 from .models import (
@@ -52,11 +60,35 @@ from .models import (
     ProjectParameterSet,
 )
 
+# Autoarchive app
+# from tardis.apps.autoarchive.models import ProjectAutoArchive
+# from tardis.tardis_portal.models.storage import (
+#    StorageBox,
+#    StorageBoxAttribute,
+#    StorageBoxOption,
+# )
+
+
 default_serializer = PrettyJSONSerializer() if settings.DEBUG else Serializer()
 PROJECT_INSTITUTION_RESOURCE = "tardis.apps.projects.api.Institution"
 
+logger = logging.getLogger(__name__)
 
-def get_user_from_upi(upi):
+
+def get_user_from_upi(upi: str) -> Optional[Dict[str, str]]:
+    # sourcery skip: raise-from-previous-error
+    """Helper function to access the Active Directory and get details for a user to
+    pass back to the create user functions.
+
+    Note: This is pretty fragile at the moment and will need some rework to ensure
+    robustness.
+
+    Args:
+        upi (str): The UPI of the person to be searched for
+
+    Returns:
+        Dict[str,str]: A dictionary of fields needed to create a user
+    """
     upi = escape_rdn(upi)
     server = ldap3.Server(settings.LDAP_URL)
     search_filter = f"({settings.LDAP_USER_LOGIN_ATTR}={upi})"
@@ -65,61 +97,105 @@ def get_user_from_upi(upi):
         user=settings.LDAP_ADMIN_USER,
         password=settings.LDAP_ADMIN_PASSWORD,
     ) as connection:
-        connection.bind()
-        connection.search(
-            settings.LDAP_USER_BASE,
-            escape_filter_chars(search_filter),
-            attributes=["*"],
-        )
-        if len(connection.entries) > 1:
-            error_message = (
-                "More than one person with {}: {} has been found in the LDAP".format(
-                    settings.LDAP_USER_LOGIN_ATTR, upi
-                )
-            )
-            # if logger:
-            #    logger.error(error_message)
-            raise ValueError(error_message)
-        if len(connection.entries) == 0:
-            error_message = "No one with {}: {} has been found in the LDAP".format(
-                settings.LDAP_USER_LOGIN_ATTR, upi
-            )
-            # if logger:
-            #    logger.warning(error_message)
-            return None
-        person = connection.entries[0]
-        first_name_key = "givenName"
-        last_name_key = "sn"
-        email_key = "mail"
-        username = person[settings.LDAP_USER_LOGIN_ATTR].value
-        first_name = person[first_name_key].value
-        last_name = person[last_name_key].value
         try:
-            email = person[email_key].value
-        except KeyError:
-            email = ""
-        details = {
-            "username": username,
-            "first_name": first_name,
-            "last_name": last_name,
-            "email": email,
-        }
-        return details
+            data = _get_data_from_active_directory_(connection, search_filter)
+            if not data:
+                error_message = f"No one with {settings.LDAP_USER_LOGIN_ATTR}: {upi} has been found in the LDAP"
+                if logger:
+                    logger.warning(error_message)
+            return data
+        except ValueError:
+            error_message = f"More than one person with {settings.LDAP_USER_LOGIN_ATTR}: {upi} has  been found in the LDAP"
+            if logger:
+                logger.error(error_message)
+            raise ValueError(error_message)
 
 
-def gen_random_password():
+def _get_data_from_active_directory_(
+    connection: ldap3.Connection, search_filter: str
+) -> Optional[Dict[str, str]]:
+    """With connection to Active Directory, run a query
+
+    Args:
+        connection (ldap3.Connection): An established connection to the active directory
+        search_filter (str): The search query to run
+
+    Raises:
+        ValueError: Represents a lack of uniqueness in the query
+
+    Returns:
+        Optional[Dict[str, str]]: The dictionary of resutls from the search query run or None
+    """
+    connection.bind()
+    connection.search(
+        settings.LDAP_USER_BASE,
+        escape_filter_chars(search_filter),
+        attributes=["*"],
+    )
+    if len(connection.entries) > 1:
+        raise ValueError()
+    if len(connection.entries) == 0:
+        return None
+    person = connection.entries[0]
+    first_name_key = "givenName"
+    last_name_key = "sn"
+    email_key = "mail"
+    username = person[settings.LDAP_USER_LOGIN_ATTR].value
+    first_name = person[first_name_key].value
+    last_name = person[last_name_key].value
+    try:
+        email = person[email_key].value
+    except KeyError:
+        email = ""
+    return {
+        "username": username,
+        "first_name": first_name,
+        "last_name": last_name,
+        "email": email,
+    }
+
+
+# TODO: Migrate this out to settings?
+def gen_random_password() -> str:
+    """Helper function to generate a random password internally.
+
+    Returns:
+        str: A string of random characters
+    """
     import random
 
     random.seed()
     characters = "abcdefghijklmnopqrstuvwxyzABCDFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()?"
     passlen = 16
-    password = "".join(random.sample(characters, passlen))
-    return password
+    return "".join(random.sample(characters, passlen))
 
 
-def get_or_create_user(username):
+def get_or_create_user(username: str) -> User:
+    """Search the database by username to determine if a user with that name exists.
+    If one does, return that, otherwise use the username to search the Active Directory
+    for the user and create them using that data.
+
+    Note: This is UoA specific and should be genericised somehow.
+
+    Args:
+        username (str): the username of the user - a unique identifer like a UPI
+
+    Raises:
+        ValueError: The error raised when it is not possible to create a user
+        Exception: Any other error
+
+    Returns:
+        User: A User object identified or created by the username
+    """
     if not User.objects.filter(username=username).exists():
-        new_user = get_user_from_upi(username)
+        try:
+            new_user = get_user_from_upi(username)
+        except Exception as error:
+            raise error
+        if not new_user:
+            error_message = f"Unable to create user with username: {username}"
+            logger.warning(error_message)
+            raise ValueError(error_message)
         user = User.objects.create(
             username=new_user["username"],
             first_name=new_user["first_name"],
@@ -141,6 +217,56 @@ def get_or_create_user(username):
     return user
 
 
+def build_identifier_aware_filter(
+    model_type: IdentifierObjects,
+    orm_filters: Dict[str, Any],
+    filters: Dict[str, Any],
+) -> Dict[str, Any]:
+    """Function to check if the identifier app is active and if the identifier key is present in
+    the query. If both are, update the orm_filters to query on these.
+
+    Args:
+        model_type (IdentifierObjects): The name of the model that has an identifier model added.
+        orm_filters (Dict[str,Any]): The partial ORM filter to be updated
+        filters (Dict[str,Any]): Any filters that have been passed
+
+    Returns:
+        Dict[str, Any]: The updated ORM filter
+    """
+    if (
+        AppList.IDENTIFIERS.value in settings.INSTALLED_APPS
+        and model_type.value in settings.OBJECTS_WITH_IDENTIFIERS
+        and CustomFilters.IDENTIFIERS.value in filters
+    ):
+        query = filters[CustomFilters.IDENTIFIERS.value]
+        qset = Q(identifiers__identifier__iexact=query)
+        orm_filters[CustomFilters.IDENTIFIERS.value] = qset
+    return orm_filters
+
+
+def apply_identifier_aware_filter(
+    model_type: IdentifierObjects,
+    applicable_filters: Dict[str, Any],
+) -> Tuple[Any, Dict[str, Any]]:
+    """Function to check if the identifier app is active. Clean the filter if it is and return
+    a custom filter value for semi-filtering.
+
+    Args:
+        model_type (IdentifierObjects): The name of the model that has an identifier model added.
+        applicable_filters (Dict[str,Any]): Filters to be applied
+
+    Returns:
+        Tuple[Any, Dict[str, Any]]: The custom filter and the cleaned filters.
+    """
+    custom = None
+    if (
+        AppList.IDENTIFIERS.value in settings.INSTALLED_APPS
+        and model_type.value in settings.OBJECTS_WITH_IDENTIFIERS
+    ):
+        custom = applicable_filters.pop(CustomFilters.IDENTIFIERS.value, None)
+    return (custom, applicable_filters)
+
+
 class ProjectACLAuthorization(Authorization):
     """A Project-specific Authorisation class for Tastypie, rather than bloating
     the existing generic MyTardis-API ACLAuthorization class further. It would be
@@ -148,7 +274,7 @@ class ProjectACLAuthorization(Authorization):
     reducing verboseness of the class and removing this specific project ACLAuth class.
     """
 
-    def read_list(self, object_list, bundle):  # noqa # too complex
+    def read_list(self, object_list, bundle: Bundle):  # noqa # too complex
         if bundle.request.user.is_authenticated and bundle.request.user.is_superuser:
             return object_list
         if isinstance(bundle.obj, Project):
@@ -192,7 +318,7 @@ class ProjectACLAuthorization(Authorization):
             return query
         return []
 
-    def read_detail(self, object_list, bundle):  # noqa # too complex
+    def read_detail(self, object_list, bundle: Bundle):  # noqa # too complex
         if bundle.request.user.is_authenticated and bundle.request.user.is_superuser:
             return True
         if isinstance(bundle.obj, Project):
@@ -278,49 +404,40 @@ class ProjectACLAuthorization(Authorization):
 
 
 class InstitutionResource(ModelResource):
-    """Tastypie class for accessing Instituions"""
+    """Tastypie class for accessing Instituions
 
-    # def filter_id_items(self, bundle):
-    #    resource = InstitutionIDResource()
-    #    new_bundle = Bundle(request=bundle.request)
-    #    objs = resource.obj_get_list(new_bundle)
-    #    return objs.filter(parent_id=bundle.obj.pk)
+    Attributes:
+        identifiers (fields.ListField): Django ListField to hold 0-X identifiers for the
+            institution.
+    """
 
-    instituitionid = None
     identifiers = fields.ListField(null=True, blank=True)
 
     # Custom filter for identifiers module based on code example from
     # https://stackoverflow.com/questions/10021749/ \
     # django-tastypie-advanced-filtering-how-to-do-complex-lookups-with-q-objects
 
-    def build_filters(self, filters=None, ignore_bad_filters=False):
+    def build_filters(
+        self,
+        filters: Optional[Dict[str, Any]] = None,
+        ignore_bad_filters: bool = False,
+    ) -> Dict[str, Any]:
         if filters is None:
             filters = {}
         orm_filters = super().build_filters(filters)
-
-        if "tardis.apps.identifiers" in settings.INSTALLED_APPS and (
-            "institution" in settings.OBJECTS_WITH_IDENTIFIERS
-            and "identifier" in filters
-        ):
-            query = filters["identifier"]
-            qset = Q(identifiers__identifier__iexact=query)
-            orm_filters.update({"identifier": qset})
+        orm_filters = build_identifier_aware_filter(
+            IdentifierObjects.INSTITUTION,
+            orm_filters,
+            filters,
+        )
         return orm_filters
 
     def apply_filters(self, request, applicable_filters):
-        if "tardis.apps.identifiers" in settings.INSTALLED_APPS:
-            if (
-                "institution" in settings.OBJECTS_WITH_IDENTIFIERS
-                and "identifier" in applicable_filters
-            ):
-                custom = applicable_filters.pop("identifier")
-            else:
-                custom = None
-        else:
-            custom = None
-
+        custom, applicable_filters = apply_identifier_aware_filter(
+            IdentifierObjects.INSTITUTION,
+            applicable_filters,
+        )
         semi_filtered = super().apply_filters(request, applicable_filters)
-
         return semi_filtered.filter(custom) if custom else semi_filtered
 
     # End of custom filter code
@@ -378,26 +495,26 @@ class ProjectResource(ModelResource):
     # https://stackoverflow.com/questions/10021749/ \
     # django-tastypie-advanced-filtering-how-to-do-complex-lookups-with-q-objects
 
-    def build_filters(self, filters=None, ignore_bad_filters=False):
+    def build_filters(
+        self,
+        filters: Optional[Dict[str, Any]] = None,
+        ignore_bad_filters: bool = False,
+    ) -> Dict[str, Any]:
         if filters is None:
             filters = {}
         orm_filters = super().build_filters(filters)
-
-        if "tardis.apps.identifiers" in settings.INSTALLED_APPS and (
-            "project" in settings.OBJECTS_WITH_IDENTIFIERS and "identifier" in filters
-        ):
-            query = filters["identifier"]
-            qset = Q(identifiers__identifier__iexact=query)
-            orm_filters.update({"identifier": qset})
+        orm_filters = build_identifier_aware_filter(
+            IdentifierObjects.PROJECT,
+            orm_filters,
+            filters,
+        )
         return orm_filters
 
     def apply_filters(self, request, applicable_filters):
-        custom = None
-        if "tardis.apps.identifiers" in settings.INSTALLED_APPS and (
-            "project" in settings.OBJECTS_WITH_IDENTIFIERS
-            and "identifier" in applicable_filters
-        ):
-            custom = applicable_filters.pop("identifier")
+        custom, applicable_filters = apply_identifier_aware_filter(
+            IdentifierObjects.PROJECT,
+            applicable_filters,
+        )
         semi_filtered = super().apply_filters(request, applicable_filters)
         return semi_filtered.filter(custom) if custom else semi_filtered
 
@@ -423,15 +540,10 @@ class ProjectResource(ModelResource):
             "url": ("exact",),
             "institution": ALL_WITH_RELATIONS,
         }
-        if (
-            "tardis.apps.identifiers" in settings.INSTALLED_APPS
-            and "project" in settings.OBJECTS_WITH_IDENTIFIERS
-        ):
-            filtering.update({"pids": ["pids"]})
         ordering = ["id", "name", "url", "start_time", "end_time"]
         always_return_data = True
 
-    def dehydrate(self, bundle):
+    def dehydrate(self, bundle: Bundle):
         from tardis.tardis_portal.models import Experiment
 
         project = bundle.obj
@@ -457,6 +569,16 @@ class ProjectResource(ModelResource):
             )
             if bundle.data["identifiers"] == []:
                 bundle.data.pop("identifiers")
+        if AppList.DATA_CLASSIFICATION.value in settings.INSTALLED_APPS:
+            bundle.data[
+                "classification"
+            ] = bundle.obj.data_classification.classification
+        # if "tardis.apps.autoarchive" in settings.INSTALLED_APPS:
+        #    bundle.data["autoarchive"] = {
+        #        "archive_offset": bundle.obj.autoarchive.offset,
+        #        "archives": bundle.obj.autoarchive.archives,
+        #        "delete_offset": bundle.obj.autoarchive.delete_offset,
+        #    }
         # admins = project.get_admins()
         # bundle.data["admin_groups"] = [acl.id for acl in admins]
         # members = project.get_groups()
@@ -473,6 +595,82 @@ class ProjectResource(ModelResource):
             ),
         ]
 
+    def __clean_bundle_of_identifiers(
+        self,
+        bundle: Bundle,
+    ) -> Tuple[Bundle, Optional[List[str]]]:
+        """If the bundle has identifiers in it, clean these out prior to
+        creating the project.
+
+        Args:
+            bundle (Bundle): The bundle to be cleaned.
+
+        Returns:
+            Bundle: The cleaned bundle
+            list(str): A list of the identifiers cleaned from the bundle
+        """
+        identifiers = None
+        if (
+            "tardis.apps.identifiers" in settings.INSTALLED_APPS
+            and "project" in settings.OBJECTS_WITH_IDENTIFIERS
+            and "identifiers" in bundle.data.keys()
+        ):
+            identifiers = bundle.data.pop("identifiers")
+        return (bundle, identifiers)
+
+    def __clean_bundle_of_data_classification(
+        self,
+        bundle: Bundle,
+    ) -> Tuple[Bundle, Optional[int]]:
+        """If the bundle has data_classification in it, clean it out.
+
+        Args:
+            bundle (Bundle): The bundle to be cleaned.
+
+        Returns:
+            Bundle: The cleaned bundle
+            int: An integer representing the data classification, defaults to Sensitive
+        """
+        classification = None
+        if AppList.DATA_CLASSIFICATION.value in settings.INSTALLED_APPS:
+            classification = DATA_CLASSIFICATION_SENSITIVE
+            if "classification" in bundle.data.keys():
+                classification = bundle.data.pop("classification")
+        return (bundle, classification)
+
+    def __create_identifiers(
+        self,
+        bundle: Bundle,
+        identifiers: List[str],
+    ) -> None:
+        """Create the project identifier model.
+
+        Args:
+            bundle (Bundle): The bundle created when the project is created
+            identifiers (List[str]): A list of identifiers to associate with the project
+        """
+        project = bundle.obj
+        for identifier in identifiers:
+            ProjectID.objects.create(
+                project=project,
+                identifier=str(identifier),
+            )
+
+    def __create_data_classification(
+        self,
+        bundle: Bundle,
+        classification: int,
+    ) -> Bundle:
+        """Create the data classification model.
+
+        Args:
+            bundle (Bundle): The bundle created when the project is created
+            classification (int): The iteger representaion of the data classification
+        """
+        project = bundle.obj
+        project.data_classification.classification = classification
+        return project
+
     def hydrate_m2m(self, bundle):
         """
         Create project-experiment associations first, in case they affect
@@ -481,13 +679,11 @@ class ProjectResource(ModelResource):
         if getattr(bundle.obj, "id", False):
             project = bundle.obj
             for exp_uri in bundle.data.get("experiments", []):
-                try:
+                with contextlib.suppress(NotFound):
                     exp = ExperimentResource.get_via_uri(
                         ExperimentResource(), exp_uri, bundle.request
                     )
                     bundle.obj.experiments.add(exp)
-                except NotFound:
-                    pass
             if not settings.ONLY_EXPERIMENT_ACLS:
                 # ACL for ingestor
                 acl = ProjectACL(
@@ -518,36 +714,27 @@ class ProjectResource(ModelResource):
                     acl.save()
         return super().hydrate_m2m(bundle)
 
-    def obj_create(self, bundle, **kwargs):
+    def obj_create(self, bundle: Bundle, **kwargs):
         """Currently not tested for failed db transactions as sqlite does not
         enforce limits.
         """
         user = bundle.request.user
         bundle.data["created_by"] = user
         with transaction.atomic():
+            identifiers = None
             project_lead = get_or_create_user(bundle.data["principal_investigator"])
             bundle.data["principal_investigator"] = project_lead
             # Clean up bundle to remove PIDS if the identifiers app is being used.
-            if (
-                "tardis.apps.identifiers" in settings.INSTALLED_APPS
-                and "project" in settings.OBJECTS_WITH_IDENTIFIERS
-            ):
-                identifiers = None
-                if "identifiers" in bundle.data.keys():
-                    identifiers = bundle.data.pop("identifiers")
+            bundle, identifiers = self.__clean_bundle_of_identifiers(bundle)
+            # Clean up bundle to remove Data classifications if the app is being used
+            bundle, classification = self.__clean_bundle_of_data_classification(bundle)
             bundle = super().obj_create(bundle, **kwargs)
             # After the obj has been created
-            if (
-                "tardis.apps.identifiers" in settings.INSTALLED_APPS
-                and "project" in settings.OBJECTS_WITH_IDENTIFIERS
-            ):
-                project = bundle.obj
-                if identifiers:
-                    for identifier in identifiers:
-                        ProjectID.objects.create(
-                            project=project,
-                            identifier=str(identifier),
-                        )
+            project = bundle.obj
+            if identifiers:
+                self.__create_identifiers(bundle, identifiers)
+            if classification:
+                bundle = self.__create_data_classification(bundle, classification)
             if bundle.data.get("users", False):
                 for entry in bundle.data["users"]:
                     username, isOwner, canDownload, canSensitive = entry
@@ -572,7 +759,6 @@ class ProjectResource(ModelResource):
                         canSensitive=canSensitive,
                         isOwner=isOwner,
                     )
-
             return bundle
 
     def get_project_experiments(self, request, **kwargs):

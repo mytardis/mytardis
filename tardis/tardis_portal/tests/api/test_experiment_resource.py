@@ -127,6 +127,7 @@ class ExperimentResourceTest(MyTardisResourceTestCase):
             "/api/v1/experiment/%d/" % exp_id, authentication=self.get_credentials()
         )
         returned_data = json.loads(output.content.decode())
+        print(returned_data)
         for key, value in expected_output.items():
             self.assertTrue(key in returned_data)
             if not key.endswith("_time"):
