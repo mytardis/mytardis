@@ -78,13 +78,14 @@ class ExperimentResourceTest(MyTardisResourceTestCase):
         parameterset_count = ExperimentParameterSet.objects.count()
         parameter_count = ExperimentParameter.objects.count()
         pprint("Posting")
-        pprint(
-            self.api_client.post(
-                "/api/v1/experiment/",
-                data=post_data,
-                authentication=self.get_credentials(),
-            )
+        response = self.api_client.post(
+            "/api/v1/experiment/",
+            data=post_data,
+            authentication=self.get_credentials(),
         )
+        pprint(response.json())
+        pprint(response.headers)
+        pprint(response.reason)
         self.assertHttpCreated(
             self.api_client.post(
                 "/api/v1/experiment/",
