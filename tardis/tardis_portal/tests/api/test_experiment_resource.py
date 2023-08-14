@@ -77,6 +77,7 @@ class ExperimentResourceTest(MyTardisResourceTestCase):
         experiment_count = Experiment.objects.count()
         parameterset_count = ExperimentParameterSet.objects.count()
         parameter_count = ExperimentParameter.objects.count()
+        pprint("Posting")
         pprint(
             self.api_client.post(
                 "/api/v1/experiment/",
@@ -91,6 +92,7 @@ class ExperimentResourceTest(MyTardisResourceTestCase):
                 authentication=self.get_credentials(),
             )
         )
+        pprint("End post")
         self.assertEqual(experiment_count + 1, Experiment.objects.count())
         self.assertEqual(parameterset_count + 2, ExperimentParameterSet.objects.count())
         self.assertEqual(parameter_count + 4, ExperimentParameter.objects.count())
