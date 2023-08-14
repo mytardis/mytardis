@@ -9,7 +9,7 @@ from .models import Project
 
 
 @never_cache
-# @authz.experiment_access_required
+@authz.project_access_required
 def project_latest_experiment(request, project_id):
     if settings.ONLY_EXPERIMENT_ACLS:
         context = {
@@ -29,7 +29,7 @@ def project_latest_experiment(request, project_id):
 
 
 @never_cache
-# @authz.experiment_access_required
+@authz.project_access_required
 def project_recent_experiments(request, project_id):
     if settings.ONLY_EXPERIMENT_ACLS:
         context = {

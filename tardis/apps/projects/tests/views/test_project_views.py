@@ -6,7 +6,6 @@ Tests for view methods relating to projects
 .. moduleauthor::  Mike Laverick <mike.laverick@auckland.ac.nz>
 
 """
-# import json
 from unittest import skipIf
 from unittest.mock import patch
 from urllib.parse import urlparse
