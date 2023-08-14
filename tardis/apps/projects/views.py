@@ -205,7 +205,7 @@ def create_project(request, template_name="create_project.html"):
 
                 request.POST = {"status": "Project Created."}
                 return _redirect_303("tardis.apps.projects.view_project", project.id)
-        if not "status" in c:
+        if "status" not in c:
             c["status"] = "Errors exist in form."
         c["error"] = "true"
 
@@ -246,7 +246,7 @@ def edit_project(request, project_id, template="create_project.html"):
                     project.save()
                 return _redirect_303("tardis.apps.projects.view_project", project.id)
 
-        if not "status" in c:
+        if "status" not in c:
             c["status"] = "Errors exist in form."
         c["error"] = "true"
     else:

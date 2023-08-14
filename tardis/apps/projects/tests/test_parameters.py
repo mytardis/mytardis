@@ -8,15 +8,12 @@ from unittest import skipIf
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.test import TestCase
-from django.utils import timezone
 
-import pytz
-
-from ..models import Project, ProjectParameter, ProjectParameterSet
 from tardis.tardis_portal.models.parameters import (
     ParameterName,
     Schema,
 )
+from ..models import Project, ProjectParameter, ProjectParameterSet
 
 
 @skipIf(settings.ONLY_EXPERIMENT_ACLS is True, "skipping Micro ACL specific test")

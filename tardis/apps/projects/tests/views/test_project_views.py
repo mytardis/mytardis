@@ -7,9 +7,9 @@ Tests for view methods relating to projects
 
 """
 # import json
+from unittest import skipIf
 from unittest.mock import patch
 from urllib.parse import urlparse
-from unittest import skipIf
 
 from django.conf import settings
 from django.contrib.auth.models import Permission, User
