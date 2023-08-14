@@ -77,9 +77,7 @@ def create_experiment_data_classification(sender, instance, created, **kwargs) -
         sender (_type_): The sender of the signal
         instance (_type_): The experiment that has been created
         created (_type_): A boolean flag that indicates if the instance has been created
-
-    Returns:
-        _type_: None
+        kwargs (dict): Keyword arguments
     """
     if created:
         data_classification = kwargs.pop(
@@ -110,9 +108,7 @@ def create_dataset_data_classification(sender, instance, created, **kwargs) -> N
         sender (_type_): The sender of the signal
         instance (_type_): The dataset that has been created
         created (_type_): A boolean flag that indicates if the instance has been created
-
-    Returns:
-        _type_: None
+        kwargs (dict): Keyword arguments
     """
     if created:
         data_classification = kwargs.pop(

@@ -53,7 +53,6 @@ from tardis.apps.identifiers.models import (
     FacilityID,
     InstrumentID,
 )
-from tardis.tardis_portal.enumerators.applist import AppList
 
 from . import tasks
 from .auth.decorators import (
