@@ -277,6 +277,8 @@ class ProjectACLAuthorization(Authorization):
     def read_list(self, object_list, bundle: Bundle):  # noqa # too complex
         if bundle.request.user.is_authenticated and bundle.request.user.is_superuser:
             return object_list
+        if isinstance(bundle.obj, Institution):
+            return object_list
         if isinstance(bundle.obj, Project):
             project_ids = [
                 proj.id
@@ -320,6 +322,8 @@ class ProjectACLAuthorization(Authorization):
 
     def read_detail(self, object_list, bundle: Bundle):  # noqa # too complex
         if bundle.request.user.is_authenticated and bundle.request.user.is_superuser:
+            return True
+        if isinstance(bundle.obj, Institution):
             return True
         if isinstance(bundle.obj, Project):
             return has_access(bundle.request, bundle.obj.id, "project")
@@ -520,13 +524,13 @@ class ProjectResource(ModelResource):
 
     # End of custom filter code
 
-    def dehydrate_tags(self, bundle):
-        return list(map(str, bundle.obj.tags.all()))
+    # def dehydrate_tags(self, bundle):
+    #    return list(map(str, bundle.obj.tags.all()))
 
-    def save_m2m(self, bundle):
-        tags = bundle.data.get("tags", [])
-        bundle.obj.tags.set(*tags)
-        return super().save_m2m(bundle)
+    # def save_m2m(self, bundle):
+    #    tags = bundle.data.get("tags", [])
+    #    bundle.obj.tags.set(*tags)
+    #    return super().save_m2m(bundle)
 
     class Meta:
         authentication = MyTardisAuthentication()
@@ -712,6 +716,17 @@ class ProjectResource(ModelResource):
                         aclOwnershipType=ProjectACL.OWNER_OWNED,
                     )
                     acl.save()
+            institutions = []
+            for inst_uri in bundle.data.get("institution", []):
+                try:
+                    institute = InstitutionResource.get_via_uri(
+                        InstitutionResource(), inst_uri, bundle.request
+                    )
+                    institutions.append(institute)
+                    # bundle.obj.institution.add(institute)
+                except NotFound:
+                    pass
+            bundle.data["institutions"] = institutions
         return super().hydrate_m2m(bundle)
 
     def obj_create(self, bundle: Bundle, **kwargs):

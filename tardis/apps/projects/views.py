@@ -4,12 +4,14 @@ views that render full pages
 
 import logging
 import re
+from base64 import b64decode
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required, permission_required
 from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator
 from django.db import transaction
+from django.http import HttpResponse
 from django.views.decorators.cache import never_cache
 from django.views.generic.base import TemplateView
 
@@ -20,12 +22,13 @@ from tardis.tardis_portal.shortcuts import (
     return_response_error,
     return_response_not_found,
 )
+from tardis.tardis_portal.views.images import load_image
 from tardis.tardis_portal.views.pages import _resolve_view
 from tardis.tardis_portal.views.parameters import add_par, edit_parameters
 from tardis.tardis_portal.views.utils import _redirect_303
 
 from .forms import ProjectForm
-from .models import Project, ProjectACL, ProjectParameterSet
+from .models import Project, ProjectACL, ProjectParameterSet, ProjectParameter
 
 logger = logging.getLogger(__name__)
 
@@ -145,9 +148,9 @@ class ProjectView(TemplateView):
         return render_response_index(request, template_name, c)
 
 
-@permission_required("tardis_portal.add_project")
+@permission_required("projects.add_project")
 @login_required
-def create_project(request):
+def create_project(request, template_name="create_project.html"):
     c = {
         "subtitle": "Create Project",
         "user_id": request.user.id,
@@ -202,21 +205,21 @@ def create_project(request):
 
                 request.POST = {"status": "Project Created."}
                 return _redirect_303("tardis.apps.projects.view_project", project.id)
-
-        if c["status"] != "Please specify one or more experiments.":
+        if "status" not in c:
             c["status"] = "Errors exist in form."
         c["error"] = "true"
+
     else:
         form = ProjectForm(user=request.user)
     c["form"] = form
 
-    return render_response_index(request, "create_project.html", c)
+    return render_response_index(request, template_name, c)
 
 
+@permission_required("projects.change_project")
 @login_required
-@permission_required("tardis_portal.change_project")
 @authz.project_write_permissions_required
-def edit_project(request, project_id):
+def edit_project(request, project_id, template="create_project.html"):
     project = Project.objects.get(id=project_id)
 
     c = {
@@ -242,7 +245,8 @@ def edit_project(request, project_id):
                         project.experiments.add(exp)
                     project.save()
                 return _redirect_303("tardis.apps.projects.view_project", project.id)
-        if c["status"] != "Please specify one or more experiments.":
+
+        if "status" not in c:
             c["status"] = "Errors exist in form."
         c["error"] = "true"
     else:
@@ -250,7 +254,7 @@ def edit_project(request, project_id):
 
     c["form"] = form
     # c["project"] = project
-    return render_response_index(request, "create_project.html", c)
+    return render_response_index(request, template, c)
 
 
 @login_required
@@ -293,7 +297,7 @@ def public_projects(request):
 
 @never_cache
 @login_required
-def retrieve_owned_proj_list(request, template_name="ajax/proj_list.html"):
+def retrieve_owned_proj_list(request, template_name="ajax/owned_proj_list.html"):
     projects = []
 
     if "tardis.apps.projects" in settings.INSTALLED_APPS:
@@ -345,3 +349,25 @@ def edit_project_par(request, parameterset_id):
             request, parameterset, otype="project", view_sensitive=view_sensitive
         )
     return return_response_error(request)
+
+
+def load_project_image(request, parameter_id):
+    parameter = ProjectParameter.objects.get(pk=parameter_id)
+    project_id = parameter.parameterset.project.id
+    if authz.has_download_access(request, project_id, "project"):
+        return load_image(request, parameter)
+    return return_response_error(request)
+
+
+@authz.project_download_required
+def display_project_image(request, project_id, parameterset_id, parameter_name):
+    # TODO handle not exist
+
+    if not authz.has_download_access(request, project_id, "project"):
+        return return_response_error(request)
+
+    image = ProjectParameter.objects.get(
+        name__name=parameter_name, parameterset=parameterset_id
+    )
+
+    return HttpResponse(b64decode(image.string_value), content_type="image/jpeg")

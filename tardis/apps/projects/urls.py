@@ -15,9 +15,11 @@ from .views import (
     my_projects,
     public_projects,
     retrieve_owned_proj_list,
+    display_project_image,
+    load_project_image,
 )
 
-# TODO point these to alterntive pages when they are developed
+# TODO point these to alternative pages when they are developed
 
 project_urls = [
     re_path(
@@ -67,6 +69,17 @@ project_urls = [
         r"^ajax/edit_project_parameters/(?P<parameterset_id>\d+)/$",
         edit_project_par,
         name="tardis.apps.projects.views.edit_project_par",
+    ),
+    re_path(
+        r"^display/ProjectImage/load/(?P<parameter_id>\d+)/$",
+        load_project_image,
+        name="tardis.apps.projects.views.load_project_image",
+    ),
+    re_path(
+        r"^display/ProjectImage/(?P<project_id>\d+)/"
+        "(?P<parameterset_id>\d+)/(?P<parameter_name>\w+)/$",
+        display_project_image,
+        name="tardis.apps.projects.views.display_project_image",
     ),
 ]
 

@@ -8,7 +8,7 @@
 
 {% if projects.paginator.num_pages > 1 %}
   {% block top-pagination %}{% pagination projects paginator page_num query_string %}{% endblock %}
-  <!-- Page {{ page_num|add:1 }} of {{ experiments.paginator.num_pages }} -->
+  <!-- Page {{ page_num|add:1 }} of {{ projects.paginator.num_pages }} -->
 {% endif %}
 
 {% for proj in projects %}

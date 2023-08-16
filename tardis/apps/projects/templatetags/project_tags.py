@@ -19,7 +19,7 @@ register = template.Library()
 #    Returns all experiment objects in a project.
 #    """
 #    return Experiment.safe.all(user=user).filter(project__id=project_id)
-@register.simple_tag
+'''@register.simple_tag
 def project_get_recent_experiments(project_id, user):
     """
     Return the 5 most recently updated experiments for this project
@@ -32,7 +32,7 @@ def project_get_recent_experiments(project_id, user):
     return experiments
 
 
-'''
+
 @register.simple_tag
 def project_experiments_badge(project_id, user):
     """
