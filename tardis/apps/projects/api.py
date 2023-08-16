@@ -520,15 +520,17 @@ class ProjectResource(ModelResource):
                         aclOwnershipType=ProjectACL.OWNER_OWNED,
                     )
                     acl.save()
+            institutions = []
             for inst_uri in bundle.data.get("institution", []):
                 try:
                     institute = InstitutionResource.get_via_uri(
                         InstitutionResource(), inst_uri, bundle.request
                     )
-                    bundle.obj.institution.add(institute)
+                    institutions.append(institute)
+                    # bundle.obj.institution.add(institute)
                 except NotFound:
                     pass
-
+            bundle.data["institutions"] = institutions
         return super().hydrate_m2m(bundle)
 
     def obj_create(self, bundle, **kwargs):
