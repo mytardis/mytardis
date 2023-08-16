@@ -95,12 +95,12 @@ class Project(models.Model):
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
 
-    @property
-    def tags_for_indexing(self):
-        """Tags for indexing
-        Used in Elasticsearch indexing.
-        """
-        return " ".join([tag.name for tag in self.tags.all()])
+    # @property
+    # def tags_for_indexing(self):
+    #    """Tags for indexing
+    #    Used in Elasticsearch indexing.
+    #    """
+    #    return " ".join([tag.name for tag in self.tags.all()])
 
     def getParameterSets(self):
         """Return the project parametersets associated with this
