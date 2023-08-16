@@ -671,9 +671,9 @@ class ProjectResource(ModelResource):
             bundle (Bundle): The bundle created when the project is created
             classification (int): The iteger representaion of the data classification
         """
-        project = bundle.obj
-        project.data_classification.classification = classification
-        return project
+        # project = bundle.obj
+        bundle.obj.data_classification.classification = classification
+        return bundle
 
     def hydrate_m2m(self, bundle):
         """
