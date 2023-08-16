@@ -410,10 +410,10 @@ class ProjectResource(ModelResource):
     # def dehydrate_tags(self, bundle):
     #    return list(map(str, bundle.obj.tags.all()))
 
-    def save_m2m(self, bundle):
-        # tags = bundle.data.get("tags", [])
-        # bundle.obj.tags.set(*tags)
-        return super().save_m2m(bundle)
+    # def save_m2m(self, bundle):
+    #    tags = bundle.data.get("tags", [])
+    #    bundle.obj.tags.set(*tags)
+    #    return super().save_m2m(bundle)
 
     class Meta:
         authentication = MyTardisAuthentication()
