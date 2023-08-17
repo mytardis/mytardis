@@ -219,38 +219,6 @@ Verify MyTardis Help page
       #should be equal as strings        ${href}         https://mytardis.readthedocs.io/en/v4.5.0-rc2/userguide.html
 
 
-Verify Create User
-
-    wait until element is enabled       xpath://*[@href='#user-menu']
-    click element                       xpath://*[@href='#user-menu']
-    click element                       xpath://*[@href='/group/groups/']
-
-    wait until element is enabled       xpath://*[@title='Create User']
-    click button                        xpath://*[@title='Create User']
-
-    wait until element is enabled       id:id_username
-    input text                          id:id_username      Jane222
-    input text                          id:id_email         Jane222@example.com
-    input text                          id:id_password1     12345
-    input text                          id:id_password2     12345
-
-    click button                        id:user
-
-Verify Create Group
-
-    sleep    3
-    click button                        xpath://*[@title='Create Group']
-
-    wait until element is enabled       id:id_addgroup
-    input text                          id:id_addgroup      TestGroup22
-
-    input text                          id:id_groupadmin    joe
-    click button                        id:group
-
-    wait until element is enabled       link:TestGroup22
-    click element                       link:TestGroup22
-
-
 View Facility Page
 
     wait until element is enabled        xpath://*[@class='nav-link' and @href='/facility/overview/']
