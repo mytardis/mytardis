@@ -68,8 +68,8 @@ GENERIC_PUBLICATION_DATASET_SCHEMA = PUBLICATION_SCHEMA_ROOT + 'generic/'
 DOI_MINT_ENABLED = True
 DOI_ENDPOINT = 'https://ardc_doi_mint_url'
 DOI_PREFIX = 'doi_prefix_here'
-# DOI events: draft | register | publish
-DOI_EVENT = 'draft'
+# DOI events: hide | register | publish
+DOI_EVENT = 'hide'
 DOI_USERNAME = 'user_name'
 DOI_PASSWORD = 'password'
 DOI_PUBLISHER = 'publisher name'

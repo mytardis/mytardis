@@ -40,7 +40,7 @@ module.exports = {
         dataset_view_badges: "./assets/js/apps/badges/components/DatasetViewPageBadges.jsx",
         dataset_tiles: "./assets/js/apps/tiles/index.jsx",
         choose_rights: "./assets/js/apps/choose_rights/index.jsx",
-        publication_workflow: "./tardis/apps/publication_workflow/components/index.jsx",
+        publication_workflow: "./assets/js/apps/publication_workflow/components/index.jsx",
     },
     output: {
         path: path.resolve("./assets/bundles/"),
