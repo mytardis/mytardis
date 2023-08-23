@@ -28,20 +28,20 @@
         <div class="col">
           <h5 class="text-uppercase text-muted mb-0">Storage</h5>
           <span class="h2 font-weight-bold mb-0 stat-counter" data-counter-current="0"
-            data-counter-target="{{ stats.storage|floatdivideby:stats_scale|floatformat:2 }}">-</span>{{ stats_units }}
+            data-counter-target="{{ stats.storage|default:0|floatdivideby:stats_scale|floatformat:2 }}">-</span>{{ stats_units }}
         </div>
         <div class="col">
           <h5 class="text-uppercase text-muted mb-0">Files</h5>
           <span class="h2 font-weight-bold mb-0 stat-counter" data-counter-current="0" data-counter-is-int
-            data-counter-target="{{ stats.files }}">-</span>
+            data-counter-target="{{ stats.files|default:0 }}">-</span>
         </div>
         <div class="col">
           <h5 class="text-uppercase text-muted mb-0">Datasets</h5>
-          <span class="h2 font-weight-bold mb-0 stat-counter" data-counter-current="0" data-counter-target="{{ stats.datasets }}" data-counter-is-int>-</span>
+          <span class="h2 font-weight-bold mb-0 stat-counter" data-counter-current="0" data-counter-target="{{ stats.datasets|default:0 }}" data-counter-is-int>-</span>
         </div>
         <div class="col">
           <h5 class="text-uppercase text-muted mb-0">Experiments</h5>
-          <span class="h2 font-weight-bold mb-0 stat-counter" data-counter-current="0" data-counter-target="{{ stats.experiments }}" data-counter-is-int>-</span>
+          <span class="h2 font-weight-bold mb-0 stat-counter" data-counter-current="0" data-counter-target="{{ stats.experiments|default:0 }}" data-counter-is-int>-</span>
         </div>
       </div>
 
