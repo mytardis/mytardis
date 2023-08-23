@@ -46,23 +46,26 @@ class Command(BaseCommand):
 
     def _create_snapshot(self, storage=None, files=None, datasets=None,
                          experiments=None, facility=None):
-        self.stdout.write(
-            self.style.SUCCESS('Creating snapshot')
-        )
+        self.stdout.write("\nTaking snapshot of usage:")
 
         self.stdout.write(
-             self.style.SUCCESS((f'Storage: {storage}, Files: {files}, '
-                                 f'Datasets: {datasets}, '
-                                 f'Experiments: {experiments}, '
-                                 f'Facility: {facility}'))
+            (f'Storage: {storage}, Files: {files}, '
+             f'Datasets: {datasets}, '
+             f'Experiments: {experiments}, '
+             f'Facility: {facility}')
         )
 
-        Snapshot.objects.create(
-            facility=facility,
-            storage=storage,
-            files=files,
-            datasets=datasets,
-            experiments=experiments
-        )
+        try:
+            Snapshot.objects.create(
+                facility=facility,
+                storage=storage,
+                files=files,
+                datasets=datasets,
+                experiments=experiments
+            )
+            self.stdout.write(self.style.SUCCESS("SUCCESS"))
+        except Exception as exc:
+            self.stdout.write(self.style.ERROR(exc))
 
-        self.stdout.write(self.style.SUCCESS("SUCCESS\n"))
+
+
