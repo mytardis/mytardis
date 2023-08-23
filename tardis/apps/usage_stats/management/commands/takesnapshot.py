@@ -51,9 +51,9 @@ class Command(BaseCommand):
         )
 
         self.stdout.write(
-             self.style.SUCCESS((f'Storage: {storage}, Files: {files}'
+             self.style.SUCCESS((f'Storage: {storage}, Files: {files}, '
                                  f'Datasets: {datasets}, '
-                                 f'Experiments: {experiments}'
+                                 f'Experiments: {experiments}, '
                                  f'Facility: {facility}'))
         )
 
