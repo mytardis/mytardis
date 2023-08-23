@@ -32,6 +32,7 @@ wheelhouse/
 tardis/settings.py
 tardis/settings.yaml
 tardis/tardis_portal/tests/rifcs/MyTARDIS-1.xml
+tardis/tardis_portal/templates/tardis_portal/index_intro.html
 var/
 versions.cfg
 webpack-stats.json
