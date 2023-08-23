@@ -3,9 +3,9 @@ from django import template
 register = template.Library()
 
 
-def intdivideby(value, arg):
+def floatdivideby(value, arg):
     """Divides by arg"""
-    return int(int(value) / arg)
+    return float(float(value) / arg)
 
 
-register.filter('intdivideby', intdivideby)
+register.filter('floatdivideby', floatdivideby)

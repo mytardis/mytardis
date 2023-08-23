@@ -167,6 +167,8 @@ class IndexView(TemplateView):
                 'stats': Snapshot.get_latest_snapshot(facility.id),
             })
 
+        c['stats_units'] = 'PB'
+        c['stats_scale'] = 1000000
         c['facility_stats'] = facility_stats
         c['stats'] = Snapshot.get_latest_snapshot()
 
