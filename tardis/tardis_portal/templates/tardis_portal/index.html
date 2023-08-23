@@ -28,7 +28,7 @@
         <div class="col">
           <h5 class="text-uppercase text-muted mb-0">Storage</h5>
           <span class="h2 font-weight-bold mb-0 stat-counter" data-counter-current="0"
-            data-counter-target="{{ stats.storage|floatdivideby:stats_scale }}">-</span>{{ stats_units }}
+            data-counter-target="{{ stats.storage|floatdivideby:stats_scale|floatformat:2 }}">-</span>{{ stats_units }}
         </div>
         <div class="col">
           <h5 class="text-uppercase text-muted mb-0">Files</h5>
