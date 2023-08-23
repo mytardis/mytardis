@@ -228,6 +228,15 @@ i.group-icon :hover {
     font-style: italic;
     text-transform: none;
 }
+
+.facilities .card {
+    background-color: #E8F6FF;
+    width: 200px;
+    height: 200px;
+    margin: 5px;
+    float: left;
+}
+
 /* end index page */
 
 /* dataset tiles */

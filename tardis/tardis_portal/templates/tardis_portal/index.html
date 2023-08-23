@@ -47,16 +47,16 @@
 
       <h2>Facilities</h2>
 
-      {% for facility in facility_stats %}
-        <div style="float: left;">
-          <div class="rounded border shadow-sm facility"
-              style="width: 200px; height: 200px; margin: 5px; background: url('{% static 'images/facilities' %}/{{ facility.id }}.png')">
-              <div style="color: white; text-align: center; background-color: #34568c; " class="rounded-top">
-                  <strong>{{ facility.name }}</strong>&nbsp;{{ facility.stats.storage|default:0|floatdivideby:stats_scale|floatformat:2 }}{{ stats_units }}<br />
-              </div>
+      <div class="clearfix facilities">
+        {% for facility in facility_stats %}
+          <div class="card shadow-sm">
+            <div class="card-body rounded-top" style="background: url('{% static 'images/facilities' %}/{{ facility.id }}.png')"></div>
+            <div class="card-footer">
+              <strong>{{ facility.name }}</strong>&nbsp;{{ facility.stats.storage|default:0|floatdivideby:stats_scale|floatformat:2 }}{{ stats_units }}
             </div>
-        </div>
-      {% endfor %}
+          </div>
+        {% endfor %}
+      </div>
     </div>
     <div class="col-md-4">
       <h2>Recent Public Experiments</h2>
