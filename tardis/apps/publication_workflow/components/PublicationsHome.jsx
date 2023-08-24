@@ -16,6 +16,8 @@ const PublicationsHome = () => {
   const [toastShow, setToastShow] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [listViewType, setListViewType] = useState('grid');
+  const [message, setMessage] = useState('');
+
   const onResumeDraft = (e, id) => {
     setResumeDraftId(id);
     // fetch  data
@@ -25,23 +27,31 @@ const PublicationsHome = () => {
     });
   };
   const handleShow = () => setShow(true);
+  const handleError = (err) => {
+    setMessage((
+      <div className="alert alert-danger">Could not fetch publications.</div>
+    ))
+  };
 
   const onPubUpdate = () => {
+    setMessage('');
+
     // TODO only load specific pubType
     fetchPubs('draft').then((data) => {
       setDraftPubsList(data);
-    });
+    }).catch(handleError);
     fetchPubs('released').then((data) => {
       setReleasePubsList(data);
-    });
+    }).catch(handleError);
     fetchPubs('retracted').then((data) => {
       setRetractedPubsList(data);
-    });
+    }).catch(handleError);
     fetchPubs('scheduled').then((data) => {
       setScheduledPubsList(data);
-    });
+    }).catch(handleError);
   };
   const handleClose = (pubCreate = true) => {
+    setMessage('');
     setShow(false);
 
     if (pubCreate) {
@@ -63,16 +73,16 @@ const PublicationsHome = () => {
   useEffect(() => {
     fetchPubs('draft').then((data) => {
       setDraftPubsList(data);
-    });
+    }).catch(handleError);
     fetchPubs('released').then((data) => {
       setReleasePubsList(data);
-    });
+    }).catch(handleError);
     fetchPubs('retracted').then((data) => {
       setRetractedPubsList(data);
-    });
+    }).catch(handleError);
     fetchPubs('scheduled').then((data) => {
       setScheduledPubsList(data);
-    });
+    }).catch(handleError);
   }, []);
   return (
     <Fragment>
@@ -89,7 +99,7 @@ const PublicationsHome = () => {
         handleClose={handleClose}
         initialData={initialData}
       />
-
+      {message}
       <PublicationsList
         releasedPubsList={releasedPubsList}
         draftPubsList={draftPubsList}
