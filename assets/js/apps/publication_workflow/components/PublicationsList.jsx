@@ -29,6 +29,8 @@ const PublicationsList = ({
       setToastMessage('Publication deleted Successfully');
       setShowToast(true);
       onPubUpdate('draft');
+    }).catch((err) => {
+      alert('There was an error in completing the request.')
     });
   };
   const handleRetract = () => {
@@ -37,6 +39,8 @@ const PublicationsList = ({
       setToastMessage('Publication retracted Successfully');
       setShowToast(true);
       onPubUpdate('');
+    }).catch((err) => {
+      alert('There was an error in completing the request.')
     });
   };
   const handleDeleteClose = () => {
