@@ -13,7 +13,7 @@ import LicensingAndReleaseForm from '../Forms/LicensingAndReleaseForm';
 
 
 const Stepper = ({
-  children, initialValues, onSubmit,
+  children, initialValues, onSubmit, message = '', onStepChange = () => {},
 }) => {
   const [stepNumber, setStepNumber] = useState(0);
   const steps = React.Children.toArray(children.props.children);
@@ -26,11 +26,13 @@ const Stepper = ({
   const next = (values) => {
     setSnapshot(values);
     setStepNumber(Math.min(stepNumber + 1, totalSteps - 1));
+    onStepChange();
   };
 
   const previous = (values) => {
     setSnapshot(values);
     setStepNumber(Math.max(stepNumber - 1, 0));
+    onStepChange();
   };
 
   // eslint-disable-next-line consistent-return
@@ -81,6 +83,7 @@ const Stepper = ({
         <Form noValidate>
           <ProgressBar activeStep={stepNumber + 1} />
           {renderStepContent(formik, stepNumber)}
+          {message !== '' ? message : <></>}
           <Row>
             <Col>
               {stepNumber > 0 && (
