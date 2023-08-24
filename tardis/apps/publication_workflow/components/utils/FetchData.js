@@ -59,10 +59,20 @@ const SubmitFormData = async (data, action, publicationId) => {
       'Content-Type': 'application/json',
     },
   });
+
+  if (!response.ok) {
+    throw Error(response.status)
+  }
+
   return response.json();
 };
 const fetchPubs = async (pubType) => {
   const response = await fetch(`/apps/publication-workflow/${pubType}_pubs_list`);
+
+  if (!response.ok) {
+    throw Error(response.status)
+  }
+
   return response.json();
 };
 
@@ -75,6 +85,11 @@ const deletePub = async (pubId) => {
         'Content-Type': 'application/json',
       },
     });
+
+  if (!response.ok) {
+    throw Error(response.status)
+  }
+
   return response.json();
 };
 
@@ -88,6 +103,11 @@ const retractPub = async (pubId) => {
         'Content-Type': 'application/json',
       },
     });
+
+  if (!response.ok) {
+    throw Error(response.status)
+  }
+
   return response.json();
 };
 export {

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Modal } from 'react-bootstrap';
 import * as Yup from 'yup';
 import PropTypes from 'prop-types';
@@ -10,6 +10,16 @@ const FormModal = ({
   resumeDraftId, show, handleClose, initialData,
 }) => {
   useEffect(() => {}, [resumeDraftId]);
+  const [stepperMessage, setStepperMessage] = useState('');
+
+  const handleError = (err) => {
+    setStepperMessage((
+      <div className="alert alert-danger mt-2 mb-0">
+        There was an error in processing your request.
+      </div>
+    ));
+  }
+
   return (
     <>
       <Modal show={show} onHide={handleClose} size="lg" backdrop="static" keyboard={false}>
@@ -45,13 +55,19 @@ const FormModal = ({
               consent:
                 'acknowledge' in initialData ? initialData.acknowledge : false,
             }}
-            onSubmit={values => SubmitFormData(values, 'submit', resumeDraftId).then(() => {
-              handleClose();
-            })}
+            onSubmit={
+              (values) => {
+                SubmitFormData(values, 'submit', resumeDraftId).then(() => {
+                  handleClose();
+                }).catch(handleError)
+              }
+            }
             onClose={() => {
               handleClose(false);
             }}
             modalFooter
+            message={stepperMessage}
+            onStepChange={() => { setStepperMessage('') }}
           >
             <>
               <Steps
