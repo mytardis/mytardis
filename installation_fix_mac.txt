@@ -1,0 +1,65 @@
+MagickWand shared library not found.
+
+brew reinstall freetype
+
+brew install imagemagick
+echo 'export MAGICK_HOME=/opt/homebrew/opt/imagemagick/' >> ~/.zshrc
+echo 'export PATH="/opt/homebrew/opt/imagemagick/bin:$PATH"' >> ~/.zshrc
+
+
+The chromium binary is not available for arm64
+brew install chromium --no-quarantine
+
+export PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+export PUPPETEER_EXECUTABLE_PATH='which chromium'
+
+Don’t forget to run source ~/.zshrc afterwards
+
+ModuleNotFoundError: No module named 'monash_openid_login'
+#install monash openid login
+
+pip install git+https://github.com/monash-merc/Monash_OpenID_Login@master#egg=monash_openid_login
+
+install elasticsearch7:
+
+https://gist.github.com/todgru/0ba097d63318313f12a52594217f8e2b
+
+#ModuleNotFoundError: No module named 'yaml'
+
+pip3 install pyyaml
+
+
+#ModuleNotFoundError: No module named 'sentry_sdk'
+pip install sentry-sdk
+
+
+### django.core.exceptions.ImproperlyConfigured: Error loading psycopg2 module: No module named 'psycopg2'
+# find pg_config location:
+## sudo apt-get install libpq-dev
+export PATH=$PATH:/Library/PostgreSQL/12/bin
+
+pip install psycopg2
+
+#You probably had not installed ImageMagick library.
+Try to install:
+  https://docs.wand-py.org/en/latest/guide/install.html
+sudo apt-get install libmagickwand-dev
+pip install Wand
+
+## ModuleNotFoundError: No module named 'yaml'
+
+pip install pyyaml
+## ModuleNotFoundError: No module named 'sentry_sdk'
+
+pip install sentry-sdk
+
+ModuleNotFoundError: No module named 'tardis.apps.mydata'
+
+## This app should be installed in "tardis/apps/mydata":
+### https://github.com/mytardis/mytardis-app-mydata
+cd /opt/mytardis/develop/tardis/apps
+git clone https://github.com/mytardis/mytardis-app-mydata mydata
+
+### ImportError: failed to find libmagic.  Check your installation
+pip uninstall python-magic
+pip install python-magic
