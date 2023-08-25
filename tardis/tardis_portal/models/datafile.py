@@ -633,6 +633,7 @@ class DataFileObject(models.Model):
 
     @file_object.setter
     def file_object(self, file_object):
+        print('---- call file object: {}'.format(file_object))
         """
         Write contents of file object to storage_box
 
@@ -644,6 +645,7 @@ class DataFileObject(models.Model):
         file_object.seek(0)
         self.uri = self._storage.save(self.uri or self.create_set_uri(),
                                       file_object)  # TODO: define behaviour
+        print('--- file object uri: {}'.format(self.uri))
         # when overwriting existing files
         file_object.close()
         self.verified = False

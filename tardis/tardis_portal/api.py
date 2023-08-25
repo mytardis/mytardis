@@ -1076,13 +1076,16 @@ class DataFileResource(MyTardisModelResource):
                 for replica in bundle.data['replicas']:
                     replica.update({'file_object': newfile})
             else:
+                print('===== no replicas in bundle, then create a replicas with file_object')
                 bundle.data['replicas'] = [{'file_object': newfile}]
-
+                print('------ bundle with replicas: {}'.format(bundle))
             del(bundle.data['attached_file'])
 
         return bundle
 
     def obj_create(self, bundle, **kwargs):
+
+        print('--- in obj create: bundle data is: {}'.format(bundle.data))
         '''
         Creates a new DataFile object from the provided bundle.data dict.
 
@@ -1090,6 +1093,7 @@ class DataFileResource(MyTardisModelResource):
         '''
         try:
             retval = super().obj_create(bundle, **kwargs)
+            print('----- retval is : {}'.format(retval))
         except IntegrityError as err:
             if "duplicate key" in str(err):
                 raise ImmediateHttpResponse(HttpResponse(status=409))
