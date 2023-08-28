@@ -113,13 +113,13 @@ const PublicationCard = ({
                     <i className="fa fa-trash me-1" />
                     Delete Draft
                   </Button>
-                  <button type="button" className="btn btn-info btn-sm me-2 mb-1">
-                    Mint Doi
-                  </button>
-                  <button type="button" className="btn btn-success btn-sm mb-1">
-                    <i className="fa fa-share-alt me-1" />
-                    Share
-                  </button>
+                  {/*<button type="button" className="btn btn-info btn-sm me-2 mb-1">*/}
+                  {/*  Mint Doi*/}
+                  {/*</button>*/}
+                  {/*<button type="button" className="btn btn-success btn-sm mb-1">*/}
+                  {/*  <i className="fa fa-share-alt me-1" />*/}
+                  {/*  Share*/}
+                  {/*</button>*/}
                 </Fragment>
               );
               default: return (

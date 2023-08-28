@@ -93,17 +93,20 @@ def process_form(request):
         elif form_state['action'] == 'update-attribution-and-licensing':
             update_attribution_and_licensing(request, form_state, publication)
         elif form_state['action'] == 'submit':
+            # final step for submit publication
+            # form process to clear the form action and save the state
+            __form_process(request, form_state_parameter, form_state, publication)
             # mint the doi
             doi = submit_form(request, form_state, publication)
             # return the doi value.
             return JsonResponse({'success': True, 'doi': doi})
 
-        # form post process to clear the form action and save the state
-        __post_form_process(request, form_state_parameter, form_state, publication)
+        # form process to clear the form action and save the state
+        __form_process(request, form_state_parameter, form_state, publication)
     except Exception as ex:
         if form_state_parameter and publication:
             # handle any unsaved data
-            __post_form_process(request, form_state_parameter, form_state, publication)
+            __form_process(request, form_state_parameter, form_state, publication)
         # return the error response
         error_dict = {'error': '{}'.format(ex)}
         return JsonResponse(error_dict, status=400)
@@ -111,7 +114,7 @@ def process_form(request):
     return JsonResponse(form_state)
 
 
-def __post_form_process(request, experiment_parameter, form_state, publication):
+def __form_process(request, experiment_parameter, form_state, publication):
     # to clear the form action and save the state
     form_state['action'] = ''
     experiment_parameter.string_value = json.dumps(form_state)

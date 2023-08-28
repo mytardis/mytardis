@@ -113,7 +113,7 @@ class SearchAppResource(Resource):
                                  Q("term", **{'experiments.objectacls.entityId': group.id})
         ms = ms.add(Search(index='dataset')
                     .extra(size=MAX_SEARCH_RESULTS, min_score=MIN_CUTOFF_SCORE).query(query_dataset)
-                    .query('nested', path='experiments', query=query_dataset_oacl))
+                    .query(type='nested', path='experiments', query=query_dataset_oacl))
 
         query_datafile = Q("match", filename=query_text)
         query_datafile_oacl = Q("term", experiments__objectacls__entityId=user.id) | \
