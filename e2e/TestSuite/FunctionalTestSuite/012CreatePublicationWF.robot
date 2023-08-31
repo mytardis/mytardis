@@ -42,11 +42,14 @@ TEST CASE 12.5: Submit Publication
    Edit Publication        False  ${PublicationTitleValue}  ${PublicationDescriptionValue}  ${SelectExperimentValue}  ${SelectDatasetValue}  ${DatasetDescriptionValue}   ${AuthorsName1Value}    ${AuthorsInstitution1Value}  ${AuthorsEmail1Value}   ${AuthorsName2Value}    ${AuthorsInstitution2Value}  ${AuthorsEmail2Value}   ${SelectAcknowledgmentValue}   ${SelectLicenseValue}   ${ReleaseDateValue}
    Submit Publication
 
+TEST CASE 12.6: Verify DOI
 
+    Verify DOI    ${PublicationTitleValue}
 
+TEST CASE 12.7: Validate publication mandatory fields
 
-
-
+    Create Publication
+    Validate mandatory fields on Publication
 
 *** Keywords ***
 
@@ -147,6 +150,65 @@ Delete draft Publication
     Take Screenshot
     Sleep    4
 
+Verify DOI
+    [Arguments]            ${PublicationName}
+
+    Wait Until Element Is Enabled    xpath://*[contains(text(),'Test publication')]/../parent::div//*[@class="card-link"]       30
+    Click Link                       xpath://*[contains(text(),'Test publication')]/../parent::div//*[@class="card-link"]
+    Take Screenshot
+
+Validate mandatory fields on Publication
+
+    #Click next to trigger error messages on Select Dataset page
+    Wait Until Element Is Enabled    ${Nextbtn}     30
+    Click Button        ${Nextbtn}
+
+    #Verify error messages displayed
+    Wait Until Element Is Visible    xpath://*[@class='invalid-feedback' and contains(text(),'Publication title is required')]      30
+    Wait Until Element Is Visible    xpath://*[@class='invalid-feedback' and contains(text(),'Publication description is required')]    30
+    Wait Until Element Is Visible    xpath://*[@class='ml-3 invalid-feedback' and contains(text(),'Select at least 1 dataset')]     30
+    Take Screenshot
+
+    #Fill in fields to be able to go to next page
+    Input Text      ${PublicationTitle}                         ${PublicationTitleValue}        True
+    Input Text      ${PublicationDescription}                   ${PublicationDescriptionValue}  True
+    Select From List By Label       ${SelectExperiment}         ${SelectExperimentValue}
+    Wait Until Element Is Enabled    ${SelectDataset}           30
+    Input Text      ${SelectDataset}                            ${SelectDatasetValue}
+    Wait Until Element Is Enabled    ${SelectDatasetOption}     30
+    Select From List By Label        ${SelectDatasetOption}     ${SelectDatasetValue}
+    Click Button        ${Nextbtn}
+
+
+    #No mandatory fields in Extra Information so just click another next
+    Wait Until Element Is Enabled    ${Nextbtn}     30
+    Click Button        ${Nextbtn}
+
+    #Click next to trigger error messages
+    Wait Until Element Is Enabled    ${Nextbtn}     30
+    Click Button        ${Nextbtn}
+
+    #Verify error messages displayed on Attribution page
+    Wait Until Element Is Visible    xpath://*[@class='invalid-feedback' and contains(text(),'Author Name is required')]    30
+    Wait Until Element Is Visible    xpath://*[@class='invalid-feedback' and contains(text(),'Institution is required')]    30
+    Wait Until Element Is Visible    xpath://*[@class='invalid-feedback' and contains(text(),'Email is required')]      30
+    Take Screenshot
+
+    #Fill in fields to be able to go to the next page
+    Input Text      ${AuthorsName1}         ${AuthorsName1Value}
+    Input Text      ${AuthorsInstitution1}  ${AuthorsInstitution1Value}
+    Input Text      ${AuthorsEmail1}        ${AuthorsEmail1Value}
+    Click Button    ${Nextbtn}
+
+    #Click on Save and Finish later button to trigger error messages
+    Wait Until Element Is Enabled    ${SaveAndFinishLaterbtn}
+    Click Button                     ${SaveAndFinishLaterbtn}
+
+    #Verify error messages displayed on License and Release page
+    Wait Until Element Is Visible    xpath://*[@class='invalid-feedback' and contains(text(),'license must be a `number` type, but the final value was: `NaN`.')]  30
+    Wait Until Element Is Visible    xpath://*[@class='card-body']//*[contains(text(),'Select release date')]  30
+    Wait Until Element Is Visible    xpath://*[@class='invalid-feedback' and contains(text(),'Please select checkbox to provide your consent')]  30
+    Take Screenshot
 
 *** Variables ***
 

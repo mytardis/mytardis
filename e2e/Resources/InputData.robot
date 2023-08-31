@@ -23,8 +23,8 @@ ${GroupName1}               TestGroup
 #Publication WF
 ${PublicationTitleValue}            Demo Publication
 ${PublicationDescriptionValue}      Test Publication WF
-${SelectExperimentValue}            SY Exp One
-${SelectDatasetValue}               SYU-Dataset1
+${SelectExperimentValue}            Test Experiment
+${SelectDatasetValue}               Test Dataset
 ${DatasetDescriptionValue}          Test Dataset Description
 ${AuthorsName1Value}                First Author
 ${AuthorsInstitution1Value}         Monash
