@@ -79,7 +79,7 @@ Edit Publication
     Wait Until Element Is Enabled    ${SelectDatasetOption}     30
     Select From List By Label        ${SelectDatasetOption}     ${SelectDatasetValue}
     Take Screenshot
-    Sleep    3
+
     #Add Extra Information
     Wait Until Element Is Enabled       ${Nextbtn}  30
     Click Button        ${Nextbtn}
@@ -87,7 +87,7 @@ Edit Publication
     Wait Until Element Is Enabled       ${DatasetDescription}   30
     Input Text         ${DatasetDescription}     ${DatasetDescriptionValue}
     Take Screenshot
-    Sleep    3
+
     #Add Attribution
     Wait Until Element Is Enabled       ${Nextbtn}  30
     Click Button        ${Nextbtn}
@@ -110,7 +110,7 @@ Edit Publication
 
     Select From List By Label       ${SelectAcknowledgment}     ${SelectAcknowledgmentValue}
     Take Screenshot
-    sleep  3
+
     #Add License and Release
     Wait Until Element Is Enabled       ${Nextbtn}  30
     Click Button        ${Nextbtn}
@@ -121,12 +121,12 @@ Edit Publication
     SeleniumLibrary.Press Keys    None  TAB
     Select Checkbox                  ${Consent}
     Take Screenshot
-    Sleep    3
+
 
 Save Publication as Draft
     Click Button                     ${SaveAndFinishLaterbtn} 
     Take Screenshot
-    Sleep    3
+
 Submit Publication
     Click Button                     ${PubSubmit}
     Take Screenshot
@@ -137,7 +137,7 @@ Open draft Publication
     Wait Until Element Is Enabled    xpath://*[contains(text(),'${PublicationName}')]/../parent::div//*[@class="btn btn-primary btn-sm me-2 mb-1"]      30
     Click Button                     xpath://*[contains(text(),'${PublicationName}')]/../parent::div//*[@class="btn btn-primary btn-sm me-2 mb-1"]
     Take Screenshot
-    Sleep    3
+
     
 Delete draft Publication
     [Arguments]            ${PublicationName}
@@ -148,13 +148,13 @@ Delete draft Publication
     Wait Until Element Is Enabled    xpath://button[@class="btn btn-primary" and contains(text(),'Delete')]     30
     Click Button                     xpath://button[@class="btn btn-primary" and contains(text(),'Delete')]
     Take Screenshot
-    Sleep    4
+    Sleep   4
 
 Verify DOI
     [Arguments]            ${PublicationName}
 
-    Wait Until Element Is Enabled    xpath://*[contains(text(),'Test publication')]/../parent::div//*[@class="card-link"]       30
-    Click Link                       xpath://*[contains(text(),'Test publication')]/../parent::div//*[@class="card-link"]
+    Wait Until Element Is Enabled    xpath://*[contains(text(),'${PublicationName}')]/../parent::div//*[@class="card-link"]       30
+    Click Link                       xpath://*[contains(text(),'${PublicationName}')]/../parent::div//*[@class="card-link"]
     Take Screenshot
 
 Validate mandatory fields on Publication
@@ -204,11 +204,18 @@ Validate mandatory fields on Publication
     Wait Until Element Is Enabled    ${SaveAndFinishLaterbtn}
     Click Button                     ${SaveAndFinishLaterbtn}
 
-    #Verify error messages displayed on License and Release page
+    #Verify error messages displayed on License and Release page on saving as draft
     Wait Until Element Is Visible    xpath://*[@class='invalid-feedback' and contains(text(),'license must be a `number` type, but the final value was: `NaN`.')]  30
     Wait Until Element Is Visible    xpath://*[@class='card-body']//*[contains(text(),'Select release date')]  30
     Wait Until Element Is Visible    xpath://*[@class='invalid-feedback' and contains(text(),'Please select checkbox to provide your consent')]  30
     Take Screenshot
+
+     #Verify error messages displayed on License and Release page on submitting
+    Click Button                     ${PubSubmit}
+    Wait Until Element Is Visible    xpath://*[@class='invalid-feedback' and contains(text(),'license must be a `number` type, but the final value was: `NaN`.')]  30
+    Wait Until Element Is Visible    xpath://*[@class='invalid-feedback' and contains(text(),'Please select checkbox to provide your consent')]  30
+    Take Screenshot
+
 
 *** Variables ***
 

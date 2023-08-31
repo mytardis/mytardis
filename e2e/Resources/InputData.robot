@@ -38,8 +38,8 @@ ${ReleaseDateValue}                 01-08-2023
 
 ${EditPublicationTitleValue}        Edit Test Publication
 ${EditPublicationDescriptionValue}  Edit Test Publication WF
-${EditSelectExperimentValue}        SY Exp One
-${EditSelectDatasetValue}           SYU-Dataset1
+${EditSelectExperimentValue}        Test Experiment
+${EditSelectDatasetValue}           Test Dataset
 ${EditDatasetDescriptionValue}      Edit Test Dataset Description
 ${EditAuthorsName1Value}            Edit First Author
 ${EditAuthorsInstitution1Value}     Edit Monash
