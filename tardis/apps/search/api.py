@@ -272,7 +272,7 @@ class AdvanceSearchAppResource(Resource):
             # add instrument query
             ms = ms.add(Search(index='dataset')
                         .extra(size=MAX_SEARCH_RESULTS, min_score=MIN_CUTOFF_SCORE).query(query_dataset)
-                        .query('nested', path='experiments', query=query_dataset_oacl))
+                        .query(type='nested', path='experiments', query=query_dataset_oacl))
         if 'datafile' in index_list:
             query_datafile = Q("match", filename=query_text)
             if user.is_authenticated:
