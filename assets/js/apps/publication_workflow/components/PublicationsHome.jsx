@@ -27,10 +27,20 @@ const PublicationsHome = () => {
     });
   };
   const handleShow = () => setShow(true);
+
   const handleError = (err) => {
     setMessage((
       <div className="alert alert-danger">Could not fetch publications.</div>
-    ))
+    ));
+  };
+
+  const handlePublicationsListError = (err) => {
+    setMessage((
+      <div className="alert alert-danger">
+        Could not complete the requested operation.
+      </div>
+    ));
+    setShow(false);
   };
 
   const onPubUpdate = () => {
@@ -108,6 +118,7 @@ const PublicationsHome = () => {
         onPubUpdate={onPubUpdate}
         onResumeDraft={onResumeDraft}
         listViewType={listViewType}
+        onError={handlePublicationsListError}
       />
     </Fragment>
   );
