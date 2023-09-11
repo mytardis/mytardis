@@ -1,18 +1,51 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Modal } from 'react-bootstrap';
 import * as Yup from 'yup';
 import PropTypes from 'prop-types';
 import Stepper from './Stepper/Stepper';
 import Steps from './Stepper/Steps';
-import { SubmitFormData } from './utils/FetchData';
+import { ResponseError, SubmitFormData } from './utils/FetchData';
 
 const FormModal = ({
   resumeDraftId, show, handleClose, initialData,
 }) => {
   useEffect(() => {}, [resumeDraftId]);
+  const [stepperMessage, setStepperMessage] = useState('');
+
+  /**
+   * Handle form error
+   *
+   * @param {ResponseError} responseError
+   */
+  const handleError = (responseError) => {
+    if (responseError.isJSON()) {
+      responseError.json().then(data => {
+        setStepperMessage((
+          <div className="alert alert-danger mt-2 mb-0">
+            There was an error in processing your request: {data.error}
+          </div>
+        ));
+      });
+    } else {
+      setStepperMessage((
+        <div className="alert alert-danger mt-2 mb-0">
+          There was an error in processing your request.
+        </div>
+      ));
+    }
+  }
+
+  /**
+   * On show logic for the modal
+   */
+  const onShow = () => {
+    setStepperMessage('');
+  }
+
   return (
     <>
-      <Modal show={show} onHide={handleClose} size="lg" backdrop="static" keyboard={false}>
+      <Modal show={show} onHide={handleClose}
+        size="lg" backdrop="static" keyboard={false} onShow={onShow}>
         <Modal.Body>
           <Stepper
             initialValues={{
@@ -45,13 +78,20 @@ const FormModal = ({
               consent:
                 'acknowledge' in initialData ? initialData.acknowledge : false,
             }}
-            onSubmit={values => SubmitFormData(values, 'submit', resumeDraftId).then(() => {
-              handleClose();
-            })}
+            onSubmit={
+              (values) => {
+                SubmitFormData(values, 'submit', resumeDraftId).then(() => {
+                  handleClose();
+                }).catch(handleError)
+              }
+            }
             onClose={() => {
+              setStepperMessage('');
               handleClose(false);
             }}
             modalFooter
+            message={stepperMessage}
+            onStepChange={() => { setStepperMessage('') }}
           >
             <>
               <Steps
@@ -62,7 +102,7 @@ const FormModal = ({
                     resumeDraftId,
                   ).then(() => {
                     handleClose();
-                  });
+                  }).catch(handleError);
                 }}
                 onClose={() => {
                   handleClose(false);
@@ -97,7 +137,7 @@ const FormModal = ({
                     resumeDraftId,
                   ).then(() => {
                     handleClose();
-                  });
+                  }).catch(handleError);
                 }}
                 onClose={() => {
                   handleClose(false);
@@ -114,7 +154,7 @@ const FormModal = ({
                     resumeDraftId,
                   ).then(() => {
                     handleClose();
-                  });
+                  }).catch(handleError);
                 }}
                 onClose={() => {
                   handleClose(false);
@@ -142,7 +182,7 @@ const FormModal = ({
                     resumeDraftId,
                   ).then(() => {
                     handleClose();
-                  });
+                  }).catch(handleError);
                 }}
                 onClose={() => {
                   handleClose(false);

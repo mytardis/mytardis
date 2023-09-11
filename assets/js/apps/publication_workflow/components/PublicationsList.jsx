@@ -13,6 +13,7 @@ const PublicationsList = ({
   onPubUpdate,
   onResumeDraft,
   listViewType,
+  onError = (error) => {},
 }) => {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [retractModalOpen, setRetractModalOpen] = useState(false);
@@ -23,13 +24,19 @@ const PublicationsList = ({
     'Publication deleted Successfully',
   );
 
+  const handleError = (responseError) => {
+    setDeleteModalOpen(false);
+    setRetractModalOpen(false);
+    onError(responseError);
+  };
+
   const handleDelete = () => {
     deletePub(pubToDelete).then(() => {
       setDeleteModalOpen(false);
       setToastMessage('Publication deleted Successfully');
       setShowToast(true);
       onPubUpdate('draft');
-    });
+    }).catch(handleError);
   };
   const handleRetract = () => {
     retractPub(pubToRetract).then(() => {
@@ -37,7 +44,7 @@ const PublicationsList = ({
       setToastMessage('Publication retracted Successfully');
       setShowToast(true);
       onPubUpdate('');
-    });
+    }).catch(handleError);
   };
   const handleDeleteClose = () => {
     setDeleteModalOpen(false);
@@ -164,4 +171,5 @@ PublicationsList.propTypes = {
   releasedPubsList: PropTypes.array,
   retractedPubsList: PropTypes.array,
   scheduledPubsList: PropTypes.array,
+  onError: PropTypes.func,
 };

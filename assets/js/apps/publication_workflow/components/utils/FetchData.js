@@ -59,10 +59,20 @@ const SubmitFormData = async (data, action, publicationId) => {
       'Content-Type': 'application/json',
     },
   });
+
+  if (!response.ok) {
+    throw new ResponseError(response)
+  }
+
   return response.json();
 };
 const fetchPubs = async (pubType) => {
   const response = await fetch(`/apps/publication-workflow/${pubType}_pubs_list`);
+
+  if (!response.ok) {
+    throw new ResponseError(response)
+  }
+
   return response.json();
 };
 
@@ -75,12 +85,16 @@ const deletePub = async (pubId) => {
         'Content-Type': 'application/json',
       },
     });
+
+  if (!response.ok) {
+    throw new ResponseError(response)
+  }
+
   return response.json();
 };
 
 const retractPub = async (pubId) => {
   const response = await fetch(`/apps/publication-workflow/publication/retract/${pubId}/`,
-
     {
       method: 'POST',
       headers: {
@@ -88,8 +102,44 @@ const retractPub = async (pubId) => {
         'Content-Type': 'application/json',
       },
     });
+
+  if (!response.ok) {
+    throw new ResponseError(response)
+  }
+
   return response.json();
 };
+
+/**
+ * Encapsulates an AJAX error response
+ */
+class ResponseError extends Error {
+  constructor(response) {
+    super();
+    this.response = response;
+  }
+
+  /**
+   * Return true if content-type of response is application/json
+   *
+   * @returns bool
+   */
+  isJSON() {
+    const contentType = this.response.headers.get("content-type");
+
+    return contentType && contentType.indexOf("application/json") !== -1;
+  }
+
+  /**
+   * Equivalent to response.json()
+   *
+   * @returns Promise
+   */
+  json() {
+    return this.response.json();
+  }
+}
+
 export {
-  SubmitFormData, fetchPubs, deletePub, retractPub,
+  SubmitFormData, fetchPubs, deletePub, retractPub, ResponseError,
 };
