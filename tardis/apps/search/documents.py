@@ -71,6 +71,8 @@ def generic_acl_structure():
         properties={
             "pluginId": fields.KeywordField(),
             "entityId": fields.KeywordField(),
+            "canDownload": fields.BooleanField(),
+            "canSensitive": fields.BooleanField(),
         }
     )
 
@@ -138,7 +140,11 @@ def prepare_generic_acls_build(INSTANCE_ACL_SET, return_list):
             acl_dict["pluginId"] = "django_group"
             acl_dict["entityId"] = acl.group.id
         if acl.token is not None:
-            continue  # token access shouldn't be added to search
+            # token access shouldn't be added to search
+            continue
+        # add in permission booleans
+        acl_dict["canDownload"] = acl.canDownload
+        acl_dict["canSensitive"] = acl.canSensitive
         if acl_dict not in return_list:
             return_list.append(acl_dict)
 
