@@ -98,8 +98,9 @@ PUBLIC_USER_ID = 2
 
 # LDAP configuration
 LDAP_USE_TLS = False
-LDAP_URL = "ldap://localhost:38911/"
-
+LDAP_URI = "localhost"
+LDAP_PORT = 38911
+LDAP_USE_LDAPS = False
 LDAP_USER_LOGIN_ATTR = "uid"
 LDAP_USER_ATTR_MAP = {"givenName": "first_name", "sn": "last_name", "mail": "email"}
 LDAP_GROUP_ID_ATTR = "cn"
