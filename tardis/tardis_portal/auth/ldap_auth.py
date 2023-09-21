@@ -33,6 +33,7 @@ LDAP Authentication module.
 
 .. moduleauthor:: Gerson Galang <gerson.galang@versi.edu.au>
 .. moduleauthor:: Russell Sim <russell.sim@monash.edu>
+.. moduleauthor:: Chris Seal <c.seal@auckland.ac.nz> - Updated for ldap3
 """
 
 
@@ -40,7 +41,8 @@ import logging
 
 from django.conf import settings
 
-import ldap
+from ldap3 import SAFE_SYNC, Connection, Server
+from ldap3.core.exceptions import LDAPExceptionError, LDAPInvalidCredentialsResult
 from ldap3.utils.conv import escape_filter_chars
 from ldap3.utils.dn import escape_rdn
 
@@ -58,7 +60,8 @@ class LDAPBackend(AuthProvider, UserProvider, GroupProvider):
     def __init__(
         self,
         name,
-        url,
+        uri,
+        port,
         base,
         login_attr,
         user_base,
@@ -72,7 +75,8 @@ class LDAPBackend(AuthProvider, UserProvider, GroupProvider):
         self.name = name
 
         # Basic info
-        self._url = url
+        self._uri = uri
+        self._port = port
         self._base = base
 
         # Authenticated bind
@@ -93,44 +97,6 @@ class LDAPBackend(AuthProvider, UserProvider, GroupProvider):
         self._group_attr_map = group_attr_map
         self._group_attr_map[self._group_id] = "id"
 
-    def _query(self, base, filterstr, attrlist):
-        """Safely query LDAP"""
-        l = None
-        searchScope = ldap.SCOPE_SUBTREE
-
-        try:
-            l = ldap.initialize(self._url)
-        except ldap.LDAPError as e:
-            logger.error("%s: %s" % (str(e), self._url))
-            return None
-        l.protocol_version = ldap.VERSION3
-
-        try:
-            if self._admin_user and self._admin_pass:
-                l.simple_bind_s(self._admin_user, self._admin_pass)
-            else:
-                l.simple_bind_s()
-        except ldap.LDAPError as e:
-            logger.error(e.args[0]["desc"])
-            if l:
-                l.unbind_s()
-            return None
-
-        safe_dc = escape_rdn(filterstr)
-        safe_filter = escape_filter_chars(safe_dc)
-
-        dn = "dc={}".format(safe_filter)
-
-        try:
-            ldap_result_id = l.search(base, searchScope, dn, attrlist)
-            _, result_data = l.result(ldap_result_id, 1)
-            return result_data
-        except ldap.LDAPError as e:
-            logger.error(str(e))
-        finally:
-            l and l.unbind_s()
-        return None
-
     #
     # AuthProvider
     #
@@ -141,62 +107,120 @@ class LDAPBackend(AuthProvider, UserProvider, GroupProvider):
         if not username or not password:
             return None
 
-        l = None
+        server = None
+
+        if settings.LDAP_USE_LDAPS:
+            server = Server(
+                f"ldaps://{settings.LDAP_URI}", port=settings.LDAP_PORT, use_ssl=True
+            )
+        else:
+            server = Server(f"ldap://{settings.LDAP_URI}", port=settings.LDAP_PORT)
 
         try:
-            userRDN = self._login_attr + "=" + username
-            l = ldap.initialize(self._url)
-            l.protocol_version = ldap.VERSION3
-
-            # To authenticate, we need the user's distinguished name (DN).
-            try:
-                # If all of your users share the same organizational unit,
-                # e.g. "ou=People,dc=example,dc=com", then the DN can be
-                # constructed by concatening the user's relative DN
-                # e.g. "uid=jsmith" with self._user_base, separated by
-                # a comma.
-                userDN = userRDN + "," + self._user_base
-                l.simple_bind_s(userDN, password)
-            except ldap.INVALID_CREDENTIALS:
-                logger.error("Invalid credentials for user %s" % username)
-                return None
-            except ldap.LDAPError:
-                # We failed to bind using the simple method of constructing
-                # the userDN, so let's query the directory for the userDN.
-                if self._admin_user and self._admin_pass:
-                    l.simple_bind_s(self._admin_user, self._admin_pass)
-                ldap_result = l.search_s(self._base, ldap.SCOPE_SUBTREE, userRDN)
-                userDN = ldap_result[0][0]
-                l.simple_bind_s(userDN, password)
-
-            # No LDAPError raised so far, so authentication was successful.
-            # Now let's get the attributes we need for this user:
-            if self._admin_user and self._admin_pass:
-                l.simple_bind_s(self._admin_user, self._admin_pass)
-            retrieveAttributes = list(self._user_attr_map.keys()) + [self._login_attr]
-            ldap_result = l.search_s(
-                self._base, ldap.SCOPE_SUBTREE, userRDN, retrieveAttributes
-            )
-
-            if ldap_result[0][1][self._login_attr][0] == username.encode():
-                # check if the given username in combination with the LDAP
-                # auth method is already in the UserAuthentication table
-                user = ldap_result[0][1]
-                return {
-                    tardis_key: user[ldap_key][0].decode()
-                    for ldap_key, tardis_key in self._user_attr_map.items()
-                }
-            return None
-
-        except ldap.LDAPError as err:
-            logger.error("LDAP error %s" % err)
+            return self._authenticate_with_LDAP(username, server, password)
+        except LDAPExceptionError as err:
+            logger.error(f"LDAP error {err}", exc_info=True)
             return None
         except IndexError:
             logger.error("LDAP has no results")
             return None
+
+    def _authenticate_with_LDAP(self, username, server, password):
+        user_rdn = f"{self._login_attr}={username}"
+        user_dn = f"{user_rdn},{self._user_base}"
+        try:
+            conn = self._bind(server, user_dn, password)
+            logger.debug(conn.bound)
+            conn.unbind()
+        except LDAPInvalidCredentialsResult:
+            logger.error(f"Invalid credentials for user {username}", exc_info=True)
+            return None
+        # except LDAPSessionTerminatedByServerError:
+        # We failed to bind using the simple method of constructing
+        # the userDN, so let's query the directory for the userDN.
+        # if self._admin_user and self._admin_pass:
+        #    admin_dn = f"{self._login_attr}={self._admin_user},{self._user_base}"
+        #    logger.debug("Using Admin account")
+        #    conn = self._bind(server, admin_dn, self._admin_pass)
+        #    logger.debug(conn.bound)
+        #    ldap_result = conn.search(self._base, user_rdn)
+        #    userDN = ldap_result[0][0]
+        #    conn.unbind()
+        #    conn = self._bind(server, userDN, password)
+        #    logger.debug(conn.bound)
+        #    conn.unbind()
+
+        # No LDAPError raised so far, so authentication was successful.
+        # Now let's get the attributes we need for this user:
+        if self._admin_user and self._admin_pass:
+            # admin_dn = f"{self._login_attr}={self._admin_user},{self._user_base}"
+            conn = self._bind(server, self._admin_user, self._admin_pass)
+            retrieveAttributes = list(self._user_attr_map.keys()) + [self._login_attr]
+            ldap_result = conn.search(
+                self._base,
+                f"({user_rdn})",
+                attributes=retrieveAttributes,
+            )
+            conn.unbind()
+            if (
+                ldap_result[2][0]["raw_attributes"][self._login_attr][0]
+                == username.encode()
+            ):
+                # check if the given username in combination with the LDAP
+                # auth method is already in the UserAuthentication table
+                user = ldap_result[2][0]["raw_attributes"]
+                return {
+                    tardis_key: user[ldap_key][0].decode()
+                    for ldap_key, tardis_key in self._user_attr_map.items()
+                }
+        return None
+
+    def _bind(self, server, user_dn, password):
+        conn = Connection(
+            server,
+            user=user_dn,
+            password=password,
+            client_strategy=SAFE_SYNC,
+            raise_exceptions=False,
+        )
+        if settings.LDAP_USE_LDAPS:
+            conn.start_tls()
+        conn.bind()
+        return conn
+
+    def _query(self, base, filterstr, attrlist):
+        """Safely query LDAP"""
+        server = None
+        conn = None
+
+        if settings.LDAP_USE_LDAPS:
+            server = Server(settings.LDAP_URI, port=settings.LDAP_PORT, use_ssl=True)
+        else:
+            server = Server(settings.LDAP_URI, port=settings.LDAP_PORT)
+
+        try:
+            if self._admin_user and self._admin_pass:
+                conn = self._bind(server, self._admin_user, self._admin_pass)
+            else:
+                return None
+        except LDAPExceptionError as err:
+            logger.error(err, exc_info=True)
+            if conn:
+                conn.unbind()
+            return None
+
+        safe_dc = escape_rdn(filterstr)
+        safe_filter = escape_filter_chars(safe_dc)
+        dn = f"dc={safe_filter}"
+
+        try:
+            ldap_result = conn.search(base, dn, attributes=attrlist)
+            return ldap_result[2][0]["raw_attributes"]
+        except LDAPExceptionError as err:
+            logger.error(err, exc_info=True)
         finally:
-            if l:
-                l.unbind_s()
+            conn.unbind()
+        return None
 
     def get_user(self, user_id):
         return self.getUserById(user_id)
@@ -225,7 +249,7 @@ class LDAPBackend(AuthProvider, UserProvider, GroupProvider):
         if not result:
             return None
 
-        for key, val in result[0][1].items():
+        for key, val in result.items():
             user[self._user_attr_map[key]] = val[0].decode()
         return user
 
@@ -234,30 +258,40 @@ class LDAPBackend(AuthProvider, UserProvider, GroupProvider):
             # input is username not email so return username
             return email
 
-        l = None
+        server = None
+        conn = None
         try:
+            if settings.LDAP_USE_LDAPS:
+                server = Server(
+                    settings.LDAP_URI, port=settings.LDAP_PORT, use_ssl=True
+                )
+            else:
+                server = Server(settings.LDAP_URI, port=settings.LDAP_PORT)
+            if self._admin_user and self._admin_pass:
+                admin_dn = f"{self._login_attr}={self._admin_user},{self._user_base}"
+                conn = self._bind(server, admin_dn, self._admin_pass)
+            else:
+                return None
             retrieveAttributes = [self._login_attr]
-            l = ldap.initialize(self._url)
-            l.protocol_version = ldap.VERSION3
             searchFilter = "(|(mail=%s)(mailalternateaddress=%s))" % (email, email)
-            ldap_result = l.search_s(
-                self._base, ldap.SCOPE_SUBTREE, searchFilter, retrieveAttributes
+            ldap_result = conn.search(
+                self._base, searchFilter, attributes=retrieveAttributes
             )
+            ldap_result = conn.entries
 
-            logger.debug(ldap_result)
-            if ldap_result[0][1][self._login_attr][0]:
-                return ldap_result[0][1][self._login_attr][0]
+            if ldap_result[2][0]["raw_attributes"][self._login_attr][0]:
+                return ldap_result[2][0]["raw_attributes"][self._login_attr][0]
             return None
 
-        except ldap.LDAPError:
-            logger.exception("ldap error")
+        except LDAPExceptionError:
+            logger.exception("ldap error", exc_info=True)
             return None
         except IndexError:
             logger.exception("index error")
             return None
         finally:
-            if l:
-                l.unbind_s()
+            if conn:
+                conn.unbind()
 
     #
     # Group Provider
@@ -358,9 +392,14 @@ def ldap_auth(force_create=False):
         raise ValueError("LDAP_BASE must be specified in settings.py")
 
     try:
-        url = settings.LDAP_URL
+        uri = settings.LDAP_URI
     except:
-        raise ValueError("LDAP_URL must be specified in settings.py")
+        raise ValueError("LDAP_URI must be specified in settings.py")
+
+    try:
+        port = settings.LDAP_PORT
+    except:
+        port = 389
 
     try:
         admin_user = settings.LDAP_ADMIN_USER
@@ -404,7 +443,8 @@ def ldap_auth(force_create=False):
 
     _ldap_auth = LDAPBackend(
         "ldap",
-        url,
+        uri,
+        port,
         base,
         user_login_attr,
         user_base,
