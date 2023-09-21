@@ -161,7 +161,6 @@ class LDAPBackend(AuthProvider, UserProvider, GroupProvider):
                 f"({user_rdn})",
                 attributes=retrieveAttributes,
             )
-            logger.debug(ldap_result)
             conn.unbind()
             if (
                 ldap_result[2][0]["raw_attributes"][self._login_attr][0]
@@ -184,16 +183,9 @@ class LDAPBackend(AuthProvider, UserProvider, GroupProvider):
             client_strategy=SAFE_SYNC,
             raise_exceptions=False,
         )
-        logger.debug(server)
-        logger.debug(user_dn)
         if settings.LDAP_USE_LDAPS:
-            logger.debug("Starting TLS")
             conn.start_tls()
-        logger.debug("Connection established")
-        logger.debug(conn.result)
         conn.bind()
-        logger.debug("Connection bound")
-        logger.debug(conn.bound)
         return conn
 
     def _query(self, base, filterstr, attrlist):
@@ -287,7 +279,6 @@ class LDAPBackend(AuthProvider, UserProvider, GroupProvider):
             )
             ldap_result = conn.entries
 
-            logger.debug(ldap_result)
             if ldap_result[2][0]["raw_attributes"][self._login_attr][0]:
                 return ldap_result[2][0]["raw_attributes"][self._login_attr][0]
             return None
