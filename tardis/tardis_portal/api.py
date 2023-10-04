@@ -999,7 +999,7 @@ class ExperimentResource(MyTardisModelResource):
         return orm_filters
 
     def apply_filters(self, request, applicable_filters):
-        if "tardis.apps.identifers" in settings.INSTALLED_APPS:
+        if "tardis.apps.identifiers" in settings.INSTALLED_APPS:
             if (
                 "experiment" in settings.OBJECTS_WITH_IDENTIFIERS
                 and "identifier" in applicable_filters
