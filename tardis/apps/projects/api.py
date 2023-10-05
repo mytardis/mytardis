@@ -178,7 +178,7 @@ def get_or_create_user(username: str) -> User:
     Note: This is UoA specific and should be genericised somehow.
 
     Args:
-        username (str): the username of the user - a unique identifer like a UPI
+        username (str): the username of the user - a unique identifier like a UPI
 
     Raises:
         ValueError: The error raised when it is not possible to create a user
@@ -429,19 +429,29 @@ class InstitutionResource(ModelResource):
         if filters is None:
             filters = {}
         orm_filters = super().build_filters(filters)
-        orm_filters = build_identifier_aware_filter(
-            IdentifierObjects.INSTITUTION,
-            orm_filters,
-            filters,
-        )
+        if "tardis.apps.identifiers" in settings.INSTALLED_APPS and (
+            "institution" in settings.OBJECTS_WITH_IDENTIFIERS
+            and "identifier" in filters
+        ):
+            query = filters["identifier"]
+            qset = Q(identifiers__identifier__iexact=query)
+            orm_filters.update({"identifier": qset})
         return orm_filters
 
     def apply_filters(self, request, applicable_filters):
-        custom, applicable_filters = apply_identifier_aware_filter(
-            IdentifierObjects.INSTITUTION,
-            applicable_filters,
-        )
+        if "tardis.apps.identifiers" in settings.INSTALLED_APPS:
+            if (
+                "institution" in settings.OBJECTS_WITH_IDENTIFIERS
+                and "identifier" in applicable_filters
+            ):
+                custom = applicable_filters.pop("identifier")
+            else:
+                custom = None
+        else:
+            custom = None
+
         semi_filtered = super().apply_filters(request, applicable_filters)
+
         return semi_filtered.filter(custom) if custom else semi_filtered
 
     # End of custom filter code
@@ -499,26 +509,26 @@ class ProjectResource(ModelResource):
     # https://stackoverflow.com/questions/10021749/ \
     # django-tastypie-advanced-filtering-how-to-do-complex-lookups-with-q-objects
 
-    def build_filters(
-        self,
-        filters: Optional[Dict[str, Any]] = None,
-        ignore_bad_filters: bool = False,
-    ) -> Dict[str, Any]:
+    def build_filters(self, filters=None, ignore_bad_filters=False):
         if filters is None:
             filters = {}
         orm_filters = super().build_filters(filters)
-        orm_filters = build_identifier_aware_filter(
-            IdentifierObjects.PROJECT,
-            orm_filters,
-            filters,
-        )
+
+        if "tardis.apps.identifiers" in settings.INSTALLED_APPS and (
+            "project" in settings.OBJECTS_WITH_IDENTIFIERS and "identifier" in filters
+        ):
+            query = filters["identifier"]
+            qset = Q(identifiers__identifier__iexact=query)
+            orm_filters.update({"identifier": qset})
         return orm_filters
 
     def apply_filters(self, request, applicable_filters):
-        custom, applicable_filters = apply_identifier_aware_filter(
-            IdentifierObjects.PROJECT,
-            applicable_filters,
-        )
+        custom = None
+        if "tardis.apps.identifiers" in settings.INSTALLED_APPS and (
+            "project" in settings.OBJECTS_WITH_IDENTIFIERS
+            and "identifier" in applicable_filters
+        ):
+            custom = applicable_filters.pop("identifier")
         semi_filtered = super().apply_filters(request, applicable_filters)
         return semi_filtered.filter(custom) if custom else semi_filtered
 

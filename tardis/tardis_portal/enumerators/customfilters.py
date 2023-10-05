@@ -7,4 +7,4 @@ from enum import Enum
 class CustomFilters(str, Enum):
     """Enumerator to hold the string values for filtering"""
 
-    IDENTIFIERS = "identifer"
+    IDENTIFIERS = "identifier"

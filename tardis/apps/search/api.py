@@ -6,7 +6,7 @@ Implemented with Tastypie.
 .. moduleauthor:: Manish Kumar <rishimanish123@gmail.com>
 .. moduleauthor:: Mike Laverick <mike.laverick@auckland.ac.nz>
 """
-import datetime
+from datetime import datetime
 import json
 
 from django.conf import settings
