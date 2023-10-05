@@ -1176,7 +1176,7 @@ class SearchAppResource(Resource):
                 # Remove unused fields to reduce data sent to front-end
                 hit.pop("_score")
                 hit.pop("_id")
-                hit.pop("_type")
+                # hit.pop("_type")
                 hit.pop("sort")
 
                 # Get count of all nested objects and download status
