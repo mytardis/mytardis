@@ -78,7 +78,6 @@ def get_all_tardis_apps():
 
 
 INSTALLED_APPS += get_all_tardis_apps() + (
-    #'django_nose',
     "behave_django",
     "django_elasticsearch_dsl",
 )

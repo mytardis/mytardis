@@ -18,18 +18,7 @@ from tardis.tardis_portal.models import DataFile, Dataset, Experiment
 from django_elasticsearch_dsl.test import is_es_online
 
 
-# @override_settings(SINGLE_SEARCH_ENABLED=True)
-# @modify_settings(INSTALLED_APPS={
-#    'append': 'django_elasticsearch_dsl'
-# })
-# @override_settings(ELASTICSEARCH_DSL={
-#        'default': {
-#            'hosts': os.environ.get('ELASTICSEARCH_URL', None)
-#        },
-# })
-# @unittest.skipUnless(
-#    os.environ.get("ELASTICSEARCH_URL", None), "--elasticsearch not set"
-# )
+@unittest.skipUnless(is_es_online(), "Elasticsearch is offline")
 class IndexExperimentTestCase(TestCase):
     def setUp(self):
         print("Elasticsearch is online?", is_es_online())
