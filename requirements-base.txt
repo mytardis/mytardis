@@ -43,4 +43,4 @@ graphql-relay==2.0.1
 django-filter==2.4.0
 django-crispy-forms==1.12.0
 django-graphiql==0.4.4
-django-cors-headers==3.8.0
+django-cors-headers==4.3.0
