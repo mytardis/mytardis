@@ -111,10 +111,15 @@ class LDAPBackend(AuthProvider, UserProvider, GroupProvider):
 
         if settings.LDAP_USE_LDAPS:
             server = Server(
-                f"ldaps://{settings.LDAP_URI}", port=settings.LDAP_PORT, use_ssl=True
+                f"ldaps://{settings.LDAP_URI}",
+                port=settings.LDAP_PORT,
+                use_ssl=True,
             )
         else:
-            server = Server(f"ldap://{settings.LDAP_URI}", port=settings.LDAP_PORT)
+            server = Server(
+                f"ldap://{settings.LDAP_URI}",
+                port=settings.LDAP_PORT,
+            )
 
         try:
             return self._authenticate_with_LDAP(username, server, password)
@@ -130,7 +135,6 @@ class LDAPBackend(AuthProvider, UserProvider, GroupProvider):
         user_dn = f"{user_rdn},{self._user_base}"
         try:
             conn = self._bind(server, user_dn, password)
-            logger.debug(conn.bound)
             conn.unbind()
         except LDAPInvalidCredentialsResult:
             logger.error(f"Invalid credentials for user {username}", exc_info=True)
@@ -154,25 +158,23 @@ class LDAPBackend(AuthProvider, UserProvider, GroupProvider):
         # Now let's get the attributes we need for this user:
         if self._admin_user and self._admin_pass:
             # admin_dn = f"{self._login_attr}={self._admin_user},{self._user_base}"
-            conn = self._bind(server, self._admin_user, self._admin_pass)
-            retrieveAttributes = list(self._user_attr_map.keys()) + [self._login_attr]
-            ldap_result = conn.search(
+            connection = self._bind(server, self._admin_user, self._admin_pass)
+            connection.search(
                 self._base,
                 f"({user_rdn})",
-                attributes=retrieveAttributes,
+                attributes=["*"],
             )
-            conn.unbind()
-            if (
-                ldap_result[2][0]["raw_attributes"][self._login_attr][0]
-                == username.encode()
-            ):
-                # check if the given username in combination with the LDAP
-                # auth method is already in the UserAuthentication table
-                user = ldap_result[2][0]["raw_attributes"]
-                return {
-                    tardis_key: user[ldap_key][0].decode()
-                    for ldap_key, tardis_key in self._user_attr_map.items()
-                }
+            if len(connection.entries) > 1:
+                connection.unbind()
+                raise ValueError("Too many matches in the Active Directory")
+            elif len(connection.entries) == 0:
+                connection.unbind()
+                return None
+            person = connection.entries[0]
+            return {
+                tardis_key: person[ldap_key].value
+                for ldap_key, tardis_key in self._user_attr_map.items()
+            }
         return None
 
     def _bind(self, server, user_dn, password):

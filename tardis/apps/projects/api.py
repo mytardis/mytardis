@@ -90,13 +90,21 @@ def get_user_from_upi(upi: str) -> Optional[Dict[str, str]]:
         Dict[str,str]: A dictionary of fields needed to create a user
     """
     upi = escape_rdn(upi)
-    server = ldap3.Server(settings.LDAP_URL)
+    if settings.LDAP_USE_LDAPS:
+        server = ldap3.Server(
+            f"ldaps://{settings.LDAP_URI}", port=settings.LDAP_PORT, use_ssl=True
+        )
+    else:
+        server = ldap3.Server(f"ldap://{settings.LDAP_URI}", port=settings.LDAP_PORT)
     search_filter = f"({settings.LDAP_USER_LOGIN_ATTR}={upi})"
     with ldap3.Connection(
         server,
         user=settings.LDAP_ADMIN_USER,
         password=settings.LDAP_ADMIN_PASSWORD,
+        client_strategy=ldap3.SAFE_SYNC,
     ) as connection:
+        if settings.LDAP_USE_LDAPS:
+            connection.start_tls()
         try:
             data = _get_data_from_active_directory_(connection, search_filter)
             if not data:
@@ -112,7 +120,8 @@ def get_user_from_upi(upi: str) -> Optional[Dict[str, str]]:
 
 
 def _get_data_from_active_directory_(
-    connection: ldap3.Connection, search_filter: str
+    connection: ldap3.Connection,
+    search_filter: str,
 ) -> Optional[Dict[str, str]]:
     """With connection to Active Directory, run a query
 
