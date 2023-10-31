@@ -41,7 +41,7 @@ class SimpleSearchTest(MyTardisResourceTestCase):
 
     def test_simple_search_authenticated_user(self):
         response = self.api_client.get(
-            "/api/v1/search/?query=test", authentication=self.get_credentials()
+            "/api/search/?query=test", authentication=self.get_credentials()
         )
         data = json.loads(response.content.decode())
         self.assertEqual(len(data["objects"][0]["hits"]["experiments"]), 1)
@@ -51,7 +51,7 @@ class SimpleSearchTest(MyTardisResourceTestCase):
     def test_simple_search_unauthenticated_user(self):
         self.testexp.public_access = 100
         self.testexp.save()
-        response = self.api_client.get("/api/v1/search/?query=test")
+        response = self.api_client.get("/api/search/?query=test")
         data = json.loads(response.content.decode())
         self.assertEqual(len(data["objects"][0]["hits"]["experiments"]), 1)
         self.assertEqual(len(data["objects"][0]["hits"]["datasets"]), 1)
