@@ -333,7 +333,9 @@ class DatasetDocument(MyTardisDocument):
     def prepare_public_access(self, instance):
         if settings.ONLY_EXPERIMENT_ACLS:
             flags = instance.experiments.all().values_list("public_access", flat=True)
-            return max(list(flags))
+            if list(flags):
+                return max(list(flags))
+            return 1
         return instance.public_access
 
     def prepare_acls(self, instance):
@@ -421,7 +423,9 @@ class DataFileDocument(MyTardisDocument):
             flags = instance.dataset.experiments.all().values_list(
                 "public_access", flat=True
             )
-            return max(list(flags))
+            if list(flags):
+                return max(list(flags))
+            return 1
         return instance.public_access
 
     def prepare_acls(self, instance):
@@ -506,7 +510,9 @@ class ProjectDocument(MyTardisDocument):
     def prepare_public_access(self, instance):
         if settings.ONLY_EXPERIMENT_ACLS:
             flags = instance.experiments.all().values_list("public_access", flat=True)
-            return max(list(flags))
+            if list(flags):
+                return max(list(flags))
+            return 1
         return instance.public_access
 
     def prepare_acls(self, instance):
