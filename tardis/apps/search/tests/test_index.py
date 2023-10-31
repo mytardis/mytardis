@@ -19,6 +19,7 @@ from django_elasticsearch_dsl.test import is_es_online
 
 
 @unittest.skipUnless(is_es_online(), "Elasticsearch is offline")
+@override_settings(ELASTICSEARCH_DSL_AUTOSYNC=True)
 class IndexExperimentTestCase(TestCase):
     def setUp(self):
         print("Elasticsearch is online?", is_es_online())
