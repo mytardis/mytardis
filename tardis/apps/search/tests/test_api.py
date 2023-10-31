@@ -13,6 +13,7 @@ from tardis.tardis_portal.tests.api import MyTardisResourceTestCase
 
 
 @unittest.skipUnless(is_es_online(), "Elasticsearch is offline")
+@override_settings(ELASTICSEARCH_DSL_AUTOSYNC=True)
 class SimpleSearchTest(MyTardisResourceTestCase):
     def setUp(self):
         super().setUp()
