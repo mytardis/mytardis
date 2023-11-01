@@ -445,7 +445,7 @@ const runSearchWithQuery = (queryBody) => {
                     if (error.status === 401) {
                         // We made an Unauthorized request!
                         // Redirect to log in first, and then do search.
-                        location.replace("/login/?next=/app/search");
+                        location.replace("/login/?next=/search");
                     } else {
                         error = error.statusText;
                     }
