@@ -453,8 +453,8 @@ class DataFileDocument(MyTardisDocument):
         if not settings.ONLY_EXPERIMENT_ACLS:
             related_models += [DatafileACL]
 
-    def get_queryset(self):
-        return super().get_queryset().select_related("dataset")
+    # def get_queryset(self):
+    #    return super().get_queryset().select_related("dataset")
 
     def get_instances_from_related(self, related_instance):
         if isinstance(related_instance, Dataset):
@@ -562,7 +562,7 @@ class ProjectDocument(MyTardisDocument):
             )
         if settings.ONLY_EXPERIMENT_ACLS:
             if isinstance(related_instance, Experiment):
-                return related_instance.datasets.all()
+                return related_instance.project_set.all()
         else:
             if isinstance(related_instance, ProjectACL):
                 return related_instance.project
