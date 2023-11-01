@@ -562,7 +562,7 @@ class ProjectDocument(MyTardisDocument):
             )
         if settings.ONLY_EXPERIMENT_ACLS:
             if isinstance(related_instance, Experiment):
-                return related_instance.project_set.all()
+                return related_instance.projects.all()
         else:
             if isinstance(related_instance, ProjectACL):
                 return related_instance.project
