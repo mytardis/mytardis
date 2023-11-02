@@ -45,9 +45,9 @@ class SimpleSearchTest(MyTardisResourceTestCase):
         )
         self.assertEqual(response.status_code, 201)
         data = json.loads(response.content.decode())
-        self.assertEqual(len(data["hits"]["experiments"]), 1)
-        self.assertEqual(len(data["hits"]["datasets"]), 1)
-        self.assertEqual(len(data["hits"]["datafiles"]), 1)
+        self.assertEqual(len(data["hits"]["experiment"]), 1)
+        self.assertEqual(len(data["hits"]["dataset"]), 1)
+        self.assertEqual(len(data["hits"]["datafile"]), 1)
 
     def test_simple_search_unauthenticated_user(self):
         self.testexp.public_access = 100
