@@ -1,14 +1,21 @@
 import json
-import os
 import unittest
 from io import StringIO
 
 from django.conf import settings
 from django.core.management import call_command
-from django.test import modify_settings, override_settings
+from django.test import override_settings
 from django_elasticsearch_dsl.test import is_es_online
 
-from tardis.tardis_portal.models import DataFile, Dataset, Experiment
+from tardis.tardis_portal.models import (
+    DataFile,
+    Dataset,
+    Experiment,
+    DatafileACL,
+    DatasetACL,
+    ExperimentACL,
+)
+
 from tardis.tardis_portal.tests.api import MyTardisResourceTestCase
 
 
@@ -29,15 +36,29 @@ class SimpleSearchTest(MyTardisResourceTestCase):
             created_by=self.user,
         )
         self.testexp.save()
+
+        self.expacl = ExperimentACL.objects.create(
+            experiment=self.experiment, user=self.user, canRead=True, isOwner=True
+        )
+
         # add dataset and datafile to experiment
         self.dataset1 = Dataset(description="test_dataset")
         self.dataset1.save()
         self.dataset1.experiments.add(self.testexp)
         self.dataset1.save()
+
+        self.setacl = DatasetACL.objects.create(
+            experiment=self.dataset1, user=self.user, canRead=True, isOwner=True
+        )
+
         settings.REQUIRE_DATAFILE_SIZES = False
         settings.REQUIRE_DATAFILE_CHECKSUMS = False
         self.datafile = DataFile(dataset=self.dataset1, filename="test.txt")
         self.datafile.save()
+
+        self.fileacl = DatafileACL.objects.create(
+            experiment=self.datafile, user=self.user, canRead=True, isOwner=True
+        )
 
     def test_simple_search_authenticated_user(self):
         response = self.api_client.post(
