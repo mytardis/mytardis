@@ -64,7 +64,7 @@ class IndexTestCase(TestCase):
             principal_investigator=self.user,
             created_by=self.user,
         )
-        self.proj1.save()
+        self.proj.save()
         # Explicit ACL creation for owner
         # acl = ProjectACL(
         #    user=self.user,
@@ -78,20 +78,20 @@ class IndexTestCase(TestCase):
         # acl.save()
 
         # create experiment object
-        self.exp1 = Experiment(
+        self.exp = Experiment(
             title="test exp1",
             institution_name="monash",
             description="Test Description",
             created_by=self.user,
         )
-        self.exp1.save()
+        self.exp.save()
 
         # create dataset object
         # dataset1 belongs to experiment1
-        self.dataset1 = Dataset(description="test_dataset")
-        self.dataset1.save()
-        self.dataset1.experiments.add(self.exp1)
-        self.dataset1.save()
+        self.dataset = Dataset(description="test_dataset")
+        self.dataset.save()
+        self.dataset.experiments.add(self.exp1)
+        self.dataset.save()
 
         # create datafile object
         settings.REQUIRE_DATAFILE_SIZES = False
@@ -128,3 +128,42 @@ class IndexTestCase(TestCase):
         query = search.query("match", filename="test.txt")
         result = query.execute(ignore_cache=True)
         self.assertEqual(result.hits[0].filename, self.datafile.filename)
+
+    def test_datafile_extension(self):
+        """
+        Test whether datafile extension fields are indexed properly.
+        """
+
+        # datafile with single extension (.txt) already exists as self.datafile
+
+        datafile2 = DataFile(dataset=self.dataset1, filename="test.tar.gz")
+        datafile2.save()
+
+        datafile3 = DataFile(dataset=self.dataset1, filename="test_no_extension")
+        datafile3.save()
+
+        search = DataFileDocument.search()
+        query = search.query("match", file_extension="txt")
+        result = query.execute(ignore_cache=True)
+        self.assertEqual(result.hits.total.value, 1)
+        self.assertEqual(result.hits[0].file_extension, "txt")
+
+        # tar should not be indexed as file extension,
+        # see DatafileDocument class insearch/documents.py
+        search = DataFileDocument.search()
+        query = search.query("match", file_extension="tar")
+        result = query.execute(ignore_cache=True)
+        self.assertEqual(result.hits.total.value, 0)
+
+        # gz alone should be indexed for tar.gz
+        search = DataFileDocument.search()
+        query = search.query("match", file_extension="gz")
+        result = query.execute(ignore_cache=True)
+        self.assertEqual(result.hits.total.value, 1)
+        self.assertEqual(result.hits[0].file_extension, "gz")
+
+        search = DataFileDocument.search()
+        query = search.query("match", file_extension="")
+        result = query.execute(ignore_cache=True)
+        self.assertEqual(result.hits.total.value, 1)
+        self.assertEqual(result.hits[0].file_extension, "")
