@@ -19,12 +19,19 @@ from tardis.apps.search.documents import (
     ExperimentDocument,
     ProjectDocument,
 )
-from tardis.tardis_portal.models import DataFile, Dataset, Experiment, Token
+from tardis.tardis_portal.models import (
+    DataFile,
+    Dataset,
+    Experiment,
+    Token,
+    DatafileACL,
+    DatasetACL,
+    ExperimentACL,
+)
 
 
 """
 TODO improve these tests to include the following:
- - test group and token access works as intended for objects
  - add parameter tests for all objects
    - test types of parameters index properly
  - test Indexing works for all object relations
@@ -58,23 +65,12 @@ class IndexTestCase(TestCase):
 
         # Create project object
         self.proj = Project(
-            name="Test Project",
+            name="Test Project 1",
             description="This is a test.",
             principal_investigator=self.user,
             created_by=self.user,
         )
         self.proj.save()
-        # Explicit ACL creation for owner
-        # acl = ProjectACL(
-        #    user=self.user,
-        #    project=self.proj,
-        #    canRead=True,
-        #    canSensitive=True,
-        #    canWrite=True,
-        #    isOwner=True,
-        #    aclOwnershipType=ProjectACL.OWNER_OWNED,
-        # )
-        # acl.save()
 
         # create experiment object
         self.exp = Experiment(
@@ -132,9 +128,7 @@ class IndexTestCase(TestCase):
         """
         Test whether datafile extension fields are indexed properly.
         """
-
         # datafile with single extension (.txt) already exists as self.datafile
-
         datafile2 = DataFile(dataset=self.dataset, filename="test.tar.gz")
         datafile2.save()
 
@@ -142,20 +136,20 @@ class IndexTestCase(TestCase):
         datafile3.save()
 
         search = DataFileDocument.search()
-        query = search.query("match", file_extension="test.txt")
+        query = search.query("match", filename="test.txt")
         result = query.execute(ignore_cache=True)
         self.assertEqual(result.hits.total.value, 1)
         self.assertEqual(result.hits[0].file_extension, "txt")
 
         # gz alone should be indexed for tar.gz
         search = DataFileDocument.search()
-        query = search.query("match", file_extension="test.tar.gz")
+        query = search.query("match", filename="test.tar.gz")
         result = query.execute(ignore_cache=True)
         self.assertEqual(result.hits.total.value, 1)
         self.assertEqual(result.hits[0].file_extension, "gz")
 
         search = DataFileDocument.search()
-        query = search.query("match", file_extension="test_no_extension")
+        query = search.query("match", filename="test_no_extension")
         result = query.execute(ignore_cache=True)
         self.assertEqual(result.hits.total.value, 1)
         self.assertEqual(result.hits[0].file_extension, "")
@@ -164,3 +158,80 @@ class IndexTestCase(TestCase):
         """
         Test that ACLs for users & groups are indexed, but that tokens are not.
         """
+        # Explicit ACL creation for group+token for project
+        acl = ProjectACL(
+            group=self.group,
+            project=self.proj,
+            aclOwnershipType=ProjectACL.OWNER_OWNED,
+        )
+        acl.save()
+        acl = ProjectACL(
+            token=self.token,
+            project=self.proj,
+            aclOwnershipType=ProjectACL.OWNER_OWNED,
+        )
+        acl.save()
+        # Explicit ACL creation for group+token for experiment
+        acl = ExperimentACL(
+            group=self.group,
+            experiment=self.exp,
+            aclOwnershipType=ExperimentACL.OWNER_OWNED,
+        )
+        acl.save()
+        acl = ExperimentACL(
+            token=self.token,
+            experiment=self.exp,
+            aclOwnershipType=ExperimentACL.OWNER_OWNED,
+        )
+        acl.save()
+        # Explicit ACL creation for group+token for dataset
+        acl = DatasetACL(
+            group=self.group,
+            dataset=self.dataset,
+            aclOwnershipType=DatasetACL.OWNER_OWNED,
+        )
+        acl.save()
+        acl = DatasetACL(
+            token=self.token,
+            dataset=self.dataset,
+            aclOwnershipType=DatasetACL.OWNER_OWNED,
+        )
+        acl.save()
+        # Explicit ACL creation for group+token for datafile
+        acl = DatafileACL(
+            group=self.group,
+            datafile=self.datafile,
+            aclOwnershipType=DatafileACL.OWNER_OWNED,
+        )
+        acl.save()
+        acl = DatafileACL(
+            token=self.token,
+            datafile=self.datafile,
+            aclOwnershipType=DatafileACL.OWNER_OWNED,
+        )
+        acl.save()
+
+        correct_acl_structure = [
+            {"pluginId": "django_group", "entityId": self.group.id},
+            {"pluginId": "django_user", "entityId": self.user.id},
+        ]
+
+        search = ProjectDocument.search()
+        query = search.query("match", name="Test Project 1")
+        result = query.execute(ignore_cache=True)
+        self.assertEqual(result.hits[0].acls, correct_acl_structure)
+
+        search = ExperimentDocument.search()
+        query = search.query("match", title="test exp1")
+        result = query.execute(ignore_cache=True)
+        self.assertEqual(result.hits[0].acls, correct_acl_structure)
+
+        search = DatasetDocument.search()
+        query = search.query("match", description="test_dataset")
+        result = query.execute(ignore_cache=True)
+        self.assertEqual(result.hits[0].acls, correct_acl_structure)
+
+        search = DataFileDocument.search()
+        query = search.query("match", filename="test.txt")
+        result = query.execute(ignore_cache=True)
+        self.assertEqual(result.hits[0].acls, correct_acl_structure)
