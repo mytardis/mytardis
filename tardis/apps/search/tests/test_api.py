@@ -38,7 +38,7 @@ class SimpleSearchTest(MyTardisResourceTestCase):
         self.testexp.save()
 
         self.expacl = ExperimentACL.objects.create(
-            experiment=self.experiment, user=self.user, canRead=True, isOwner=True
+            experiment=self.testexp, user=self.user, canRead=True, isOwner=True
         )
 
         # add dataset and datafile to experiment
