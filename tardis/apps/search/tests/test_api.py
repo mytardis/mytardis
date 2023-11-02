@@ -29,18 +29,6 @@ class SimpleSearchTest(MyTardisResourceTestCase):
         call_command("search_index", stdout=self.out, action="delete", force=True)
         call_command("search_index", stdout=self.out, action="rebuild", force=True)
 
-        self.testexp = Experiment(
-            title="test exp1",
-            institution_name="monash",
-            description="Test Description",
-            created_by=self.user,
-        )
-        self.testexp.save()
-
-        self.expacl = ExperimentACL.objects.create(
-            experiment=self.testexp, user=self.user, canRead=True, isOwner=True
-        )
-
         # add dataset and datafile to experiment
         self.dataset1 = Dataset(description="test_dataset")
         self.dataset1.save()
