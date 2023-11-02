@@ -48,7 +48,7 @@ class SimpleSearchTest(MyTardisResourceTestCase):
         self.dataset1.save()
 
         self.setacl = DatasetACL.objects.create(
-            experiment=self.dataset1, user=self.user, canRead=True, isOwner=True
+            dataset=self.dataset1, user=self.user, canRead=True, isOwner=True
         )
 
         settings.REQUIRE_DATAFILE_SIZES = False
@@ -57,7 +57,7 @@ class SimpleSearchTest(MyTardisResourceTestCase):
         self.datafile.save()
 
         self.fileacl = DatafileACL.objects.create(
-            experiment=self.datafile, user=self.user, canRead=True, isOwner=True
+            datafile=self.datafile, user=self.user, canRead=True, isOwner=True
         )
 
     def test_simple_search_authenticated_user(self):
