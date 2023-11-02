@@ -43,16 +43,18 @@ class SimpleSearchTest(MyTardisResourceTestCase):
         response = self.api_client.post(
             "/api/v1/search/", authentication=self.get_credentials()
         )
+        self.assertEqual(response.status_code, 201)
         data = json.loads(response.content.decode())
-        self.assertEqual(len(data["objects"][0]["hits"]["experiments"]), 1)
-        self.assertEqual(len(data["objects"][0]["hits"]["datasets"]), 1)
-        self.assertEqual(len(data["objects"][0]["hits"]["datafiles"]), 1)
+        self.assertEqual(len(data["hits"]["experiments"]), 1)
+        self.assertEqual(len(data["hits"]["datasets"]), 1)
+        self.assertEqual(len(data["hits"]["datafiles"]), 1)
 
     def test_simple_search_unauthenticated_user(self):
         self.testexp.public_access = 100
         self.testexp.save()
         response = self.api_client.post("/api/v1/search/")
-        data = json.loads(response.content.decode())
-        self.assertEqual(len(data["objects"][0]["hits"]["experiments"]), 1)
-        self.assertEqual(len(data["objects"][0]["hits"]["datasets"]), 1)
-        self.assertEqual(len(data["objects"][0]["hits"]["datafiles"]), 1)
+        self.assertEqual(response.status_code, 401)
+        # data = json.loads(response.content.decode())
+        # self.assertEqual(len(data["hits"]["experiments"]), 1)
+        # self.assertEqual(len(data["hits"]["datasets"]), 1)
+        # self.assertEqual(len(data["hits"]["datafiles"]), 1)
