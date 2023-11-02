@@ -141,6 +141,7 @@ def prepare_generic_acls_build(INSTANCE_ACL_SET, return_list):
             acl_dict["entityId"] = acl.group.id
         if acl.token is not None:
             # token access shouldn't be added to search
+            # unless search is given a way of checking token expiry
             continue
         # add in permission booleans
         acl_dict["canDownload"] = acl.canDownload
