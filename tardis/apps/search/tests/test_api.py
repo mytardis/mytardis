@@ -10,10 +10,8 @@ from django_elasticsearch_dsl.test import is_es_online
 from tardis.tardis_portal.models import (
     DataFile,
     Dataset,
-    Experiment,
     DatafileACL,
     DatasetACL,
-    ExperimentACL,
 )
 
 from tardis.tardis_portal.tests.api import MyTardisResourceTestCase
@@ -24,7 +22,6 @@ from tardis.tardis_portal.tests.api import MyTardisResourceTestCase
 class SimpleSearchTest(MyTardisResourceTestCase):
     def setUp(self):
         super().setUp()
-        print("Elasticsearch is online?", is_es_online())
         self.out = StringIO()
         call_command("search_index", stdout=self.out, action="delete", force=True)
         call_command("search_index", stdout=self.out, action="rebuild", force=True)

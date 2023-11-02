@@ -5,6 +5,7 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.management import call_command
 from django.test import TestCase, override_settings
+from django_elasticsearch_dsl.test import is_es_online
 
 from tardis.apps.search.documents import (
     DataFileDocument,
@@ -14,15 +15,10 @@ from tardis.apps.search.documents import (
 from tardis.tardis_portal.models import DataFile, Dataset, Experiment
 
 
-from django_elasticsearch_dsl.test import is_es_online
-
-
 @unittest.skipUnless(is_es_online(), "Elasticsearch is offline")
 @override_settings(ELASTICSEARCH_DSL_AUTOSYNC=True)
 class IndexExperimentTestCase(TestCase):
     def setUp(self):
-        print("Elasticsearch is online?", is_es_online())
-
         user = "tardis_user1"
         pwd = "secret"
         email = ""
