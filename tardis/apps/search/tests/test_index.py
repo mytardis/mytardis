@@ -24,7 +24,6 @@ from tardis.tardis_portal.models import DataFile, Dataset, Experiment, Token
 
 """
 TODO improve these tests to include the following:
- - test datafile extensions + no extension test
  - test group and token access works as intended for objects
  - add parameter tests for all objects
    - test types of parameters index properly
@@ -68,7 +67,7 @@ class IndexTestCase(TestCase):
         # Explicit ACL creation for owner
         # acl = ProjectACL(
         #    user=self.user,
-        #    project=self.proj1,
+        #    project=self.proj,
         #    canRead=True,
         #    canSensitive=True,
         #    canWrite=True,
@@ -90,13 +89,13 @@ class IndexTestCase(TestCase):
         # dataset1 belongs to experiment1
         self.dataset = Dataset(description="test_dataset")
         self.dataset.save()
-        self.dataset.experiments.add(self.exp1)
+        self.dataset.experiments.add(self.exp)
         self.dataset.save()
 
         # create datafile object
         settings.REQUIRE_DATAFILE_SIZES = False
         settings.REQUIRE_DATAFILE_CHECKSUMS = False
-        self.datafile = DataFile(dataset=self.dataset1, filename="test.txt")
+        self.datafile = DataFile(dataset=self.dataset, filename="test.txt")
         self.datafile.save()
 
     def test_create_index(self):
@@ -136,34 +135,32 @@ class IndexTestCase(TestCase):
 
         # datafile with single extension (.txt) already exists as self.datafile
 
-        datafile2 = DataFile(dataset=self.dataset1, filename="test.tar.gz")
+        datafile2 = DataFile(dataset=self.dataset, filename="test.tar.gz")
         datafile2.save()
 
-        datafile3 = DataFile(dataset=self.dataset1, filename="test_no_extension")
+        datafile3 = DataFile(dataset=self.dataset, filename="test_no_extension")
         datafile3.save()
 
         search = DataFileDocument.search()
-        query = search.query("match", file_extension="txt")
+        query = search.query("match", file_extension="test.txt")
         result = query.execute(ignore_cache=True)
         self.assertEqual(result.hits.total.value, 1)
         self.assertEqual(result.hits[0].file_extension, "txt")
 
-        # tar should not be indexed as file extension,
-        # see DatafileDocument class insearch/documents.py
-        search = DataFileDocument.search()
-        query = search.query("match", file_extension="tar")
-        result = query.execute(ignore_cache=True)
-        self.assertEqual(result.hits.total.value, 0)
-
         # gz alone should be indexed for tar.gz
         search = DataFileDocument.search()
-        query = search.query("match", file_extension="gz")
+        query = search.query("match", file_extension="test.tar.gz")
         result = query.execute(ignore_cache=True)
         self.assertEqual(result.hits.total.value, 1)
         self.assertEqual(result.hits[0].file_extension, "gz")
 
         search = DataFileDocument.search()
-        query = search.query("match", file_extension="")
+        query = search.query("match", file_extension="test_no_extension")
         result = query.execute(ignore_cache=True)
         self.assertEqual(result.hits.total.value, 1)
         self.assertEqual(result.hits[0].file_extension, "")
+
+    def test_ACL_types(self):
+        """
+        Test that ACLs for users & groups are indexed, but that tokens are not.
+        """
