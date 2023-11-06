@@ -216,10 +216,8 @@ class IndexTestCase(TestCase):
             {"pluginId": "django_user", "entityId": self.user.id},
         ]
 
-        self.proj.save()
-        self.exp.save()
-        self.dataset.save()
-        self.datafile.save()
+        self.out = StringIO()
+        call_command("search_index", stdout=self.out, action="rebuild", force=True)
 
         search = ProjectDocument.search()
         query = search.query("match", name="Test Project 1")
