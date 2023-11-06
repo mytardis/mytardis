@@ -133,6 +133,7 @@ def prepare_generic_acls_build(INSTANCE_ACL_SET, return_list):
         user__id=settings.PUBLIC_USER_ID
     ):
         acl_dict = {}
+        print(acl)
         if acl.user is not None:
             acl_dict["pluginId"] = "django_user"
             acl_dict["entityId"] = acl.user.id

@@ -161,12 +161,6 @@ class IndexTestCase(TestCase):
         """
         # Explicit ACL creation for group+token for project
         acl = ProjectACL(
-            user=self.user,
-            project=self.proj,
-            aclOwnershipType=ProjectACL.OWNER_OWNED,
-        )
-        acl.save()
-        acl = ProjectACL(
             group=self.group,
             project=self.proj,
             aclOwnershipType=ProjectACL.OWNER_OWNED,
