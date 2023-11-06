@@ -129,9 +129,7 @@ def prepare_generic_acls_build(INSTANCE_ACL_SET, return_list):
     """Returns the ACLs associated with this
     object, formatted for elasticsearch.
     """
-    for acl in INSTANCE_ACL_SET.select_related("user").exclude(
-        user__id=settings.PUBLIC_USER_ID
-    ):
+    for acl in INSTANCE_ACL_SET:
         acl_dict = {}
         print(acl)
         if acl.user is not None:
@@ -161,9 +159,47 @@ def prepare_generic_acls(type, INSTANCE_ACL_SET, INSTANCE_EXPS=None):
     return_list = []
     if settings.ONLY_EXPERIMENT_ACLS and type != "experiment":
         for exp in INSTANCE_EXPS.all():
-            prepare_generic_acls_build(exp.experimentacl_set, return_list)
+            prepare_generic_acls_build(
+                exp.select_related("user", "group", "token")
+                .all()
+                .exclude(user__id=settings.PUBLIC_USER_ID)
+                .values(
+                    "user__id",
+                    "group__id",
+                    "token__id",
+                    "canRead",
+                    "canDownload",
+                    "canWrite",
+                    "canSensitive",
+                    "canDelete",
+                    "isOwner",
+                    "aclOwnershipType",
+                    "effectiveDate",
+                    "expiryDate",
+                ),
+                return_list,
+            )
     else:
-        prepare_generic_acls_build(INSTANCE_ACL_SET, return_list)
+        prepare_generic_acls_build(
+            INSTANCE_ACL_SET.select_related("user", "group", "token")
+            .all()
+            .exclude(user__id=settings.PUBLIC_USER_ID)
+            .values(
+                "user__id",
+                "group__id",
+                "token__id",
+                "canRead",
+                "canDownload",
+                "canWrite",
+                "canSensitive",
+                "canDelete",
+                "isOwner",
+                "aclOwnershipType",
+                "effectiveDate",
+                "expiryDate",
+            ),
+            return_list,
+        )
     return return_list
 
 
