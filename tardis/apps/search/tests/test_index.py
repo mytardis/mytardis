@@ -225,6 +225,12 @@ class IndexTestCase(TestCase):
         query = search.query("match", name="Test Project 1")
         result = query.execute(ignore_cache=True)
         print(result.hits[0])
+        print(result.hits[0].name)
+        print(result.hits[0].description)
+
+        for proj in Project.objects.all():
+            print(proj)
+
         self.assertEqual(result.hits[0].acls, correct_acl_structure)
 
         search = ExperimentDocument.search()
