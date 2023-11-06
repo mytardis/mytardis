@@ -157,20 +157,19 @@ def prepare_generic_acls(type, INSTANCE_ACL_SET, INSTANCE_EXPS=None):
     """
     return_list = []
     if settings.ONLY_EXPERIMENT_ACLS and type != "experiment":
-        for exp in INSTANCE_EXPS.all():
-            prepare_generic_acls_build(
-                exp.select_related("user", "group", "token")
-                .all()
-                .exclude(user__id=settings.PUBLIC_USER_ID)
-                .values(
-                    "user__id",
-                    "group__id",
-                    "token__id",
-                    "canDownload",
-                    "canSensitive",
-                ),
-                return_list,
-            )
+        prepare_generic_acls_build(
+            INSTANCE_EXPS.select_related("user", "group", "token")
+            .all()
+            .exclude(user__id=settings.PUBLIC_USER_ID)
+            .values(
+                "user__id",
+                "group__id",
+                "token__id",
+                "canDownload",
+                "canSensitive",
+            ),
+            return_list,
+        )
     else:
         prepare_generic_acls_build(
             INSTANCE_ACL_SET.select_related("user", "group", "token")
