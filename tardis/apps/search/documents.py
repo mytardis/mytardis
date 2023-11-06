@@ -511,6 +511,7 @@ class ProjectDocument(MyTardisDocument):
             "fullname": fields.TextField(fields={"raw": fields.KeywordField()}),
         }
     )
+    aclss = generic_acl_structure()
 
     def prepare_public_access(self, instance):
         if settings.ONLY_EXPERIMENT_ACLS:
@@ -521,6 +522,11 @@ class ProjectDocument(MyTardisDocument):
         return instance.public_access
 
     def prepare_acls(self, instance):
+        return prepare_generic_acls(
+            "project", instance.projectacl_set, INSTANCE_EXPS=instance.experiments
+        )
+
+    def prepare_aclss(self, instance):
         return prepare_generic_acls(
             "project", instance.projectacl_set, INSTANCE_EXPS=instance.experiments
         )

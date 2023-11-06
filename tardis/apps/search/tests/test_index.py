@@ -227,9 +227,16 @@ class IndexTestCase(TestCase):
         print(result.hits[0])
         print(result.hits[0].name)
         print(result.hits[0].description)
-
-        for proj in Project.objects.all():
-            print(proj)
+        print(result.hits[0].start_time)
+        print(result.hits[0].end_time)
+        print(result.hits[0].institution)
+        print(result.hits[0].principal_investigator)
+        print(result.hits[0].id)
+        print(result.hits[0].acls)
+        print(result.hits[0].public_access)
+        print(result.hits[0].parameters)
+        print(result.hits[0].tags)
+        print(result.hits[0].aclss)
 
         self.assertEqual(result.hits[0].acls, correct_acl_structure)
 
