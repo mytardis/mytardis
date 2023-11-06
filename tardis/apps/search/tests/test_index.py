@@ -61,6 +61,8 @@ class IndexTestCase(TestCase):
         self.token = Token(user=self.user)
         self.token.save()
 
+        print("public", settings.PUBLIC_USER_ID, "user", self.user.id)
+
         self.out = StringIO()
         call_command("search_index", stdout=self.out, action="delete", force=True)
 
@@ -278,6 +280,7 @@ class IndexTestCase(TestCase):
         search = ProjectDocument.search()
         query = search.query("match", name="Test Project 1")
         result = query.execute(ignore_cache=True)
+        print(*self.proj.projectacl_set.all())
         print(result.hits[0].acls)
         print(correct_acl_structure)
         print()
