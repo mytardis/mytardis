@@ -135,18 +135,27 @@ def prepare_generic_acls_build(INSTANCE_ACL_SET, return_list):
         if acl["user__id"] is not None:
             acl_dict["pluginId"] = "django_user"
             acl_dict["entityId"] = acl["user__id"]
+            print("user detected")
+            print(acl_dict)
         if acl["group__id"] is not None:
             acl_dict["pluginId"] = "django_group"
             acl_dict["entityId"] = acl["group__id"]
+            print("group detected")
+            print(acl_dict)
         if acl["token__id"] is not None:
             # token access shouldn't be added to search
             # unless search is given a way of checking token expiry
+            print("token detected, skipping")
             continue
         # add in permission booleans
         acl_dict["canDownload"] = acl["canDownload"]
         acl_dict["canSensitive"] = acl["canSensitive"]
+        print("perms added")
+        print(acl_dict)
         if acl_dict not in return_list:
+            print("appending to return list")
             return_list.append(acl_dict)
+            print(return_list)
 
 
 def prepare_generic_acls(type, INSTANCE_ACL_SET, INSTANCE_EXPS=None):
