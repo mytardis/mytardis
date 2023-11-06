@@ -160,7 +160,6 @@ class IndexTestCase(TestCase):
         Test that ACLs for users & groups are indexed, but that tokens are not.
         """
         # Explicit ACL creation for group+token for project
-        print("creating project group + token ACLs")
         acl = ProjectACL(
             group=self.group,
             project=self.proj,
@@ -175,7 +174,6 @@ class IndexTestCase(TestCase):
             canRead=True,
         )
         acl.save()
-        print("creating experiment group + token ACLs")
         # Explicit ACL creation for group+token for experiment
         acl = ExperimentACL(
             group=self.group,
@@ -191,7 +189,6 @@ class IndexTestCase(TestCase):
             canRead=True,
         )
         acl.save()
-        print("creating dataset group + token ACLs")
         # Explicit ACL creation for group+token for dataset
         acl = DatasetACL(
             group=self.group,
@@ -207,7 +204,6 @@ class IndexTestCase(TestCase):
             canRead=True,
         )
         acl.save()
-        print("creating datafile group + token ACLs")
         # Explicit ACL creation for group+token for datafile
         acl = DatafileACL(
             group=self.group,
@@ -225,8 +221,18 @@ class IndexTestCase(TestCase):
         acl.save()
 
         correct_acl_structure = [
-            {"pluginId": "django_group", "entityId": self.group.id},
-            {"pluginId": "django_user", "entityId": self.user.id},
+            {
+                "pluginId": "django_group",
+                "entityId": self.group.id,
+                "canDownload": False,
+                "canSensitive": False,
+            },
+            {
+                "pluginId": "django_user",
+                "entityId": self.user.id,
+                "canDownload": False,
+                "canSensitive": False,
+            },
         ]
 
         self.proj.description = "updated description"
@@ -235,24 +241,22 @@ class IndexTestCase(TestCase):
         search = ProjectDocument.search()
         query = search.query("match", name="Test Project 1")
         result = query.execute(ignore_cache=True)
-        print(result.hits[0].description)
+        print(result.hits[0].acls)
+        print(correct_acl_structure)
         self.assertEqual(result.hits[0].acls, correct_acl_structure)
 
         search = ExperimentDocument.search()
         query = search.query("match", title="test exp1")
         result = query.execute(ignore_cache=True)
-        print(result.hits[0])
         self.assertEqual(result.hits[0].acls, correct_acl_structure)
 
         search = DatasetDocument.search()
         query = search.query("match", description="test_dataset")
         result = query.execute(ignore_cache=True)
-        print(result.hits[0])
         self.assertEqual(result.hits[0].acls, correct_acl_structure)
 
         search = DataFileDocument.search()
         query = search.query("match", filename="test.txt")
         result = query.execute(ignore_cache=True)
-        print(result.hits[0])
 
         self.assertEqual(result.hits[0].acls, correct_acl_structure)

@@ -130,33 +130,22 @@ def prepare_generic_acls_build(INSTANCE_ACL_SET, return_list):
     object, formatted for elasticsearch.
     """
     for acl in INSTANCE_ACL_SET:
-        print(acl)
         acl_dict = {}
         if acl["user__id"] is not None:
             acl_dict["pluginId"] = "django_user"
             acl_dict["entityId"] = acl["user__id"]
-            print("user detected")
-            print(acl_dict)
         if acl["group__id"] is not None:
             acl_dict["pluginId"] = "django_group"
             acl_dict["entityId"] = acl["group__id"]
-            print("group detected")
-            print(acl_dict)
         if acl["token__id"] is not None:
             # token access shouldn't be added to search
             # unless search is given a way of checking token expiry
-            print("token detected, skipping")
             continue
         # add in permission booleans
         acl_dict["canDownload"] = acl["canDownload"]
         acl_dict["canSensitive"] = acl["canSensitive"]
-        print("perms added")
-        print(acl_dict)
         if acl_dict not in return_list:
-            print("appending to return list")
             return_list.append(acl_dict)
-            print(return_list)
-            print()
 
 
 def prepare_generic_acls(type, INSTANCE_ACL_SET, INSTANCE_EXPS=None):
@@ -196,9 +185,6 @@ def prepare_generic_acls(type, INSTANCE_ACL_SET, INSTANCE_EXPS=None):
             ),
             return_list,
         )
-    print("prepare generic acl output")
-    print(return_list)
-    print()
     return return_list
 
 
@@ -306,7 +292,6 @@ class ExperimentDocument(MyTardisDocument):
 
     def prepare_acls(self, instance):
         x = prepare_generic_acls("experiment", instance.experimentacl_set.all())
-        print("attempting to prep", x)
         return x
 
     def prepare_parameters(self, instance):
@@ -383,7 +368,6 @@ class DatasetDocument(MyTardisDocument):
             instance.datasetacl_set.all(),
             INSTANCE_EXPS=instance.experiments.all(),
         )
-        print("attempting to prep", x)
         return x
 
     def prepare_parameters(self, instance):
@@ -481,7 +465,6 @@ class DataFileDocument(MyTardisDocument):
             instance.datafileacl_set.all(),
             INSTANCE_EXPS=instance.dataset.experiments.all(),
         )
-        print("attempting to prep", x)
         return x
 
     def prepare_parameters(self, instance):
@@ -570,7 +553,6 @@ class ProjectDocument(MyTardisDocument):
             instance.projectacl_set.all(),
             INSTANCE_EXPS=instance.experiments.all(),
         )
-        print("attempting to prep", x)
         return x
 
     def prepare_parameters(self, instance):
