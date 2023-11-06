@@ -15,7 +15,7 @@
     "@emotion/core": "^10.1.1",
     "@testing-library/react": "11.2.7",
     "angular": "1.8.2",
-    "angular-resource": "1.8.2",
+    "angular-resource": "1.8.3",
     "babel-loader": "^8.2.2",
     "blueimp-file-upload": "^9.31.0",
     "bootstrap": "^4.6.0",
