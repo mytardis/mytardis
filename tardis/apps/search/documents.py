@@ -414,7 +414,11 @@ class DataFileDocument(MyTardisDocument):
         i.e. 'filename.tar.gz' has an extension of 'gz' not 'tar.gz'
         """
         try:
-            extension = instance.filename.split(".")[-1]
+            split = instance.filename.split(".")
+            if len(split) > 1:
+                extension = split[-1]
+            else:
+                extension = ""
         except IndexError:
             extension = ""
         return extension
