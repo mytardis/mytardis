@@ -156,6 +156,7 @@ def prepare_generic_acls_build(INSTANCE_ACL_SET, return_list):
             print("appending to return list")
             return_list.append(acl_dict)
             print(return_list)
+            print()
 
 
 def prepare_generic_acls(type, INSTANCE_ACL_SET, INSTANCE_EXPS=None):
@@ -195,7 +196,9 @@ def prepare_generic_acls(type, INSTANCE_ACL_SET, INSTANCE_EXPS=None):
             ),
             return_list,
         )
+    print("prepare generic acl output")
     print(return_list)
+    print()
     return return_list
 
 
@@ -302,7 +305,9 @@ class ExperimentDocument(MyTardisDocument):
     created_by = fields.ObjectField(properties={"username": fields.KeywordField()})
 
     def prepare_acls(self, instance):
-        return prepare_generic_acls("experiment", instance.experimentacl_set.all())
+        x = prepare_generic_acls("experiment", instance.experimentacl_set.all())
+        print("attempting to prep", x)
+        return x
 
     def prepare_parameters(self, instance):
         return prepare_generic_parameters(instance, "experiment")
@@ -373,11 +378,13 @@ class DatasetDocument(MyTardisDocument):
         return instance.public_access
 
     def prepare_acls(self, instance):
-        return prepare_generic_acls(
+        x = prepare_generic_acls(
             "dataset",
             instance.datasetacl_set.all(),
             INSTANCE_EXPS=instance.experiments.all(),
         )
+        print("attempting to prep", x)
+        return x
 
     def prepare_parameters(self, instance):
         return prepare_generic_parameters(instance, "dataset")
@@ -469,11 +476,13 @@ class DataFileDocument(MyTardisDocument):
         return instance.public_access
 
     def prepare_acls(self, instance):
-        return prepare_generic_acls(
+        x = prepare_generic_acls(
             "datafile",
             instance.datafileacl_set.all(),
             INSTANCE_EXPS=instance.dataset.experiments.all(),
         )
+        print("attempting to prep", x)
+        return x
 
     def prepare_parameters(self, instance):
         return prepare_generic_parameters(instance, "datafile")
@@ -556,11 +565,13 @@ class ProjectDocument(MyTardisDocument):
         return instance.public_access
 
     def prepare_acls(self, instance):
-        return prepare_generic_acls(
+        x = prepare_generic_acls(
             "project",
             instance.projectacl_set.all(),
             INSTANCE_EXPS=instance.experiments.all(),
         )
+        print("attempting to prep", x)
+        return x
 
     def prepare_parameters(self, instance):
         return prepare_generic_parameters(instance, "project")
