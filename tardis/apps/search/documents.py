@@ -240,7 +240,6 @@ class MyTardisDocument(Document):
 
     id = fields.KeywordField()
     public_access = fields.IntegerField()
-    acls = generic_acl_structure()
     parameters = generic_parameter_structure()
     tags = fields.TextField(attr="tags_for_indexing")
 
@@ -267,6 +266,7 @@ class ExperimentDocument(MyTardisDocument):
     update_time = fields.DateField()
     institution_name = fields.KeywordField()
     created_by = fields.ObjectField(properties={"username": fields.KeywordField()})
+    acls = generic_acl_structure()
 
     def prepare_acls(self, instance):
         return prepare_generic_acls("experiment", instance.experimentacl_set)
@@ -330,6 +330,7 @@ class DatasetDocument(MyTardisDocument):
     )
     created_time = fields.DateField()
     modified_time = fields.DateField()
+    acls = generic_acl_structure()
 
     def prepare_public_access(self, instance):
         if settings.ONLY_EXPERIMENT_ACLS:
@@ -406,6 +407,7 @@ class DataFileDocument(MyTardisDocument):
             ),
         }
     )
+    acls = generic_acl_structure()
 
     def prepare_file_extension(self, instance):
         """
@@ -511,7 +513,7 @@ class ProjectDocument(MyTardisDocument):
             "fullname": fields.TextField(fields={"raw": fields.KeywordField()}),
         }
     )
-    aclss = generic_acl_structure()
+    acls = generic_acl_structure()
 
     def prepare_public_access(self, instance):
         if settings.ONLY_EXPERIMENT_ACLS:
@@ -522,11 +524,6 @@ class ProjectDocument(MyTardisDocument):
         return instance.public_access
 
     def prepare_acls(self, instance):
-        return prepare_generic_acls(
-            "project", instance.projectacl_set, INSTANCE_EXPS=instance.experiments
-        )
-
-    def prepare_aclss(self, instance):
         return prepare_generic_acls(
             "project", instance.projectacl_set, INSTANCE_EXPS=instance.experiments
         )
