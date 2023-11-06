@@ -130,6 +130,7 @@ def prepare_generic_acls_build(INSTANCE_ACL_SET, return_list):
     object, formatted for elasticsearch.
     """
     for acl in INSTANCE_ACL_SET:
+        print(acl)
         acl_dict = {}
         if acl["user__id"] is not None:
             acl_dict["pluginId"] = "django_user"
@@ -185,6 +186,7 @@ def prepare_generic_acls(type, INSTANCE_ACL_SET, INSTANCE_EXPS=None):
             ),
             return_list,
         )
+    print(return_list)
     return return_list
 
 
