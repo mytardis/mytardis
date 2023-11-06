@@ -72,6 +72,16 @@ class IndexTestCase(TestCase):
             created_by=self.user,
         )
         self.proj.save()
+        # Explicit user ACL creation for project
+        acl = ProjectACL(
+            user=self.user,
+            project=self.proj,
+            aclOwnershipType=ProjectACL.OWNER_OWNED,
+            canRead=True,
+            canDownload=True,
+            canSensitive=True,
+        )
+        acl.save()
 
         # create experiment object
         self.exp = Experiment(
@@ -81,6 +91,16 @@ class IndexTestCase(TestCase):
             created_by=self.user,
         )
         self.exp.save()
+        # Explicit user ACL creation for experiment
+        acl = ExperimentACL(
+            user=self.user,
+            experiment=self.exp,
+            aclOwnershipType=ExperimentACL.OWNER_OWNED,
+            canRead=True,
+            canDownload=True,
+            canSensitive=True,
+        )
+        acl.save()
 
         # create dataset object
         # dataset1 belongs to experiment1
@@ -88,12 +108,32 @@ class IndexTestCase(TestCase):
         self.dataset.save()
         self.dataset.experiments.add(self.exp)
         self.dataset.save()
+        # Explicit user ACL creation for dataset
+        acl = DatasetACL(
+            user=self.user,
+            dataset=self.dataset,
+            aclOwnershipType=DatasetACL.OWNER_OWNED,
+            canRead=True,
+            canDownload=True,
+            canSensitive=True,
+        )
+        acl.save()
 
         # create datafile object
         settings.REQUIRE_DATAFILE_SIZES = False
         settings.REQUIRE_DATAFILE_CHECKSUMS = False
         self.datafile = DataFile(dataset=self.dataset, filename="test.txt")
         self.datafile.save()
+        # Explicit user ACL creation for datafile
+        acl = DatafileACL(
+            user=self.user,
+            datafile=self.datafile,
+            aclOwnershipType=DatafileACL.OWNER_OWNED,
+            canRead=True,
+            canDownload=True,
+            canSensitive=True,
+        )
+        acl.save()
 
     def test_create_index(self):
         """
@@ -159,7 +199,7 @@ class IndexTestCase(TestCase):
         """
         Test that ACLs for users & groups are indexed, but that tokens are not.
         """
-        # Explicit ACL creation for group+token for project
+        # Explicit ACL creation for user+group+token for project
         acl = ProjectACL(
             group=self.group,
             project=self.proj,
@@ -174,7 +214,7 @@ class IndexTestCase(TestCase):
             canRead=True,
         )
         acl.save()
-        # Explicit ACL creation for group+token for experiment
+        # Explicit ACL creation for user+group+token for experiment
         acl = ExperimentACL(
             group=self.group,
             experiment=self.exp,
@@ -189,7 +229,7 @@ class IndexTestCase(TestCase):
             canRead=True,
         )
         acl.save()
-        # Explicit ACL creation for group+token for dataset
+        # Explicit ACL creation for user+group+token for dataset
         acl = DatasetACL(
             group=self.group,
             dataset=self.dataset,
@@ -204,7 +244,7 @@ class IndexTestCase(TestCase):
             canRead=True,
         )
         acl.save()
-        # Explicit ACL creation for group+token for datafile
+        # Explicit ACL creation for user+group+token for datafile
         acl = DatafileACL(
             group=self.group,
             datafile=self.datafile,
@@ -222,14 +262,14 @@ class IndexTestCase(TestCase):
 
         correct_acl_structure = [
             {
-                "pluginId": "django_group",
-                "entityId": self.group.id,
-                "canDownload": False,
-                "canSensitive": False,
-            },
-            {
                 "pluginId": "django_user",
                 "entityId": self.user.id,
+                "canDownload": True,
+                "canSensitive": True,
+            },
+            {
+                "pluginId": "django_group",
+                "entityId": self.group.id,
                 "canDownload": False,
                 "canSensitive": False,
             },
