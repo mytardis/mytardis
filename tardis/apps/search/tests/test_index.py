@@ -225,14 +225,19 @@ class IndexTestCase(TestCase):
         search = ExperimentDocument.search()
         query = search.query("match", title="test exp1")
         result = query.execute(ignore_cache=True)
+        print(result.hits[0])
         self.assertEqual(result.hits[0].acls, correct_acl_structure)
 
         search = DatasetDocument.search()
         query = search.query("match", description="test_dataset")
         result = query.execute(ignore_cache=True)
+        print(result.hits[0])
         self.assertEqual(result.hits[0].acls, correct_acl_structure)
 
         search = DataFileDocument.search()
         query = search.query("match", filename="test.txt")
         result = query.execute(ignore_cache=True)
+        print(result.hits[0])
+        print(result.hits[0].keys())
+
         self.assertEqual(result.hits[0].acls, correct_acl_structure)
