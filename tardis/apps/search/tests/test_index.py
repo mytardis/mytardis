@@ -43,6 +43,10 @@ TODO improve these tests to include the following:
 @override_settings(ELASTICSEARCH_DSL_AUTOSYNC=True)
 class IndexTestCase(TestCase):
     def setUp(self):
+        publicuser = "public_user"
+        pwd = "secret"
+        publicemail = "public@test.com"
+        self.publicuser = User.objects.create_user(publicuser, publicemail, pwd)
         user = "tardis_user1"
         pwd = "secret"
         email = ""
