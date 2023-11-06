@@ -42,7 +42,6 @@ TODO improve these tests to include the following:
 @override_settings(ELASTICSEARCH_DSL_AUTOSYNC=True)
 class IndexTestCase(TestCase):
     def setUp(self):
-        print("WOOOHOOOO")
         user = "tardis_user1"
         pwd = "secret"
         email = ""
@@ -223,7 +222,7 @@ class IndexTestCase(TestCase):
         search = ProjectDocument.search()
         query = search.query("match", name="Test Project 1")
         result = query.execute(ignore_cache=True)
-        print(result.hits[0])
+        print(result.hits[0].description)
         self.assertEqual(result.hits[0].acls, correct_acl_structure)
 
         search = ExperimentDocument.search()
