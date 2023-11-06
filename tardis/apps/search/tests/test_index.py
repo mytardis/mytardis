@@ -32,6 +32,7 @@ from tardis.tardis_portal.models import (
 
 """
 TODO improve these tests to include the following:
+ - fix ACL tests
  - add parameter tests for all objects
    - test types of parameters index properly
  - test Indexing works for all object relations
@@ -159,6 +160,12 @@ class IndexTestCase(TestCase):
         Test that ACLs for users & groups are indexed, but that tokens are not.
         """
         # Explicit ACL creation for group+token for project
+        acl = ProjectACL(
+            user=self.user,
+            project=self.proj,
+            aclOwnershipType=ProjectACL.OWNER_OWNED,
+        )
+        acl.save()
         acl = ProjectACL(
             group=self.group,
             project=self.proj,
