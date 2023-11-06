@@ -270,7 +270,7 @@ class ExperimentDocument(MyTardisDocument):
     created_by = fields.ObjectField(properties={"username": fields.KeywordField()})
 
     def prepare_acls(self, instance):
-        return prepare_generic_acls("experiment", instance.experimentacl_set)
+        return prepare_generic_acls("experiment", instance.experimentacl_set.all())
 
     def prepare_parameters(self, instance):
         return prepare_generic_parameters(instance, "experiment")
@@ -342,7 +342,9 @@ class DatasetDocument(MyTardisDocument):
 
     def prepare_acls(self, instance):
         return prepare_generic_acls(
-            "dataset", instance.datasetacl_set, INSTANCE_EXPS=instance.experiments
+            "dataset",
+            instance.datasetacl_set.all(),
+            INSTANCE_EXPS=instance.experiments.all(),
         )
 
     def prepare_parameters(self, instance):
@@ -437,8 +439,8 @@ class DataFileDocument(MyTardisDocument):
     def prepare_acls(self, instance):
         return prepare_generic_acls(
             "datafile",
-            instance.datafileacl_set,
-            INSTANCE_EXPS=instance.dataset.experiments,
+            instance.datafileacl_set.all(),
+            INSTANCE_EXPS=instance.dataset.experiments.all(),
         )
 
     def prepare_parameters(self, instance):
@@ -523,7 +525,9 @@ class ProjectDocument(MyTardisDocument):
 
     def prepare_acls(self, instance):
         return prepare_generic_acls(
-            "project", instance.projectacl_set, INSTANCE_EXPS=instance.experiments
+            "project",
+            instance.projectacl_set.all(),
+            INSTANCE_EXPS=instance.experiments.all(),
         )
 
     def prepare_parameters(self, instance):
