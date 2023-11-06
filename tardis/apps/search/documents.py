@@ -131,20 +131,19 @@ def prepare_generic_acls_build(INSTANCE_ACL_SET, return_list):
     """
     for acl in INSTANCE_ACL_SET:
         acl_dict = {}
-        print(acl)
-        if acl.user is not None:
+        if acl["user__id"] is not None:
             acl_dict["pluginId"] = "django_user"
-            acl_dict["entityId"] = acl.user.id
-        if acl.group is not None:
+            acl_dict["entityId"] = acl["user__id"]
+        if acl["group__id"] is not None:
             acl_dict["pluginId"] = "django_group"
-            acl_dict["entityId"] = acl.group.id
-        if acl.token is not None:
+            acl_dict["entityId"] = acl["group__id"]
+        if acl["token__id"] is not None:
             # token access shouldn't be added to search
             # unless search is given a way of checking token expiry
             continue
         # add in permission booleans
-        acl_dict["canDownload"] = acl.canDownload
-        acl_dict["canSensitive"] = acl.canSensitive
+        acl_dict["canDownload"] = acl["canDownload"]
+        acl_dict["canSensitive"] = acl["canSensitive"]
         if acl_dict not in return_list:
             return_list.append(acl_dict)
 
@@ -167,15 +166,8 @@ def prepare_generic_acls(type, INSTANCE_ACL_SET, INSTANCE_EXPS=None):
                     "user__id",
                     "group__id",
                     "token__id",
-                    "canRead",
                     "canDownload",
-                    "canWrite",
                     "canSensitive",
-                    "canDelete",
-                    "isOwner",
-                    "aclOwnershipType",
-                    "effectiveDate",
-                    "expiryDate",
                 ),
                 return_list,
             )
@@ -188,15 +180,8 @@ def prepare_generic_acls(type, INSTANCE_ACL_SET, INSTANCE_EXPS=None):
                 "user__id",
                 "group__id",
                 "token__id",
-                "canRead",
                 "canDownload",
-                "canWrite",
                 "canSensitive",
-                "canDelete",
-                "isOwner",
-                "aclOwnershipType",
-                "effectiveDate",
-                "expiryDate",
             ),
             return_list,
         )
