@@ -160,55 +160,67 @@ class IndexTestCase(TestCase):
         Test that ACLs for users & groups are indexed, but that tokens are not.
         """
         # Explicit ACL creation for group+token for project
+        print("creating project group + token ACLs")
         acl = ProjectACL(
             group=self.group,
             project=self.proj,
             aclOwnershipType=ProjectACL.OWNER_OWNED,
+            canRead=True,
         )
         acl.save()
         acl = ProjectACL(
             token=self.token,
             project=self.proj,
             aclOwnershipType=ProjectACL.OWNER_OWNED,
+            canRead=True,
         )
         acl.save()
+        print("creating experiment group + token ACLs")
         # Explicit ACL creation for group+token for experiment
         acl = ExperimentACL(
             group=self.group,
             experiment=self.exp,
             aclOwnershipType=ExperimentACL.OWNER_OWNED,
+            canRead=True,
         )
         acl.save()
         acl = ExperimentACL(
             token=self.token,
             experiment=self.exp,
             aclOwnershipType=ExperimentACL.OWNER_OWNED,
+            canRead=True,
         )
         acl.save()
+        print("creating dataset group + token ACLs")
         # Explicit ACL creation for group+token for dataset
         acl = DatasetACL(
             group=self.group,
             dataset=self.dataset,
             aclOwnershipType=DatasetACL.OWNER_OWNED,
+            canRead=True,
         )
         acl.save()
         acl = DatasetACL(
             token=self.token,
             dataset=self.dataset,
             aclOwnershipType=DatasetACL.OWNER_OWNED,
+            canRead=True,
         )
         acl.save()
+        print("creating datafile group + token ACLs")
         # Explicit ACL creation for group+token for datafile
         acl = DatafileACL(
             group=self.group,
             datafile=self.datafile,
             aclOwnershipType=DatafileACL.OWNER_OWNED,
+            canRead=True,
         )
         acl.save()
         acl = DatafileACL(
             token=self.token,
             datafile=self.datafile,
             aclOwnershipType=DatafileACL.OWNER_OWNED,
+            canRead=True,
         )
         acl.save()
 
