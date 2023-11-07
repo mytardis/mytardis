@@ -46,7 +46,7 @@
     "prop-types": "^15.7.2",
     "query-string": "^7.0.0",
     "react": "^16.14.0",
-    "react-beautiful-dnd": "^13.1.0",
+    "react-beautiful-dnd": "^13.1.1",
     "react-bootstrap": "^1.6.1",
     "react-bootstrap-typeahead": "^4.0.0-alpha.10",
     "react-datetime": "^3.0.3",
