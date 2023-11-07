@@ -106,6 +106,9 @@ class IndexTestCase(TestCase):
         )
         acl.save()
 
+        # add relation between Proj and Exp (required for all ACL modes)
+        self.proj.experiments.add(self.exp)
+
         # create dataset object
         # dataset1 belongs to experiment1
         self.dataset = Dataset(description="test_dataset")
