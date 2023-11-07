@@ -386,17 +386,17 @@ class IndexTestCase(TestCase):
         proj_parameterset.save()
         proj_param_string = ProjectParameter.objects.create(
             parameterset=proj_parameterset,
-            name="STRING",
+            name=param_names[schema_proj.name]["STRING"],
             string_value="stringtest",
         )
         proj_param_numeric = ProjectParameter.objects.create(
             parameterset=proj_parameterset,
-            name="NUMERIC",
+            name=param_names[schema_proj.name]["NUMERIC"],
             numeric_value=123,
         )
         proj_param_datetime = ProjectParameter.objects.create(
             parameterset=proj_parameterset,
-            name="DATETIME",
+            name=param_names[schema_proj.name]["DATETIME"],
             datetime_value=now,
         )
 
@@ -407,17 +407,17 @@ class IndexTestCase(TestCase):
         exp_parameterset.save()
         exp_param_string = ExperimentParameter.objects.create(
             parameterset=exp_parameterset,
-            name="STRING",
+            name=param_names[schema_exp.name]["STRING"],
             string_value="stringtest",
         )
         exp_param_numeric = ExperimentParameter.objects.create(
             parameterset=exp_parameterset,
-            name="NUMERIC",
+            name=param_names[schema_exp.name]["NUMERIC"],
             numeric_value=123,
         )
         exp_param_datetime = ExperimentParameter.objects.create(
             parameterset=exp_parameterset,
-            name="DATETIME",
+            name=param_names[schema_exp.name]["DATETIME"],
             datetime_value=now,
         )
 
@@ -426,17 +426,17 @@ class IndexTestCase(TestCase):
         set_parameterset.save()
         set_param_string = DatasetParameter.objects.create(
             parameterset=set_parameterset,
-            name="STRING",
+            name=param_names[schema_set.name]["STRING"],
             string_value="stringtest",
         )
         set_param_numeric = DatasetParameter.objects.create(
             parameterset=set_parameterset,
-            name="NUMERIC",
+            name=param_names[schema_set.name]["NUMERIC"],
             numeric_value=123,
         )
         set_param_datetime = DatasetParameter.objects.create(
             parameterset=set_parameterset,
-            name="DATETIME",
+            name=param_names[schema_set.name]["DATETIME"],
             datetime_value=now,
         )
 
@@ -447,17 +447,17 @@ class IndexTestCase(TestCase):
         file_parameterset.save()
         file_param_string = DatafileParameter.objects.create(
             parameterset=file_parameterset,
-            name="STRING",
+            name=param_names[schema_file.name]["STRING"],
             string_value="stringtest",
         )
         file_param_numeric = DatafileParameter.objects.create(
             parameterset=file_parameterset,
-            name="NUMERIC",
+            name=param_names[schema_file.name]["NUMERIC"],
             numeric_value=123,
         )
         file_param_datetime = DatafileParameter.objects.create(
             parameterset=file_parameterset,
-            name="DATETIME",
+            name=param_names[schema_file.name]["DATETIME"],
             datetime_value=now,
         )
 
