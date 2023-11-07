@@ -392,7 +392,7 @@ class IndexTestCase(TestCase):
         proj_param_numeric = ProjectParameter.objects.create(
             parameterset=proj_parameterset,
             name=param_names[schema_proj.name]["NUMERIC"],
-            numeric_value=123,
+            numerical_value=123,
         )
         proj_param_datetime = ProjectParameter.objects.create(
             parameterset=proj_parameterset,
@@ -413,7 +413,7 @@ class IndexTestCase(TestCase):
         exp_param_numeric = ExperimentParameter.objects.create(
             parameterset=exp_parameterset,
             name=param_names[schema_exp.name]["NUMERIC"],
-            numeric_value=123,
+            numerical_value=123,
         )
         exp_param_datetime = ExperimentParameter.objects.create(
             parameterset=exp_parameterset,
@@ -432,7 +432,7 @@ class IndexTestCase(TestCase):
         set_param_numeric = DatasetParameter.objects.create(
             parameterset=set_parameterset,
             name=param_names[schema_set.name]["NUMERIC"],
-            numeric_value=123,
+            numerical_value=123,
         )
         set_param_datetime = DatasetParameter.objects.create(
             parameterset=set_parameterset,
@@ -453,7 +453,7 @@ class IndexTestCase(TestCase):
         file_param_numeric = DatafileParameter.objects.create(
             parameterset=file_parameterset,
             name=param_names[schema_file.name]["NUMERIC"],
-            numeric_value=123,
+            numerical_value=123,
         )
         file_param_datetime = DatafileParameter.objects.create(
             parameterset=file_parameterset,
@@ -474,7 +474,7 @@ class IndexTestCase(TestCase):
                     {
                         "pn_id": param_names[schema.name]["STRING"].id,
                         "pn_name": "STRING",
-                        "value": param_string.value,
+                        "value": param_string.string_value,
                         "sensitive": False,
                     }
                 ],
@@ -482,7 +482,7 @@ class IndexTestCase(TestCase):
                     {
                         "pn_id": param_names[schema.name]["NUMERIC"].id,
                         "pn_name": "NUMERIC",
-                        "value": param_numeric.value,
+                        "value": param_numeric.numerical_value,
                         "sensitive": False,
                     }
                 ],
@@ -490,7 +490,7 @@ class IndexTestCase(TestCase):
                     {
                         "pn_id": param_names[schema.name]["DATETIME"].id,
                         "pn_name": "DATETIME",
-                        "value": param_datetime.value,
+                        "value": param_datetime.datetime_value,
                         "sensitive": True,
                     }
                 ],
