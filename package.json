@@ -54,7 +54,7 @@
     "react-icons": "^3.10.0",
     "react-redux": "^7.2.0",
     "react-spinners": "^0.11.0",
-    "react-switch": "^6.0.0",
+    "react-switch": "^7.0.0",
     "react-tag-autocomplete": "^6.1.0",
     "react-treebeard": "v4.2.4-beta.0",
     "regenerator-runtime": "^0.13.7",
