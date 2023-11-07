@@ -6,6 +6,7 @@ from django.contrib.auth.models import User, Group
 from django.core.management import call_command
 from django.test import TestCase, override_settings
 from django_elasticsearch_dsl.test import is_es_online
+from django.utils import timezone
 
 from tardis.apps.projects.models import (
     Project,
@@ -20,6 +21,8 @@ from tardis.apps.search.documents import (
     ProjectDocument,
 )
 from tardis.tardis_portal.models import (
+    Schema,
+    ParameterName,
     DataFile,
     Dataset,
     Experiment,
@@ -27,12 +30,17 @@ from tardis.tardis_portal.models import (
     DatafileACL,
     DatasetACL,
     ExperimentACL,
+    ExperimentParameterSet,
+    ExperimentParameter,
+    DatasetParameterSet,
+    DatasetParameter,
+    DatafileParameterSet,
+    DatafileParameter,
 )
 
 
 """
 TODO improve these tests to include the following:
- - fix ACL tests
  - add parameter tests for all objects
    - test types of parameters index properly
  - test Indexing works for all object relations
@@ -43,6 +51,10 @@ TODO improve these tests to include the following:
 @override_settings(ELASTICSEARCH_DSL_AUTOSYNC=True)
 class IndexTestCase(TestCase):
     def setUp(self):
+        """
+        Create a series of users (inc. public) to be used for various index tests.
+        Create basic Proj/Exp/Set/File + created_by_user ACLs to be used in the tests.
+        """
         publicuser = "public_user"
         pwd = "secret"
         publicemail = "public@test.com"
@@ -144,7 +156,7 @@ class IndexTestCase(TestCase):
 
     def test_create_index(self):
         """
-        Test the existance of document objects
+        Test the existence of proj/exp/set/file document objects.
         """
         # search on project
         search = ProjectDocument.search()
@@ -290,34 +302,261 @@ class IndexTestCase(TestCase):
         search = ProjectDocument.search()
         query = search.query("match", name="Test Project 1")
         result = query.execute(ignore_cache=True)
-        print(result.hits[0].acls)
-        print(correct_acl_structure)
-        print()
         self.assertEqual(result.hits[0].acls, correct_acl_structure)
 
         search = ExperimentDocument.search()
         query = search.query("match", title="test exp1")
         result = query.execute(ignore_cache=True)
         self.assertEqual(result.hits[0].acls, correct_acl_structure)
-        print(result.hits[0].acls)
-        print(correct_acl_structure)
-        print()
 
         search = DatasetDocument.search()
         query = search.query("match", description="test_dataset")
         result = query.execute(ignore_cache=True)
         self.assertEqual(result.hits[0].acls, correct_acl_structure)
-        print(result.hits[0].acls)
-        print(correct_acl_structure)
-        print()
 
         search = DataFileDocument.search()
         query = search.query("match", filename="test.txt")
         result = query.execute(ignore_cache=True)
-        print(result.hits[0].acls)
-        print(correct_acl_structure)
-        print()
         self.assertEqual(result.hits[0].acls, correct_acl_structure)
+
+    def test_parameter_indexing(self):
+        """
+        Test that parameters are properly indexed into proj/exp/set/file documents.
+        Tests are for parameter types: string, numerical, datetime
+        """
+        # Create schemas
+        schema_proj = Schema(
+            namespace="http://test.namespace/proj/1",
+            name="ProjSchema",
+            type=Schema.PROJECT,
+        )
+        schema_proj.save()
+        schema_exp = Schema(
+            namespace="http://test.namespace/exp/1",
+            name="ExpSchema",
+            type=Schema.EXPERIMENT,
+        )
+        schema_exp.save()
+        schema_set = Schema(
+            namespace="http://test.namespace/set/1",
+            name="SetSchema",
+            type=Schema.DATASET,
+        )
+        schema_set.save()
+        schema_file = Schema(
+            namespace="http://test.namespace/file/1",
+            name="FileSchema",
+            type=Schema.DATAFILE,
+        )
+        schema_file.save()
+
+        # define parameter types and names to test on
+        param_types = [
+            "STRING",
+            "NUMERIC",
+            "DATETIME",
+            # "URL",
+            # "LINK",
+            # "FILENAME",
+            # "LONGSTRING",
+            # "JSON",
+        ]
+
+        param_names = {}
+        # Create Numeric/string/datetime parameters for each
+        # of the 4 schemas above
+        for schema in [schema_proj, schema_exp, schema_set, schema_file]:
+            param_names[schema.name] = {}
+            for data_type_str in param_types:
+                paramname = ParameterName(
+                    schema=schema,
+                    name=data_type_str,
+                    full_name=data_type_str,
+                    data_type=getattr(ParameterName, data_type_str),
+                )
+                if paramname.name == "DATETIME":
+                    paramname.sensitive = True
+                paramname.save()
+                param_names[schema.name][data_type_str] = paramname
+        # define a time for datetime parameters
+        now = timezone.now()
+
+        # Create project parameterset and parameters
+        proj_parameterset = ProjectParameterSet(schema=schema_proj, project=self.proj)
+        proj_parameterset.save()
+        proj_param_string = ProjectParameter.objects.create(
+            parameterset=proj_parameterset,
+            name="STRING",
+            string_value="stringtest",
+        )
+        proj_param_numeric = ProjectParameter.objects.create(
+            parameterset=proj_parameterset,
+            name="NUMERIC",
+            numeric_value=123,
+        )
+        proj_param_datetime = ProjectParameter.objects.create(
+            parameterset=proj_parameterset,
+            name="DATETIME",
+            datetime_value=now,
+        )
+
+        # Create experiment parameterset and parameters
+        exp_parameterset = ExperimentParameterSet(
+            schema=schema_exp, experiment=self.exp
+        )
+        exp_parameterset.save()
+        exp_param_string = ExperimentParameter.objects.create(
+            parameterset=exp_parameterset,
+            name="STRING",
+            string_value="stringtest",
+        )
+        exp_param_numeric = ExperimentParameter.objects.create(
+            parameterset=exp_parameterset,
+            name="NUMERIC",
+            numeric_value=123,
+        )
+        exp_param_datetime = ExperimentParameter.objects.create(
+            parameterset=exp_parameterset,
+            name="DATETIME",
+            datetime_value=now,
+        )
+
+        # Create dataset parameterset and parameters
+        set_parameterset = DatasetParameterSet(schema=schema_set, dataset=self.dataset)
+        set_parameterset.save()
+        set_param_string = DatasetParameter.objects.create(
+            parameterset=set_parameterset,
+            name="STRING",
+            string_value="stringtest",
+        )
+        set_param_numeric = DatasetParameter.objects.create(
+            parameterset=set_parameterset,
+            name="NUMERIC",
+            numeric_value=123,
+        )
+        set_param_datetime = DatasetParameter.objects.create(
+            parameterset=set_parameterset,
+            name="DATETIME",
+            datetime_value=now,
+        )
+
+        # Create datafile parameterset and parameters
+        file_parameterset = DatafileParameterSet(
+            schema=schema_file, datafile=self.datafile
+        )
+        file_parameterset.save()
+        file_param_string = DatafileParameter.objects.create(
+            parameterset=file_parameterset,
+            name="STRING",
+            string_value="stringtest",
+        )
+        file_param_numeric = DatafileParameter.objects.create(
+            parameterset=file_parameterset,
+            name="NUMERIC",
+            numeric_value=123,
+        )
+        file_param_datetime = DatafileParameter.objects.create(
+            parameterset=file_parameterset,
+            name="DATETIME",
+            datetime_value=now,
+        )
+
+        # manually rebuild indexes to ensure they are up-to-date for these
+        # tests (related_index triggers should be tested elsewhere)
+        self.out = StringIO()
+        call_command("search_index", stdout=self.out, action="rebuild", force=True)
+
+        def param_struct(
+            param_names, param_string, param_numeric, param_datetime, schema
+        ):
+            correct_param_structure = {
+                "string": [
+                    {
+                        "pn_id": param_names[schema.name]["STRING"].id,
+                        "pn_name": "STRING",
+                        "value": param_string.value,
+                        "sensitive": False,
+                    }
+                ],
+                "numeric": [
+                    {
+                        "pn_id": param_names[schema.name]["NUMERIC"].id,
+                        "pn_name": "NUMERIC",
+                        "value": param_numeric.value,
+                        "sensitive": False,
+                    }
+                ],
+                "datetime": [
+                    {
+                        "pn_id": param_names[schema.name]["DATETIME"].id,
+                        "pn_name": "DATETIME",
+                        "value": param_datetime.value,
+                        "sensitive": True,
+                    }
+                ],
+                "schemas": [{"schema_id": schema.id}],
+            }
+            return correct_param_structure
+
+        search = ProjectDocument.search()
+        query = search.query("match", name="Test Project 1")
+        result = query.execute(ignore_cache=True)
+        correct_param_structure = param_struct(
+            param_names,
+            proj_param_string,
+            proj_param_numeric,
+            proj_param_datetime,
+            schema_proj,
+        )
+        print(result.hits[0].parameters)
+        print(correct_param_structure)
+        print()
+        self.assertEqual(result.hits[0].parameters, correct_param_structure)
+
+        search = ExperimentDocument.search()
+        query = search.query("match", title="test exp1")
+        result = query.execute(ignore_cache=True)
+        correct_param_structure = param_struct(
+            param_names,
+            exp_param_string,
+            exp_param_numeric,
+            exp_param_datetime,
+            schema_exp,
+        )
+        print(result.hits[0].parameters)
+        print(correct_param_structure)
+        print()
+        self.assertEqual(result.hits[0].acls, correct_param_structure)
+
+        search = DatasetDocument.search()
+        query = search.query("match", description="test_dataset")
+        result = query.execute(ignore_cache=True)
+        correct_param_structure = param_struct(
+            param_names,
+            set_param_string,
+            set_param_numeric,
+            set_param_datetime,
+            schema_set,
+        )
+        print(result.hits[0].parameters)
+        print(correct_param_structure)
+        print()
+        self.assertEqual(result.hits[0].acls, correct_param_structure)
+
+        search = DataFileDocument.search()
+        query = search.query("match", filename="test.txt")
+        result = query.execute(ignore_cache=True)
+        correct_param_structure = param_struct(
+            param_names,
+            file_param_string,
+            file_param_numeric,
+            file_param_datetime,
+            schema_file,
+        )
+        print(result.hits[0].parameters)
+        print(correct_param_structure)
+        print()
+        self.assertEqual(result.hits[0].acls, correct_param_structure)
 
     def tearDown(self):
         self.datafile.delete()
