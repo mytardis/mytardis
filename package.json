@@ -100,7 +100,7 @@
     "jquery-mockjax": "^2.6.0",
     "js-yaml": "^4.1.0",
     "jscpd": "^3.5.10",
-    "qunit": "^2.16.0",
+    "qunit": "^2.20.0",
     "react-test-renderer": "^16.14.0"
   },
   "scripts": {
