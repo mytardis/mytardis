@@ -87,7 +87,7 @@
     "eslint-config-airbnb": "^19.0.4",
     "eslint-config-angular": "^0.5.0",
     "eslint-plugin-angular": "^4.0.1",
-    "eslint-plugin-import": "^2.23.4",
+    "eslint-plugin-import": "^2.29.0",
     "eslint-plugin-jsx-a11y": "^6.8.0",
     "eslint-plugin-react": "^7.24.0",
     "grunt": "^1.4.1",
