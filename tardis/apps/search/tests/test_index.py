@@ -61,11 +61,9 @@ class IndexTestCase(TestCase):
         # This user shouldn't see any results (unless token functionality added to search)
         user_token = "tardis_user3"
         email_token = "token@test.com"
-        self.user_grp = User.objects.create_user(user_token, email_token, pwd)
+        self.user_token = User.objects.create_user(user_token, email_token, pwd)
         self.token = Token(user=self.user)
         self.token.save()
-
-        print("public", settings.PUBLIC_USER_ID, "user", self.user.id)
 
         self.out = StringIO()
         call_command("search_index", stdout=self.out, action="delete", force=True)
@@ -284,7 +282,6 @@ class IndexTestCase(TestCase):
         search = ProjectDocument.search()
         query = search.query("match", name="Test Project 1")
         result = query.execute(ignore_cache=True)
-        print(*self.proj.projectacl_set.all())
         print(result.hits[0].acls)
         print(correct_acl_structure)
         print()
@@ -311,3 +308,13 @@ class IndexTestCase(TestCase):
         print(correct_acl_structure)
         print()
         self.assertEqual(result.hits[0].acls, correct_acl_structure)
+
+    def tearDown(self):
+        self.datafile.delete()
+        self.dataset.delete()
+        self.exp.delete()
+        self.proj.delete()
+        self.publicuser.delete()
+        self.user.delete()
+        self.user_grp.delete()
+        self.user_token.delete()
