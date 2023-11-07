@@ -508,7 +508,7 @@ class IndexTestCase(TestCase):
             proj_param_datetime,
             schema_proj,
         )
-        print(dict(result.hits[0].parameters))
+        print(result.hits[0].parameters)
         print(correct_param_structure)
         print()
         self.assertEqual(result.hits[0].parameters, correct_param_structure)
@@ -523,7 +523,7 @@ class IndexTestCase(TestCase):
             exp_param_datetime,
             schema_exp,
         )
-        print(dict(result.hits[0].parameters))
+        print(result.hits[0].parameters)
         print(correct_param_structure)
         print()
         self.assertEqual(result.hits[0].acls, correct_param_structure)
@@ -538,8 +538,13 @@ class IndexTestCase(TestCase):
             set_param_datetime,
             schema_set,
         )
-        print(dict(result.hits[0].parameters))
+        print(result.hits[0].parameters)
         print(correct_param_structure)
+        print(result.hits[0].parameters.string)
+        print(result.hits[0].parameters.numeric)
+        print(result.hits[0].parameters.datetime)
+        print(result.hits[0].parameters.schemas)
+
         print()
         self.assertEqual(result.hits[0].acls, correct_param_structure)
 
@@ -553,7 +558,7 @@ class IndexTestCase(TestCase):
             file_param_datetime,
             schema_file,
         )
-        print(dict(result.hits[0].parameters))
+        print(result.hits[0].parameters)
         print(correct_param_structure)
         print()
         self.assertEqual(result.hits[0].acls, correct_param_structure)
