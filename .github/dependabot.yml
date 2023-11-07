@@ -4,7 +4,7 @@ updates:
   directory: "/"
   schedule:
     interval: daily
-  open-pull-requests-limit: 25
+  open-pull-requests-limit: 10
   ignore:
   - dependency-name: y18n
     versions:
@@ -13,7 +13,7 @@ updates:
   directory: "/"
   schedule:
     interval: daily
-  open-pull-requests-limit: 25
+  open-pull-requests-limit: 10
   ignore:
   - dependency-name: boto3
     versions:
