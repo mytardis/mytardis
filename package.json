@@ -93,7 +93,7 @@
     "grunt": "^1.6.1",
     "grunt-cli": "^1.4.3",
     "grunt-contrib-qunit": "^8.0.1",
-    "grunt-webpack": "^4.0.3",
+    "grunt-webpack": "^5.0.0",
     "identity-obj-proxy": "^3.0.0",
     "jest": "^26.4.2",
     "jest-fetch-mock": "^3.0.3",
