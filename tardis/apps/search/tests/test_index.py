@@ -389,14 +389,12 @@ class IndexTestCase(TestCase):
             name=param_names[schema_proj.name]["STRING"],
             string_value="stringtest",
         )
-        try:
-            proj_param_numeric = ProjectParameter.objects.create(
-                parameterset=proj_parameterset,
-                name=param_names[schema_proj.name]["NUMERIC"],
-                numerical_value=123,
-            )
-        except:
-            print("failed to create numeric")
+        proj_param_numeric = ProjectParameter.objects.create(
+            parameterset=proj_parameterset,
+            name=param_names[schema_proj.name]["NUMERIC"],
+            numerical_value=123,
+        )
+
         proj_param_datetime = ProjectParameter.objects.create(
             parameterset=proj_parameterset,
             name=param_names[schema_proj.name]["DATETIME"],
@@ -413,14 +411,12 @@ class IndexTestCase(TestCase):
             name=param_names[schema_exp.name]["STRING"],
             string_value="stringtest",
         )
-        try:
-            exp_param_numeric = ExperimentParameter.objects.create(
-                parameterset=exp_parameterset,
-                name=param_names[schema_exp.name]["NUMERIC"],
-                numerical_value=123,
-            )
-        except:
-            print("failed to create numeric")
+        exp_param_numeric = ExperimentParameter.objects.create(
+            parameterset=exp_parameterset,
+            name=param_names[schema_exp.name]["NUMERIC"],
+            numerical_value=123,
+        )
+
         exp_param_datetime = ExperimentParameter.objects.create(
             parameterset=exp_parameterset,
             name=param_names[schema_exp.name]["DATETIME"],
@@ -435,14 +431,12 @@ class IndexTestCase(TestCase):
             name=param_names[schema_set.name]["STRING"],
             string_value="stringtest",
         )
-        try:
-            set_param_numeric = DatasetParameter.objects.create(
-                parameterset=set_parameterset,
-                name=param_names[schema_set.name]["NUMERIC"],
-                numerical_value=123,
-            )
-        except:
-            print("failed to create numeric")
+        set_param_numeric = DatasetParameter.objects.create(
+            parameterset=set_parameterset,
+            name=param_names[schema_set.name]["NUMERIC"],
+            numerical_value=123,
+        )
+
         set_param_datetime = DatasetParameter.objects.create(
             parameterset=set_parameterset,
             name=param_names[schema_set.name]["DATETIME"],
@@ -459,14 +453,11 @@ class IndexTestCase(TestCase):
             name=param_names[schema_file.name]["STRING"],
             string_value="stringtest",
         )
-        try:
-            file_param_numeric = DatafileParameter.objects.create(
-                parameterset=file_parameterset,
-                name=param_names[schema_file.name]["NUMERIC"],
-                numerical_value=123,
-            )
-        except:
-            print("failed to create numeric")
+        file_param_numeric = DatafileParameter.objects.create(
+            parameterset=file_parameterset,
+            name=param_names[schema_file.name]["NUMERIC"],
+            numerical_value=123,
+        )
         file_param_datetime = DatafileParameter.objects.create(
             parameterset=file_parameterset,
             name=param_names[schema_file.name]["DATETIME"],
@@ -523,14 +514,6 @@ class IndexTestCase(TestCase):
 
         x = result.to_dict()
         print(x)
-        try:
-            x["hits"][0]["parameters"].pop("string")
-            x["hits"][0]["parameters"].pop("schemas")
-            x["hits"][0]["parameters"].pop("datetime")
-            print(x)
-        except:
-            print("not poppable")
-
         print(result.hits[0].parameters)
         print(correct_param_structure)
         # print(result.hits[0].parameters.string[0].value)

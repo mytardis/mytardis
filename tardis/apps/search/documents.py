@@ -246,6 +246,9 @@ def prepare_generic_parameters(instance, type):
             # if parameter with a value is added, add param_dict to
             # parameters_dict
             if type_idx:
+                print(param_type[type_idx])
+                print(param_dict)
+                print()
                 parameter_groups[param_type[type_idx]].append(param_dict)
     return parameter_groups
 
