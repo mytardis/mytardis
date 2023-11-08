@@ -30,7 +30,7 @@
     "filesize": "^6.3.0",
     "font-awesome": "^4.7.0",
     "he": "^1.2.0",
-    "glob": "^7.1.7",
+    "glob": "^10.3.10",
     "html-webpack-plugin": "^4.5.2",
     "imports-loader": "^1.2.0",
     "jquery": "^3.6.0",
