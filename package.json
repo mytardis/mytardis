@@ -44,7 +44,7 @@
     "moment": "^2.29.4",
     "pluralize": "^8.0.0",
     "prop-types": "^15.7.2",
-    "query-string": "^7.0.0",
+    "query-string": "^8.1.0",
     "react": "^16.14.0",
     "react-beautiful-dnd": "^13.1.1",
     "react-bootstrap": "^1.6.1",
