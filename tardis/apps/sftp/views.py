@@ -116,7 +116,9 @@ def cybderduck_connection_window(request):
         draw.text(text["location"], text["text"], font=font, fill=(0, 0, 0))
 
     def draw_underlined_text(draw, pos, text, font, **options):
-        twidth, theight = draw.textbbox(text, font=font)
+        l, t, r, b = draw.textbbox((pos[0], pos[1]), text=text, font=font)
+        twidth = r - l
+        theight = t - b
         lx, ly = pos[0], pos[1] + theight - 2
         draw.text(pos, text, font=font, **options)
         draw.line((lx, ly, lx + twidth - 2, ly), **options)
