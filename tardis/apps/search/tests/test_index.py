@@ -512,8 +512,20 @@ class IndexTestCase(TestCase):
         print(correct_param_structure)
         # print(result.hits[0].parameters.string[0].value)
         print(result.hits[0].parameters.datetime[0].value)
-        print(result.hits[0].parameters.schemas[0].schema_id)
-        print(result.hits[0].parameters.numerical[0].value)
+        try:
+            print(str(proj_param_datetime.datetime_value))
+        except:
+            print("not stringable")
+        # print(result.hits[0].parameters.schemas[0].schema_id)
+        try:
+            print(result.hits[0].parameters.numerical)
+        except:
+            print("not numerical")
+        try:
+            print(result.hits[0].parameters.numeric)
+            print(result.hits[0].parameters.numeric[0].value)
+        except:
+            print("not numeric either...")
         print()
         self.assertEqual(result.hits[0].parameters, correct_param_structure)
 
