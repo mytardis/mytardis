@@ -27,7 +27,7 @@
     "expose-loader": "^1.0.3",
     "file-loader": "^6.2.0",
     "file-saver": "^2.0.5",
-    "filesize": "^6.3.0",
+    "filesize": "^10.1.0",
     "font-awesome": "^4.7.0",
     "he": "^1.2.0",
     "glob": "^10.3.10",
