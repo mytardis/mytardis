@@ -521,7 +521,7 @@ class IndexTestCase(TestCase):
             schema_proj,
         )
 
-        x = search.to_dict()
+        x = result.to_dict()
         print(x)
         try:
             x["hits"][0]["parameters"].pop("string")
