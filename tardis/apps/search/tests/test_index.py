@@ -520,6 +520,8 @@ class IndexTestCase(TestCase):
             proj_param_datetime,
             schema_proj,
         )
+
+        search.to_dict()
         try:
             result.hits[0].parameters.pop("string")
             result.hits[0].parameters.pop("schemas")
