@@ -510,6 +510,10 @@ class IndexTestCase(TestCase):
         )
         print(result.hits[0].parameters)
         print(correct_param_structure)
+        print(result.hits[0].parameters.string)
+        print(result.hits[0].parameters.numeric)
+        print(result.hits[0].parameters.datetime)
+        print(result.hits[0].parameters.schemas)
         print()
         self.assertEqual(result.hits[0].parameters, correct_param_structure)
 
@@ -540,11 +544,6 @@ class IndexTestCase(TestCase):
         )
         print(result.hits[0].parameters)
         print(correct_param_structure)
-        print(result.hits[0].parameters.string)
-        print(result.hits[0].parameters.numeric)
-        print(result.hits[0].parameters.datetime)
-        print(result.hits[0].parameters.schemas)
-
         print()
         self.assertEqual(result.hits[0].acls, correct_param_structure)
 
