@@ -79,7 +79,7 @@
     "babel-eslint": "^10.0.3",
     "babel-plugin-rewire": "^1.2.0",
     "bootlint": "^1.1.0",
-    "concurrently": "^5.2.0",
+    "concurrently": "^8.2.2",
     "core-js": "^3.6.5",
     "enzyme": "^3.10.0",
     "enzyme-adapter-react-16": "^1.15.7",
