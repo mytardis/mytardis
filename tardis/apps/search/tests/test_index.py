@@ -521,11 +521,13 @@ class IndexTestCase(TestCase):
             schema_proj,
         )
 
-        search.to_dict()
+        x = search.to_dict()
+        print(x)
         try:
-            result.hits[0].parameters.pop("string")
-            result.hits[0].parameters.pop("schemas")
-            result.hits[0].parameters.pop("datetime")
+            x["hits"][0]["parameters"].pop("string")
+            x["hits"][0]["parameters"].pop("schemas")
+            x["hits"][0]["parameters"].pop("datetime")
+            print(x)
         except:
             print("not poppable")
 
