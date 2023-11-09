@@ -228,9 +228,7 @@ def prepare_generic_parameters(instance, type):
             param_dict = {}
             type_idx = 0
             # iterate over datetime/string/numerical info
-            print("this is the sublist", sublist)
-            print("this is the sublist -1 index", sublist[-1])
-            for idx, value in enumerate(sublist[1:-1]):
+            for idx, value in enumerate(sublist[1:]):
                 # if datetime/string/numerical atually contains info
                 if value not in [None, ""]:
                     # add parametername info to dict
@@ -238,7 +236,6 @@ def prepare_generic_parameters(instance, type):
                     param_dict["pn_name"] = str(PN.full_name)
                     param_dict["sensitive"] = PN.sensitive
                     type_idx = idx + 1
-                    print(type_idx)
                     # detect type of param, and add value to dict
                     if type_idx == 1:
                         param_dict["value"] = value
@@ -246,13 +243,9 @@ def prepare_generic_parameters(instance, type):
                         param_dict["value"] = str(value)
                     elif type_idx == 3:
                         param_dict["value"] = float(value)
-                        print("numerical!")
             # if parameter with a value is added, add param_dict to
             # parameters_dict
             if type_idx:
-                print(param_type[type_idx])
-                print(param_dict)
-                print()
                 parameter_groups[param_type[type_idx]].append(param_dict)
     return parameter_groups
 
