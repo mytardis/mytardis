@@ -514,7 +514,13 @@ class DataFileDocument(MyTardisDocument):
             return related_instance.datafile
         if settings.ONLY_EXPERIMENT_ACLS:
             if isinstance(related_instance, ExperimentACL):
-                return related_instance.experiment.datasets.datafiles.all()
+                # I'm not happy with the performance of having to query on dfs,
+                # but this problem should get resolved when Macro+Micro ACL
+                # functionality is combined?
+                query = DataFile.objects.none()
+                for dataset in related_instance.experiment.datasets.all():
+                    query |= dataset.datafiles.all()
+                return query
         else:
             if isinstance(related_instance, DatafileACL):
                 return related_instance.datafile
