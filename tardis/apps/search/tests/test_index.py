@@ -521,7 +521,10 @@ class IndexTestCase(TestCase):
         print(correct_param_structure)
         for key, val in correct_param_structure.items():
             print(key, val)
-        self.assertEqual(result_params, correct_param_structure)
+        self.assertEqual(result_params.string, correct_param_structure["string"])
+        self.assertEqual(result_params.numerical, correct_param_structure["numerical"])
+        self.assertEqual(result_params.datetime, correct_param_structure["datetime"])
+        self.assertEqual(result_params.schemas, correct_param_structure["schemas"])
 
         search = ExperimentDocument.search()
         query = search.query("match", title="test exp1")
