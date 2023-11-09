@@ -512,16 +512,13 @@ class IndexTestCase(TestCase):
             schema_proj,
         )
 
-        x = result.to_dict()
-        print(x)
-        print(result.hits[0].parameters)
+        result.to_dict()
+        print(result["hits"]["hits"][0]["parameters"])
         print(correct_param_structure)
-        # print(result.hits[0].parameters.string[0].value)
-        # print(result.hits[0].parameters.datetime[0].value)
-        # print(result.hits[0].parameters.schemas[0].schema_id)
-        print(result.hits[0].parameters.numerical[0].value)
 
-        self.assertEqual(result.hits[0].parameters, correct_param_structure)
+        self.assertEqual(
+            result["hits"]["hits"][0]["parameters"], correct_param_structure
+        )
 
         search = ExperimentDocument.search()
         query = search.query("match", title="test exp1")
@@ -533,11 +530,9 @@ class IndexTestCase(TestCase):
             exp_param_datetime,
             schema_exp,
         )
-        print(result.hits[0].parameters)
-        print(correct_param_structure)
-        print()
-        self.assertEqual(result.hits[0].acls, correct_param_structure)
-
+        self.assertEqual(
+            result["hits"]["hits"][0]["parameters"], correct_param_structure
+        )
         search = DatasetDocument.search()
         query = search.query("match", description="test_dataset")
         result = query.execute(ignore_cache=True)
@@ -548,11 +543,9 @@ class IndexTestCase(TestCase):
             set_param_datetime,
             schema_set,
         )
-        print(result.hits[0].parameters)
-        print(correct_param_structure)
-        print()
-        self.assertEqual(result.hits[0].acls, correct_param_structure)
-
+        self.assertEqual(
+            result["hits"]["hits"][0]["parameters"], correct_param_structure
+        )
         search = DataFileDocument.search()
         query = search.query("match", filename="test.txt")
         result = query.execute(ignore_cache=True)
@@ -563,10 +556,9 @@ class IndexTestCase(TestCase):
             file_param_datetime,
             schema_file,
         )
-        print(result.hits[0].parameters)
-        print(correct_param_structure)
-        print()
-        self.assertEqual(result.hits[0].acls, correct_param_structure)
+        self.assertEqual(
+            result["hits"]["hits"][0]["parameters"], correct_param_structure
+        )
 
     def tearDown(self):
         self.datafile.delete()
