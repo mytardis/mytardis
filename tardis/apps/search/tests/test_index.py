@@ -581,8 +581,7 @@ class IndexTestCase(TestCase):
         search = ProjectDocument.search()
         query = search.query("match", name="Test Project 1")
         result = query.execute(ignore_cache=True)
-        self.assertEqual(result.hits[0].principal_investigator, "newusername")
-        self.assertEqual(result.hits[0].created_by, "newusername")
+        self.assertEqual(result.hits[0].principal_investigator.username, "newusername")
 
         # Update relevant ACL models and perms
         correct_acl_structure = [
@@ -620,9 +619,9 @@ class IndexTestCase(TestCase):
         self.user.username = "newusername"
         self.user.save()
         search = ExperimentDocument.search()
-        query = search.query("match", name="Test exp1")
+        query = search.query("match", title="Test exp1")
         result = query.execute(ignore_cache=True)
-        self.assertEqual(result.hits[0].created_by, "newusername")
+        self.assertEqual(result.hits[0].created_by.username, "newusername")
 
         # Update relevant ACL models and perms
         correct_acl_structure = [
