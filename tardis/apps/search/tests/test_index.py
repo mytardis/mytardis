@@ -516,8 +516,11 @@ class IndexTestCase(TestCase):
         result_params = result["hits"]["hits"][0]["_source"]["parameters"]
 
         print(result_params)
+        for key, val in result_params:
+            print(key, val)
         print(correct_param_structure)
-
+        for key, val in correct_param_structure:
+            print(key, val)
         self.assertEqual(result_params, correct_param_structure)
 
         search = ExperimentDocument.search()
