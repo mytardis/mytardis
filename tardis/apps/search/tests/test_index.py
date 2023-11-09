@@ -514,13 +514,6 @@ class IndexTestCase(TestCase):
 
         result.to_dict()
         result_params = result["hits"]["hits"][0]["_source"]["parameters"]
-
-        print(result_params)
-        for key in result_params:
-            print(key, result_params[key])
-        print(correct_param_structure)
-        for key, val in correct_param_structure.items():
-            print(key, val)
         self.assertEqual(result_params.string, correct_param_structure["string"])
         self.assertEqual(result_params.numerical, correct_param_structure["numerical"])
         self.assertEqual(result_params.datetime, correct_param_structure["datetime"])
@@ -536,7 +529,10 @@ class IndexTestCase(TestCase):
             exp_param_datetime,
             schema_exp,
         )
-        self.assertEqual(result_params, correct_param_structure)
+        self.assertEqual(result_params.string, correct_param_structure["string"])
+        self.assertEqual(result_params.numerical, correct_param_structure["numerical"])
+        self.assertEqual(result_params.datetime, correct_param_structure["datetime"])
+        self.assertEqual(result_params.schemas, correct_param_structure["schemas"])
 
         search = DatasetDocument.search()
         query = search.query("match", description="test_dataset")
@@ -548,7 +544,10 @@ class IndexTestCase(TestCase):
             set_param_datetime,
             schema_set,
         )
-        self.assertEqual(result_params, correct_param_structure)
+        self.assertEqual(result_params.string, correct_param_structure["string"])
+        self.assertEqual(result_params.numerical, correct_param_structure["numerical"])
+        self.assertEqual(result_params.datetime, correct_param_structure["datetime"])
+        self.assertEqual(result_params.schemas, correct_param_structure["schemas"])
 
         search = DataFileDocument.search()
         query = search.query("match", filename="test.txt")
@@ -560,7 +559,10 @@ class IndexTestCase(TestCase):
             file_param_datetime,
             schema_file,
         )
-        self.assertEqual(result_params, correct_param_structure)
+        self.assertEqual(result_params.string, correct_param_structure["string"])
+        self.assertEqual(result_params.numerical, correct_param_structure["numerical"])
+        self.assertEqual(result_params.datetime, correct_param_structure["datetime"])
+        self.assertEqual(result_params.schemas, correct_param_structure["schemas"])
 
     def tearDown(self):
         self.datafile.delete()
