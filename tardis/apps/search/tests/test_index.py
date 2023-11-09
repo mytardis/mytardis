@@ -477,7 +477,7 @@ class IndexTestCase(TestCase):
                     {
                         "pn_id": str(param_names[schema.name]["STRING"].id),
                         "pn_name": "STRING",
-                        "sensitive": "False",
+                        "sensitive": False,
                         "value": param_string.string_value,
                     }
                 ],
@@ -485,7 +485,7 @@ class IndexTestCase(TestCase):
                     {
                         "pn_id": str(param_names[schema.name]["NUMERIC"].id),
                         "pn_name": "NUMERIC",
-                        "sensitive": "False",
+                        "sensitive": False,
                         "value": param_numeric.numerical_value,
                     }
                 ],
@@ -493,7 +493,7 @@ class IndexTestCase(TestCase):
                     {
                         "pn_id": str(param_names[schema.name]["DATETIME"].id),
                         "pn_name": "DATETIME",
-                        "sensitive": "True",
+                        "sensitive": True,
                         "value": str(param_datetime.datetime_value),
                     }
                 ],
