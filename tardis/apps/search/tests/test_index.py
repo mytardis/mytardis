@@ -494,7 +494,7 @@ class IndexTestCase(TestCase):
                         "pn_id": str(param_names[schema.name]["DATETIME"].id),
                         "pn_name": "DATETIME",
                         "sensitive": True,
-                        "value": str(param_datetime.datetime_value),
+                        "value": str(param_datetime.datetime_value).replace(" ", "T"),
                     }
                 ],
                 "schemas": [{"schema_id": schema.id}],
