@@ -513,12 +513,12 @@ class IndexTestCase(TestCase):
         )
 
         result.to_dict()
-        print(result["hits"]["hits"][0]["parameters"])
+        result_params = result["hits"]["hits"][0]["_source"]["parameters"]
+
+        print(result_params)
         print(correct_param_structure)
 
-        self.assertEqual(
-            result["hits"]["hits"][0]["parameters"], correct_param_structure
-        )
+        self.assertEqual(result_params, correct_param_structure)
 
         search = ExperimentDocument.search()
         query = search.query("match", title="test exp1")
@@ -530,9 +530,8 @@ class IndexTestCase(TestCase):
             exp_param_datetime,
             schema_exp,
         )
-        self.assertEqual(
-            result["hits"]["hits"][0]["parameters"], correct_param_structure
-        )
+        self.assertEqual(result_params, correct_param_structure)
+
         search = DatasetDocument.search()
         query = search.query("match", description="test_dataset")
         result = query.execute(ignore_cache=True)
@@ -543,9 +542,8 @@ class IndexTestCase(TestCase):
             set_param_datetime,
             schema_set,
         )
-        self.assertEqual(
-            result["hits"]["hits"][0]["parameters"], correct_param_structure
-        )
+        self.assertEqual(result_params, correct_param_structure)
+
         search = DataFileDocument.search()
         query = search.query("match", filename="test.txt")
         result = query.execute(ignore_cache=True)
@@ -556,9 +554,7 @@ class IndexTestCase(TestCase):
             file_param_datetime,
             schema_file,
         )
-        self.assertEqual(
-            result["hits"]["hits"][0]["parameters"], correct_param_structure
-        )
+        self.assertEqual(result_params, correct_param_structure)
 
     def tearDown(self):
         self.datafile.delete()
