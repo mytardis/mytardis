@@ -392,7 +392,7 @@ class IndexTestCase(TestCase):
         proj_param_numeric = ProjectParameter.objects.create(
             parameterset=proj_parameterset,
             name=param_names[schema_proj.name]["NUMERIC"],
-            numerical_value=123,
+            numerical_value=123.0,
         )
 
         proj_param_datetime = ProjectParameter.objects.create(
@@ -414,7 +414,7 @@ class IndexTestCase(TestCase):
         exp_param_numeric = ExperimentParameter.objects.create(
             parameterset=exp_parameterset,
             name=param_names[schema_exp.name]["NUMERIC"],
-            numerical_value=123,
+            numerical_value=123.0,
         )
 
         exp_param_datetime = ExperimentParameter.objects.create(
@@ -434,7 +434,7 @@ class IndexTestCase(TestCase):
         set_param_numeric = DatasetParameter.objects.create(
             parameterset=set_parameterset,
             name=param_names[schema_set.name]["NUMERIC"],
-            numerical_value=123,
+            numerical_value=123.0,
         )
 
         set_param_datetime = DatasetParameter.objects.create(
@@ -456,7 +456,7 @@ class IndexTestCase(TestCase):
         file_param_numeric = DatafileParameter.objects.create(
             parameterset=file_parameterset,
             name=param_names[schema_file.name]["NUMERIC"],
-            numerical_value=123,
+            numerical_value=123.0,
         )
         file_param_datetime = DatafileParameter.objects.create(
             parameterset=file_parameterset,
@@ -497,7 +497,7 @@ class IndexTestCase(TestCase):
                         "value": str(param_datetime.datetime_value),
                     }
                 ],
-                "schemas": [{"schema_id": str(schema.id)}],
+                "schemas": [{"schema_id": schema.id}],
             }
             return correct_param_structure
 
@@ -519,7 +519,7 @@ class IndexTestCase(TestCase):
         # print(result.hits[0].parameters.string[0].value)
         # print(result.hits[0].parameters.datetime[0].value)
         # print(result.hits[0].parameters.schemas[0].schema_id)
-        print(result.hits[0].parameters.numerical)
+        print(result.hits[0].parameters.numerical[0].value)
 
         self.assertEqual(result.hits[0].parameters, correct_param_structure)
 
