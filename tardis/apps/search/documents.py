@@ -381,7 +381,9 @@ class DatasetDocument(MyTardisDocument):
             Schema,
             ParameterName,
         ]
-        if not settings.ONLY_EXPERIMENT_ACLS:
+        if settings.ONLY_EXPERIMENT_ACLS:
+            related_models += [ExperimentACL]
+        else:
             related_models += [DatasetACL]
 
     def get_instances_from_related(self, related_instance):
@@ -399,7 +401,10 @@ class DatasetDocument(MyTardisDocument):
             return Dataset.objects.filter(
                 datasetparameterset__schema__parametername=related_instance
             )
-        if not settings.ONLY_EXPERIMENT_ACLS:
+        if settings.ONLY_EXPERIMENT_ACLS:
+            if isinstance(related_instance, ExperimentACL):
+                return related_instance.experiment.datasets.all()
+        else:
             if isinstance(related_instance, DatasetACL):
                 return related_instance.dataset
         return None
@@ -479,7 +484,10 @@ class DataFileDocument(MyTardisDocument):
             DataFileObject,
         ]
         queryset_pagination = 100000
-        if not settings.ONLY_EXPERIMENT_ACLS:
+
+        if settings.ONLY_EXPERIMENT_ACLS:
+            related_models += [ExperimentACL]
+        else:
             related_models += [DatafileACL]
 
     # def get_queryset(self):
@@ -504,7 +512,12 @@ class DataFileDocument(MyTardisDocument):
             )
         if isinstance(related_instance, DataFileObject):
             return related_instance.datafile
-        if not settings.ONLY_EXPERIMENT_ACLS:
+        if settings.ONLY_EXPERIMENT_ACLS:
+            if isinstance(related_instance, ExperimentACL):
+                return DataFile.objects.filter(
+                    dataset__experiments__experimentacl_set=related_instance
+                )
+        else:
             if isinstance(related_instance, DatafileACL):
                 return related_instance.datafile
         return None
@@ -574,7 +587,7 @@ class ProjectDocument(MyTardisDocument):
             ParameterName,
         ]
         if settings.ONLY_EXPERIMENT_ACLS:
-            related_models += [Experiment]
+            related_models += [Experiment, ExperimentACL]
         else:
             related_models += [ProjectACL]
 
@@ -594,6 +607,8 @@ class ProjectDocument(MyTardisDocument):
         if settings.ONLY_EXPERIMENT_ACLS:
             if isinstance(related_instance, Experiment):
                 return related_instance.projects.all()
+            if isinstance(related_instance, ExperimentACL):
+                return related_instance.experiment.projects.all()
         else:
             if isinstance(related_instance, ProjectACL):
                 return related_instance.project

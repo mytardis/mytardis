@@ -5,8 +5,8 @@ from django.conf import settings
 from django.contrib.auth.models import User, Group
 from django.core.management import call_command
 from django.test import TestCase, override_settings
-from django_elasticsearch_dsl.test import is_es_online
 from django.utils import timezone
+from django_elasticsearch_dsl.test import is_es_online
 
 from tardis.apps.projects.models import (
     Project,
@@ -41,8 +41,6 @@ from tardis.tardis_portal.models import (
 
 """
 TODO improve these tests to include the following:
- - add parameter tests for all objects
-   - test types of parameters index properly
  - test Indexing works for all object relations
 """
 
@@ -89,7 +87,7 @@ class IndexTestCase(TestCase):
         )
         self.proj.save()
         # Explicit user ACL creation for project
-        acl = ProjectACL(
+        self.projacl = ProjectACL(
             user=self.user,
             project=self.proj,
             aclOwnershipType=ProjectACL.OWNER_OWNED,
@@ -97,7 +95,7 @@ class IndexTestCase(TestCase):
             canDownload=True,
             canSensitive=True,
         )
-        acl.save()
+        self.projacl.save()
 
         # create experiment object
         self.exp = Experiment(
@@ -108,7 +106,7 @@ class IndexTestCase(TestCase):
         )
         self.exp.save()
         # Explicit user ACL creation for experiment
-        acl = ExperimentACL(
+        self.expacl = ExperimentACL(
             user=self.user,
             experiment=self.exp,
             aclOwnershipType=ExperimentACL.OWNER_OWNED,
@@ -116,7 +114,7 @@ class IndexTestCase(TestCase):
             canDownload=True,
             canSensitive=True,
         )
-        acl.save()
+        self.expacl.save()
 
         # add relation between Proj and Exp (required for all ACL modes)
         self.proj.experiments.add(self.exp)
@@ -128,7 +126,7 @@ class IndexTestCase(TestCase):
         self.dataset.experiments.add(self.exp)
         self.dataset.save()
         # Explicit user ACL creation for dataset
-        acl = DatasetACL(
+        self.setacl = DatasetACL(
             user=self.user,
             dataset=self.dataset,
             aclOwnershipType=DatasetACL.OWNER_OWNED,
@@ -136,7 +134,7 @@ class IndexTestCase(TestCase):
             canDownload=True,
             canSensitive=True,
         )
-        acl.save()
+        self.setacl.save()
 
         # create datafile object
         settings.REQUIRE_DATAFILE_SIZES = False
@@ -144,7 +142,7 @@ class IndexTestCase(TestCase):
         self.datafile = DataFile(dataset=self.dataset, filename="test.txt")
         self.datafile.save()
         # Explicit user ACL creation for datafile
-        acl = DatafileACL(
+        self.fileacl = DatafileACL(
             user=self.user,
             datafile=self.datafile,
             aclOwnershipType=DatafileACL.OWNER_OWNED,
@@ -152,7 +150,7 @@ class IndexTestCase(TestCase):
             canDownload=True,
             canSensitive=True,
         )
-        acl.save()
+        self.fileacl.save()
 
     def test_create_index(self):
         """
@@ -568,6 +566,150 @@ class IndexTestCase(TestCase):
         self.assertEqual(result_params.numerical, correct_param_structure["numerical"])
         self.assertEqual(result_params.datetime, correct_param_structure["datetime"])
         self.assertEqual(result_params.schemas, correct_param_structure["schemas"])
+
+    def test_project_get_instances_from_related(self):
+        """
+        Test that related instances trigger a project reindex.
+            ProjectParameterSet,
+            ProjectParameter,
+            Schema,
+            ParameterName,
+        """
+        # Update username
+        self.user.username = "newusername"
+        self.user.save()
+        search = ProjectDocument.search()
+        query = search.query("match", name="Test Project 1")
+        result = query.execute(ignore_cache=True)
+        self.assertEqual(result.hits[0].principal_investigator, "newusername")
+        self.assertEqual(result.hits[0].created_by, "newusername")
+
+        # Update relevant ACL models and perms
+        correct_acl_structure = [
+            {
+                "pluginId": "django_user",
+                "entityId": self.user.id,
+                "canDownload": False,
+                "canSensitive": False,
+            }
+        ]
+        if settings.ONLY_EXPERIMENT_ACLS:
+            # Update related experiment ACL perms
+            self.expacl.canSensitive = False
+            self.expacl.canDownload = False
+            self.expacl.save()
+        else:
+            # Update project ACL perms
+            self.projacl.canSensitive = False
+            self.projacl.canDownload = False
+            self.projacl.save()
+        search = ProjectDocument.search()
+        query = search.query("match", name="Test Project 1")
+        result = query.execute(ignore_cache=True)
+        self.assertEqual(result.hits[0].acls, correct_acl_structure)
+
+    def test_experiment_get_instances_from_related(self):
+        """
+        Test that related instances trigger an experiment re-index.
+            ExperimentParameterSet,
+            ExperimentParameter,
+            Schema,
+            ParameterName,
+        """
+        # Update username
+        self.user.username = "newusername"
+        self.user.save()
+        search = ExperimentDocument.search()
+        query = search.query("match", name="Test exp1")
+        result = query.execute(ignore_cache=True)
+        self.assertEqual(result.hits[0].created_by, "newusername")
+
+        # Update relevant ACL models and perms
+        correct_acl_structure = [
+            {
+                "pluginId": "django_user",
+                "entityId": self.user.id,
+                "canDownload": False,
+                "canSensitive": False,
+            }
+        ]
+        # Update related experiment ACL perms
+        self.expacl.canSensitive = False
+        self.expacl.canDownload = False
+        self.expacl.save()
+        search = ExperimentDocument.search()
+        query = search.query("match", title="Test exp1")
+        result = query.execute(ignore_cache=True)
+        self.assertEqual(result.hits[0].acls, correct_acl_structure)
+
+    def test_dataset_get_instances_from_related(self):
+        """
+        Test that related instances trigger a dataset re-index.
+            Experiment,
+            Instrument,
+            DatasetParameterSet,
+            DatasetParameter,
+            Schema,
+            ParameterName,
+        """
+        # Update relevant ACL models and perms
+        correct_acl_structure = [
+            {
+                "pluginId": "django_user",
+                "entityId": self.user.id,
+                "canDownload": False,
+                "canSensitive": False,
+            }
+        ]
+        if settings.ONLY_EXPERIMENT_ACLS:
+            # Update related experiment ACL perms
+            self.expacl.canSensitive = False
+            self.expacl.canDownload = False
+            self.expacl.save()
+        else:
+            # Update project ACL perms
+            self.setacl.canSensitive = False
+            self.setacl.canDownload = False
+            self.setacl.save()
+        search = DatasetDocument.search()
+        query = search.query("match", description="test_dataset")
+        result = query.execute(ignore_cache=True)
+        self.assertEqual(result.hits[0].acls, correct_acl_structure)
+
+    def test_datafile_get_instances_from_related(self):
+        """
+        Test that related instances trigger a datafile re-index.
+            Dataset,
+            Experiment,
+            DatafileParameterSet,
+            DatafileParameter,
+            Schema,
+            ParameterName,
+            DataFileObject,
+        """
+        # Update relevant ACL models and perms
+        correct_acl_structure = [
+            {
+                "pluginId": "django_user",
+                "entityId": self.user.id,
+                "canDownload": False,
+                "canSensitive": False,
+            }
+        ]
+        if settings.ONLY_EXPERIMENT_ACLS:
+            # Update related experiment ACL perms
+            self.expacl.canSensitive = False
+            self.expacl.canDownload = False
+            self.expacl.save()
+        else:
+            # Update project ACL perms
+            self.fileacl.canSensitive = False
+            self.fileacl.canDownload = False
+            self.fileacl.save()
+        search = DataFileDocument.search()
+        query = search.query("match", filename="test.txt")
+        result = query.execute(ignore_cache=True)
+        self.assertEqual(result.hits[0].acls, correct_acl_structure)
 
     def tearDown(self):
         self.datafile.delete()
