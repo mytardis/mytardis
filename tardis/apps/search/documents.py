@@ -514,9 +514,7 @@ class DataFileDocument(MyTardisDocument):
             return related_instance.datafile
         if settings.ONLY_EXPERIMENT_ACLS:
             if isinstance(related_instance, ExperimentACL):
-                return DataFile.objects.filter(
-                    dataset__experiments__experimentacl_set=related_instance
-                )
+                return related_instance.experiment.datasets.datafiles.all()
         else:
             if isinstance(related_instance, DatafileACL):
                 return related_instance.datafile
