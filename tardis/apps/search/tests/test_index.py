@@ -511,7 +511,6 @@ class IndexTestCase(TestCase):
             proj_param_datetime,
             schema_proj,
         )
-
         result.to_dict()
         result_params = result["hits"]["hits"][0]["_source"]["parameters"]
         self.assertEqual(result_params.string, correct_param_structure["string"])
@@ -529,6 +528,8 @@ class IndexTestCase(TestCase):
             exp_param_datetime,
             schema_exp,
         )
+        result.to_dict()
+        result_params = result["hits"]["hits"][0]["_source"]["parameters"]
         self.assertEqual(result_params.string, correct_param_structure["string"])
         self.assertEqual(result_params.numerical, correct_param_structure["numerical"])
         self.assertEqual(result_params.datetime, correct_param_structure["datetime"])
@@ -544,6 +545,8 @@ class IndexTestCase(TestCase):
             set_param_datetime,
             schema_set,
         )
+        result.to_dict()
+        result_params = result["hits"]["hits"][0]["_source"]["parameters"]
         self.assertEqual(result_params.string, correct_param_structure["string"])
         self.assertEqual(result_params.numerical, correct_param_structure["numerical"])
         self.assertEqual(result_params.datetime, correct_param_structure["datetime"])
@@ -559,6 +562,8 @@ class IndexTestCase(TestCase):
             file_param_datetime,
             schema_file,
         )
+        result.to_dict()
+        result_params = result["hits"]["hits"][0]["_source"]["parameters"]
         self.assertEqual(result_params.string, correct_param_structure["string"])
         self.assertEqual(result_params.numerical, correct_param_structure["numerical"])
         self.assertEqual(result_params.datetime, correct_param_structure["datetime"])
