@@ -629,6 +629,7 @@ def update_elasticsearch_after_removing_relation(sender, instance, **kwargs):
     Might not be needed (or work) using the CelerySignalProcessor (async)
     """
     if isinstance(sender, ProjectACL):
+        print("triggered?")
         parent = instance.project
         doc = ProjectDocument()
         doc.update(parent)
@@ -664,6 +665,7 @@ def update_elasticsearch_after_removing_relation(sender, instance, **kwargs):
     # organization = instance.organization
     # doc = OrganizationDocument()
     # doc.update(organization)
+
 
 post_delete.connect(update_elasticsearch_after_removing_relation, sender=ProjectACL)
 post_delete.connect(update_elasticsearch_after_removing_relation, sender=ExperimentACL)
