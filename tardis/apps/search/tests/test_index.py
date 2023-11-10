@@ -1,3 +1,4 @@
+# pylint: disable=C0302
 import unittest
 from io import StringIO
 
@@ -581,7 +582,6 @@ class IndexTestCase(TestCase):
         Test that related instances trigger a project reindex.
             ProjectParameterSet,
             ProjectParameter,
-            Schema,
             ParameterName,
         """
         # Update username
@@ -668,7 +668,6 @@ class IndexTestCase(TestCase):
         Test that related instances trigger an experiment re-index.
             ExperimentParameterSet,
             ExperimentParameter,
-            Schema,
             ParameterName,
         """
         # Update username
@@ -741,7 +740,6 @@ class IndexTestCase(TestCase):
             Instrument,
             DatasetParameterSet,
             DatasetParameter,
-            Schema,
             ParameterName,
         """
         # Update relevant ACL models and perms
@@ -823,7 +821,6 @@ class IndexTestCase(TestCase):
             Experiment,
             DatafileParameterSet,
             DatafileParameter,
-            Schema,
             ParameterName,
             DataFileObject,
         """

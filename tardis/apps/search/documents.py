@@ -2,8 +2,8 @@ import logging
 
 from django.conf import settings
 from django.contrib.auth.models import User
+from django.db.models.signals import post_delete
 
-from django.contrib.auth.models import User
 from elasticsearch_dsl import analyzer, token_filter
 from django_elasticsearch_dsl import Document, fields
 from django_elasticsearch_dsl.registries import registry
@@ -617,3 +617,55 @@ class ProjectDocument(MyTardisDocument):
             if isinstance(related_instance, ProjectACL):
                 return related_instance.project
         return None
+
+
+def update_elasticsearch_after_removing_relation(sender, instance, **kwargs):
+    """
+    This function and post_delete hooks are to handle deletions of instances
+    triggering their relation re-indexing on PRE-delete rather than POST-delete
+    in the django_elasticsearch_dsl package. This function simply re-indexes
+    relevant documents a second time on post_delete.
+
+    Might not be needed (or work) using the CelerySignalProcessor (async)
+    """
+    if isinstance(sender, ProjectACL):
+        parent = instance.project
+        doc = ProjectDocument()
+        doc.update(parent)
+
+    if isinstance(sender, ExperimentACL):
+        parent = instance.experiment
+        doc = ExperimentDocument()
+        doc.update(parent)
+        if settings.ONLY_EXPERIMENT_ACLS:
+            # also trigger other model rebuilds
+            projects = instance.experiment.projects.all()
+            datasets = instance.experiment.datasets.all()
+            datafiles = DataFile.objects.none()
+            for dataset in datasets:
+                datafiles |= dataset.datafile_set.all()
+            doc_proj = ProjectDocument()
+            doc_set = DatasetDocument()
+            doc_file = DataFileDocument()
+            doc_proj.update(projects)
+            doc_set.update(datasets)
+            doc_file.update(datafiles)
+
+    if isinstance(sender, DatasetACL):
+        parent = instance.dataset
+        doc = DatasetDocument()
+        doc.update(parent)
+
+    if isinstance(sender, DatafileACL):
+        parent = instance.datafile
+        doc = DataFileDocument()
+        doc.update(parent)
+
+    # organization = instance.organization
+    # doc = OrganizationDocument()
+    # doc.update(organization)
+
+post_delete.connect(update_elasticsearch_after_removing_relation, sender=ProjectACL)
+post_delete.connect(update_elasticsearch_after_removing_relation, sender=ExperimentACL)
+post_delete.connect(update_elasticsearch_after_removing_relation, sender=DatasetACL)
+post_delete.connect(update_elasticsearch_after_removing_relation, sender=DatafileACL)
