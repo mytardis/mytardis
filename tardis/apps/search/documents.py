@@ -519,7 +519,7 @@ class DataFileDocument(MyTardisDocument):
                 # functionality is combined?
                 query = DataFile.objects.none()
                 for dataset in related_instance.experiment.datasets.all():
-                    query |= dataset.datafiles.all()
+                    query |= dataset.datafile_set.all()
                 return query
         else:
             if isinstance(related_instance, DatafileACL):
