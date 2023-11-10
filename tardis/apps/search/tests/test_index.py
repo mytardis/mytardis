@@ -152,6 +152,32 @@ class IndexTestCase(TestCase):
         )
         self.fileacl.save()
 
+        # Create schemas
+        self.schema_proj = Schema(
+            namespace="http://test.namespace/proj/1",
+            name="ProjSchema",
+            type=Schema.PROJECT,
+        )
+        self.schema_proj.save()
+        self.schema_exp = Schema(
+            namespace="http://test.namespace/exp/1",
+            name="ExpSchema",
+            type=Schema.EXPERIMENT,
+        )
+        self.schema_exp.save()
+        self.schema_set = Schema(
+            namespace="http://test.namespace/set/1",
+            name="SetSchema",
+            type=Schema.DATASET,
+        )
+        self.schema_set.save()
+        self.schema_file = Schema(
+            namespace="http://test.namespace/file/1",
+            name="FileSchema",
+            type=Schema.DATAFILE,
+        )
+        self.schema_file.save()
+
     def test_create_index(self):
         """
         Test the existence of proj/exp/set/file document objects.
@@ -322,32 +348,6 @@ class IndexTestCase(TestCase):
         Test that parameters are properly indexed into proj/exp/set/file documents.
         Tests are for parameter types: string, numerical, datetime
         """
-        # Create schemas
-        schema_proj = Schema(
-            namespace="http://test.namespace/proj/1",
-            name="ProjSchema",
-            type=Schema.PROJECT,
-        )
-        schema_proj.save()
-        schema_exp = Schema(
-            namespace="http://test.namespace/exp/1",
-            name="ExpSchema",
-            type=Schema.EXPERIMENT,
-        )
-        schema_exp.save()
-        schema_set = Schema(
-            namespace="http://test.namespace/set/1",
-            name="SetSchema",
-            type=Schema.DATASET,
-        )
-        schema_set.save()
-        schema_file = Schema(
-            namespace="http://test.namespace/file/1",
-            name="FileSchema",
-            type=Schema.DATAFILE,
-        )
-        schema_file.save()
-
         # define parameter types and names to test on
         param_types = [
             "STRING",
@@ -363,7 +363,12 @@ class IndexTestCase(TestCase):
         param_names = {}
         # Create Numeric/string/datetime parameters for each
         # of the 4 schemas above
-        for schema in [schema_proj, schema_exp, schema_set, schema_file]:
+        for schema in [
+            self.schema_proj,
+            self.schema_exp,
+            self.schema_set,
+            self.schema_file,
+        ]:
             param_names[schema.name] = {}
             for data_type_str in param_types:
                 paramname = ParameterName(
@@ -380,85 +385,89 @@ class IndexTestCase(TestCase):
         now = timezone.now()
 
         # Create project parameterset and parameters
-        proj_parameterset = ProjectParameterSet(schema=schema_proj, project=self.proj)
+        proj_parameterset = ProjectParameterSet(
+            schema=self.schema_proj, project=self.proj
+        )
         proj_parameterset.save()
         proj_param_string = ProjectParameter.objects.create(
             parameterset=proj_parameterset,
-            name=param_names[schema_proj.name]["STRING"],
+            name=param_names[self.schema_proj.name]["STRING"],
             string_value="stringtest",
         )
         proj_param_numeric = ProjectParameter.objects.create(
             parameterset=proj_parameterset,
-            name=param_names[schema_proj.name]["NUMERIC"],
+            name=param_names[self.schema_proj.name]["NUMERIC"],
             numerical_value=123.0,
         )
 
         proj_param_datetime = ProjectParameter.objects.create(
             parameterset=proj_parameterset,
-            name=param_names[schema_proj.name]["DATETIME"],
+            name=param_names[self.schema_proj.name]["DATETIME"],
             datetime_value=now,
         )
 
         # Create experiment parameterset and parameters
         exp_parameterset = ExperimentParameterSet(
-            schema=schema_exp, experiment=self.exp
+            schema=self.schema_exp, experiment=self.exp
         )
         exp_parameterset.save()
         exp_param_string = ExperimentParameter.objects.create(
             parameterset=exp_parameterset,
-            name=param_names[schema_exp.name]["STRING"],
+            name=param_names[self.schema_exp.name]["STRING"],
             string_value="stringtest",
         )
         exp_param_numeric = ExperimentParameter.objects.create(
             parameterset=exp_parameterset,
-            name=param_names[schema_exp.name]["NUMERIC"],
+            name=param_names[self.schema_exp.name]["NUMERIC"],
             numerical_value=123.0,
         )
 
         exp_param_datetime = ExperimentParameter.objects.create(
             parameterset=exp_parameterset,
-            name=param_names[schema_exp.name]["DATETIME"],
+            name=param_names[self.schema_exp.name]["DATETIME"],
             datetime_value=now,
         )
 
         # Create dataset parameterset and parameters
-        set_parameterset = DatasetParameterSet(schema=schema_set, dataset=self.dataset)
+        set_parameterset = DatasetParameterSet(
+            schema=self.schema_set, dataset=self.dataset
+        )
         set_parameterset.save()
         set_param_string = DatasetParameter.objects.create(
             parameterset=set_parameterset,
-            name=param_names[schema_set.name]["STRING"],
+            name=param_names[self.schema_set.name]["STRING"],
             string_value="stringtest",
         )
         set_param_numeric = DatasetParameter.objects.create(
             parameterset=set_parameterset,
-            name=param_names[schema_set.name]["NUMERIC"],
+            name=param_names[self.schema_set.name]["NUMERIC"],
             numerical_value=123.0,
         )
 
         set_param_datetime = DatasetParameter.objects.create(
             parameterset=set_parameterset,
-            name=param_names[schema_set.name]["DATETIME"],
+            name=param_names[self.schema_set.name]["DATETIME"],
             datetime_value=now,
         )
 
         # Create datafile parameterset and parameters
         file_parameterset = DatafileParameterSet(
-            schema=schema_file, datafile=self.datafile
+            schema=self.schema_file, datafile=self.datafile
         )
         file_parameterset.save()
         file_param_string = DatafileParameter.objects.create(
             parameterset=file_parameterset,
-            name=param_names[schema_file.name]["STRING"],
+            name=param_names[self.schema_file.name]["STRING"],
             string_value="stringtest",
         )
         file_param_numeric = DatafileParameter.objects.create(
             parameterset=file_parameterset,
-            name=param_names[schema_file.name]["NUMERIC"],
+            name=param_names[self.schema_file.name]["NUMERIC"],
             numerical_value=123.0,
         )
         file_param_datetime = DatafileParameter.objects.create(
             parameterset=file_parameterset,
-            name=param_names[schema_file.name]["DATETIME"],
+            name=param_names[self.schema_file.name]["DATETIME"],
             datetime_value=now,
         )
 
@@ -507,7 +516,7 @@ class IndexTestCase(TestCase):
             proj_param_string,
             proj_param_numeric,
             proj_param_datetime,
-            schema_proj,
+            self.schema_proj,
         )
         result.to_dict()
         result_params = result["hits"]["hits"][0]["_source"]["parameters"]
@@ -524,7 +533,7 @@ class IndexTestCase(TestCase):
             exp_param_string,
             exp_param_numeric,
             exp_param_datetime,
-            schema_exp,
+            self.schema_exp,
         )
         result.to_dict()
         result_params = result["hits"]["hits"][0]["_source"]["parameters"]
@@ -541,7 +550,7 @@ class IndexTestCase(TestCase):
             set_param_string,
             set_param_numeric,
             set_param_datetime,
-            schema_set,
+            self.schema_set,
         )
         result.to_dict()
         result_params = result["hits"]["hits"][0]["_source"]["parameters"]
@@ -558,7 +567,7 @@ class IndexTestCase(TestCase):
             file_param_string,
             file_param_numeric,
             file_param_datetime,
-            schema_file,
+            self.schema_file,
         )
         result.to_dict()
         result_params = result["hits"]["hits"][0]["_source"]["parameters"]
@@ -578,6 +587,7 @@ class IndexTestCase(TestCase):
         # Update username
         self.user.username = "newusername"
         self.user.save()
+        # create search and query objects once
         search = ProjectDocument.search()
         query = search.query("match", name="Test Project 1")
         result = query.execute(ignore_cache=True)
@@ -602,10 +612,56 @@ class IndexTestCase(TestCase):
             self.projacl.canSensitive = False
             self.projacl.canDownload = False
             self.projacl.save()
-        search = ProjectDocument.search()
-        query = search.query("match", name="Test Project 1")
         result = query.execute(ignore_cache=True)
         self.assertEqual(result.hits[0].acls, correct_acl_structure)
+
+        # test deletion of ACLs
+        if settings.ONLY_EXPERIMENT_ACLS:
+            self.expacl.delete()
+        else:
+            self.projacl.delete()
+        result = query.execute(ignore_cache=True)
+        self.assertEqual(result.hits[0].acls, [])
+
+        # test creation of new ACL
+        if settings.ONLY_EXPERIMENT_ACLS:
+            newacl = ExperimentACL(
+                user=self.user,
+                experiment=self.exp,
+                aclOwnershipType=ExperimentACL.OWNER_OWNED,
+                canRead=True,
+            )
+        else:
+            newacl = ProjectACL(
+                user=self.user,
+                project=self.proj,
+                aclOwnershipType=ProjectACL.OWNER_OWNED,
+                canRead=True,
+            )
+        newacl.save()
+        result = query.execute(ignore_cache=True)
+        self.assertEqual(result.hits[0].acls, correct_acl_structure)
+
+        # test delete of schema
+        self.schema_proj.delete()
+        result = query.execute(ignore_cache=True)
+        result.to_dict()
+        result_params = result["hits"]["hits"][0]["_source"]["parameters"]
+        self.assertEqual(result_params.schemas, {"schemas": []})
+
+        # test create of schema
+        self.schema_proj = Schema(
+            namespace="http://test.namespace/proj/1",
+            name="ProjSchema",
+            type=Schema.PROJECT,
+        )
+        self.schema_proj.save()
+        result = query.execute(ignore_cache=True)
+        result.to_dict()
+        result_params = result["hits"]["hits"][0]["_source"]["parameters"]
+        self.assertEqual(
+            result_params.schemas, {"schemas": [{"schema_id": self.schema_proj.id}]}
+        )
 
     def test_experiment_get_instances_from_related(self):
         """
@@ -641,6 +697,43 @@ class IndexTestCase(TestCase):
         result = query.execute(ignore_cache=True)
         self.assertEqual(result.hits[0].acls, correct_acl_structure)
 
+        # test deletion of ACLs
+        self.expacl.delete()
+        result = query.execute(ignore_cache=True)
+        self.assertEqual(result.hits[0].acls, [])
+
+        # test creation of new ACL
+        newacl = ExperimentACL(
+            user=self.user,
+            experiment=self.exp,
+            aclOwnershipType=ExperimentACL.OWNER_OWNED,
+            canRead=True,
+        )
+        newacl.save()
+        result = query.execute(ignore_cache=True)
+        self.assertEqual(result.hits[0].acls, correct_acl_structure)
+
+        # test delete of schema
+        self.schema_exp.delete()
+        result = query.execute(ignore_cache=True)
+        result.to_dict()
+        result_params = result["hits"]["hits"][0]["_source"]["parameters"]
+        self.assertEqual(result_params.schemas, {"schemas": []})
+
+        # test create of schema
+        self.schema_exp = Schema(
+            namespace="http://test.namespace/exp/1",
+            name="ExpSchema",
+            type=Schema.EXPERIMENT,
+        )
+        self.schema_exp.save()
+        result = query.execute(ignore_cache=True)
+        result.to_dict()
+        result_params = result["hits"]["hits"][0]["_source"]["parameters"]
+        self.assertEqual(
+            result_params.schemas, {"schemas": [{"schema_id": self.schema_exp.id}]}
+        )
+
     def test_dataset_get_instances_from_related(self):
         """
         Test that related instances trigger a dataset re-index.
@@ -666,7 +759,7 @@ class IndexTestCase(TestCase):
             self.expacl.canDownload = False
             self.expacl.save()
         else:
-            # Update project ACL perms
+            # Update dataset ACL perms
             self.setacl.canSensitive = False
             self.setacl.canDownload = False
             self.setacl.save()
@@ -674,6 +767,54 @@ class IndexTestCase(TestCase):
         query = search.query("match", description="test_dataset")
         result = query.execute(ignore_cache=True)
         self.assertEqual(result.hits[0].acls, correct_acl_structure)
+
+        # test deletion of ACLs
+        if settings.ONLY_EXPERIMENT_ACLS:
+            self.expacl.delete()
+        else:
+            self.setacl.delete()
+        result = query.execute(ignore_cache=True)
+        self.assertEqual(result.hits[0].acls, [])
+
+        # test creation of new ACL
+        if settings.ONLY_EXPERIMENT_ACLS:
+            newacl = ExperimentACL(
+                user=self.user,
+                experiment=self.exp,
+                aclOwnershipType=ExperimentACL.OWNER_OWNED,
+                canRead=True,
+            )
+        else:
+            newacl = DatasetACL(
+                user=self.user,
+                dataset=self.dataset,
+                aclOwnershipType=ProjectACL.OWNER_OWNED,
+                canRead=True,
+            )
+        newacl.save()
+        result = query.execute(ignore_cache=True)
+        self.assertEqual(result.hits[0].acls, correct_acl_structure)
+
+        # test delete of schema
+        self.schema_set.delete()
+        result = query.execute(ignore_cache=True)
+        result.to_dict()
+        result_params = result["hits"]["hits"][0]["_source"]["parameters"]
+        self.assertEqual(result_params.schemas, {"schemas": []})
+
+        # test create of schema
+        self.schema_set = Schema(
+            namespace="http://test.namespace/set/1",
+            name="SetSchema",
+            type=Schema.DATASET,
+        )
+        self.schema_set.save()
+        result = query.execute(ignore_cache=True)
+        result.to_dict()
+        result_params = result["hits"]["hits"][0]["_source"]["parameters"]
+        self.assertEqual(
+            result_params.schemas, {"schemas": [{"schema_id": self.schema_set.id}]}
+        )
 
     def test_datafile_get_instances_from_related(self):
         """
@@ -701,7 +842,7 @@ class IndexTestCase(TestCase):
             self.expacl.canDownload = False
             self.expacl.save()
         else:
-            # Update project ACL perms
+            # Update datafile ACL perms
             self.fileacl.canSensitive = False
             self.fileacl.canDownload = False
             self.fileacl.save()
@@ -709,6 +850,54 @@ class IndexTestCase(TestCase):
         query = search.query("match", filename="test.txt")
         result = query.execute(ignore_cache=True)
         self.assertEqual(result.hits[0].acls, correct_acl_structure)
+
+        # test deletion of ACLs
+        if settings.ONLY_EXPERIMENT_ACLS:
+            self.expacl.delete()
+        else:
+            self.fileacl.delete()
+        result = query.execute(ignore_cache=True)
+        self.assertEqual(result.hits[0].acls, [])
+
+        # test creation of new ACL
+        if settings.ONLY_EXPERIMENT_ACLS:
+            newacl = ExperimentACL(
+                user=self.user,
+                experiment=self.exp,
+                aclOwnershipType=ExperimentACL.OWNER_OWNED,
+                canRead=True,
+            )
+        else:
+            newacl = DatafileACL(
+                user=self.user,
+                datafile=self.datafile,
+                aclOwnershipType=ProjectACL.OWNER_OWNED,
+                canRead=True,
+            )
+        newacl.save()
+        result = query.execute(ignore_cache=True)
+        self.assertEqual(result.hits[0].acls, correct_acl_structure)
+
+        # test delete of schema
+        self.schema_file.delete()
+        result = query.execute(ignore_cache=True)
+        result.to_dict()
+        result_params = result["hits"]["hits"][0]["_source"]["parameters"]
+        self.assertEqual(result_params.schemas, {"schemas": []})
+
+        # test create of schema
+        self.schema_file = Schema(
+            namespace="http://test.namespace/file/1",
+            name="FileSchema",
+            type=Schema.DATAFILE,
+        )
+        self.schema_file.save()
+        result = query.execute(ignore_cache=True)
+        result.to_dict()
+        result_params = result["hits"]["hits"][0]["_source"]["parameters"]
+        self.assertEqual(
+            result_params.schemas, {"schemas": [{"schema_id": self.schema_file.id}]}
+        )
 
     def tearDown(self):
         self.datafile.delete()
