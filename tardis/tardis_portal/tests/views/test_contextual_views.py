@@ -76,7 +76,7 @@ class ContextualViewTest(TestCase):
         self.datafile.delete()
         self.testschema.delete()
         self.dfps.delete()
-        self.acl.delete()
+        # self.acl.delete()
 
     @skipIf(settings.ONLY_EXPERIMENT_ACLS is False, "skipping Macro ACL specific test")
     def test_details_display_macro(self):

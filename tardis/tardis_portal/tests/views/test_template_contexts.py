@@ -217,8 +217,8 @@ class ExperimentListsTest(TestCase):
         self.user.delete()
         for exp in self.exps:
             exp.delete()
-        for acl in self.acls:
-            acl.delete()
+        # for acl in self.acls:
+        #    acl.delete()
 
     @patch("webpack_loader.loader.WebpackLoader.get_bundle")
     def test_mydata_view(self, mock_webpack_get_bundle):
@@ -262,7 +262,7 @@ class ExperimentListsTest(TestCase):
                 self.exps.remove(exp)
                 self.acls.remove(acl)
                 exp.delete()
-                acl.delete()
+                # acl.delete()
                 deleted_count += 1
         request.GET = QueryDict("")
         response = retrieve_owned_exps_list(request)
@@ -312,7 +312,7 @@ class ExperimentListsTest(TestCase):
                 self.exps.remove(exp)
                 self.acls.remove(acl)
                 exp.delete()
-                acl.delete()
+                # acl.delete()
                 deleted_count += 1
         request.GET = QueryDict("")
         response = retrieve_shared_exps_list(request)
@@ -325,7 +325,7 @@ class _ContextMatcher(object):
         self.template = template
 
     def __eq__(self, other):
-        for (key, value) in self.template.items():
+        for key, value in self.template.items():
             if key not in other or other[key] != value:
                 return False
         return True
