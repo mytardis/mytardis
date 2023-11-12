@@ -671,7 +671,7 @@ def update_elasticsearch_after_removing_relation(instance, sender, **kwargs):
 
     else:
         print("not an ACL model?")
-        print(instance)
+        print(type(instance))
     # organization = instance.organization
     # doc = OrganizationDocument()
     # doc.update(organization)
