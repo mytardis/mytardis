@@ -628,14 +628,17 @@ def update_elasticsearch_after_removing_relation(instance, sender, **kwargs):
 
     Might not be needed (or work) using the CelerySignalProcessor (async)
     """
-    print("triggered")
     if isinstance(sender, ProjectACL):
+        print("projectACL")
         parent = instance.project
+        print("project", parent)
         doc = ProjectDocument()
         doc.update(parent)
 
-    if isinstance(sender, ExperimentACL):
+    elif isinstance(sender, ExperimentACL):
+        print("ExperimentACL")
         parent = instance.experiment
+        print("exp", parent)
         doc = ExperimentDocument()
         doc.update(parent)
         if settings.ONLY_EXPERIMENT_ACLS:
@@ -652,16 +655,23 @@ def update_elasticsearch_after_removing_relation(instance, sender, **kwargs):
             doc_set.update(datasets)
             doc_file.update(datafiles)
 
-    if isinstance(sender, DatasetACL):
+    elif isinstance(sender, DatasetACL):
+        print("DatasetACL")
         parent = instance.dataset
+        print("dataset", parent)
         doc = DatasetDocument()
         doc.update(parent)
 
-    if isinstance(sender, DatafileACL):
+    elif isinstance(sender, DatafileACL):
+        print("DatafileACL")
         parent = instance.datafile
+        print("datafile", parent)
         doc = DataFileDocument()
         doc.update(parent)
 
+    else:
+        print("not an ACL model?")
+        print(instance)
     # organization = instance.organization
     # doc = OrganizationDocument()
     # doc.update(organization)
