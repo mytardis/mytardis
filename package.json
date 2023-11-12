@@ -32,7 +32,7 @@
     "he": "^1.2.0",
     "glob": "^10.3.10",
     "html-webpack-plugin": "^4.5.2",
-    "imports-loader": "^1.2.0",
+    "imports-loader": "^4.0.1",
     "jquery": "^3.7.1",
     "jquery-ui": "^1.13.2",
     "jquery-ui-dist": "^1.13.2",
