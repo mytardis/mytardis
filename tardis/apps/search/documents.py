@@ -619,7 +619,7 @@ class ProjectDocument(MyTardisDocument):
         return None
 
 
-def update_elasticsearch_after_removing_relation(instance, sender, **kwargs):
+def update_elasticsearch_after_removing_relation(instance, **kwargs):
     """
     This function and post_delete hooks are to handle deletions of instances
     triggering their relation re-indexing on PRE-delete rather than POST-delete
@@ -628,14 +628,14 @@ def update_elasticsearch_after_removing_relation(instance, sender, **kwargs):
 
     Might not be needed (or work) using the CelerySignalProcessor (async)
     """
-    if isinstance(sender, ProjectACL):
+    if isinstance(instance, ProjectACL):
         print("projectACL")
         parent = instance.project
         print("project", parent)
         doc = ProjectDocument()
         doc.update(parent)
 
-    elif isinstance(sender, ExperimentACL):
+    elif isinstance(instance, ExperimentACL):
         print("ExperimentACL")
         parent = instance.experiment
         print("exp", parent)
@@ -655,14 +655,14 @@ def update_elasticsearch_after_removing_relation(instance, sender, **kwargs):
             doc_set.update(datasets)
             doc_file.update(datafiles)
 
-    elif isinstance(sender, DatasetACL):
+    elif isinstance(instance, DatasetACL):
         print("DatasetACL")
         parent = instance.dataset
         print("dataset", parent)
         doc = DatasetDocument()
         doc.update(parent)
 
-    elif isinstance(sender, DatafileACL):
+    elif isinstance(instance, DatafileACL):
         print("DatafileACL")
         parent = instance.datafile
         print("datafile", parent)
