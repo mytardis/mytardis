@@ -5,6 +5,7 @@ from io import StringIO
 from django.conf import settings
 from django.contrib.auth.models import User, Group
 from django.core.management import call_command
+from django.db.models.signals import post_delete
 from django.test import TestCase, override_settings
 from django.utils import timezone
 from django_elasticsearch_dsl.test import is_es_online
@@ -20,6 +21,7 @@ from tardis.apps.search.documents import (
     DatasetDocument,
     ExperimentDocument,
     ProjectDocument,
+    update_es_after_removing_relation,
 )
 from tardis.tardis_portal.models import (
     Schema,
@@ -54,6 +56,13 @@ class IndexTestCase(TestCase):
         Create a series of users (inc. public) to be used for various index tests.
         Create basic Proj/Exp/Set/File + created_by_user ACLs to be used in the tests.
         """
+
+        # set up post_delete signals in these tests, disabled beyond search tests.
+        post_delete.connect(update_es_after_removing_relation, sender=ProjectACL)
+        post_delete.connect(update_es_after_removing_relation, sender=ExperimentACL)
+        post_delete.connect(update_es_after_removing_relation, sender=DatasetACL)
+        post_delete.connect(update_es_after_removing_relation, sender=DatafileACL)
+
         publicuser = "public_user"
         pwd = "secret"
         publicemail = "public@test.com"
@@ -905,3 +914,9 @@ class IndexTestCase(TestCase):
         self.user.delete()
         self.user_grp.delete()
         self.user_token.delete()
+
+        # remove post_delete signals connected in these tests
+        post_delete.disconnect(update_es_after_removing_relation, sender=ProjectACL)
+        post_delete.disconnect(update_es_after_removing_relation, sender=ExperimentACL)
+        post_delete.disconnect(update_es_after_removing_relation, sender=DatasetACL)
+        post_delete.disconnect(update_es_after_removing_relation, sender=DatafileACL)
