@@ -619,26 +619,22 @@ class ProjectDocument(MyTardisDocument):
         return None
 
 
-def update_elasticsearch_after_removing_relation(instance, **kwargs):
+def update_es_after_removing_relation(instance, **kwargs):
     """
     This function and post_delete hooks are to handle deletions of instances
     triggering their relation re-indexing on PRE-delete rather than POST-delete
     in the django_elasticsearch_dsl package. This function simply re-indexes
     relevant documents a second time on post_delete.
 
-    Might not be needed (or work) using the CelerySignalProcessor (async)
+    Probably clashes with the Async CelerySignalProcessor.
     """
     if isinstance(instance, ProjectACL):
-        print("projectACL")
         parent = instance.project
-        print("project", parent)
         doc = ProjectDocument()
         doc.update(parent)
 
     elif isinstance(instance, ExperimentACL):
-        print("ExperimentACL")
         parent = instance.experiment
-        print("exp", parent)
         doc = ExperimentDocument()
         doc.update(parent)
         if settings.ONLY_EXPERIMENT_ACLS:
@@ -656,28 +652,36 @@ def update_elasticsearch_after_removing_relation(instance, **kwargs):
             doc_file.update(datafiles)
 
     elif isinstance(instance, DatasetACL):
-        print("DatasetACL")
         parent = instance.dataset
-        print("dataset", parent)
         doc = DatasetDocument()
         doc.update(parent)
 
     elif isinstance(instance, DatafileACL):
-        print("DatafileACL")
         parent = instance.datafile
-        print("datafile", parent)
         doc = DataFileDocument()
         doc.update(parent)
 
-    else:
-        print("not an ACL model?")
-        print(type(instance))
     # organization = instance.organization
     # doc = OrganizationDocument()
     # doc.update(organization)
 
 
-post_delete.connect(update_elasticsearch_after_removing_relation, sender=ProjectACL)
-post_delete.connect(update_elasticsearch_after_removing_relation, sender=ExperimentACL)
-post_delete.connect(update_elasticsearch_after_removing_relation, sender=DatasetACL)
-post_delete.connect(update_elasticsearch_after_removing_relation, sender=DatafileACL)
+# Only enable post_delete signals if ELASTICSEARCH_DSL_AUTOSYNC=True
+if hasattr(settings, "ELASTICSEARCH_DSL_AUTOSYNC"):
+    # check if ELASTICSEARCH_DSL_SIGNAL_PROCESSOR is set
+    # and whether equal to CelerySignalProcessor
+    check_for_celery_processor = False
+    if hasattr(settings, "ELASTICSEARCH_DSL_SIGNAL_PROCESSOR"):
+        if (
+            settings.ELASTICSEARCH_DSL_SIGNAL_PROCESSOR
+            == "django_elasticsearch_dsl.signals.CelerySignalProcessor"
+        ):
+            check_for_celery_processor = True
+
+    # Only enable post_delete signals if AUTOSYNC=True and
+    # ELASTICSEARCH_DSL_SIGNAL_PROCESSOR not set to CelerySignalProcessor
+    if settings.ELASTICSEARCH_DSL_AUTOSYNC and not check_for_celery_processor:
+        post_delete.connect(update_es_after_removing_relation, sender=ProjectACL)
+        post_delete.connect(update_es_after_removing_relation, sender=ExperimentACL)
+        post_delete.connect(update_es_after_removing_relation, sender=DatasetACL)
+        post_delete.connect(update_es_after_removing_relation, sender=DatafileACL)

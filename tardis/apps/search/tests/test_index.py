@@ -647,7 +647,7 @@ class IndexTestCase(TestCase):
         result = query.execute(ignore_cache=True)
         result.to_dict()
         result_params = result["hits"]["hits"][0]["_source"]["parameters"]
-        self.assertEqual(result_params.schemas, {"schemas": []})
+        self.assertEqual(result_params.schemas, [])
 
         # test create of schema
         self.schema_proj = Schema(
@@ -717,7 +717,7 @@ class IndexTestCase(TestCase):
         result = query.execute(ignore_cache=True)
         result.to_dict()
         result_params = result["hits"]["hits"][0]["_source"]["parameters"]
-        self.assertEqual(result_params.schemas, {"schemas": []})
+        self.assertEqual(result_params.schemas, [])
 
         # test create of schema
         self.schema_exp = Schema(
@@ -798,7 +798,7 @@ class IndexTestCase(TestCase):
         result = query.execute(ignore_cache=True)
         result.to_dict()
         result_params = result["hits"]["hits"][0]["_source"]["parameters"]
-        self.assertEqual(result_params.schemas, {"schemas": []})
+        self.assertEqual(result_params.schemas, [])
 
         # test create of schema
         self.schema_set = Schema(
@@ -880,7 +880,7 @@ class IndexTestCase(TestCase):
         result = query.execute(ignore_cache=True)
         result.to_dict()
         result_params = result["hits"]["hits"][0]["_source"]["parameters"]
-        self.assertEqual(result_params.schemas, {"schemas": []})
+        self.assertEqual(result_params.schemas, [])
 
         # test create of schema
         self.schema_file = Schema(
