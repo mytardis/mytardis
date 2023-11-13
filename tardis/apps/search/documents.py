@@ -23,7 +23,6 @@ from tardis.tardis_portal.models import (
     DatasetParameterSet,
     DatafileParameter,
     DatafileParameterSet,
-    Schema,
     DataFileObject,
 )
 
@@ -303,7 +302,6 @@ class ExperimentDocument(MyTardisDocument):
             ExperimentACL,
             ExperimentParameterSet,
             ExperimentParameter,
-            Schema,
             ParameterName,
         ]
 
@@ -316,10 +314,6 @@ class ExperimentDocument(MyTardisDocument):
             return related_instance.experiment
         if isinstance(related_instance, ExperimentParameter):
             return related_instance.parameterset.experiment
-        if isinstance(related_instance, Schema):
-            return Experiment.objects.filter(
-                experimentparameterset__schema=related_instance
-            )
         if isinstance(related_instance, ParameterName):
             return Experiment.objects.filter(
                 experimentparameterset__schema__parametername=related_instance
@@ -378,7 +372,6 @@ class DatasetDocument(MyTardisDocument):
             Instrument,
             DatasetParameterSet,
             DatasetParameter,
-            Schema,
             ParameterName,
         ]
         if settings.ONLY_EXPERIMENT_ACLS:
@@ -395,8 +388,6 @@ class DatasetDocument(MyTardisDocument):
             return related_instance.dataset
         if isinstance(related_instance, DatasetParameter):
             return related_instance.parameterset.dataset
-        if isinstance(related_instance, Schema):
-            return Dataset.objects.filter(datasetparameterset__schema=related_instance)
         if isinstance(related_instance, ParameterName):
             return Dataset.objects.filter(
                 datasetparameterset__schema__parametername=related_instance
@@ -479,7 +470,6 @@ class DataFileDocument(MyTardisDocument):
             Experiment,
             DatafileParameterSet,
             DatafileParameter,
-            Schema,
             ParameterName,
             DataFileObject,
         ]
@@ -502,10 +492,6 @@ class DataFileDocument(MyTardisDocument):
             return related_instance.datafile
         if isinstance(related_instance, DatafileParameter):
             return related_instance.parameterset.datafile
-        if isinstance(related_instance, Schema):
-            return DataFile.objects.filter(
-                datafileparameterset__schema=related_instance
-            )
         if isinstance(related_instance, ParameterName):
             return DataFile.objects.filter(
                 datafileparameterset__schema__parametername=related_instance
@@ -587,7 +573,6 @@ class ProjectDocument(MyTardisDocument):
             User,
             ProjectParameterSet,
             ProjectParameter,
-            Schema,
             ParameterName,
         ]
         if settings.ONLY_EXPERIMENT_ACLS:
@@ -602,8 +587,6 @@ class ProjectDocument(MyTardisDocument):
             return related_instance.project
         if isinstance(related_instance, ProjectParameter):
             return related_instance.parameterset.project
-        if isinstance(related_instance, Schema):
-            return Project.objects.filter(projectparameterset__schema=related_instance)
         if isinstance(related_instance, ParameterName):
             return Project.objects.filter(
                 projectparameterset__schema__parametername=related_instance
