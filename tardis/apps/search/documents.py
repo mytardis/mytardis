@@ -647,10 +647,10 @@ def update_es_after_removing_relation(instance, **kwargs):
     elif isinstance(instance, Experiment):
         if settings.ONLY_EXPERIMENT_ACLS:
             # also trigger other model rebuilds
-            projects = instance.experiment.projects.all()
+            projects = instance.projects.all()
             doc_proj = ProjectDocument()
             doc_proj.update(projects)
-        datasets = instance.experiment.datasets.all()
+        datasets = instance.datasets.all()
         datafiles = DataFile.objects.none()
         for dataset in datasets:
             datafiles |= dataset.datafile_set.all()
@@ -660,7 +660,7 @@ def update_es_after_removing_relation(instance, **kwargs):
         doc_file.update(datafiles)
 
     elif isinstance(instance, Dataset):
-        datafiles = dataset.datafile_set.all()
+        datafiles = instance.datafile_set.all()
         doc_file = DataFileDocument()
         doc_file.update(datafiles)
 
