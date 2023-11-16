@@ -644,9 +644,25 @@ def update_es_after_removing_relation(instance, **kwargs):
         doc = DataFileDocument()
         doc.update(parent)
 
-    # organization = instance.organization
-    # doc = OrganizationDocument()
-    # doc.update(organization)
+    elif isinstance(instance, Experiment):
+        if settings.ONLY_EXPERIMENT_ACLS:
+            # also trigger other model rebuilds
+            projects = instance.experiment.projects.all()
+            doc_proj = ProjectDocument()
+            doc_proj.update(projects)
+        datasets = instance.experiment.datasets.all()
+        datafiles = DataFile.objects.none()
+        for dataset in datasets:
+            datafiles |= dataset.datafile_set.all()
+        doc_set = DatasetDocument()
+        doc_file = DataFileDocument()
+        doc_set.update(datasets)
+        doc_file.update(datafiles)
+
+    elif isinstance(instance, Dataset):
+        datafiles = dataset.datafile_set.all()
+        doc_file = DataFileDocument()
+        doc_file.update(datafiles)
 
 
 # Only enable post_delete signals if ELASTICSEARCH_DSL_AUTOSYNC=True
@@ -668,3 +684,5 @@ if hasattr(settings, "ELASTICSEARCH_DSL_AUTOSYNC"):
         post_delete.connect(update_es_after_removing_relation, sender=ExperimentACL)
         post_delete.connect(update_es_after_removing_relation, sender=DatasetACL)
         post_delete.connect(update_es_after_removing_relation, sender=DatafileACL)
+        post_delete.connect(update_es_after_removing_relation, sender=Experiment)
+        post_delete.connect(update_es_after_removing_relation, sender=Dataset)
