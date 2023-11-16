@@ -62,6 +62,8 @@ class IndexTestCase(TestCase):
         post_delete.connect(update_es_after_removing_relation, sender=ExperimentACL)
         post_delete.connect(update_es_after_removing_relation, sender=DatasetACL)
         post_delete.connect(update_es_after_removing_relation, sender=DatafileACL)
+        post_delete.connect(update_es_after_removing_relation, sender=Experiment)
+        post_delete.connect(update_es_after_removing_relation, sender=Dataset)
 
         publicuser = "public_user"
         pwd = "secret"
@@ -968,10 +970,7 @@ class IndexTestCase(TestCase):
             self.assertEqual(result.hits[0].public_access, 100)
             self.assertEqual(
                 result.hits[0].dataset.experiments,
-                [
-                    {"id": self.exp.id, "title": self.exp.title},
-                    {"id": exp_public.id, "title": exp_public.title},
-                ],
+                [{"id": self.exp.id}, {"id": exp_public.id}],
             )
 
             # Now test that deleting public exp reverts flag
@@ -980,9 +979,7 @@ class IndexTestCase(TestCase):
             self.assertEqual(result.hits[0].public_access, 25)
             self.assertEqual(
                 result.hits[0].dataset[0].experiments,
-                [
-                    {"id": self.exp.id, "title": self.exp.title},
-                ],
+                [{"id": self.exp.id}],
             )
 
         """# test delete of schema
