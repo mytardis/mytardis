@@ -651,6 +651,30 @@ class IndexTestCase(TestCase):
         result = query.execute(ignore_cache=True)
         self.assertEqual(result.hits[0].acls, correct_acl_structure)
 
+        # test that public flag updated by experiments in Macro-mode
+        if settings.ONLY_EXPERIMENT_ACLS:
+            # Update existing parent experiment to have public=embargoed/25
+            self.exp.public_access = Experiment.PUBLIC_ACCESS_EMBARGO
+            self.exp.save()
+            result = query.execute(ignore_cache=True)
+            self.assertEqual(result.hits[0].public_access, 25)
+            # add new experiment as parent with full public access/100
+            # create experiment object
+            exp_public = Experiment(
+                title="public exp",
+                institution_name="monash",
+                description="Test Description",
+                created_by=self.user,
+            )
+            exp_public.save()
+            self.proj.experiments.add(exp_public)
+            result = query.execute(ignore_cache=True)
+            self.assertEqual(result.hits[0].public_access, 100)
+            # Now test that deleting public exp reverts flag
+            exp_public.delete()
+            result = query.execute(ignore_cache=True)
+            self.assertEqual(result.hits[0].public_access, 25)
+
         """# test delete of schema
         self.schema_proj.delete()
         result = query.execute(ignore_cache=True)

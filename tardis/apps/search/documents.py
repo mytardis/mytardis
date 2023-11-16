@@ -267,6 +267,95 @@ class MyTardisDocument(Document):
 
 
 @registry.register_document
+class ProjectDocument(MyTardisDocument):
+    class Index:
+        name = "project"
+        settings = {"number_of_shards": 1, "number_of_replicas": 0}
+
+    name = fields.TextField(fields={"raw": fields.KeywordField()}, analyzer=analyzer)
+    description = fields.TextField(
+        fields={"raw": fields.KeywordField()}, analyzer=analyzer
+    )
+    start_time = fields.DateField()
+    end_time = fields.DateField()
+    institution = fields.NestedField(
+        properties={
+            "name": fields.TextField(
+                fields={"raw": fields.KeywordField()},
+            )
+        }
+    )
+    principal_investigator = fields.NestedField(
+        properties={
+            "username": fields.TextField(fields={"raw": fields.KeywordField()}),
+            "fullname": fields.TextField(fields={"raw": fields.KeywordField()}),
+        }
+    )
+
+    def prepare_public_access(self, instance):
+        if settings.ONLY_EXPERIMENT_ACLS:
+            flags = instance.experiments.all().values_list("public_access", flat=True)
+            if list(flags):
+                return max(list(flags))
+            return 1
+        return instance.public_access
+
+    def prepare_acls(self, instance):
+        return prepare_generic_acls(
+            "project",
+            instance.projectacl_set.all(),
+            INSTANCE_EXPS=instance.experiments.all(),
+        )
+
+    def prepare_parameters(self, instance):
+        return prepare_generic_parameters(instance, "project")
+
+    def prepare_principal_investigator(self, instance):
+        username = instance.principal_investigator.username
+        fullname = " ".join(
+            [
+                instance.principal_investigator.first_name,
+                instance.principal_investigator.last_name,
+            ]
+        )
+        return dict({"username": username, "fullname": fullname})
+
+    class Django:
+        model = Project
+        related_models = [
+            User,
+            ProjectParameterSet,
+            ProjectParameter,
+            ParameterName,
+        ]
+        if settings.ONLY_EXPERIMENT_ACLS:
+            related_models += [Experiment, ExperimentACL]
+        else:
+            related_models += [ProjectACL]
+
+    def get_instances_from_related(self, related_instance):
+        if isinstance(related_instance, User):
+            return related_instance.project_set.all()
+        if isinstance(related_instance, ProjectParameterSet):
+            return related_instance.project
+        if isinstance(related_instance, ProjectParameter):
+            return related_instance.parameterset.project
+        if isinstance(related_instance, ParameterName):
+            return Project.objects.filter(
+                projectparameterset__schema__parametername=related_instance
+            )
+        if settings.ONLY_EXPERIMENT_ACLS:
+            if isinstance(related_instance, Experiment):
+                return related_instance.projects.all()
+            if isinstance(related_instance, ExperimentACL):
+                return related_instance.experiment.projects.all()
+        else:
+            if isinstance(related_instance, ProjectACL):
+                return related_instance.project
+        return None
+
+
+@registry.register_document
 class ExperimentDocument(MyTardisDocument):
     class Index:
         name = "experiment"
@@ -510,95 +599,6 @@ class DataFileDocument(MyTardisDocument):
         else:
             if isinstance(related_instance, DatafileACL):
                 return related_instance.datafile
-        return None
-
-
-@registry.register_document
-class ProjectDocument(MyTardisDocument):
-    class Index:
-        name = "project"
-        settings = {"number_of_shards": 1, "number_of_replicas": 0}
-
-    name = fields.TextField(fields={"raw": fields.KeywordField()}, analyzer=analyzer)
-    description = fields.TextField(
-        fields={"raw": fields.KeywordField()}, analyzer=analyzer
-    )
-    start_time = fields.DateField()
-    end_time = fields.DateField()
-    institution = fields.NestedField(
-        properties={
-            "name": fields.TextField(
-                fields={"raw": fields.KeywordField()},
-            )
-        }
-    )
-    principal_investigator = fields.NestedField(
-        properties={
-            "username": fields.TextField(fields={"raw": fields.KeywordField()}),
-            "fullname": fields.TextField(fields={"raw": fields.KeywordField()}),
-        }
-    )
-
-    def prepare_public_access(self, instance):
-        if settings.ONLY_EXPERIMENT_ACLS:
-            flags = instance.experiments.all().values_list("public_access", flat=True)
-            if list(flags):
-                return max(list(flags))
-            return 1
-        return instance.public_access
-
-    def prepare_acls(self, instance):
-        return prepare_generic_acls(
-            "project",
-            instance.projectacl_set.all(),
-            INSTANCE_EXPS=instance.experiments.all(),
-        )
-
-    def prepare_parameters(self, instance):
-        return prepare_generic_parameters(instance, "project")
-
-    def prepare_principal_investigator(self, instance):
-        username = instance.principal_investigator.username
-        fullname = " ".join(
-            [
-                instance.principal_investigator.first_name,
-                instance.principal_investigator.last_name,
-            ]
-        )
-        return dict({"username": username, "fullname": fullname})
-
-    class Django:
-        model = Project
-        related_models = [
-            User,
-            ProjectParameterSet,
-            ProjectParameter,
-            ParameterName,
-        ]
-        if settings.ONLY_EXPERIMENT_ACLS:
-            related_models += [Experiment, ExperimentACL]
-        else:
-            related_models += [ProjectACL]
-
-    def get_instances_from_related(self, related_instance):
-        if isinstance(related_instance, User):
-            return related_instance.project_set.all()
-        if isinstance(related_instance, ProjectParameterSet):
-            return related_instance.project
-        if isinstance(related_instance, ProjectParameter):
-            return related_instance.parameterset.project
-        if isinstance(related_instance, ParameterName):
-            return Project.objects.filter(
-                projectparameterset__schema__parametername=related_instance
-            )
-        if settings.ONLY_EXPERIMENT_ACLS:
-            if isinstance(related_instance, Experiment):
-                return related_instance.projects.all()
-            if isinstance(related_instance, ExperimentACL):
-                return related_instance.experiment.projects.all()
-        else:
-            if isinstance(related_instance, ProjectACL):
-                return related_instance.project
         return None
 
 
