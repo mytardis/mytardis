@@ -770,7 +770,6 @@ class IndexTestCase(TestCase):
     def test_dataset_get_instances_from_related(self):
         """
         Test that related instances trigger a dataset re-index.
-            Experiment,
             Instrument,
             DatasetParameterSet,
             DatasetParameter,
@@ -891,7 +890,6 @@ class IndexTestCase(TestCase):
         """
         Test that related instances trigger a datafile re-index.
             Dataset,
-            Experiment,
             DatafileParameterSet,
             DatafileParameter,
             ParameterName,
@@ -969,7 +967,7 @@ class IndexTestCase(TestCase):
             result = query.execute(ignore_cache=True)
             self.assertEqual(result.hits[0].public_access, 100)
             self.assertEqual(
-                result.hits[0].dataset[0].experiments,
+                result.hits[0].dataset.experiments,
                 [
                     {"id": self.exp.id, "title": self.exp.title},
                     {"id": exp_public.id, "title": exp_public.title},

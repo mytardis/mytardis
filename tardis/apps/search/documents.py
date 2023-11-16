@@ -645,6 +645,7 @@ def update_es_after_removing_relation(instance, **kwargs):
         doc.update(parent)
 
     elif isinstance(instance, Experiment):
+        print("Experiment triggered")
         if settings.ONLY_EXPERIMENT_ACLS:
             # also trigger other model rebuilds
             projects = instance.projects.all()
@@ -660,6 +661,7 @@ def update_es_after_removing_relation(instance, **kwargs):
         doc_file.update(datafiles)
 
     elif isinstance(instance, Dataset):
+        print("dataset triggered")
         datafiles = instance.datafile_set.all()
         doc_file = DataFileDocument()
         doc_file.update(datafiles)
