@@ -308,8 +308,8 @@ class SearchAppResource(Resource):
 
             # (2) Search on title/keywords + on non-sensitive metadata
             if query_text is not None:
-                if filter_level < hierarchy[obj]:
-                    filter_level = hierarchy[obj]
+                # if filter_level < hierarchy[obj]:
+                #    filter_level = hierarchy[obj]
                 if obj in query_text.keys():
                     query_obj_text = Q({"match": {match_list[idx]: query_text[obj]}})
                     query_obj_text_meta = Q(
