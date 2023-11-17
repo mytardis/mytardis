@@ -23,7 +23,6 @@ from tardis.apps.search.documents import (
     ProjectDocument,
     update_es_after_removing_relation,
     setup_sync_signals,
-    FixedRealTimeSignalProcessor,
 )
 from tardis.tardis_portal.models import (
     Schema,
