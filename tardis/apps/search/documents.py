@@ -2,7 +2,7 @@ import logging
 
 from django.conf import settings
 from django.contrib.auth.models import User
-from django.db.models.signals import post_delete
+from django.db.models.signals import post_delete, pre_delete
 
 from elasticsearch_dsl import analyzer, token_filter
 from django_elasticsearch_dsl import Document, fields
@@ -692,6 +692,9 @@ def setup_sync_signals():
         # Only enable post_delete signals if AUTOSYNC=True and
         # ELASTICSEARCH_DSL_SIGNAL_PROCESSOR not set to CelerySignalProcessor
         if settings.ELASTICSEARCH_DSL_AUTOSYNC and not check_for_celery_processor:
+            pre_delete.connect(update_es_after_removing_relation, sender=Experiment)
+            pre_delete.connect(update_es_after_removing_relation, sender=Dataset)
+
             post_delete.connect(update_es_after_removing_relation, sender=ProjectACL)
             post_delete.connect(update_es_after_removing_relation, sender=ExperimentACL)
             post_delete.connect(update_es_after_removing_relation, sender=DatasetACL)
