@@ -2,7 +2,7 @@ import logging
 
 from django.conf import settings
 from django.contrib.auth.models import User
-from django.db.models.signals import post_delete, pre_delete
+from django.db.models.signals import post_delete
 
 from elasticsearch_dsl import analyzer, token_filter
 from django_elasticsearch_dsl import Document, fields
@@ -611,7 +611,6 @@ def update_es_after_removing_relation(instance, **kwargs):
 
     Probably clashes with the Async CelerySignalProcessor.
     """
-    action = kwargs.pop("action", None)
     if isinstance(instance, ProjectACL):
         parent = instance.project
         doc = ProjectDocument()
