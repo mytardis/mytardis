@@ -646,6 +646,7 @@ def update_es_after_removing_relation(instance, **kwargs):
         doc.update(parent)
 
     elif isinstance(instance, Experiment):
+        print(action)
         if action == "post_remove":
             print("Experiment triggered")
             if settings.ONLY_EXPERIMENT_ACLS:
@@ -663,6 +664,8 @@ def update_es_after_removing_relation(instance, **kwargs):
             doc_file.update(datafiles)
 
     elif isinstance(instance, Dataset):
+        print(action)
+
         if action == "post_remove":
             print("dataset triggered")
             datafiles = instance.datafile_set.all()
