@@ -645,8 +645,7 @@ def update_es_after_removing_relation(instance, **kwargs):
         doc = DataFileDocument()
         doc.update(parent)
 
-    elif isinstance(instance, Experiment):
-        print("Experiment triggered")
+    """elif isinstance(instance, Experiment):
         if settings.ONLY_EXPERIMENT_ACLS:
             # also trigger other model rebuilds
             projects = instance.projects.all()
@@ -668,12 +667,11 @@ def update_es_after_removing_relation(instance, **kwargs):
         doc_file.update(datafiles)
 
     elif isinstance(instance, Dataset):
-        print("dataset triggered")
         datafiles = instance.datafile_set.all()
         for df in datafiles:
             print(df.id, df.filename)
         doc_file = DataFileDocument()
-        doc_file.update(datafiles)
+        doc_file.update(datafiles)"""
 
 
 def setup_sync_signals():
@@ -692,15 +690,13 @@ def setup_sync_signals():
         # Only enable post_delete signals if AUTOSYNC=True and
         # ELASTICSEARCH_DSL_SIGNAL_PROCESSOR not set to CelerySignalProcessor
         if settings.ELASTICSEARCH_DSL_AUTOSYNC and not check_for_celery_processor:
-            pre_delete.connect(update_es_after_removing_relation, sender=Experiment)
-            pre_delete.connect(update_es_after_removing_relation, sender=Dataset)
-
             post_delete.connect(update_es_after_removing_relation, sender=ProjectACL)
             post_delete.connect(update_es_after_removing_relation, sender=ExperimentACL)
             post_delete.connect(update_es_after_removing_relation, sender=DatasetACL)
             post_delete.connect(update_es_after_removing_relation, sender=DatafileACL)
-            post_delete.connect(update_es_after_removing_relation, sender=Experiment)
-            post_delete.connect(update_es_after_removing_relation, sender=Dataset)
+            # m2m deletes not working
+            # post_delete.connect(update_es_after_removing_relation, sender=Experiment)
+            # post_delete.connect(update_es_after_removing_relation, sender=Dataset)
 
 
 setup_sync_signals()
