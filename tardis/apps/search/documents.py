@@ -688,10 +688,10 @@ def setup_sync_signals():
             post_delete.connect(update_es_after_removing_relation, sender=DatasetACL)
             post_delete.connect(update_es_after_removing_relation, sender=DatafileACL)
             m2m_changed.connect(
-                update_es_after_removing_relation, sender=Dataset.experiments.through
+                update_es_after_removing_relation, sender=Dataset.experiments.through, action="post_remove"
             )
             m2m_changed.connect(
-                update_es_after_removing_relation, sender=Project.experiments.through
+                update_es_after_removing_relation, sender=Project.experiments.through, action="post_remove"
             )
 
 
