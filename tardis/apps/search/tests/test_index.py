@@ -52,7 +52,6 @@ TODO improve these tests to include the following:
 
 @unittest.skipUnless(is_es_online(), "Elasticsearch is offline")
 @override_settings(ELASTICSEARCH_DSL_AUTOSYNC=True)
-@override_settings(ELASTICSEARCH_DSL_SIGNAL_PROCESSOR=FixedRealTimeSignalProcessor)
 class IndexTestCase(TestCase):
     def setUp(self):
         """
@@ -61,7 +60,7 @@ class IndexTestCase(TestCase):
         """
 
         # set up post_delete signals in these tests, disabled beyond search tests.
-        # setup_sync_signals()
+        setup_sync_signals()
 
         publicuser = "public_user"
         pwd = "secret"

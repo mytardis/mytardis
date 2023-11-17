@@ -7,7 +7,6 @@ from django.db.models.signals import post_delete
 from elasticsearch_dsl import analyzer, token_filter
 from django_elasticsearch_dsl import Document, fields
 from django_elasticsearch_dsl.registries import registry
-from django_elasticsearch_dsl.signals import RealTimeSignalProcessor
 
 from tardis.tardis_portal.models import (
     Experiment,
@@ -58,18 +57,6 @@ analyzer = analyzer(
     tokenizer="standard",
     filter=["lowercase", "stop", word_delim_graph_custom],
 )
-
-
-class FixedRealTimeSignalProcessor(RealTimeSignalProcessor):
-    def handle_delete(self, sender, instance, **kwargs):
-        """Handle delete.
-        Given an individual model instance, delete the object from index.
-        """
-        registry.delete(instance, raise_on_error=False)
-
-        # we must call delete related again here (after the delete) to ensure that related instances don't persist the deleted
-        # object, e.g. when an m2m object is deleted
-        registry.delete_related(instance)
 
 
 def generic_acl_structure():
