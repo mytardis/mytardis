@@ -611,6 +611,7 @@ def update_es_after_removing_relation(instance, **kwargs):
 
     Probably clashes with the Async CelerySignalProcessor.
     """
+    action = kwargs.pop("action", None)
     if isinstance(instance, ProjectACL):
         parent = instance.project
         doc = ProjectDocument()
@@ -645,26 +646,28 @@ def update_es_after_removing_relation(instance, **kwargs):
         doc.update(parent)
 
     elif isinstance(instance, Experiment):
-        print("Experiment triggered")
-        if settings.ONLY_EXPERIMENT_ACLS:
-            # also trigger other model rebuilds
-            projects = instance.projects.all()
-            doc_proj = ProjectDocument()
-            doc_proj.update(projects)
-        datasets = instance.datasets.all()
-        datafiles = DataFile.objects.none()
-        for dataset in datasets:
-            datafiles |= dataset.datafile_set.all()
-        doc_set = DatasetDocument()
-        doc_file = DataFileDocument()
-        doc_set.update(datasets)
-        doc_file.update(datafiles)
+        if action == "post_remove":
+            print("Experiment triggered")
+            if settings.ONLY_EXPERIMENT_ACLS:
+                # also trigger other model rebuilds
+                projects = instance.projects.all()
+                doc_proj = ProjectDocument()
+                doc_proj.update(projects)
+            datasets = instance.datasets.all()
+            datafiles = DataFile.objects.none()
+            for dataset in datasets:
+                datafiles |= dataset.datafile_set.all()
+            doc_set = DatasetDocument()
+            doc_file = DataFileDocument()
+            doc_set.update(datasets)
+            doc_file.update(datafiles)
 
     elif isinstance(instance, Dataset):
-        print("dataset triggered")
-        datafiles = instance.datafile_set.all()
-        doc_file = DataFileDocument()
-        doc_file.update(datafiles)
+        if action == "post_remove":
+            print("dataset triggered")
+            datafiles = instance.datafile_set.all()
+            doc_file = DataFileDocument()
+            doc_file.update(datafiles)
 
 
 def setup_sync_signals():
@@ -688,10 +691,10 @@ def setup_sync_signals():
             post_delete.connect(update_es_after_removing_relation, sender=DatasetACL)
             post_delete.connect(update_es_after_removing_relation, sender=DatafileACL)
             m2m_changed.connect(
-                update_es_after_removing_relation, sender=Dataset.experiments.through, action="post_remove"
+                update_es_after_removing_relation, sender=Dataset.experiments.through
             )
             m2m_changed.connect(
-                update_es_after_removing_relation, sender=Project.experiments.through, action="post_remove"
+                update_es_after_removing_relation, sender=Project.experiments.through
             )
 
 

@@ -970,8 +970,10 @@ class IndexTestCase(TestCase):
             )
 
             # Now test that deleting public exp reverts flag
+            print("########################1")
             exp_public.delete()
             result = query.execute(ignore_cache=True)
+            print("########################2")
             self.assertEqual(result.hits[0].public_access, 25)
             self.assertEqual(
                 result.hits[0].dataset[0].experiments,
