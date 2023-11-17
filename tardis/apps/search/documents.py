@@ -2,7 +2,7 @@ import logging
 
 from django.conf import settings
 from django.contrib.auth.models import User
-from django.db.models.signals import post_delete
+from django.db.models.signals import post_delete, m2m_changed
 
 from elasticsearch_dsl import analyzer, token_filter
 from django_elasticsearch_dsl import Document, fields
@@ -667,24 +667,32 @@ def update_es_after_removing_relation(instance, **kwargs):
         doc_file.update(datafiles)
 
 
-# Only enable post_delete signals if ELASTICSEARCH_DSL_AUTOSYNC=True
-if hasattr(settings, "ELASTICSEARCH_DSL_AUTOSYNC"):
-    # check if ELASTICSEARCH_DSL_SIGNAL_PROCESSOR is set
-    # and whether equal to CelerySignalProcessor
-    check_for_celery_processor = False
-    if hasattr(settings, "ELASTICSEARCH_DSL_SIGNAL_PROCESSOR"):
-        if (
-            settings.ELASTICSEARCH_DSL_SIGNAL_PROCESSOR
-            == "django_elasticsearch_dsl.signals.CelerySignalProcessor"
-        ):
-            check_for_celery_processor = True
+def setup_sync_signals():
+    # Only enable post_delete signals if ELASTICSEARCH_DSL_AUTOSYNC=True
+    if hasattr(settings, "ELASTICSEARCH_DSL_AUTOSYNC"):
+        # check if ELASTICSEARCH_DSL_SIGNAL_PROCESSOR is set
+        # and whether equal to CelerySignalProcessor
+        check_for_celery_processor = False
+        if hasattr(settings, "ELASTICSEARCH_DSL_SIGNAL_PROCESSOR"):
+            if (
+                settings.ELASTICSEARCH_DSL_SIGNAL_PROCESSOR
+                == "django_elasticsearch_dsl.signals.CelerySignalProcessor"
+            ):
+                check_for_celery_processor = True
 
-    # Only enable post_delete signals if AUTOSYNC=True and
-    # ELASTICSEARCH_DSL_SIGNAL_PROCESSOR not set to CelerySignalProcessor
-    if settings.ELASTICSEARCH_DSL_AUTOSYNC and not check_for_celery_processor:
-        post_delete.connect(update_es_after_removing_relation, sender=ProjectACL)
-        post_delete.connect(update_es_after_removing_relation, sender=ExperimentACL)
-        post_delete.connect(update_es_after_removing_relation, sender=DatasetACL)
-        post_delete.connect(update_es_after_removing_relation, sender=DatafileACL)
-        post_delete.connect(update_es_after_removing_relation, sender=Experiment)
-        post_delete.connect(update_es_after_removing_relation, sender=Dataset)
+        # Only enable post_delete signals if AUTOSYNC=True and
+        # ELASTICSEARCH_DSL_SIGNAL_PROCESSOR not set to CelerySignalProcessor
+        if settings.ELASTICSEARCH_DSL_AUTOSYNC and not check_for_celery_processor:
+            post_delete.connect(update_es_after_removing_relation, sender=ProjectACL)
+            post_delete.connect(update_es_after_removing_relation, sender=ExperimentACL)
+            post_delete.connect(update_es_after_removing_relation, sender=DatasetACL)
+            post_delete.connect(update_es_after_removing_relation, sender=DatafileACL)
+            m2m_changed.connect(
+                update_es_after_removing_relation, sender=Dataset.experiments.through
+            )
+            m2m_changed.connect(
+                update_es_after_removing_relation, sender=Project.experiments.through
+            )
+
+
+setup_sync_signals()

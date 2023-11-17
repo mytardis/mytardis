@@ -22,6 +22,7 @@ from tardis.apps.search.documents import (
     ExperimentDocument,
     ProjectDocument,
     update_es_after_removing_relation,
+    setup_sync_signals,
 )
 from tardis.tardis_portal.models import (
     Schema,
@@ -58,12 +59,7 @@ class IndexTestCase(TestCase):
         """
 
         # set up post_delete signals in these tests, disabled beyond search tests.
-        post_delete.connect(update_es_after_removing_relation, sender=ProjectACL)
-        post_delete.connect(update_es_after_removing_relation, sender=ExperimentACL)
-        post_delete.connect(update_es_after_removing_relation, sender=DatasetACL)
-        post_delete.connect(update_es_after_removing_relation, sender=DatafileACL)
-        post_delete.connect(update_es_after_removing_relation, sender=Experiment)
-        post_delete.connect(update_es_after_removing_relation, sender=Dataset)
+        setup_sync_signals()
 
         publicuser = "public_user"
         pwd = "secret"
