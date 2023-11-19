@@ -680,7 +680,7 @@ class IndexTestCase(TestCase):
             schema=self.schema_proj,
             name="test_param",
             full_name="Test Parameter",
-            data_type="STRING",
+            data_type=getattr(ParameterName, "STRING"),
         )
         paramname.save()
         proj_parameterset = ProjectParameterSet(
