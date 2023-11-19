@@ -708,8 +708,8 @@ class IndexTestCase(TestCase):
             result_params.string,
             [
                 {
-                    "pn_id": str(proj_param.id),
-                    "pn_name": "STRING",
+                    "pn_id": str(paramname.id),
+                    "pn_name": paramname.full_name,
                     "sensitive": False,
                     "value": proj_param.string_value,
                 }
