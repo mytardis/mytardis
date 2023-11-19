@@ -677,7 +677,7 @@ class IndexTestCase(TestCase):
 
         # test creation of parameterset and schema
         paramname = ParameterName(
-            schema=self.schema_projschema,
+            schema=self.schema_proj,
             name="test_param",
             full_name="Test Parameter",
             data_type="STRING",
