@@ -675,26 +675,69 @@ class IndexTestCase(TestCase):
             # result = query.execute(ignore_cache=True)
             # self.assertEqual(result.hits[0].public_access, 25)
 
-        """# test delete of schema
+        # test creation of parameterset and schema
+        paramname = ParameterName(
+            schema=self.schema_projschema,
+            name="test_param",
+            full_name="Test Parameter",
+            data_type="STRING",
+        )
+        paramname.save()
+        proj_parameterset = ProjectParameterSet(
+            schema=self.schema_proj, project=self.proj
+        )
+        proj_parameterset.save()
+        result = query.execute(ignore_cache=True)
+        result.to_dict()
+        result_params = result["hits"]["hits"][0]["_source"]["parameters"]
+        # schema ID should be present
+        self.assertEqual(result_params.schemas, [{"schema_id": self.schema_proj.id}])
+        # Parameters should be empty
+        self.assertEqual(result_params.string, [])
+        # test creation of parameter
+        proj_param = ProjectParameter.objects.create(
+            parameterset=proj_parameterset,
+            name=paramname,
+            string_value="stringtest",
+        )
+        result = query.execute(ignore_cache=True)
+        result.to_dict()
+        result_params = result["hits"]["hits"][0]["_source"]["parameters"]
+        # Parameter should be present
+        self.assertEqual(
+            result_params.string,
+            [
+                {
+                    "pn_id": str(proj_param.id),
+                    "pn_name": "STRING",
+                    "sensitive": False,
+                    "value": proj_param.string_value,
+                }
+            ],
+        )
+
+        # test delete of param
+        proj_param.delete()
+        result = query.execute(ignore_cache=True)
+        result.to_dict()
+        result_params = result["hits"]["hits"][0]["_source"]["parameters"]
+        self.assertEqual(result_params.string, [])
+        # test delete of paramset
+        proj_parameterset.delete()
+        result = query.execute(ignore_cache=True)
+        result.to_dict()
+        result_params = result["hits"]["hits"][0]["_source"]["parameters"]
+        self.assertEqual(result_params.schemas, [])
+        # test delete of schema (by readding paramset)
+        proj_parameterset = ProjectParameterSet(
+            schema=self.schema_proj, project=self.proj
+        )
+        proj_parameterset.save()
         self.schema_proj.delete()
         result = query.execute(ignore_cache=True)
         result.to_dict()
         result_params = result["hits"]["hits"][0]["_source"]["parameters"]
         self.assertEqual(result_params.schemas, [])
-
-        # test create of schema
-        self.schema_proj = Schema(
-            namespace="http://test.namespace/proj/1",
-            name="ProjSchema",
-            type=Schema.PROJECT,
-        )
-        self.schema_proj.save()
-        result = query.execute(ignore_cache=True)
-        result.to_dict()
-        result_params = result["hits"]["hits"][0]["_source"]["parameters"]
-        self.assertEqual(
-            result_params.schemas, {"schemas": [{"schema_id": self.schema_proj.id}]}
-        )"""
 
     def test_experiment_get_instances_from_related(self):
         """
@@ -744,27 +787,6 @@ class IndexTestCase(TestCase):
         newacl.save()
         result = query.execute(ignore_cache=True)
         self.assertEqual(result.hits[0].acls, correct_acl_structure)
-
-        """# test delete of schema
-        self.schema_exp.delete()
-        result = query.execute(ignore_cache=True)
-        result.to_dict()
-        result_params = result["hits"]["hits"][0]["_source"]["parameters"]
-        self.assertEqual(result_params.schemas, [])
-
-        # test create of schema
-        self.schema_exp = Schema(
-            namespace="http://test.namespace/exp/1",
-            name="ExpSchema",
-            type=Schema.EXPERIMENT,
-        )
-        self.schema_exp.save()
-        result = query.execute(ignore_cache=True)
-        result.to_dict()
-        result_params = result["hits"]["hits"][0]["_source"]["parameters"]
-        self.assertEqual(
-            result_params.schemas, {"schemas": [{"schema_id": self.schema_exp.id}]}
-        )"""
 
     def test_dataset_get_instances_from_related(self):
         """
@@ -865,27 +887,6 @@ class IndexTestCase(TestCase):
             #    ],
             # )
 
-        """# test delete of schema
-        self.schema_set.delete()
-        result = query.execute(ignore_cache=True)
-        result.to_dict()
-        result_params = result["hits"]["hits"][0]["_source"]["parameters"]
-        self.assertEqual(result_params.schemas, [])
-
-        # test create of schema
-        self.schema_set = Schema(
-            namespace="http://test.namespace/set/1",
-            name="SetSchema",
-            type=Schema.DATASET,
-        )
-        self.schema_set.save()
-        result = query.execute(ignore_cache=True)
-        result.to_dict()
-        result_params = result["hits"]["hits"][0]["_source"]["parameters"]
-        self.assertEqual(
-            result_params.schemas, {"schemas": [{"schema_id": self.schema_set.id}]}
-        )"""
-
     def test_datafile_get_instances_from_related(self):
         """
         Test that related instances trigger a datafile re-index.
@@ -974,34 +975,13 @@ class IndexTestCase(TestCase):
             # Now test that deleting public exp reverts flag
             # TODO deletion doesn't work syncronously
 
-            #exp_public.delete()
-            #result = query.execute(ignore_cache=True)
-            #self.assertEqual(result.hits[0].public_access, 25)
-            #self.assertEqual(
+            # exp_public.delete()
+            # result = query.execute(ignore_cache=True)
+            # self.assertEqual(result.hits[0].public_access, 25)
+            # self.assertEqual(
             #    result.hits[0].dataset[0].experiments,
             #    [{"id": self.exp.id}],
-            #)
-
-        """# test delete of schema
-        self.schema_file.delete()
-        result = query.execute(ignore_cache=True)
-        result.to_dict()
-        result_params = result["hits"]["hits"][0]["_source"]["parameters"]
-        self.assertEqual(result_params.schemas, [])
-
-        # test create of schema
-        self.schema_file = Schema(
-            namespace="http://test.namespace/file/1",
-            name="FileSchema",
-            type=Schema.DATAFILE,
-        )
-        self.schema_file.save()
-        result = query.execute(ignore_cache=True)
-        result.to_dict()
-        result_params = result["hits"]["hits"][0]["_source"]["parameters"]
-        self.assertEqual(
-            result_params.schemas, {"schemas": [{"schema_id": self.schema_file.id}]}
-        )"""
+            # )
 
     def tearDown(self):
         self.datafile.delete()
