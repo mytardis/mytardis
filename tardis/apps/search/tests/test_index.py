@@ -867,44 +867,44 @@ class IndexTestCase(TestCase):
                 ],
             )
 
-            # test adding an instrument
-            manager_group = Group(name="Test Manager Group")
-            manager_group.save()
-            manager_group.user_set.add(self.user)
-            facility = Facility(name="Test Facility", manager_group=manager_group)
-            facility.save()
-            instrument = Instrument(name="Test Instrument", facility=facility)
-            instrument.save()
-            self.dataset.instrument = instrument
-            self.dataset.save()
-            result = query.execute(ignore_cache=True)
-            self.assertEqual(
-                result.hits[0].instrument,
-                {"id": instrument.id, "name": instrument.name},
-            )
+        # test adding an instrument
+        manager_group = Group(name="Test Manager Group")
+        manager_group.save()
+        manager_group.user_set.add(self.user)
+        facility = Facility(name="Test Facility", manager_group=manager_group)
+        facility.save()
+        instrument = Instrument(name="Test Instrument", facility=facility)
+        instrument.save()
+        self.dataset.instrument = instrument
+        self.dataset.save()
+        result = query.execute(ignore_cache=True)
+        self.assertEqual(
+            result.hits[0].instrument,
+            {"id": instrument.id, "name": instrument.name},
+        )
 
-            # test changing instrument
-            instrument2 = Instrument(name="Test Instrument 2", facility=facility)
-            instrument2.save()
-            self.dataset.instrument = instrument2
-            self.dataset.save()
-            result = query.execute(ignore_cache=True)
-            self.assertEqual(
-                result.hits[0].instrument,
-                {"id": instrument2.id, "name": instrument2.name},
-            )
+        # test changing instrument
+        instrument2 = Instrument(name="Test Instrument 2", facility=facility)
+        instrument2.save()
+        self.dataset.instrument = instrument2
+        self.dataset.save()
+        result = query.execute(ignore_cache=True)
+        self.assertEqual(
+            result.hits[0].instrument,
+            {"id": instrument2.id, "name": instrument2.name},
+        )
 
-            # Now test that deleting public exp reverts flag
-            # TODO deletion doesn't work syncronously
-            # exp_public.delete()
-            # result = query.execute(ignore_cache=True)
-            # self.assertEqual(result.hits[0].public_access, 25)
-            # self.assertEqual(
-            #    result.hits[0].experiments,
-            #    [
-            #        {"id": self.exp.id, "title": self.exp.title},
-            #    ],
-            # )
+        # Now test that deleting public exp reverts flag
+        # TODO deletion doesn't work syncronously
+        # exp_public.delete()
+        # result = query.execute(ignore_cache=True)
+        # self.assertEqual(result.hits[0].public_access, 25)
+        # self.assertEqual(
+        #    result.hits[0].experiments,
+        #    [
+        #        {"id": self.exp.id, "title": self.exp.title},
+        #    ],
+        # )
 
     def test_datafile_get_instances_from_related(self):
         """
@@ -987,39 +987,39 @@ class IndexTestCase(TestCase):
                 [{"id": self.exp.id}, {"id": exp_public.id}],
             )
 
-            # change dataset of datafile
-            # check original
-            result = query.execute(ignore_cache=True)
-            self.assertEqual(
-                result.hits[0].dataset,
-                {
-                    "id": self.dataset.id,
-                    "description": self.dataset.description,
-                    "experiments": [{"id": str(self.exp.id)}],
-                },
-            )
-            # now change to another
-            dataset2 = Dataset(description="test_dataset2")
-            dataset2.save()
-            result = query.execute(ignore_cache=True)
-            self.assertEqual(
-                result.hits[0].dataset,
-                {
-                    "id": dataset2.id,
-                    "description": dataset2.description,
-                    "experiments": [],
-                },
-            )
+        # change dataset of datafile
+        # check original
+        result = query.execute(ignore_cache=True)
+        self.assertEqual(
+            result.hits[0].dataset,
+            {
+                "id": self.dataset.id,
+                "description": self.dataset.description,
+                "experiments": [{"id": str(self.exp.id)}],
+            },
+        )
+        # now change to another
+        dataset2 = Dataset(description="test_dataset2")
+        dataset2.save()
+        result = query.execute(ignore_cache=True)
+        self.assertEqual(
+            result.hits[0].dataset,
+            {
+                "id": dataset2.id,
+                "description": dataset2.description,
+                "experiments": [],
+            },
+        )
 
-            # Now test that deleting public exp reverts flag
-            # TODO deletion doesn't work syncronously
-            # exp_public.delete()
-            # result = query.execute(ignore_cache=True)
-            # self.assertEqual(result.hits[0].public_access, 25)
-            # self.assertEqual(
-            #    result.hits[0].dataset[0].experiments,
-            #    [{"id": self.exp.id}],
-            # )
+        # Now test that deleting public exp reverts flag
+        # TODO deletion doesn't work syncronously
+        # exp_public.delete()
+        # result = query.execute(ignore_cache=True)
+        # self.assertEqual(result.hits[0].public_access, 25)
+        # self.assertEqual(
+        #    result.hits[0].dataset[0].experiments,
+        #    [{"id": self.exp.id}],
+        # )
 
     def tearDown(self):
         self.datafile.delete()
