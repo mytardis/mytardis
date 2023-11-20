@@ -602,7 +602,7 @@ class DataFileDocument(MyTardisDocument):
         return None
 
 
-def update_es_after_removing_relation(instance, **kwargs):
+def update_es_relations(instance, **kwargs):
     """
     This function and post_delete hooks are to handle deletions of instances
     triggering their relation re-indexing on PRE-delete rather than POST-delete
@@ -729,10 +729,18 @@ def setup_sync_signals():
         # Only enable post_delete signals if AUTOSYNC=True and
         # ELASTICSEARCH_DSL_SIGNAL_PROCESSOR not set to CelerySignalProcessor
         if settings.ELASTICSEARCH_DSL_AUTOSYNC and not check_for_celery_processor:
-            post_delete.connect(update_es_after_removing_relation, sender=ProjectACL)
-            post_delete.connect(update_es_after_removing_relation, sender=ExperimentACL)
-            post_delete.connect(update_es_after_removing_relation, sender=DatasetACL)
-            post_delete.connect(update_es_after_removing_relation, sender=DatafileACL)
+            post_delete.connect(update_es_relations, sender=ProjectACL)
+            post_delete.connect(update_es_relations, sender=ExperimentACL)
+            post_delete.connect(update_es_relations, sender=DatasetACL)
+            post_delete.connect(update_es_relations, sender=DatafileACL)
+            post_delete.connect(update_es_relations, sender=ProjectParameterSet)
+            post_delete.connect(update_es_relations, sender=ExperimentParameterSet)
+            post_delete.connect(update_es_relations, sender=DatasetParameterSet)
+            post_delete.connect(update_es_relations, sender=DatafileParameterSet)
+            post_delete.connect(update_es_relations, sender=ProjectParameter)
+            post_delete.connect(update_es_relations, sender=ExperimentParameter)
+            post_delete.connect(update_es_relations, sender=DatasetParameter)
+            post_delete.connect(update_es_relations, sender=DatafileParameter)
             # m2m deletes not working
             # post_delete.connect(update_es_after_removing_relation, sender=Experiment)
             # post_delete.connect(update_es_after_removing_relation, sender=Dataset)
