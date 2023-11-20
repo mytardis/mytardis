@@ -981,7 +981,6 @@ class IndexTestCase(TestCase):
         self.datafile.dataset = self.dataset
         self.datafile.save()
         result = query.execute(ignore_cache=True)
-        print(result.hits[0].dataset.experiments)
         self.assertEqual(
             result.hits[0].dataset,
             {

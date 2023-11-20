@@ -23,7 +23,6 @@ from tardis.tardis_portal.models import (
     DatasetParameterSet,
     DatafileParameter,
     DatafileParameterSet,
-    DataFileObject,
 )
 
 from tardis.apps.projects.models import (
@@ -683,8 +682,6 @@ def update_es_relations(instance, **kwargs):
 
     elif isinstance(instance, Dataset):
         datafiles = instance.datafile_set.all()
-        for df in datafiles:
-            print(df.id, df.filename)
         doc_file = DataFileDocument()
         doc_file.update(datafiles)
 
@@ -692,18 +689,12 @@ def update_es_relations(instance, **kwargs):
         if settings.ONLY_EXPERIMENT_ACLS:
             # also trigger other model rebuilds
             projects = instance.projects.all()
-            for df in projects:
-                print(df.id, df.name)
             doc_proj = ProjectDocument()
             doc_proj.update(projects)
         datasets = instance.datasets.all()
-        for df in datasets:
-            print(df.id, df.description)
         datafiles = DataFile.objects.none()
         for dataset in datasets:
             datafiles |= dataset.datafile_set.all()
-        for df in datafiles:
-            print(df.id, df.filename)
         doc_set = DatasetDocument()
         doc_file = DataFileDocument()
         doc_set.update(datasets)
