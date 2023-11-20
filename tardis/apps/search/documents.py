@@ -644,6 +644,46 @@ def update_es_after_removing_relation(instance, **kwargs):
         doc = DataFileDocument()
         doc.update(parent)
 
+    elif isinstance(instance, ProjectParameterSet):
+        parent = instance.project
+        doc = ProjectDocument()
+        doc.update(parent)
+
+    elif isinstance(instance, ProjectParameter):
+        parent = instance.parameterset.project
+        doc = ProjectDocument()
+        doc.update(parent)
+
+    elif isinstance(instance, ExperimentParameterSet):
+        parent = instance.experiment
+        doc = ExperimentDocument()
+        doc.update(parent)
+
+    elif isinstance(instance, ExperimentParameter):
+        parent = instance.parameterset.experiment
+        doc = ExperimentDocument()
+        doc.update(parent)
+
+    elif isinstance(instance, DatasetParameterSet):
+        parent = instance.dataset
+        doc = DatasetDocument()
+        doc.update(parent)
+
+    elif isinstance(instance, DatasetParameter):
+        parent = instance.parameterset.dataset
+        doc = DatasetDocument()
+        doc.update(parent)
+
+    elif isinstance(instance, DatafileParameterSet):
+        parent = instance.datafile
+        doc = DataFileDocument()
+        doc.update(parent)
+
+    elif isinstance(instance, DatafileParameter):
+        parent = instance.parameterset.datafile
+        doc = DataFileDocument()
+        doc.update(parent)
+
     """elif isinstance(instance, Experiment):
         if settings.ONLY_EXPERIMENT_ACLS:
             # also trigger other model rebuilds
