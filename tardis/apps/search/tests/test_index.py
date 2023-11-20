@@ -987,7 +987,7 @@ class IndexTestCase(TestCase):
             {
                 "id": self.dataset.id,
                 "description": self.dataset.description,
-                "experiments": [{"id": str(self.exp.id)}],
+                "experiments": [{"id": self.exp.id}],
             },
         )
 
