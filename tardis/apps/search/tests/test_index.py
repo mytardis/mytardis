@@ -995,7 +995,7 @@ class IndexTestCase(TestCase):
                 {
                     "id": self.dataset.id,
                     "description": self.dataset.description,
-                    "experiments": [{"id": self.experiment.id}],
+                    "experiments": [{"id": self.exp.id}],
                 },
             )
             # now change to another
