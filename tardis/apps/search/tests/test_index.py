@@ -40,6 +40,8 @@ from tardis.tardis_portal.models import (
     DatasetParameter,
     DatafileParameterSet,
     DatafileParameter,
+    Instrument,
+    Facility,
 )
 
 
@@ -587,9 +589,6 @@ class IndexTestCase(TestCase):
     def test_project_get_instances_from_related(self):
         """
         Test that related instances trigger a project reindex.
-            ProjectParameterSet,
-            ProjectParameter,
-            ParameterName,
         """
         # Update username
         self.user.username = "newusername"
@@ -742,9 +741,6 @@ class IndexTestCase(TestCase):
     def test_experiment_get_instances_from_related(self):
         """
         Test that related instances trigger an experiment re-index.
-            ExperimentParameterSet,
-            ExperimentParameter,
-            ParameterName,
         """
         # Update username
         self.user.username = "newusername"
@@ -791,10 +787,6 @@ class IndexTestCase(TestCase):
     def test_dataset_get_instances_from_related(self):
         """
         Test that related instances trigger a dataset re-index.
-            Instrument,
-            DatasetParameterSet,
-            DatasetParameter,
-            ParameterName,
         """
         # Update relevant ACL models and perms
         correct_acl_structure = [
@@ -875,6 +867,33 @@ class IndexTestCase(TestCase):
                 ],
             )
 
+            # test adding an instrument
+            manager_group = Group(name="Test Manager Group")
+            manager_group.save()
+            manager_group.user_set.add(self.user)
+            facility = Facility(name="Test Facility", manager_group=manager_group)
+            facility.save()
+            instrument = Instrument(name="Test Instrument", facility=facility)
+            instrument.save()
+            self.dataset.instrument = instrument
+            self.dataset.save()
+            result = query.execute(ignore_cache=True)
+            self.assertEqual(
+                result.hits[0].instrument,
+                {"id": instrument.id, "name": instrument.name},
+            )
+
+            # test changing instrument
+            instrument2 = Instrument(name="Test Instrument 2", facility=facility)
+            instrument2.save()
+            self.dataset.instrument = instrument2
+            self.dataset.save()
+            result = query.execute(ignore_cache=True)
+            self.assertEqual(
+                result.hits[0].instrument,
+                {"id": instrument2.id, "name": instrument2.name},
+            )
+
             # Now test that deleting public exp reverts flag
             # TODO deletion doesn't work syncronously
             # exp_public.delete()
@@ -891,9 +910,6 @@ class IndexTestCase(TestCase):
         """
         Test that related instances trigger a datafile re-index.
             Dataset,
-            DatafileParameterSet,
-            DatafileParameter,
-            ParameterName,
             DataFileObject,
         """
         # Update relevant ACL models and perms
