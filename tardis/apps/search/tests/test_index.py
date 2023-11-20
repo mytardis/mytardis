@@ -962,6 +962,35 @@ class IndexTestCase(TestCase):
         result = query.execute(ignore_cache=True)
         self.assertEqual(result.hits[0].acls, correct_acl_structure)
 
+        # change dataset of datafile
+        dataset2 = Dataset(description="test_dataset2")
+        dataset2.save()
+        self.datafile.dataset = dataset2
+        self.datafile.save()
+        result = query.execute(ignore_cache=True)
+        self.assertEqual(
+            result.hits[0].dataset,
+            {
+                "id": dataset2.id,
+                "description": dataset2.description,
+                "experiments": [],
+            },
+        )
+
+        # revert back to original dataset
+        self.datafile.dataset = self.dataset
+        self.datafile.save()
+        result = query.execute(ignore_cache=True)
+        print(result.hits[0].dataset.experiments)
+        self.assertEqual(
+            result.hits[0].dataset,
+            {
+                "id": self.dataset.id,
+                "description": self.dataset.description,
+                "experiments": [{"id": str(self.exp.id)}],
+            },
+        )
+
         # test that public flag updated by experiments in Macro-mode
         if settings.ONLY_EXPERIMENT_ACLS:
             # Update existing parent experiment to have public=embargoed/25
@@ -986,31 +1015,6 @@ class IndexTestCase(TestCase):
                 result.hits[0].dataset.experiments,
                 [{"id": self.exp.id}, {"id": exp_public.id}],
             )
-
-        # change dataset of datafile
-        # check original
-        result = query.execute(ignore_cache=True)
-        print(result.hits[0].dataset.experiments)
-        self.assertEqual(
-            result.hits[0].dataset,
-            {
-                "id": self.dataset.id,
-                "description": self.dataset.description,
-                "experiments": [{"id": str(self.exp.id)}],
-            },
-        )
-        # now change to another
-        dataset2 = Dataset(description="test_dataset2")
-        dataset2.save()
-        result = query.execute(ignore_cache=True)
-        self.assertEqual(
-            result.hits[0].dataset,
-            {
-                "id": dataset2.id,
-                "description": dataset2.description,
-                "experiments": [],
-            },
-        )
 
         # Now test that deleting public exp reverts flag
         # TODO deletion doesn't work syncronously
