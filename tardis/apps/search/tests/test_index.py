@@ -990,6 +990,7 @@ class IndexTestCase(TestCase):
         # change dataset of datafile
         # check original
         result = query.execute(ignore_cache=True)
+        print(result.hits[0].dataset.experiments)
         self.assertEqual(
             result.hits[0].dataset,
             {
