@@ -21,7 +21,7 @@ from tardis.apps.search.documents import (
     DatasetDocument,
     ExperimentDocument,
     ProjectDocument,
-    update_es_after_removing_relation,
+    update_es_relations,
     setup_sync_signals,
 )
 from tardis.tardis_portal.models import (
@@ -994,7 +994,15 @@ class IndexTestCase(TestCase):
         self.user_token.delete()
 
         # remove post_delete signals connected in these tests
-        post_delete.disconnect(update_es_after_removing_relation, sender=ProjectACL)
-        post_delete.disconnect(update_es_after_removing_relation, sender=ExperimentACL)
-        post_delete.disconnect(update_es_after_removing_relation, sender=DatasetACL)
-        post_delete.disconnect(update_es_after_removing_relation, sender=DatafileACL)
+        post_delete.disconnect(update_es_relations, sender=ProjectACL)
+        post_delete.disconnect(update_es_relations, sender=ExperimentACL)
+        post_delete.disconnect(update_es_relations, sender=DatasetACL)
+        post_delete.disconnect(update_es_relations, sender=DatafileACL)
+        post_delete.disconnect(update_es_relations, sender=ProjectParameterSet)
+        post_delete.disconnect(update_es_relations, sender=ExperimentParameterSet)
+        post_delete.disconnect(update_es_relations, sender=DatasetParameterSet)
+        post_delete.disconnect(update_es_relations, sender=DatafileParameterSet)
+        post_delete.disconnect(update_es_relations, sender=ProjectParameter)
+        post_delete.disconnect(update_es_relations, sender=ExperimentParameter)
+        post_delete.disconnect(update_es_relations, sender=DatasetParameter)
+        post_delete.disconnect(update_es_relations, sender=DatafileParameter)

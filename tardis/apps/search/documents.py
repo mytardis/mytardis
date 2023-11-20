@@ -742,8 +742,8 @@ def setup_sync_signals():
             post_delete.connect(update_es_relations, sender=DatasetParameter)
             post_delete.connect(update_es_relations, sender=DatafileParameter)
             # m2m deletes not working
-            # post_delete.connect(update_es_after_removing_relation, sender=Experiment)
-            # post_delete.connect(update_es_after_removing_relation, sender=Dataset)
+            # post_delete.connect(update_es_relations, sender=Experiment)
+            # post_delete.connect(update_es_relations, sender=Dataset)
 
 
 setup_sync_signals()
