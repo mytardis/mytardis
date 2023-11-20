@@ -560,7 +560,6 @@ class DataFileDocument(MyTardisDocument):
             DatafileParameterSet,
             DatafileParameter,
             ParameterName,
-            DataFileObject,
         ]
         queryset_pagination = 100000
 
@@ -585,8 +584,6 @@ class DataFileDocument(MyTardisDocument):
             return DataFile.objects.filter(
                 datafileparameterset__schema__parametername=related_instance
             )
-        if isinstance(related_instance, DataFileObject):
-            return related_instance.datafile
         if settings.ONLY_EXPERIMENT_ACLS:
             if isinstance(related_instance, ExperimentACL):
                 # I'm not happy with the performance of having to query on dfs,
@@ -684,6 +681,13 @@ def update_es_relations(instance, **kwargs):
         doc = DataFileDocument()
         doc.update(parent)
 
+    elif isinstance(instance, Dataset):
+        datafiles = instance.datafile_set.all()
+        for df in datafiles:
+            print(df.id, df.filename)
+        doc_file = DataFileDocument()
+        doc_file.update(datafiles)
+
     """elif isinstance(instance, Experiment):
         if settings.ONLY_EXPERIMENT_ACLS:
             # also trigger other model rebuilds
@@ -703,13 +707,6 @@ def update_es_relations(instance, **kwargs):
         doc_set = DatasetDocument()
         doc_file = DataFileDocument()
         doc_set.update(datasets)
-        doc_file.update(datafiles)
-
-    elif isinstance(instance, Dataset):
-        datafiles = instance.datafile_set.all()
-        for df in datafiles:
-            print(df.id, df.filename)
-        doc_file = DataFileDocument()
         doc_file.update(datafiles)"""
 
 
@@ -729,6 +726,7 @@ def setup_sync_signals():
         # Only enable post_delete signals if AUTOSYNC=True and
         # ELASTICSEARCH_DSL_SIGNAL_PROCESSOR not set to CelerySignalProcessor
         if settings.ELASTICSEARCH_DSL_AUTOSYNC and not check_for_celery_processor:
+            post_delete.connect(update_es_relations, sender=Dataset)
             post_delete.connect(update_es_relations, sender=ProjectACL)
             post_delete.connect(update_es_relations, sender=ExperimentACL)
             post_delete.connect(update_es_relations, sender=DatasetACL)

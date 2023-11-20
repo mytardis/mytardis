@@ -910,7 +910,6 @@ class IndexTestCase(TestCase):
         """
         Test that related instances trigger a datafile re-index.
             Dataset,
-            DataFileObject,
         """
         # Update relevant ACL models and perms
         correct_acl_structure = [
@@ -988,9 +987,32 @@ class IndexTestCase(TestCase):
                 [{"id": self.exp.id}, {"id": exp_public.id}],
             )
 
+            # change dataset of datafile
+            # check original
+            result = query.execute(ignore_cache=True)
+            self.assertEqual(
+                result.hits[0].dataset,
+                {
+                    "id": self.dataset.id,
+                    "description": self.dataset.description,
+                    "experiments": [{"id": self.experiment.id}],
+                },
+            )
+            # now change to another
+            dataset2 = Dataset(description="test_dataset2")
+            dataset2.save()
+            result = query.execute(ignore_cache=True)
+            self.assertEqual(
+                result.hits[0].dataset,
+                {
+                    "id": dataset2.id,
+                    "description": dataset2.description,
+                    "experiments": [],
+                },
+            )
+
             # Now test that deleting public exp reverts flag
             # TODO deletion doesn't work syncronously
-
             # exp_public.delete()
             # result = query.execute(ignore_cache=True)
             # self.assertEqual(result.hits[0].public_access, 25)
@@ -1010,6 +1032,7 @@ class IndexTestCase(TestCase):
         self.user_token.delete()
 
         # remove post_delete signals connected in these tests
+        post_delete.disconnect(update_es_relations, sender=Dataset)
         post_delete.disconnect(update_es_relations, sender=ProjectACL)
         post_delete.disconnect(update_es_relations, sender=ExperimentACL)
         post_delete.disconnect(update_es_relations, sender=DatasetACL)
