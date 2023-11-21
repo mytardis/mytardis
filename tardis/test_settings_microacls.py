@@ -209,7 +209,7 @@ SINGLE_SEARCH_ENABLED = True
 ELASTICSEARCH_DSL = {
     "default": {
         "hosts": [
-            "https://es1:9200",
+            "https://127.0.0.1:9200",
         ]
     },
 }
