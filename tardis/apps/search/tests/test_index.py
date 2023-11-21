@@ -44,11 +44,7 @@ from tardis.tardis_portal.models import (
     Facility,
 )
 
-
-"""
-TODO improve these tests to include the following:
- - test Indexing works for all object relations
-"""
+print("IS ELASTICSEARCH ONLINE? ", is_es_online())
 
 
 @unittest.skipUnless(is_es_online(), "Elasticsearch is offline")
