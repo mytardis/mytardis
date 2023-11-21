@@ -47,7 +47,7 @@ from tardis.tardis_portal.models import (
 print("IS ELASTICSEARCH ONLINE? ", is_es_online())
 
 
-@unittest.skipUnless(is_es_online(), "Elasticsearch is offline")
+# @unittest.skipUnless(is_es_online(), "Elasticsearch is offline")
 @override_settings(ELASTICSEARCH_DSL_AUTOSYNC=True)
 class IndexTestCase(TestCase):
     def setUp(self):
