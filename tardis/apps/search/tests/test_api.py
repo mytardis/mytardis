@@ -7,8 +7,7 @@ from django.core.management import call_command
 from django.test import override_settings
 from django_elasticsearch_dsl.test import is_es_online
 import urllib3
-
-from tardis.apps.search.tests import ignore_warning
+import warnings
 
 from tardis.tardis_portal.models import (
     DataFile,
@@ -25,6 +24,10 @@ from tardis.tardis_portal.tests.api import MyTardisResourceTestCase
 class SimpleSearchTest(MyTardisResourceTestCase):
     def setUp(self):
         super().setUp()
+
+        # Disable insecure https request warnings to reduce test verboseness
+        urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
         self.out = StringIO()
         call_command("search_index", stdout=self.out, action="delete", force=True)
         call_command("search_index", stdout=self.out, action="rebuild", force=True)
@@ -48,7 +51,6 @@ class SimpleSearchTest(MyTardisResourceTestCase):
             datafile=self.datafile, user=self.user, canRead=True, isOwner=True
         )
 
-    @ignore_warning(urllib3.exceptions.InsecureRequestWarning)
     def test_simple_search_authenticated_user(self):
         response = self.api_client.post(
             "/api/v1/search/", authentication=self.get_credentials()
@@ -59,7 +61,6 @@ class SimpleSearchTest(MyTardisResourceTestCase):
         self.assertEqual(len(data["hits"]["dataset"]), 1)
         self.assertEqual(len(data["hits"]["datafile"]), 1)
 
-    @ignore_warning(urllib3.exceptions.InsecureRequestWarning)
     def test_simple_search_unauthenticated_user(self):
         self.testexp.public_access = 100
         self.testexp.save()
@@ -69,3 +70,6 @@ class SimpleSearchTest(MyTardisResourceTestCase):
         # self.assertEqual(len(data["hits"]["experiments"]), 1)
         # self.assertEqual(len(data["hits"]["datasets"]), 1)
         # self.assertEqual(len(data["hits"]["datafiles"]), 1)
+
+    def tearDown(self):
+        warnings.resetwarnings()
