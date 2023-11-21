@@ -70,6 +70,3 @@ class SimpleSearchTest(MyTardisResourceTestCase):
         # self.assertEqual(len(data["hits"]["experiments"]), 1)
         # self.assertEqual(len(data["hits"]["datasets"]), 1)
         # self.assertEqual(len(data["hits"]["datafiles"]), 1)
-
-    def tearDown(self):
-        warnings.resetwarnings()

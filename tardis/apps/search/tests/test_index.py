@@ -1047,4 +1047,3 @@ class IndexTestCase(TestCase):
         post_delete.disconnect(update_es_relations, sender=ExperimentParameter)
         post_delete.disconnect(update_es_relations, sender=DatasetParameter)
         post_delete.disconnect(update_es_relations, sender=DatafileParameter)
-        warnings.resetwarnings()
