@@ -20,7 +20,6 @@ from tardis.tardis_portal.models import (
 from tardis.tardis_portal.tests.api import MyTardisResourceTestCase
 
 
-# @ignore_warning(urllib3.exceptions.InsecureRequestWarning)
 @unittest.skipUnless(is_es_online(), "Elasticsearch is offline")
 @override_settings(ELASTICSEARCH_DSL_AUTOSYNC=True)
 class SimpleSearchTest(MyTardisResourceTestCase):
@@ -49,6 +48,7 @@ class SimpleSearchTest(MyTardisResourceTestCase):
             datafile=self.datafile, user=self.user, canRead=True, isOwner=True
         )
 
+    @ignore_warning(urllib3.exceptions.InsecureRequestWarning)
     def test_simple_search_authenticated_user(self):
         response = self.api_client.post(
             "/api/v1/search/", authentication=self.get_credentials()
@@ -59,6 +59,7 @@ class SimpleSearchTest(MyTardisResourceTestCase):
         self.assertEqual(len(data["hits"]["dataset"]), 1)
         self.assertEqual(len(data["hits"]["datafile"]), 1)
 
+    @ignore_warning(urllib3.exceptions.InsecureRequestWarning)
     def test_simple_search_unauthenticated_user(self):
         self.testexp.public_access = 100
         self.testexp.save()

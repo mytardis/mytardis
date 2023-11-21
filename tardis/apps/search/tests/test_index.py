@@ -47,7 +47,6 @@ from tardis.tardis_portal.models import (
 )
 
 
-# @ignore_warning(urllib3.exceptions.InsecureRequestWarning)
 @unittest.skipUnless(is_es_online(), "Elasticsearch is offline")
 @override_settings(ELASTICSEARCH_DSL_AUTOSYNC=True)
 class IndexTestCase(TestCase):
@@ -185,6 +184,7 @@ class IndexTestCase(TestCase):
         )
         self.schema_file.save()
 
+    @ignore_warning(urllib3.exceptions.InsecureRequestWarning)
     def test_create_index(self):
         """
         Test the existence of proj/exp/set/file document objects.
@@ -215,6 +215,7 @@ class IndexTestCase(TestCase):
         result = query.execute(ignore_cache=True)
         self.assertEqual(result.hits[0].filename, self.datafile.filename)
 
+    @ignore_warning(urllib3.exceptions.InsecureRequestWarning)
     def test_datafile_extension(self):
         """
         Test whether datafile extension fields are indexed properly.
@@ -245,6 +246,7 @@ class IndexTestCase(TestCase):
         self.assertEqual(result.hits.total.value, 1)
         self.assertEqual(result.hits[0].file_extension, "")
 
+    @ignore_warning(urllib3.exceptions.InsecureRequestWarning)
     def test_ACL_types(self):
         """
         Test that ACLs for users & groups are indexed, but that tokens are not.
@@ -350,6 +352,7 @@ class IndexTestCase(TestCase):
         result = query.execute(ignore_cache=True)
         self.assertEqual(result.hits[0].acls, correct_acl_structure)
 
+    @ignore_warning(urllib3.exceptions.InsecureRequestWarning)
     def test_parameter_indexing(self):
         """
         Test that parameters are properly indexed into proj/exp/set/file documents.
@@ -583,6 +586,7 @@ class IndexTestCase(TestCase):
         self.assertEqual(result_params.datetime, correct_param_structure["datetime"])
         self.assertEqual(result_params.schemas, correct_param_structure["schemas"])
 
+    @ignore_warning(urllib3.exceptions.InsecureRequestWarning)
     def test_project_get_instances_from_related(self):
         """
         Test that related instances trigger a project reindex.
@@ -735,6 +739,7 @@ class IndexTestCase(TestCase):
         result_params = result["hits"]["hits"][0]["_source"]["parameters"]
         self.assertEqual(result_params.schemas, [])
 
+    @ignore_warning(urllib3.exceptions.InsecureRequestWarning)
     def test_experiment_get_instances_from_related(self):
         """
         Test that related instances trigger an experiment re-index.
@@ -781,6 +786,7 @@ class IndexTestCase(TestCase):
         result = query.execute(ignore_cache=True)
         self.assertEqual(result.hits[0].acls, correct_acl_structure)
 
+    @ignore_warning(urllib3.exceptions.InsecureRequestWarning)
     def test_dataset_get_instances_from_related(self):
         """
         Test that related instances trigger a dataset re-index.
@@ -903,6 +909,7 @@ class IndexTestCase(TestCase):
         #    ],
         # )
 
+    @ignore_warning(urllib3.exceptions.InsecureRequestWarning)
     def test_datafile_get_instances_from_related(self):
         """
         Test that related instances trigger a datafile re-index.
