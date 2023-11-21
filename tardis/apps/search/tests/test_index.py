@@ -10,7 +10,6 @@ from django.test import TestCase, override_settings
 from django.utils import timezone
 from django_elasticsearch_dsl.test import is_es_online
 import urllib3
-import warnings
 
 from tardis.apps.projects.models import (
     Project,

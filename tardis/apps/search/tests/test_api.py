@@ -7,7 +7,6 @@ from django.core.management import call_command
 from django.test import override_settings
 from django_elasticsearch_dsl.test import is_es_online
 import urllib3
-import warnings
 
 from tardis.tardis_portal.models import (
     DataFile,
