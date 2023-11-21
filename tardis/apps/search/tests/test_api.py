@@ -20,7 +20,7 @@ from tardis.tardis_portal.models import (
 from tardis.tardis_portal.tests.api import MyTardisResourceTestCase
 
 
-@ignore_warning(urllib3.exceptions.InsecureRequestWarning)
+# @ignore_warning(urllib3.exceptions.InsecureRequestWarning)
 @unittest.skipUnless(is_es_online(), "Elasticsearch is offline")
 @override_settings(ELASTICSEARCH_DSL_AUTOSYNC=True)
 class SimpleSearchTest(MyTardisResourceTestCase):
