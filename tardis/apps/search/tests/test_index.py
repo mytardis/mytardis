@@ -9,6 +9,7 @@ from django.db.models.signals import post_delete
 from django.test import TestCase, override_settings
 from django.utils import timezone
 from django_elasticsearch_dsl.test import is_es_online
+import urllib3
 
 from tardis.apps.projects.models import (
     Project,
@@ -24,6 +25,7 @@ from tardis.apps.search.documents import (
     update_es_relations,
     setup_sync_signals,
 )
+from tardis.apps.search.tests import ignore_warning
 from tardis.tardis_portal.models import (
     Schema,
     ParameterName,
@@ -44,10 +46,9 @@ from tardis.tardis_portal.models import (
     Facility,
 )
 
-print("IS ELASTICSEARCH ONLINE? ", is_es_online())
 
-
-# @unittest.skipUnless(is_es_online(), "Elasticsearch is offline")
+@ignore_warning(urllib3.exceptions.InsecureRequestWarning)
+@unittest.skipUnless(is_es_online(), "Elasticsearch is offline")
 @override_settings(ELASTICSEARCH_DSL_AUTOSYNC=True)
 class IndexTestCase(TestCase):
     def setUp(self):

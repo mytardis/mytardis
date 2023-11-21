@@ -6,6 +6,9 @@ from django.conf import settings
 from django.core.management import call_command
 from django.test import override_settings
 from django_elasticsearch_dsl.test import is_es_online
+import urllib3
+
+from tardis.apps.search.tests import ignore_warning
 
 from tardis.tardis_portal.models import (
     DataFile,
@@ -17,6 +20,7 @@ from tardis.tardis_portal.models import (
 from tardis.tardis_portal.tests.api import MyTardisResourceTestCase
 
 
+@ignore_warning(urllib3.exceptions.InsecureRequestWarning)
 @unittest.skipUnless(is_es_online(), "Elasticsearch is offline")
 @override_settings(ELASTICSEARCH_DSL_AUTOSYNC=True)
 class SimpleSearchTest(MyTardisResourceTestCase):
