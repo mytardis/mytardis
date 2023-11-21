@@ -209,8 +209,10 @@ SINGLE_SEARCH_ENABLED = True
 ELASTICSEARCH_DSL = {
     "default": {
         "hosts": [
-            "127.0.0.1:9200",
-        ]
+            "https://127.0.0.1:9200",
+        ],
+        "verify_certs": False,
+        "basic_auth": ("elastic", "changeme"),
     },
 }
 

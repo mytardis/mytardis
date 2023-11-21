@@ -9,6 +9,7 @@ from django.db.models.signals import post_delete
 from django.test import TestCase, override_settings
 from django.utils import timezone
 from django_elasticsearch_dsl.test import is_es_online
+import urllib3
 
 from tardis.apps.projects.models import (
     Project,
@@ -45,12 +46,6 @@ from tardis.tardis_portal.models import (
 )
 
 
-"""
-TODO improve these tests to include the following:
- - test Indexing works for all object relations
-"""
-
-
 @unittest.skipUnless(is_es_online(), "Elasticsearch is offline")
 @override_settings(ELASTICSEARCH_DSL_AUTOSYNC=True)
 class IndexTestCase(TestCase):
@@ -59,6 +54,8 @@ class IndexTestCase(TestCase):
         Create a series of users (inc. public) to be used for various index tests.
         Create basic Proj/Exp/Set/File + created_by_user ACLs to be used in the tests.
         """
+        # Disable insecure https request warnings to reduce test verboseness
+        urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
         # set up post_delete signals in these tests, disabled beyond search tests.
         setup_sync_signals()

@@ -6,6 +6,7 @@ from django.conf import settings
 from django.core.management import call_command
 from django.test import override_settings
 from django_elasticsearch_dsl.test import is_es_online
+import urllib3
 
 from tardis.tardis_portal.models import (
     DataFile,
@@ -22,6 +23,10 @@ from tardis.tardis_portal.tests.api import MyTardisResourceTestCase
 class SimpleSearchTest(MyTardisResourceTestCase):
     def setUp(self):
         super().setUp()
+
+        # Disable insecure https request warnings to reduce test verboseness
+        urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
         self.out = StringIO()
         call_command("search_index", stdout=self.out, action="delete", force=True)
         call_command("search_index", stdout=self.out, action="rebuild", force=True)
