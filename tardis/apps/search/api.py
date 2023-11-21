@@ -308,8 +308,8 @@ class SearchAppResource(Resource):
 
             # (2) Search on title/keywords + on non-sensitive metadata
             if query_text is not None:
-                if filter_level < hierarchy[obj]:
-                    filter_level = hierarchy[obj]
+                # if filter_level < hierarchy[obj]:
+                #    filter_level = hierarchy[obj]
                 if obj in query_text.keys():
                     query_obj_text = Q({"match": {match_list[idx]: query_text[obj]}})
                     query_obj_text_meta = Q(
@@ -1176,7 +1176,7 @@ class SearchAppResource(Resource):
                 # Remove unused fields to reduce data sent to front-end
                 hit.pop("_score")
                 hit.pop("_id")
-                hit.pop("_type")
+                # hit.pop("_type")
                 hit.pop("sort")
 
                 # Get count of all nested objects and download status

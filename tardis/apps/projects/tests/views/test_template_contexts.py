@@ -180,8 +180,8 @@ class ProjectListsTest(TestCase):
         self.creator_user.delete()
         for proj in self.projs:
             proj.delete()
-        for acl in self.acls:
-            acl.delete()
+        # for acl in self.acls:
+        #    acl.delete()
 
     @patch("webpack_loader.loader.WebpackLoader.get_bundle")
     def test_mydata_view(self, mock_webpack_get_bundle):
@@ -224,7 +224,7 @@ class ProjectListsTest(TestCase):
                 self.projs.remove(proj)
                 self.acls.remove(acl)
                 proj.delete()
-                acl.delete()
+                # acl.delete()
                 deleted_count += 1
         request.GET = QueryDict("")
         response = retrieve_owned_proj_list(request)

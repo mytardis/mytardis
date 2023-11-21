@@ -27,7 +27,7 @@ from ..models import (
 from . import ModelTestCase
 
 
-@skipIf(settings.ONLY_EXPERIMENT_ACLS is True, "skipping Micro ACL specific test")
+@skipIf(settings.ONLY_EXPERIMENT_ACLS is True, "skipping Macro ACL specific test")
 class ProjectResourceTest(ResourceTestCaseMixin, ModelTestCase):
     def setUp(self):
         super().setUp()
@@ -275,7 +275,7 @@ class ProjectResourceTest(ResourceTestCaseMixin, ModelTestCase):
         self.assertEqual(len(data["objects"]), 2)
 
 
-@skipIf(settings.ONLY_EXPERIMENT_ACLS is True, "skipping Micro ACL specific test")
+@skipIf(settings.ONLY_EXPERIMENT_ACLS is True, "skipping Macro ACL specific test")
 class ProjectAPIAuthTest(ResourceTestCaseMixin, ModelTestCase):
     def setUp(self):
         super().setUp()
