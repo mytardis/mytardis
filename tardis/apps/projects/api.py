@@ -776,7 +776,7 @@ class ProjectResource(ModelResource):
                         continue
                     try:
                         username = entry["user"]
-                    except KeyError as error:
+                    except KeyError:
                         logger.warning(
                             f"Unable to create user with entry: {entry} "
                             "due to lack of username"
@@ -801,7 +801,7 @@ class ProjectResource(ModelResource):
                         continue
                     try:
                         groupname = entry["group"]
-                    except KeyError as error:
+                    except KeyError:
                         logger.warning(
                             f"Unable to create group with entry: {entry} "
                             "due to lack of groupname"

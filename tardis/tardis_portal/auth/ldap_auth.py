@@ -167,7 +167,7 @@ class LDAPBackend(AuthProvider, UserProvider, GroupProvider):
             if len(connection.entries) > 1:
                 connection.unbind()
                 raise ValueError("Too many matches in the Active Directory")
-            elif len(connection.entries) == 0:
+            if len(connection.entries) == 0:
                 connection.unbind()
                 return None
             person = connection.entries[0]

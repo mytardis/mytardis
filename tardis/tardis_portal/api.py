@@ -1166,7 +1166,7 @@ class ExperimentResource(MyTardisModelResource):
                         continue
                     try:
                         username = entry["user"]
-                    except KeyError as error:
+                    except KeyError:
                         logger.warning(
                             f"Unable to create user with entry: {entry} "
                             "due to lack of username"
@@ -1209,7 +1209,7 @@ class ExperimentResource(MyTardisModelResource):
                         continue
                     try:
                         groupname = entry["group"]
-                    except KeyError as error:
+                    except KeyError:
                         logger.warning(
                             f"Unable to create user with entry: {entry} "
                             "due to lack of username"
@@ -1687,7 +1687,7 @@ class DatasetResource(MyTardisModelResource):
                         continue
                     try:
                         username = entry["user"]
-                    except KeyError as error:
+                    except KeyError:
                         logger.warning(
                             f"Unable to create user with entry: {entry} "
                             "due to lack of username"
@@ -1740,7 +1740,7 @@ class DatasetResource(MyTardisModelResource):
                         continue
                     try:
                         groupname = entry["group"]
-                    except KeyError as error:
+                    except KeyError:
                         logger.warning(
                             f"Unable to create user with entry: {entry} "
                             "due to lack of username"
@@ -2015,7 +2015,7 @@ class DataFileResource(MyTardisModelResource):
                         continue
                     try:
                         username = entry["user"]
-                    except KeyError as error:
+                    except KeyError:
                         logger.warning(
                             f"Unable to create user with entry: {entry} "
                             "due to lack of username"
@@ -2077,7 +2077,7 @@ class DataFileResource(MyTardisModelResource):
                         continue
                     try:
                         groupname = entry["group"]
-                    except KeyError as error:
+                    except KeyError:
                         logger.warning(
                             f"Unable to create user with entry: {entry} "
                             "due to lack of username"
