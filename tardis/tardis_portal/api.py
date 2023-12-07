@@ -6,9 +6,9 @@ Implemented with Tastypie.
 .. moduleauthor:: Grischa Meyer <grischa@gmail.com>
 .. moduleauthor:: James Wettenhall <james.wettenhall@monash.edu>
 """
-
 import contextlib
 import json
+import logging
 import re
 from itertools import chain
 from typing import Optional
@@ -84,6 +84,8 @@ from .models.parameters import (
     Schema,
 )
 from .models.storage import StorageBox, StorageBoxAttribute, StorageBoxOption
+
+logger = logging.getLogger("__name__")
 
 
 class PrettyJSONSerializer(Serializer):
@@ -1159,6 +1161,21 @@ class ExperimentResource(MyTardisModelResource):
 
             if bundle.data.get("users", False):
                 for entry in bundle.data["users"]:
+                    if not isinstance(entry, dict):
+                        logger.warning(f"Malformed User ACL: {entry}")
+                        continue
+                    try:
+                        username = entry["user"]
+                    except KeyError as error:
+                        logger.warning(
+                            f"Unable to create user with entry: {entry} "
+                            "due to lack of username"
+                        )
+                        continue
+                    isOwner = entry.get("is_owner", False)
+                    canDownload = entry.get("can_dowload", False)
+                    canSensitive = entry.get("can_sensitive", False)
+                    acl_user = get_or_create_user(username)
                     username, isOwner, canDownload, canSensitive = entry
                     acl_user = User.objects.get(username=username)
                     if acl_user:
@@ -1187,7 +1204,20 @@ class ExperimentResource(MyTardisModelResource):
 
             if bundle.data.get("groups", False):
                 for entry in bundle.data["groups"]:
-                    groupname, isOwner, canDownload, canSensitive = entry
+                    if not isinstance(entry, dict):
+                        logger.warning(f"Malformed Group ACL: {entry}")
+                        continue
+                    try:
+                        groupname = entry["group"]
+                    except KeyError as error:
+                        logger.warning(
+                            f"Unable to create user with entry: {entry} "
+                            "due to lack of username"
+                        )
+                        continue
+                    isOwner = entry.get("is_owner", False)
+                    canDownload = entry.get("can_dowload", False)
+                    canSensitive = entry.get("can_sensitive", False)
                     acl_group, _ = Group.objects.get_or_create(name=groupname)
                     ExperimentACL.objects.create(
                         experiment=experiment,
@@ -1652,7 +1682,20 @@ class DatasetResource(MyTardisModelResource):
                 dataset.data_classification.classification = classification
             if bundle.data.get("users", False):
                 for entry in bundle.data["users"]:
-                    username, isOwner, canDownload, canSensitive = entry
+                    if not isinstance(entry, dict):
+                        logger.warning(f"Malformed User ACL: {entry}")
+                        continue
+                    try:
+                        username = entry["user"]
+                    except KeyError as error:
+                        logger.warning(
+                            f"Unable to create user with entry: {entry} "
+                            "due to lack of username"
+                        )
+                        continue
+                    isOwner = entry.get("is_owner", False)
+                    canDownload = entry.get("can_dowload", False)
+                    canSensitive = entry.get("can_sensitive", False)
                     acl_user = User.objects.get(username=username)
                     DatasetACL.objects.create(
                         dataset=dataset,
@@ -1692,7 +1735,20 @@ class DatasetResource(MyTardisModelResource):
                                     )
             if bundle.data.get("groups", False):
                 for entry in bundle.data["groups"]:
-                    groupname, isOwner, canDownload, canSensitive = entry
+                    if not isinstance(entry, dict):
+                        logger.warning(f"Malformed Group ACL: {entry}")
+                        continue
+                    try:
+                        groupname = entry["group"]
+                    except KeyError as error:
+                        logger.warning(
+                            f"Unable to create user with entry: {entry} "
+                            "due to lack of username"
+                        )
+                        continue
+                    isOwner = entry.get("is_owner", False)
+                    canDownload = entry.get("can_dowload", False)
+                    canSensitive = entry.get("can_sensitive", False)
                     acl_group, _ = Group.objects.get_or_create(name=groupname)
                     DatasetACL.objects.create(
                         dataset=dataset,
@@ -1954,7 +2010,20 @@ class DataFileResource(MyTardisModelResource):
                 dataset = Dataset.objects.get(namespace=bundle.data["dataset"])
             if bundle.data.get("users", False):
                 for entry in bundle.data["users"]:
-                    username, isOwner, canDownload, canSensitive = entry
+                    if not isinstance(entry, dict):
+                        logger.warning(f"Malformed User ACL: {entry}")
+                        continue
+                    try:
+                        username = entry["user"]
+                    except KeyError as error:
+                        logger.warning(
+                            f"Unable to create user with entry: {entry} "
+                            "due to lack of username"
+                        )
+                        continue
+                    isOwner = entry.get("is_owner", False)
+                    canDownload = entry.get("can_dowload", False)
+                    canSensitive = entry.get("can_sensitive", False)
                     acl_user = User.objects.get(username=username)
                     DatafileACL.objects.create(
                         datafile=datafile,
@@ -2003,7 +2072,20 @@ class DataFileResource(MyTardisModelResource):
                                         )
             if bundle.data.get("groups", False):
                 for entry in bundle.data["groups"]:
-                    groupname, isOwner, canDownload, canSensitive = entry
+                    if not isinstance(entry, dict):
+                        logger.warning(f"Malformed Group ACL: {entry}")
+                        continue
+                    try:
+                        groupname = entry["group"]
+                    except KeyError as error:
+                        logger.warning(
+                            f"Unable to create user with entry: {entry} "
+                            "due to lack of username"
+                        )
+                        continue
+                    isOwner = entry.get("is_owner", False)
+                    canDownload = entry.get("can_dowload", False)
+                    canSensitive = entry.get("can_sensitive", False)
                     acl_group, _ = Group.objects.get_or_create(name=groupname)
                     DatafileACL.objects.create(
                         datafile=datafile,
