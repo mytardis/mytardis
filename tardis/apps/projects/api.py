@@ -187,7 +187,7 @@ def get_or_create_user(username: str) -> User:
     Note: This is UoA specific and should be genericised somehow.
 
     Args:
-        username (str): the username of the user - a unique identifer like a UPI
+        username (str): the username of the user - a unique identifier like a UPI
 
     Raises:
         ValueError: The error raised when it is not possible to create a user

@@ -78,8 +78,8 @@ def get_all_tardis_apps():
 
 
 INSTALLED_APPS += get_all_tardis_apps() + (
-    #'django_nose',
     "behave_django",
+    "django_elasticsearch_dsl",
 )
 
 print(INSTALLED_APPS)
@@ -204,3 +204,17 @@ OBJECTS_WITH_IDENTIFIERS = [
     "instrument",
     "project",
 ]
+
+SINGLE_SEARCH_ENABLED = True
+ELASTICSEARCH_DSL = {
+    "default": {
+        "hosts": [
+            "https://127.0.0.1:9200",
+        ],
+        "verify_certs": False,
+        "basic_auth": ("elastic", "changeme"),
+    },
+}
+
+ELASTICSEARCH_DSL_AUTOSYNC = False
+ELASTICSEARCH_DSL_INDEX_SETTINGS = {"number_of_shards": 10}

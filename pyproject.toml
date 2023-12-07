@@ -2,7 +2,7 @@
 name = "mytardis"
 version = "5.0.0"
 description = "UoA specific MyTardis"
-authors = []
+authors = ["Chris Seal <c.seal@auckland.ac.nz>"]
 license = "GNU GPL 3"
 readme = "README.rst"
 
@@ -13,8 +13,7 @@ wand = "^0.6.11"
 bleach = "^6.0.0"
 celery = "^5.3.1"
 django-extensions = "^3.2.3"
-django-elasticsearch-dsl = "^7.3"
-django-form-utils = {git = "https://github.com/mytardis/django-form-utils.git"}
+django-elasticsearch-dsl = ">=8.0"
 django-jstemplate = "^2.0.1"
 django-registration-redux = "^2.12"
 django-tastypie = "^0.14.5"
@@ -23,13 +22,13 @@ django-webpack-loader = "^2.0.1"
 django-widget-tweaks = "^1.4.12"
 django-storages = "^1.13.2"
 gunicorn = "^20.1.0"
-gevent = "^22.10.2"
+gevent = "23.9.0"
 html2text = "^2020.1.16"
 html5lib = "^1.1"
 isodate = "^0.6.1"
 pyjwt = "^2.7.0"
 lxml = "^4.9.2"
-pillow = "^9.5.0"
+pillow = "10.1.0"
 pyoai = "^2.5.0"
 pystache = "^0.6.0"
 python-dateutil = "^2.8.2"
@@ -40,28 +39,24 @@ uritemplate = "^4.1.1"
 django-graphql-jwt = "^0.3.4"
 django-taggit = "^4.0.0"
 pylint = "^2.17.5"
-
+urllib3 = "<=2.0"
 
 [tool.poetry.group.docs.dependencies]
 sphinx = "^6"
 sphinx-rtd-theme = "^1.2.2"
 
-
 [tool.poetry.group.ldap]
 optional = true
-
 
 [tool.poetry.group.ldap.dependencies]
 python-ldap = "^3.4.3"
 ldap3 = "^2.9.1"
-
 
 [tool.poetry.group.postgres]
 optional = true
 
 [tool.poetry.group.postgres.dependencies]
 psycopg2-binary = "^2.9.6"
-
 
 [tool.poetry.group.test.dependencies]
 behave-django = "^1.4.0"
@@ -103,5 +98,5 @@ known_django = "django"
 sections = "FUTURE,STDLIB,DJANGO,THIRDPARTY,FIRSTPARTY,LOCALFOLDER"
 
 [build-system]
-requires = ["poetry-core"]
+requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
