@@ -783,7 +783,7 @@ class ProjectResource(ModelResource):
                         )
                         continue
                     isOwner = entry.get("is_owner", False)
-                    canDownload = entry.get("can_dowload", False)
+                    canDownload = entry.get("can_download", False)
                     canSensitive = entry.get("can_sensitive", False)
                     acl_user = get_or_create_user(username)
                     ProjectACL.objects.create(
@@ -808,7 +808,7 @@ class ProjectResource(ModelResource):
                         )
                         continue
                     isOwner = entry.get("is_owner", False)
-                    canDownload = entry.get("can_dowload", False)
+                    canDownload = entry.get("can_download", False)
                     canSensitive = entry.get("can_sensitive", False)
                     acl_group, _ = Group.objects.get_or_create(name=groupname)
                     ProjectACL.objects.create(

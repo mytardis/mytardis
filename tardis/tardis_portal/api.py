@@ -1173,7 +1173,7 @@ class ExperimentResource(MyTardisModelResource):
                         )
                         continue
                     isOwner = entry.get("is_owner", False)
-                    canDownload = entry.get("can_dowload", False)
+                    canDownload = entry.get("can_download", False)
                     canSensitive = entry.get("can_sensitive", False)
                     acl_user = get_or_create_user(username)
                     username, isOwner, canDownload, canSensitive = entry
@@ -1216,7 +1216,7 @@ class ExperimentResource(MyTardisModelResource):
                         )
                         continue
                     isOwner = entry.get("is_owner", False)
-                    canDownload = entry.get("can_dowload", False)
+                    canDownload = entry.get("can_download", False)
                     canSensitive = entry.get("can_sensitive", False)
                     acl_group, _ = Group.objects.get_or_create(name=groupname)
                     ExperimentACL.objects.create(
@@ -1694,7 +1694,7 @@ class DatasetResource(MyTardisModelResource):
                         )
                         continue
                     isOwner = entry.get("is_owner", False)
-                    canDownload = entry.get("can_dowload", False)
+                    canDownload = entry.get("can_download", False)
                     canSensitive = entry.get("can_sensitive", False)
                     acl_user = User.objects.get(username=username)
                     DatasetACL.objects.create(
@@ -1747,7 +1747,7 @@ class DatasetResource(MyTardisModelResource):
                         )
                         continue
                     isOwner = entry.get("is_owner", False)
-                    canDownload = entry.get("can_dowload", False)
+                    canDownload = entry.get("can_download", False)
                     canSensitive = entry.get("can_sensitive", False)
                     acl_group, _ = Group.objects.get_or_create(name=groupname)
                     DatasetACL.objects.create(
@@ -2022,7 +2022,7 @@ class DataFileResource(MyTardisModelResource):
                         )
                         continue
                     isOwner = entry.get("is_owner", False)
-                    canDownload = entry.get("can_dowload", False)
+                    canDownload = entry.get("can_download", False)
                     canSensitive = entry.get("can_sensitive", False)
                     acl_user = User.objects.get(username=username)
                     DatafileACL.objects.create(
@@ -2084,7 +2084,7 @@ class DataFileResource(MyTardisModelResource):
                         )
                         continue
                     isOwner = entry.get("is_owner", False)
-                    canDownload = entry.get("can_dowload", False)
+                    canDownload = entry.get("can_download", False)
                     canSensitive = entry.get("can_sensitive", False)
                     acl_group, _ = Group.objects.get_or_create(name=groupname)
                     DatafileACL.objects.create(
