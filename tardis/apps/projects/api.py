@@ -90,13 +90,21 @@ def get_user_from_upi(upi: str) -> Optional[Dict[str, str]]:
         Dict[str,str]: A dictionary of fields needed to create a user
     """
     upi = escape_rdn(upi)
-    server = ldap3.Server(settings.LDAP_URL)
+    if settings.LDAP_USE_LDAPS:
+        server = ldap3.Server(
+            f"ldaps://{settings.LDAP_URI}", port=settings.LDAP_PORT, use_ssl=True
+        )
+    else:
+        server = ldap3.Server(f"ldap://{settings.LDAP_URI}", port=settings.LDAP_PORT)
     search_filter = f"({settings.LDAP_USER_LOGIN_ATTR}={upi})"
     with ldap3.Connection(
         server,
         user=settings.LDAP_ADMIN_USER,
         password=settings.LDAP_ADMIN_PASSWORD,
+        client_strategy=ldap3.SAFE_SYNC,
     ) as connection:
+        if settings.LDAP_USE_LDAPS:
+            connection.start_tls()
         try:
             data = _get_data_from_active_directory_(connection, search_filter)
             if not data:
@@ -112,7 +120,8 @@ def get_user_from_upi(upi: str) -> Optional[Dict[str, str]]:
 
 
 def _get_data_from_active_directory_(
-    connection: ldap3.Connection, search_filter: str
+    connection: ldap3.Connection,
+    search_filter: str,
 ) -> Optional[Dict[str, str]]:
     """With connection to Active Directory, run a query
 
@@ -762,7 +771,20 @@ class ProjectResource(ModelResource):
                 bundle = self.__create_data_classification(bundle, classification)
             if bundle.data.get("users", False):
                 for entry in bundle.data["users"]:
-                    username, isOwner, canDownload, canSensitive = entry
+                    if not isinstance(entry, dict):
+                        logger.warning(f"Malformed User ACL: {entry}")
+                        continue
+                    try:
+                        username = entry["user"]
+                    except KeyError:
+                        logger.warning(
+                            f"Unable to create user with entry: {entry} "
+                            "due to lack of username"
+                        )
+                        continue
+                    isOwner = entry.get("is_owner", False)
+                    canDownload = entry.get("can_download", False)
+                    canSensitive = entry.get("can_sensitive", False)
                     acl_user = get_or_create_user(username)
                     ProjectACL.objects.create(
                         project=project,
@@ -774,7 +796,20 @@ class ProjectResource(ModelResource):
                     )
             if bundle.data.get("groups", False):
                 for entry in bundle.data["groups"]:
-                    groupname, isOwner, canDownload, canSensitive = entry
+                    if not isinstance(entry, dict):
+                        logger.warning(f"Malformed Group ACL: {entry}")
+                        continue
+                    try:
+                        groupname = entry["group"]
+                    except KeyError:
+                        logger.warning(
+                            f"Unable to create group with entry: {entry} "
+                            "due to lack of groupname"
+                        )
+                        continue
+                    isOwner = entry.get("is_owner", False)
+                    canDownload = entry.get("can_download", False)
+                    canSensitive = entry.get("can_sensitive", False)
                     acl_group, _ = Group.objects.get_or_create(name=groupname)
                     ProjectACL.objects.create(
                         project=project,
