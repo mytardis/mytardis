@@ -24,7 +24,7 @@ html5lib==1.1
 isodate==0.6.0
 lxml==4.6.3
 paramiko==2.7.2
-pillow==8.3.2
+pillow==10.2.0
 pyoai==2.5.0
 python-dateutil==2.8.2
 # python-magic
