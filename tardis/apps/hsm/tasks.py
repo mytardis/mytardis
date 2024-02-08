@@ -15,9 +15,9 @@ from .email_text import email_dfo_recall_complete, email_dfo_recall_failed
 logger = logging.getLogger(__name__)
 
 
-@tardis_app.task(name='hsm.dfo.recall', ignore_result=True)
+@tardis_app.task(name="hsm.dfo.recall", ignore_result=True)
 def dfo_recall(dfo_id, user_id):
-    '''
+    """
     Recall file from archive (tape) and notify the user who
     requested the recall by email
 
@@ -31,7 +31,7 @@ def dfo_recall(dfo_id, user_id):
     StorageClassNotSupportedError
         If the `django_storage_class` for the StorageBox of the input
         DataFileObject is not supported
-    '''
+    """
     from django.core.files.storage import get_storage_class
 
     from tardis.tardis_portal.models import DataFileObject
@@ -43,7 +43,8 @@ def dfo_recall(dfo_id, user_id):
 
     if not dfo.verified:
         raise DataFileObjectNotVerified(
-            "Cannot recall unverified DataFileObject: %s" % dfo.id)
+            "Cannot recall unverified DataFileObject: %s" % dfo.id
+        )
 
     storage_class = get_storage_class(dfo.storage_box.django_storage_class)
     if not issubclass(storage_class, HsmFileSystemStorage):
@@ -64,7 +65,10 @@ def dfo_recall(dfo_id, user_id):
         recalled = False
         logger.error(
             "Recall failed for DFO ID: %s, User ID: %s with error:\n%s",
-            dfo_id, user_id, str(err))
+            dfo_id,
+            user_id,
+            str(err),
+        )
     finally:
         dfo.file_object.close()
 
@@ -77,19 +81,19 @@ def dfo_recall(dfo_id, user_id):
             logger.info("sending recall failed email to %s", user.email)
             subject, content = email_dfo_recall_failed(dfo, user)
 
-        user.email_user(subject, content,
-                        from_email=settings.DEFAULT_FROM_EMAIL,
-                        fail_silently=True)
+        user.email_user(
+            subject, content, from_email=settings.DEFAULT_FROM_EMAIL, fail_silently=True
+        )
 
 
-@tardis_app.task(name='hsm.ds.check', ignore_result=True)
+@tardis_app.task(name="hsm.ds.check", ignore_result=True)
 def ds_check(ds_id):
-    '''
+    """
     Check the online status of Dataset ID ds_id
     and record the results in Dataset metadata
     using the http://mytardis.org/schemas/hsm/dataset/1
     schema
-    '''
+    """
     from tardis.tardis_portal.models.datafile import DataFile
     from tardis.tardis_portal.models.dataset import Dataset
     from tardis.tardis_portal.models.parameters import (
@@ -107,21 +111,22 @@ def ds_check(ds_id):
 
     # Assumes schema has been created by applying the migration
     # provided in the hsm app:
-    schema = Schema.objects.get(
-        namespace='http://mytardis.org/schemas/hsm/dataset/1')
-    pset, _ = DatasetParameterSet.objects.get_or_create(
-        schema=schema, dataset=dataset)
+    schema = Schema.objects.get(namespace="http://mytardis.org/schemas/hsm/dataset/1")
+    pset, _ = DatasetParameterSet.objects.get_or_create(schema=schema, dataset=dataset)
 
-    online_files_pname = ParameterName.objects.get(
-        schema=schema, name='online_files')
-    online_files_param, _ = DatasetParameter.objects.get_or_create(  # pylint: disable=W0633
-        parameterset=pset, name=online_files_pname)
+    online_files_pname = ParameterName.objects.get(schema=schema, name="online_files")
+    (
+        online_files_param,
+        _,
+    ) = DatasetParameter.objects.get_or_create(  # pylint: disable=W0633
+        parameterset=pset, name=online_files_pname
+    )
     online_files_param.string_value = "%s / %s" % (online_files, total_files)
     online_files_param.save()
 
-    updated_pname = ParameterName.objects.get(
-        schema=schema, name='updated')
+    updated_pname = ParameterName.objects.get(schema=schema, name="updated")
     updated_param, _ = DatasetParameter.objects.get_or_create(  # pylint: disable=W0633
-        parameterset=pset, name=updated_pname)
+        parameterset=pset, name=updated_pname
+    )
     updated_param.datetime_value = timezone.localtime(timezone.now())
     updated_param.save()

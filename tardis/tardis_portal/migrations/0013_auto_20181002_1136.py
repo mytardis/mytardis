@@ -8,20 +8,20 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('tardis_portal', '0012_userauthentication_approved'),
+        ("tardis_portal", "0012_userauthentication_approved"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='facility',
-            options={'ordering': ('name',), 'verbose_name_plural': 'Facilities'},
+            name="facility",
+            options={"ordering": ("name",), "verbose_name_plural": "Facilities"},
         ),
         migrations.AlterModelOptions(
-            name='instrument',
-            options={'ordering': ('name',), 'verbose_name_plural': 'Instruments'},
+            name="instrument",
+            options={"ordering": ("name",), "verbose_name_plural": "Instruments"},
         ),
         migrations.AlterModelOptions(
-            name='storagebox',
-            options={'ordering': ('name',), 'verbose_name_plural': 'storage boxes'},
+            name="storagebox",
+            options={"ordering": ("name",), "verbose_name_plural": "storage boxes"},
         ),
     ]

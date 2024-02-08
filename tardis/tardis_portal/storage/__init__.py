@@ -6,6 +6,6 @@ default_storage = MyTardisLocalFileSystemStorage()
 
 
 class DummyStorage(Storage):
-    '''Does nothing except serve as a place holder for Storage classes not
+    """Does nothing except serve as a place holder for Storage classes not
     implemented yet
-    '''
+    """

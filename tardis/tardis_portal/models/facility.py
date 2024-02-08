@@ -23,9 +23,9 @@ class Facility(models.Model):
     manager_group = models.ForeignKey(Group, on_delete=models.CASCADE)
 
     class Meta:
-        app_label = 'tardis_portal'
-        verbose_name_plural = 'Facilities'
-        ordering = ('name',)
+        app_label = "tardis_portal"
+        verbose_name_plural = "Facilities"
+        ordering = ("name",)
 
     # pylint: disable=W0222
     def save(self, *args, **kwargs):
@@ -37,16 +37,16 @@ class Facility(models.Model):
 
 
 def is_facility_manager(user):
-    '''
+    """
     Returns true if the user manages one or more facilities
-    '''
+    """
     return bool(facilities_managed_by(user).count())
 
 
 def facilities_managed_by(user):
-    '''
+    """
     Returns a list of facilities managed by a user
-    '''
+    """
     if not user.is_authenticated:
         return Facility.objects.none()
     return Facility.objects.filter(manager_group__user=user)

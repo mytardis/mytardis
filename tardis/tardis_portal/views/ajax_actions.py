@@ -25,19 +25,23 @@ logger = logging.getLogger(__name__)
 @authz.dataset_download_required
 def cache_dataset(request, dataset_id=None, notify=True):
     dataset = Dataset.objects.get(id=dataset_id)
-    run_this = group(df.cache_file.s()
-                     for df in dataset.datafile_set.all())
+    run_this = group(df.cache_file.s() for df in dataset.datafile_set.all())
     if notify:
         run_this = chord(run_this)(
-            cache_done_notify.subtask(kwargs={
-                'priority': settings.DEFAULT_EMAIL_TASK_PRIORITY,
-                'user_id': request.user.id,
-                'site_id': Site.objects.get_current(request).id,
-                'ct_id': ContentType.objects.get_for_model(Dataset).id,
-                'obj_ids': [dataset_id], }))
-    if hasattr(run_this, 'apply_async'):
+            cache_done_notify.subtask(
+                kwargs={
+                    "priority": settings.DEFAULT_EMAIL_TASK_PRIORITY,
+                    "user_id": request.user.id,
+                    "site_id": Site.objects.get_current(request).id,
+                    "ct_id": ContentType.objects.get_for_model(Dataset).id,
+                    "obj_ids": [dataset_id],
+                }
+            )
+        )
+    if hasattr(run_this, "apply_async"):
         result = run_this.apply_async()
     else:
         result = run_this
-    return HttpResponse(json.dumps({"result": str(result.id)}),
-                        content_type='application/json')
+    return HttpResponse(
+        json.dumps({"result": str(result.id)}), content_type="application/json"
+    )

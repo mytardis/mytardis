@@ -12,11 +12,9 @@ from . import ModelTestCase
 
 
 class ApiKeyTestCase(ModelTestCase):
-
     def test_create_user_automatically_generate_api_key(self):
-        '''Verify that create a new user will generate an api_key automatically
-        '''
-        user = User.objects.create_user('test', 'test@example.com', 'passw0rd')
+        """Verify that create a new user will generate an api_key automatically"""
+        user = User.objects.create_user("test", "test@example.com", "passw0rd")
         user.save()
 
         try:

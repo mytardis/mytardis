@@ -22,8 +22,9 @@ def they_see_dataset_form(context):
     :type context: behave.runner.Context
     """
     try:
-        create_dataset_form = \
-            context.browser.find_element_by_id("add-or-edit-dataset-form")
+        create_dataset_form = context.browser.find_element_by_id(
+            "add-or-edit-dataset-form"
+        )
         found_create_dataset_form = True
     except NoSuchElementException:
         found_create_dataset_form = False
@@ -36,7 +37,8 @@ def fill_in_add_dataset_form_and_save(context):
     :type context: behave.runner.Context
     """
     title_input = context.browser.find_element_by_css_selector(
-        "input[name='description']")
+        "input[name='description']"
+    )
     title_input.send_keys("new dataset1")
     save_button = context.browser.find_element_by_css_selector("button[type='submit']")
     save_button.click()
@@ -49,17 +51,15 @@ def a_new_dataset_is_created(context):
     """
     wait_for_jquery(context)
     title_span = context.browser.find_element_by_css_selector(
-        "span[property='dc:title']")
-    context.test.assertEqual(
-        title_span.get_attribute('innerHTML'),
-        "new dataset1")
+        "span[property='dc:title']"
+    )
+    context.test.assertEqual(title_span.get_attribute("innerHTML"), "new dataset1")
 
     console_errors = []
-    for entry in context.browser.get_log('browser'):
-        if entry['level'] != 'WARNING':
+    for entry in context.browser.get_log("browser"):
+        if entry["level"] != "WARNING":
             console_errors.append(entry)
-    context.test.assertEqual(
-        len(console_errors), 0, str(console_errors))
+    context.test.assertEqual(len(console_errors), 0, str(console_errors))
 
 
 @when("they open the experiment url")

@@ -6,12 +6,12 @@ USE_TZ = True
 # If running in a Windows environment this must be set to the same as your
 # system time zone.
 
-TIME_ZONE = 'Australia/Melbourne'
+TIME_ZONE = "Australia/Melbourne"
 
 # Language code for this installation. All choices can be found here:
 # http://www.i18nguy.com/unicode/language-identifiers.html
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = "en-us"
 
 # Date format to use by default. ("jS F Y" => "8th March 2012")
 # https://docs.djangoproject.com/en/1.3/ref/templates/builtins/#std:templatefilter-date  # noqa

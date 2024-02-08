@@ -17,18 +17,18 @@ def publish_public_expt_rifcs(experiment):
     except:
         providers = None
     from ..publish.publishservice import PublishService
+
     pservice = PublishService(providers, experiment)
     try:
         pservice.manage_rifcs(settings.OAI_DOCS_PATH)
     except:
-        logger.error('RIF-CS publish hook failed for experiment %d.'
-                     % experiment.id)
+        logger.error("RIF-CS publish hook failed for experiment %d." % experiment.id)
 
 
 @receiver(post_save, sender=ExperimentAuthor)
 @receiver(post_delete, sender=ExperimentAuthor)
 def post_save_experimentauthor(sender, **kwargs):
-    experimentauthor = kwargs['instance']
+    experimentauthor = kwargs["instance"]
     try:
         publish_public_expt_rifcs(experimentauthor.experiment)
     except Experiment.DoesNotExist:
@@ -39,7 +39,7 @@ def post_save_experimentauthor(sender, **kwargs):
 @receiver(post_save, sender=ExperimentParameter)
 @receiver(post_delete, sender=ExperimentParameter)
 def post_save_experiment_parameter(sender, **kwargs):
-    experiment_param = kwargs['instance']
+    experiment_param = kwargs["instance"]
     try:
         publish_public_expt_rifcs(experiment_param.parameterset.experiment)
     except ExperimentParameterSet.DoesNotExist:
@@ -51,5 +51,5 @@ def post_save_experiment_parameter(sender, **kwargs):
 @receiver(post_save, sender=Experiment)
 @receiver(post_delete, sender=Experiment)
 def post_save_experiment(sender, **kwargs):
-    experiment = kwargs['instance']
+    experiment = kwargs["instance"]
     publish_public_expt_rifcs(experiment)

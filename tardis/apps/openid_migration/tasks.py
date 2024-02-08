@@ -16,16 +16,18 @@ logger = logging.getLogger(__name__)
 def notify_migration_status(user_id, new_username, new_authmethod):
 
     user = User.objects.get(id=user_id)
-    subject, message_content = email_migration_success(user, new_username, new_authmethod)
+    subject, message_content = email_migration_success(
+        user, new_username, new_authmethod
+    )
     try:
-        user.email_user(subject,
-                        message_content,
-                        from_email=getattr(settings, 'DEFAULT_FROM_EMAIL',
-                                           default_settings.DEFAULT_FROM_EMAIL),
-                        fail_silently=True)
+        user.email_user(
+            subject,
+            message_content,
+            from_email=getattr(
+                settings, "DEFAULT_FROM_EMAIL", default_settings.DEFAULT_FROM_EMAIL
+            ),
+            fail_silently=True,
+        )
         logger.info("email sent")
     except Exception as e:
-        logger.error(
-            "failed to send migration notification email(s): %s" %
-            repr(e)
-        )
+        logger.error("failed to send migration notification email(s): %s" % repr(e))

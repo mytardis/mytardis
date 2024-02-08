@@ -21,27 +21,68 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('contenttypes', '0002_remove_content_type_name'),
+        ("contenttypes", "0002_remove_content_type_name"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Action',
+            name="Action",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=64)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=64)),
             ],
         ),
         migrations.CreateModel(
-            name='Log',
+            name="Log",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('timestamp', models.DateTimeField(db_index=True, default=django.utils.timezone.now)),
-                ('action', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='eventlog.Action')),
-                ('user', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, to=settings.AUTH_USER_MODEL)),
-                ('content_type', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, to='contenttypes.ContentType')),
-                ('object_id', models.PositiveIntegerField(null=True)),
-                ('extra', JSONField(verbose_name=DjangoJSONEncoder)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "timestamp",
+                    models.DateTimeField(
+                        db_index=True, default=django.utils.timezone.now
+                    ),
+                ),
+                (
+                    "action",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="eventlog.Action",
+                    ),
+                ),
+                (
+                    "user",
+                    models.ForeignKey(
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "content_type",
+                    models.ForeignKey(
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        to="contenttypes.ContentType",
+                    ),
+                ),
+                ("object_id", models.PositiveIntegerField(null=True)),
+                ("extra", JSONField(verbose_name=DjangoJSONEncoder)),
             ],
         ),
     ]

@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-'''
+"""
 File mapper that works for files stored in deep directory structures.
 It recreates the structure as stored in the datafile directory
-'''
+"""
 import os
 from urllib.parse import quote
 
@@ -36,13 +36,13 @@ def deep_storage_mapper(obj, rootdir=None):
             return quote(obj.filename, safe=safe)
         if isinstance(obj, Dataset):
             if settings.DATASET_SPACES_TO_UNDERSCORES:
-                desc = obj.description.replace(' ', '_')
+                desc = obj.description.replace(" ", "_")
             else:
                 desc = obj.description
             return quote("%s_%d" % (desc, obj.id), safe=safe)
         if isinstance(obj, Experiment):
             if settings.EXP_SPACES_TO_UNDERSCORES:
-                title = obj.title.replace(' ', '_')
+                title = obj.title.replace(" ", "_")
             else:
                 title = obj.title
             return quote("%s_%d" % (title, obj.id), safe=safe)
@@ -54,11 +54,14 @@ def deep_storage_mapper(obj, rootdir=None):
     datafile = obj
     dataset = datafile.dataset
     exp = dataset.get_first_experiment()
-    filepath = os.path.join(dataset.directory or '',
-                            quote(dataset.description, safe=safe),
-                            datafile.directory or '', datafile.filename)
-    if rootdir != 'datasets':
+    filepath = os.path.join(
+        dataset.directory or "",
+        quote(dataset.description, safe=safe),
+        datafile.directory or "",
+        datafile.filename,
+    )
+    if rootdir != "datasets":
         return os.path.join(rootdir, filepath)
     if exp is not None:
-        return os.path.join(exp.directory or '', exp.title, filepath)
+        return os.path.join(exp.directory or "", exp.title, filepath)
     raise Exception

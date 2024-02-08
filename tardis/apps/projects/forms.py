@@ -9,7 +9,6 @@ from .models import Project
 # from django.forms.models import ModelChoiceField
 
 
-
 class ProjectForm(forms.ModelForm):
     name = forms.CharField()
 

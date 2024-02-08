@@ -12,37 +12,30 @@ from . import ModelTestCase
 
 
 class AuthorTestCase(ModelTestCase):
-
     def test_authors(self):
-        exp = Experiment(title='test exp2',
-                         institution_name='monash',
-                         created_by=self.user,
-                         )
+        exp = Experiment(
+            title="test exp2",
+            institution_name="monash",
+            created_by=self.user,
+        )
         exp.save()
 
-        ExperimentAuthor(experiment=exp,
-                         author='nigel',
-                         order=0).save()
+        ExperimentAuthor(experiment=exp, author="nigel", order=0).save()
 
-        exp = Experiment(title='test exp1',
-                         institution_name='monash',
-                         created_by=self.user,
-                         )
+        exp = Experiment(
+            title="test exp1",
+            institution_name="monash",
+            created_by=self.user,
+        )
         exp.save()
 
-        ae1 = ExperimentAuthor(experiment=exp,
-                               author='steve',
-                               order=100)
+        ae1 = ExperimentAuthor(experiment=exp, author="steve", order=100)
         ae1.save()
 
-        ae2 = ExperimentAuthor(experiment=exp,
-                               author='russell',
-                               order=1)
+        ae2 = ExperimentAuthor(experiment=exp, author="russell", order=1)
         ae2.save()
 
-        ae3 = ExperimentAuthor(experiment=exp,
-                               author='uli',
-                               order=50)
+        ae3 = ExperimentAuthor(experiment=exp, author="uli", order=50)
         ae3.save()
 
         authors = exp.experimentauthor_set.all()

@@ -11,8 +11,7 @@ class JTI(models.Model):
     created_time = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        app_label = 'tardis_portal'
+        app_label = "tardis_portal"
 
     def __str__(self):
-        return SafeText(self.jti) + ' | ' \
-            + SafeText(self.created_time)
+        return SafeText(self.jti) + " | " + SafeText(self.created_time)

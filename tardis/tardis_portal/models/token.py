@@ -11,8 +11,9 @@ logger = logging.getLogger(__name__)
 
 
 def _token_expiry():
-    return (datetime.datetime.now().date() +
-            datetime.timedelta(settings.TOKEN_EXPIRY_DAYS))
+    return datetime.datetime.now().date() + datetime.timedelta(
+        settings.TOKEN_EXPIRY_DAYS
+    )
 
 
 class Token(models.Model):
@@ -23,26 +24,29 @@ class Token(models.Model):
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
-    _TOKEN_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+    _TOKEN_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 
     objects = OracleSafeManager()
 
     class Meta:
-        app_label = 'tardis_portal'
+        app_label = "tardis_portal"
 
     def __str__(self):
-        return '%s %s' % (self.expiry_date, self.token)
+        return "%s %s" % (self.expiry_date, self.token)
 
     def _randomise_token(self):
         from random import choice
-        self.token = ''.join(choice(self._TOKEN_CHARS)
-                             for _ in range(settings.TOKEN_LENGTH))
+
+        self.token = "".join(
+            choice(self._TOKEN_CHARS) for _ in range(settings.TOKEN_LENGTH)
+        )
 
     def save_with_random_token(self):
         from django.db import IntegrityError
 
-        if not self.user or not any([self.experimentacls, self.datasetacls,
-                                     self.datafileacls]):  # fail if success impossible
+        if not self.user or not any(
+            [self.experimentacls, self.datasetacls, self.datafileacls]
+        ):  # fail if success impossible
             self.save()
 
         for _ in range(30):  # 30 is an arbitrary number
@@ -55,12 +59,11 @@ class Token(models.Model):
                 continue
             else:
                 return
-        logger.warning('failed to generate a random token')
+        logger.warning("failed to generate a random token")
         self.save()  # give up and raise the exception
 
     def is_expired(self):
-        return (self.expiry_date and
-                self.expiry_date < datetime.datetime.now().date())
+        return self.expiry_date and self.expiry_date < datetime.datetime.now().date()
 
     def _get_expiry_as_datetime(self):
         exp = self.expiry_date
@@ -70,18 +73,17 @@ class Token(models.Model):
     def _tomorrow_4am():
         today = datetime.datetime.now().date()
         tomorrow = today + datetime.timedelta(1)
-        tomorrow_4am = datetime.datetime(
-            tomorrow.year, tomorrow.month, tomorrow.day, 4)
+        tomorrow_4am = datetime.datetime(tomorrow.year, tomorrow.month, tomorrow.day, 4)
         return tomorrow_4am
 
     def get_session_expiry(self):
-        '''
-            A token login should expire at the earlier of
-            a) tomorrow at 4am
-            b) the (end of) the token's expiry date
+        """
+        A token login should expire at the earlier of
+        a) tomorrow at 4am
+        b) the (end of) the token's expiry date
 
-            It is the responsibility of token_auth to set the session expiry
-        '''
+        It is the responsibility of token_auth to set the session expiry
+        """
         if self.is_expired():
             return datetime.datetime.now()
 

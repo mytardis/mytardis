@@ -1,8 +1,7 @@
 import os
 
 
-class PublishService():
-
+class PublishService:
     def __init__(self, providers, experiment):
         self.rc_providers = providers
         self.experiment = experiment
@@ -10,12 +9,14 @@ class PublishService():
 
     def _get_provider(self):
         from .provider.rifcsprovider import RifCsProvider
+
         if self.rc_providers:
             from importlib import import_module
+
             for pmodule in self.rc_providers:
                 # Import the module
                 try:
-                    module_name, klass_name = pmodule.rsplit('.', 1)
+                    module_name, klass_name = pmodule.rsplit(".", 1)
                     module = import_module(module_name)
                 except ImportError as e:
                     # TODO Show appropriate error msg
@@ -51,10 +52,15 @@ class PublishService():
 
     def _write_rifcs_to_oai_dir(self, oaipath):
         from ..xmlwriter import XMLWriter
+
         xmlwriter = XMLWriter()
         os.path.isdir(oaipath) or os.makedirs(oaipath)
-        xmlwriter.write_template_to_dir(oaipath, "MyTARDIS-%s.xml" % self.experiment.id,
-                                        self.get_template(), self.get_context())
+        xmlwriter.write_template_to_dir(
+            oaipath,
+            "MyTARDIS-%s.xml" % self.experiment.id,
+            self.get_template(),
+            self.get_context(),
+        )
 
     def get_template(self):
         return self.provider.get_template(self.experiment)

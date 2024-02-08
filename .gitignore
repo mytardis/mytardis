@@ -56,6 +56,7 @@ tardis/apps/*
 !tardis/apps/identifiers
 !tardis/apps/dataclassification
 tardis/apps/autoarchive
+!tardis/apps/single_sign_on
 
 .DS_Store
 

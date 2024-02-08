@@ -2,6 +2,7 @@
 Exceptions related to Hierarchical Storage Management (HSM)
 """
 
+
 class HsmException(Exception):
     """Base class for other exceptions to inherit from"""
 

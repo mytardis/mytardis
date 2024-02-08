@@ -25,8 +25,7 @@ def they_see_exp_form(context):
     """
     wait_for_jquery(context)
     try:
-        create_exp_form = \
-            context.browser.find_element_by_id("create_experiment_form")
+        create_exp_form = context.browser.find_element_by_id("create_experiment_form")
         found_create_exp_form = True
     except NoSuchElementException:
         found_create_exp_form = False
@@ -40,7 +39,9 @@ def fill_in_create_exp_and_save(context):
     """
     title_input = context.browser.find_element_by_css_selector("input[name='title']")
     title_input.send_keys("test exp1")
-    authors_input = context.browser.find_element_by_css_selector("input[name='authors']")
+    authors_input = context.browser.find_element_by_css_selector(
+        "input[name='authors']"
+    )
     authors_input.send_keys("Test User1")
     save_button = context.browser.find_element_by_css_selector("button[type='submit']")
     save_button.click()
@@ -53,17 +54,17 @@ def a_new_exp_is_created(context):
     """
     wait_for_jquery(context)
     created_alert = context.browser.find_element_by_css_selector(
-        "span[class='message']")
+        "span[class='message']"
+    )
     context.test.assertEqual(
-        created_alert.get_attribute("innerHTML"),
-        "Experiment Created")
+        created_alert.get_attribute("innerHTML"), "Experiment Created"
+    )
 
     console_errors = []
     for entry in context.browser.get_log("browser"):
-        if entry['level'] != 'WARNING':
+        if entry["level"] != "WARNING":
             console_errors.append(entry)
-    context.test.assertEqual(
-        len(console_errors), 0, str(console_errors))
+    context.test.assertEqual(len(console_errors), 0, str(console_errors))
 
 
 @then("they see the newly created experiment")
@@ -119,7 +120,9 @@ def they_click_the_change_public_access_button(context):
     """
     :type context: behave.runner.Context
     """
-    public_access_link = context.browser.find_element_by_class_name("public_access_button")
+    public_access_link = context.browser.find_element_by_class_name(
+        "public_access_button"
+    )
     public_access_link.click()
 
 
@@ -131,9 +134,9 @@ def they_see_the_change_public_access_form(context):
     wait_for_jquery(context)
     exp_id = Experiment.objects.get(title="test exp1").id
     form = context.browser.find_element_by_css_selector("form.experiment-rights")
-    context.test.assertIn(
-        "post", form.get_attribute("method"))
-    close_link = context.browser.\
-        find_element_by_css_selector("#modal-public-access > div > div > div.modal-header > button > span")
+    context.test.assertIn("post", form.get_attribute("method"))
+    close_link = context.browser.find_element_by_css_selector(
+        "#modal-public-access > div > div > div.modal-header > button > span"
+    )
     close_link.click()
     time.sleep(0.5)

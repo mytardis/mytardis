@@ -32,7 +32,7 @@ def is_tardis_app(app_config):
 
 
 def format_app_name_for_url(name):
-    return re.sub(r'[^a-z0-9]+', '-', name.lower())
+    return re.sub(r"[^a-z0-9]+", "-", name.lower())
 
 
 def get_tardis_apps():
@@ -45,8 +45,7 @@ def get_tardis_apps():
     """
     tardis_apps = []
     for app_name, app_config in apps.app_configs.items():
-        if is_tardis_app(app_config) and \
-                app_config.name in settings.INSTALLED_APPS:
+        if is_tardis_app(app_config) and app_config.name in settings.INSTALLED_APPS:
             tardis_apps.append((app_name, app_config.name))
     return tardis_apps
 
@@ -67,8 +66,9 @@ def check_app_dependencies(app_configs, **kwargs):
     :rtype: list of strings
     """
 
-    installed_apps = {app_config.name: app_config for app_config in
-                      six.itervalues(apps.app_configs)}
+    installed_apps = {
+        app_config.name: app_config for app_config in six.itervalues(apps.app_configs)
+    }
 
     # According to https://docs.djangoproject.com/en/1.8/topics/checks/#writing-your-own-checks
     # app_configs may contain a list of apps to check, but if it's None, all
@@ -80,12 +80,14 @@ def check_app_dependencies(app_configs, **kwargs):
 
     errors = []
     for app in apps_to_check:
-        deps = getattr(app, 'app_dependencies', [])
+        deps = getattr(app, "app_dependencies", [])
         for dependency in deps:
             if not installed_apps.has_key(dependency):
-                errors.append(Error(
-                        'Could not find dependent app: %s' % dependency,
+                errors.append(
+                    Error(
+                        "Could not find dependent app: %s" % dependency,
                         hint='Add "%s" to INSTALLED_APPS' % dependency,
-                        obj=app
-                ))
+                        obj=app,
+                    )
+                )
     return errors

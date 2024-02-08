@@ -9,45 +9,51 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('tardis_portal', '0015_dataset_created_time'),
+        ("tardis_portal", "0015_dataset_created_time"),
     ]
 
     operations = [
         # add timestamp fields with null values
         migrations.AddField(
-            model_name='facility',
-            name='created_time',
+            model_name="facility",
+            name="created_time",
             field=models.DateTimeField(blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='facility',
-            name='modified_time',
+            model_name="facility",
+            name="modified_time",
             field=models.DateTimeField(blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='instrument',
-            name='created_time',
+            model_name="instrument",
+            name="created_time",
             field=models.DateTimeField(blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='instrument',
-            name='modified_time',
+            model_name="instrument",
+            name="modified_time",
             field=models.DateTimeField(blank=True, null=True),
         ),
         # alter fields with default to timezone.now
         migrations.AlterField(
-            model_name='facility',
-            name='created_time',
-            field=models.DateTimeField(blank=True, default=django.utils.timezone.now, null=True),
+            model_name="facility",
+            name="created_time",
+            field=models.DateTimeField(
+                blank=True, default=django.utils.timezone.now, null=True
+            ),
         ),
         migrations.AlterField(
-            model_name='instrument',
-            name='created_time',
-            field=models.DateTimeField(blank=True, default=django.utils.timezone.now, null=True),
+            model_name="instrument",
+            name="created_time",
+            field=models.DateTimeField(
+                blank=True, default=django.utils.timezone.now, null=True
+            ),
         ),
         migrations.AlterField(
-            model_name='dataset',
-            name='created_time',
-            field=models.DateTimeField(blank=True, default=django.utils.timezone.now, null=True),
+            model_name="dataset",
+            name="created_time",
+            field=models.DateTimeField(
+                blank=True, default=django.utils.timezone.now, null=True
+            ),
         ),
     ]

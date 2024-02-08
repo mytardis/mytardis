@@ -1,1 +1,1 @@
-default_app_config = 'tardis.analytics.apps.AnalyticsConfig'
+default_app_config = "tardis.analytics.apps.AnalyticsConfig"

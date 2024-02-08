@@ -29,12 +29,10 @@ def they_see_the_manage_groups_page(context):
         found_title = False
     context.test.assertTrue(found_title)
 
-    context.test.assertEqual(
-        title.get_attribute("innerHTML"), "Manage Group Members")
+    context.test.assertEqual(title.get_attribute("innerHTML"), "Manage Group Members")
 
     console_errors = []
     for entry in context.browser.get_log("browser"):
-        if entry['level'] != 'WARNING':
+        if entry["level"] != "WARNING":
             console_errors.append(entry)
-    context.test.assertEqual(
-        len(console_errors), 0, str(console_errors))
+    context.test.assertEqual(len(console_errors), 0, str(console_errors))

@@ -44,7 +44,7 @@ class ExperimentParameterInline(admin.TabularInline):
     model = models.ExperimentParameter
     extra = 0
     formfield_overrides = {
-        django.db.models.TextField: {'widget': TextInput},
+        django.db.models.TextField: {"widget": TextInput},
     }
 
 
@@ -56,7 +56,7 @@ class DatasetParameterInline(admin.TabularInline):
     model = models.DatasetParameter
     extra = 0
     formfield_overrides = {
-        django.db.models.TextField: {'widget': TextInput},
+        django.db.models.TextField: {"widget": TextInput},
     }
 
 
@@ -68,7 +68,7 @@ class DatafileParameterInline(admin.TabularInline):
     model = models.DatafileParameter
     extra = 0
     formfield_overrides = {
-        django.db.models.TextField: {'widget': TextInput},
+        django.db.models.TextField: {"widget": TextInput},
     }
 
 
@@ -99,24 +99,24 @@ class DatafileACLInline(admin.TabularInline):
     model = models.DatafileACL
     extra = 0
 
+
 class ExperimentAdmin(admin.ModelAdmin):
-    search_fields = ['title', 'id']
+    search_fields = ["title", "id"]
     inlines = [ExperimentACLInline]
 
 
 class DatasetAdmin(admin.ModelAdmin):
-    search_fields = ['description', 'id']
+    search_fields = ["description", "id"]
     inlines = [DatasetACLInline]
 
 
 class StorageBoxAttributeInlineForm(forms.ModelForm):
-
     class Meta:
-        fields = '__all__'
+        fields = "__all__"
         model = models.StorageBoxAttribute
         widgets = {
-            'key': TextInput(attrs={'size': 40}),
-            'value': TextInput(attrs={'size': 80})
+            "key": TextInput(attrs={"size": 40}),
+            "value": TextInput(attrs={"size": 80}),
         }
 
 
@@ -127,13 +127,12 @@ class StorageBoxAttributeInline(admin.TabularInline):
 
 
 class StorageBoxOptionInlineForm(forms.ModelForm):
-
     class Meta:
-        fields = '__all__'
+        fields = "__all__"
         model = models.StorageBoxOption
         widgets = {
-            'key': TextInput(attrs={'size': 40}),
-            'value': TextInput(attrs={'size': 80})
+            "key": TextInput(attrs={"size": 40}),
+            "value": TextInput(attrs={"size": 80}),
         }
 
 
@@ -144,31 +143,28 @@ class StorageBoxOptionInline(admin.TabularInline):
 
 
 class StorageBoxForm(forms.ModelForm):
-
     class Meta:
-        fields = '__all__'
+        fields = "__all__"
         model = models.StorageBox
         widgets = {
-            'django_storage_class': TextInput(attrs={'size': 120}),
-            'name': TextInput(attrs={'size': 120}),
-            'description': TextInput(attrs={'size': 120}),
+            "django_storage_class": TextInput(attrs={"size": 120}),
+            "name": TextInput(attrs={"size": 120}),
+            "description": TextInput(attrs={"size": 120}),
         }
 
 
 class StorageBoxAdmin(admin.ModelAdmin):
-    search_fields = ['name']
-    inlines = [StorageBoxOptionInline,
-               StorageBoxAttributeInline]
+    search_fields = ["name"]
+    inlines = [StorageBoxOptionInline, StorageBoxAttributeInline]
     form = StorageBoxForm
 
 
 class DataFileObjectInlineForm(forms.ModelForm):
-
     class Meta:
-        fields = '__all__'
+        fields = "__all__"
         model = models.DataFileObject
         widgets = {
-            'uri': TextInput(attrs={'size': 120}),
+            "uri": TextInput(attrs={"size": 120}),
         }
 
 
@@ -179,17 +175,16 @@ class DataFileObjectInline(admin.TabularInline):
 
 
 class DatafileAdminForm(forms.ModelForm):
-
     class Meta:
-        fields = '__all__'
+        fields = "__all__"
         model = models.DataFile
         widgets = {
-            'directory': TextInput(attrs={'size': 120}),
+            "directory": TextInput(attrs={"size": 120}),
         }
 
 
 class DatafileAdmin(admin.ModelAdmin):
-    search_fields = ['filename', 'id']
+    search_fields = ["filename", "id"]
     form = DatafileAdminForm
     inlines = [DataFileObjectInline, DatafileACLInline]
 
@@ -200,32 +195,47 @@ class ParameterNameInline(admin.TabularInline):
 
 
 class SchemaAdmin(admin.ModelAdmin):
-    search_fields = ['name', 'namespace']
+    search_fields = ["name", "namespace"]
     inlines = [ParameterNameInline]
 
 
 class ParameterNameAdmin(admin.ModelAdmin):
-    search_fields = ['name', 'schema__id']
+    search_fields = ["name", "schema__id"]
 
 
 class ExperimentACLAdmin(admin.ModelAdmin):
     list_display = [
-        '__str__', 'canRead',
-        'canDownload', 'canWrite', 'canDelete', 'canSensitive', 'isOwner'
+        "__str__",
+        "canRead",
+        "canDownload",
+        "canWrite",
+        "canDelete",
+        "canSensitive",
+        "isOwner",
     ]
 
 
 class DatasetACLAdmin(admin.ModelAdmin):
     list_display = [
-        '__str__', 'canRead',
-        'canDownload', 'canWrite', 'canDelete', 'canSensitive', 'isOwner'
+        "__str__",
+        "canRead",
+        "canDownload",
+        "canWrite",
+        "canDelete",
+        "canSensitive",
+        "isOwner",
     ]
 
 
 class DatafileACLAdmin(admin.ModelAdmin):
     list_display = [
-        '__str__', 'canRead',
-        'canDownload', 'canWrite', 'canDelete', 'canSensitive', 'isOwner'
+        "__str__",
+        "canRead",
+        "canDownload",
+        "canWrite",
+        "canDelete",
+        "canSensitive",
+        "isOwner",
     ]
 
 
@@ -234,19 +244,15 @@ class FreeTextSearchFieldAdmin(admin.ModelAdmin):
 
 
 class UserAuthenticationAdmin(admin.ModelAdmin):
-    search_fields = [
-        'username',
-        'authenticationMethod',
-        'userProfile__user__username'
-        ]
+    search_fields = ["username", "authenticationMethod", "userProfile__user__username"]
 
 
 class FacilityAdmin(admin.ModelAdmin):
-    search_fields = ['name']
+    search_fields = ["name"]
 
 
 class InstrumentAdmin(admin.ModelAdmin):
-    search_fields = ['name']
+    search_fields = ["name"]
 
 
 class TokenAdmin(admin.ModelAdmin):

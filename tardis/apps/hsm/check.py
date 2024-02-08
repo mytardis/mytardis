@@ -52,8 +52,11 @@ def dfo_online(dfo):  # pylint: disable=R1710
                 filepath = os.path.join(location, dfo.uri)
                 return file_is_online(filepath)
             except StorageBoxOption.DoesNotExist:
-                logger.debug("DataFileObject with id %s doesn't have a file"
-                             "system path/location", dfo.id)
+                logger.debug(
+                    "DataFileObject with id %s doesn't have a file"
+                    "system path/location",
+                    dfo.id,
+                )
         else:
             msg = (
                 "You have tried to check the online/offline status of a "
@@ -65,8 +68,8 @@ def dfo_online(dfo):  # pylint: disable=R1710
             raise StorageClassNotSupportedError(msg)
     else:
         raise DataFileObjectNotVerified(
-            "Cannot check online status of unverified DataFileObject: %s"
-            % dfo.id)
+            "Cannot check online status of unverified DataFileObject: %s" % dfo.id
+        )
 
 
 def dataset_online_count(dataset):
@@ -82,22 +85,27 @@ def dataset_online_count(dataset):
     int
         The number of online files in this dataset
     """
-    online_count =  DataFile.objects.filter(dataset=dataset).count()
+    online_count = DataFile.objects.filter(dataset=dataset).count()
 
     files_to_scan = []
 
-    sb_ids = [box['storage_box'] for box in DataFileObject.objects.filter(
-              datafile__dataset=dataset,
-              verified=True).values('storage_box').distinct()]
+    sb_ids = [
+        box["storage_box"]
+        for box in DataFileObject.objects.filter(
+            datafile__dataset=dataset, verified=True
+        )
+        .values("storage_box")
+        .distinct()
+    ]
     for sb_id in sb_ids:
         box = StorageBox.objects.get(id=sb_id)
         storage_class = get_storage_class(box.django_storage_class)
         if not issubclass(storage_class, HsmFileSystemStorage):
             continue
-        location = StorageBox.objects.get(
-            id=sb_id).options.get(key='location').value
+        location = StorageBox.objects.get(id=sb_id).options.get(key="location").value
         datafiles_path = DataFileObject.objects.filter(
-            datafile__dataset=dataset, storage_box__id=sb_id, verified=True).values_list('uri', flat=True)
+            datafile__dataset=dataset, storage_box__id=sb_id, verified=True
+        ).values_list("uri", flat=True)
         for uri_prefix in datafiles_path:
             files_to_scan.append(os.path.join(location, uri_prefix))
 

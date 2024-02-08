@@ -6,7 +6,7 @@ from django.utils.safestring import mark_safe
 
 register = Library()
 
-DOT = '.'
+DOT = "."
 
 
 @register.simple_tag
@@ -15,16 +15,23 @@ def paginator_number(data_list, paginator, page_num, query_string, page_index):
     Generates an individual page index link in a paginated list.
     """
     if page_index == DOT:
-        return mark_safe('<li class=" page-item disabled"><a class="page-link" href="#">...</a></li> ')
+        return mark_safe(
+            '<li class=" page-item disabled"><a class="page-link" href="#">...</a></li> '
+        )
     if page_index == page_num:
-        return format_html('<li class="page-item active"><span class="page-link">{}</span></li> ', page_index + 1)
-    return format_html('<li class="page-item"><a class="page-link" href="{}"{}>{}</a></li> ',
-                       query_string.format(page=page_index),
-                       mark_safe(' class="end"' if page_index == paginator.num_pages - 1 else ''),
-                       page_index + 1)
+        return format_html(
+            '<li class="page-item active"><span class="page-link">{}</span></li> ',
+            page_index + 1,
+        )
+    return format_html(
+        '<li class="page-item"><a class="page-link" href="{}"{}>{}</a></li> ',
+        query_string.format(page=page_index),
+        mark_safe(' class="end"' if page_index == paginator.num_pages - 1 else ""),
+        page_index + 1,
+    )
 
 
-@register.inclusion_tag('tardis_portal/pagination.html')
+@register.inclusion_tag("tardis_portal/pagination.html")
 def pagination(data_list, paginator, page_num, query_string):
     """
     Generates the series of links to the pages in a paginated list.
@@ -54,16 +61,18 @@ def pagination(data_list, paginator, page_num, query_string):
             if page_num < (paginator.num_pages - ON_EACH_SIDE - ON_ENDS - 1):
                 page_range.extend(range(page_num + 1, page_num + ON_EACH_SIDE + 1))
                 page_range.append(DOT)
-                page_range.extend(range(paginator.num_pages - ON_ENDS, paginator.num_pages))
+                page_range.extend(
+                    range(paginator.num_pages - ON_ENDS, paginator.num_pages)
+                )
             else:
                 page_range.extend(range(page_num + 1, paginator.num_pages))
 
     return {
-        'data_list': data_list,
-        'paginator': paginator,
-        'page_num': page_num,
-        'query_string': query_string,
-        'pagination_required': pagination_required,
-        'page_range': page_range,
-        '1': 1,
+        "data_list": data_list,
+        "paginator": paginator,
+        "page_num": page_num,
+        "query_string": query_string,
+        "pagination_required": pagination_required,
+        "page_range": page_range,
+        "1": 1,
     }

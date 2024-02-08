@@ -45,31 +45,36 @@ from ..models import Experiment, License
 
 
 class RightsFormTestCase(TestCase):
-
     def setUp(self):
-        self.PUBLIC_USER = User.objects.create_user(username='PUBLIC_USER_TEST')
+        self.PUBLIC_USER = User.objects.create_user(username="PUBLIC_USER_TEST")
         self.assertEqual(self.PUBLIC_USER.id, settings.PUBLIC_USER_ID)
-        self.restrictiveLicense = License(name="Restrictive License",
-                                          url="http://example.test/rl",
-                                          internal_description="Description...",
-                                          allows_distribution=False)
+        self.restrictiveLicense = License(
+            name="Restrictive License",
+            url="http://example.test/rl",
+            internal_description="Description...",
+            allows_distribution=False,
+        )
         self.restrictiveLicense.save()
-        self.permissiveLicense  = License(name="Permissive License",
-                                          url="http://example.test/pl",
-                                          internal_description="Description...",
-                                          allows_distribution=True)
+        self.permissiveLicense = License(
+            name="Permissive License",
+            url="http://example.test/pl",
+            internal_description="Description...",
+            allows_distribution=True,
+        )
         self.permissiveLicense.save()
-        self.inactiveLicense  = License(name="Inactive License",
-                                          url="http://example.test/ial",
-                                          internal_description="Description...",
-                                          allows_distribution=True,
-                                          is_active=False)
+        self.inactiveLicense = License(
+            name="Inactive License",
+            url="http://example.test/ial",
+            internal_description="Description...",
+            allows_distribution=True,
+            is_active=False,
+        )
         self.inactiveLicense.save()
 
     def test_ensures_suitable_license(self):
         suitableCombinations = (
-            (Experiment.PUBLIC_ACCESS_NONE, ''),
-            (Experiment.PUBLIC_ACCESS_METADATA, ''),
+            (Experiment.PUBLIC_ACCESS_NONE, ""),
+            (Experiment.PUBLIC_ACCESS_METADATA, ""),
             (Experiment.PUBLIC_ACCESS_NONE, self.restrictiveLicense.id),
             (Experiment.PUBLIC_ACCESS_METADATA, self.restrictiveLicense.id),
             (Experiment.PUBLIC_ACCESS_FULL, self.permissiveLicense.id),
@@ -79,21 +84,22 @@ class RightsFormTestCase(TestCase):
             (Experiment.PUBLIC_ACCESS_METADATA, self.permissiveLicense.id),
             (Experiment.PUBLIC_ACCESS_METADATA, self.inactiveLicense.id),
             (Experiment.PUBLIC_ACCESS_FULL, self.inactiveLicense.id),
-            (Experiment.PUBLIC_ACCESS_FULL, ''),
+            (Experiment.PUBLIC_ACCESS_FULL, ""),
             (Experiment.PUBLIC_ACCESS_FULL, self.restrictiveLicense.id),
         )
 
         # Check we accept valid input
         for public_access, license_id in suitableCombinations:
-            data = {'public_access': str(public_access),
-                    'license': license_id,
-                    'legal_text': str('No legal Text')}
+            data = {
+                "public_access": str(public_access),
+                "license": license_id,
+                "legal_text": str("No legal Text"),
+            }
             form = RightsForm(data)
             self.assertTrue(form.is_valid(), form.errors)
 
         # Check we reject invalid input
         for public_access, license_id in unsuitableCombinations:
-            data = {'public_access': str(public_access),
-                    'license': license_id }
+            data = {"public_access": str(public_access), "license": license_id}
             form = RightsForm(data)
             self.assertFalse(form.is_valid())

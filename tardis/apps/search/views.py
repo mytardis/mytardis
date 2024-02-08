@@ -10,4 +10,4 @@ logger = logging.getLogger(__name__)
 
 class SearchView(TemplateView):
 
-    template_name = 'search.html'
+    template_name = "search.html"

@@ -36,28 +36,29 @@ def get_git_version():
     def run_git(args):
         # pylint: disable=import-outside-toplevel
         import subprocess  # nosec - Bandit B404: import_subprocess
+
         with subprocess.Popen(  # nosec - Bandit B603: subprocess_without_shell_equals_true
             args,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             cwd=repo_dir,
-            universal_newlines=True) as process:
+            universal_newlines=True,
+        ) as process:
             return process.communicate()[0].strip()
 
     try:
         info = {
-            'commit_id': run_git(
-                ["/usr/bin/git", "log", "-1", "--format=%H"]),
-            'date': run_git(
-                ["/usr/bin/git", "log", "-1", "--format=%cd", "--date=rfc"]),
-            'branch': run_git(
-                ["/usr/bin/git", "rev-parse", "--abbrev-ref", "HEAD"]),
-            'tag': run_git(
-                ["/usr/bin/git", "describe", "--abbrev=0", "--tags"])
+            "commit_id": run_git(["/usr/bin/git", "log", "-1", "--format=%H"]),
+            "date": run_git(
+                ["/usr/bin/git", "log", "-1", "--format=%cd", "--date=rfc"]
+            ),
+            "branch": run_git(["/usr/bin/git", "rev-parse", "--abbrev-ref", "HEAD"]),
+            "tag": run_git(["/usr/bin/git", "describe", "--abbrev=0", "--tags"]),
         }
     except Exception:
         return ["unavailable"]
     return info
+
 
 MYTARDIS_VERSION = get_git_version()
 

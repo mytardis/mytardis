@@ -24,31 +24,47 @@ from ...models.access_control import DatafileACL, DatasetACL
 
 class Command(BaseCommand):
 
-    help = 'Create Dataset+Datafile ACLs from ACLs of parent Experiment'
+    help = "Create Dataset+Datafile ACLs from ACLs of parent Experiment"
 
     def handle(self, *args, **options):
 
         sys.stderr.write("Iterating over Experiments.\n")
 
         for exp in Experiment.objects.all().only("id", "public_access").iterator():
-            sys.stderr.write("Processing Experiment_ID="+str(exp.id)+" ...\n")
-            acls_to_cascade = exp.experimentacl_set.select_related("user", "group", "token"
-                                        ).all().values("user__id", "group__id", "token__id",
-                                    "canRead", "canDownload", "canWrite", "canSensitive",
-                                    "canDelete", "isOwner", "aclOwnershipType", "effectiveDate",
-                                    "expiryDate")
+            sys.stderr.write("Processing Experiment_ID=" + str(exp.id) + " ...\n")
+            acls_to_cascade = (
+                exp.experimentacl_set.select_related("user", "group", "token")
+                .all()
+                .values(
+                    "user__id",
+                    "group__id",
+                    "token__id",
+                    "canRead",
+                    "canDownload",
+                    "canWrite",
+                    "canSensitive",
+                    "canDelete",
+                    "isOwner",
+                    "aclOwnershipType",
+                    "effectiveDate",
+                    "expiryDate",
+                )
+            )
             acls_to_cascade = list(acl for acl in acls_to_cascade)
             for acl in acls_to_cascade:
-                acl['user_id'] = acl.pop('user__id')
-                acl['group_id'] = acl.pop('group__id')
-                acl['token_id'] = acl.pop('token__id')
+                acl["user_id"] = acl.pop("user__id")
+                acl["group_id"] = acl.pop("group__id")
+                acl["token_id"] = acl.pop("token__id")
 
             public_to_cascade = int(exp.public_access)
 
             datasets = exp.datasets.all()
             for ds in datasets:
-                sys.stderr.write("Creating ACLs for Dataset_ID="+str(ds.id)+".\n")
-                new_acls = [DatasetACL(**dict(item, **{'dataset_id':ds.id})) for item in acls_to_cascade]
+                sys.stderr.write("Creating ACLs for Dataset_ID=" + str(ds.id) + ".\n")
+                new_acls = [
+                    DatasetACL(**dict(item, **{"dataset_id": ds.id}))
+                    for item in acls_to_cascade
+                ]
                 DatasetACL.objects.bulk_create(new_acls)
                 if ds.public_access < public_to_cascade:
                     sys.stderr.write("Cascading public_access flag to Dataset.\n")
@@ -57,8 +73,13 @@ class Command(BaseCommand):
 
                 datafiles = ds.datafile_set.all()
                 for df in datafiles:
-                    sys.stderr.write("Creating ACLs for DataFile_ID="+str(df.id)+".\n")
-                    new_acls = [DatafileACL(**dict(item, **{'datafile_id':df.id})) for item in acls_to_cascade]
+                    sys.stderr.write(
+                        "Creating ACLs for DataFile_ID=" + str(df.id) + ".\n"
+                    )
+                    new_acls = [
+                        DatafileACL(**dict(item, **{"datafile_id": df.id}))
+                        for item in acls_to_cascade
+                    ]
                     DatafileACL.objects.bulk_create(new_acls)
                     if df.public_access < public_to_cascade:
                         sys.stderr.write("Cascading public_access flag to DataFile.\n")

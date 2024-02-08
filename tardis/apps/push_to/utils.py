@@ -21,10 +21,11 @@ def is_directory(sftp, path):
 
 
 def list_subdirectories(sftp_client, path, show_hidden=False):
-    dir_list = [dir for dir in sftp_client.listdir(path) if
-                is_directory(sftp_client, dir)]
+    dir_list = [
+        dir for dir in sftp_client.listdir(path) if is_directory(sftp_client, dir)
+    ]
     if not show_hidden:
-        return [dir for dir in dir_list if not dir.startswith('.')]
+        return [dir for dir in dir_list if not dir.startswith(".")]
     return dir_list
 
 

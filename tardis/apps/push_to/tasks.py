@@ -31,30 +31,36 @@ def requests_maintenance(**kwargs):
             req.delete()
         else:
             tz = pytz.timezone(settings.TIME_ZONE)
-            wait_until = datetime.now(tz) - timedelta(hours=24*7)
+            wait_until = datetime.now(tz) - timedelta(hours=24 * 7)
             if req.timestamp < wait_until:
                 # Delete any requests after one week
                 # This time should be sufficient to do any debugging
                 req.delete()
             elif req.message is None:
-                files = Progress.objects.filter(request=req, status=0, retry__lt=10).count()
+                files = Progress.objects.filter(
+                    request=req, status=0, retry__lt=10
+                ).count()
                 if files != 0:
                     # Try process again if there are files with re-try attempts left
                     process_request.apply_async(args=[req.id], countdown=60)
 
 
 @tardis_app.task
-def push_experiment_to_host(user_id, credential_id, remote_host_id,
-                            experiment_id, base_dir=None):
+def push_experiment_to_host(
+    user_id, credential_id, remote_host_id, experiment_id, base_dir=None
+):
     req = Request.objects.create(
         user=User.objects.get(pk=user_id),
         object_type="experiment",
         object_id=experiment_id,
         credential=Credential.objects.get(pk=credential_id),
         host=RemoteHost.objects.get(pk=remote_host_id),
-        base_dir=base_dir)
+        base_dir=base_dir,
+    )
 
-    datasets = Dataset.objects.filter(experiments=Experiment.objects.get(pk=experiment_id))
+    datasets = Dataset.objects.filter(
+        experiments=Experiment.objects.get(pk=experiment_id)
+    )
     for ds in datasets:
         datafiles = DataFile.objects.filter(dataset=ds)
         for df in datafiles:
@@ -62,16 +68,19 @@ def push_experiment_to_host(user_id, credential_id, remote_host_id,
 
     process_request.apply_async(args=[req.id])
 
+
 @tardis_app.task
-def push_dataset_to_host(user_id, credential_id, remote_host_id,
-                         dataset_id, base_dir=None):
+def push_dataset_to_host(
+    user_id, credential_id, remote_host_id, dataset_id, base_dir=None
+):
     req = Request.objects.create(
         user=User.objects.get(pk=user_id),
         object_type="dataset",
         object_id=dataset_id,
         credential=Credential.objects.get(pk=credential_id),
         host=RemoteHost.objects.get(pk=remote_host_id),
-        base_dir=base_dir)
+        base_dir=base_dir,
+    )
 
     datafiles = DataFile.objects.filter(dataset=Dataset.objects.get(pk=dataset_id))
     for df in datafiles:
@@ -81,15 +90,17 @@ def push_dataset_to_host(user_id, credential_id, remote_host_id,
 
 
 @tardis_app.task
-def push_datafile_to_host(user_id, credential_id, remote_host_id,
-                          datafile_id, base_dir=None):
+def push_datafile_to_host(
+    user_id, credential_id, remote_host_id, datafile_id, base_dir=None
+):
     req = Request.objects.create(
         user=User.objects.get(pk=user_id),
         object_type="datafile",
         object_id=datafile_id,
         credential=Credential.objects.get(pk=credential_id),
         host=RemoteHost.objects.get(pk=remote_host_id),
-        base_dir=base_dir)
+        base_dir=base_dir,
+    )
 
     Progress.objects.create(request=req, datafile=DataFile.objects.get(pk=datafile_id))
 
@@ -135,7 +146,7 @@ def process_request(request_id, idle=0):
             try:
                 path = [get_filesystem_safe_dataset_name(file.datafile.dataset)]
                 if file.datafile.directory is not None:
-                    path += file.datafile.directory.split('/')
+                    path += file.datafile.directory.split("/")
                 path = remote_base_dir + path
                 make_dirs(sftp, path)
                 path_str = "/".join(path + [file.datafile.filename])
@@ -150,9 +161,14 @@ def process_request(request_id, idle=0):
             file.retry += 1
             file.message = "Can't find source file."
         file.save()
-        if not no_errors and file.message is not None and (
-                "Socket is closed" in file.message or
-                "Server connection dropped" in file.message):
+        if (
+            not no_errors
+            and file.message is not None
+            and (
+                "Socket is closed" in file.message
+                or "Server connection dropped" in file.message
+            )
+        ):
             break
 
     sftp.close()
@@ -161,7 +177,7 @@ def process_request(request_id, idle=0):
     if no_errors:
         complete_request(req.id)
     else:
-        process_request.apply_async(args=[req.id, idle+1], countdown=(idle+1)*60)
+        process_request.apply_async(args=[req.id, idle + 1], countdown=(idle + 1) * 60)
 
 
 def complete_request(request_id):
@@ -174,10 +190,11 @@ def complete_request(request_id):
     if completed_files == total_files:
         send_email = True
         subject = "Data pushed successfully"
-        message = "Your recent push-to request was completed successfully!\n" \
-                  "Log in to %s to access the requested data in %s folder." % (
-                    req.host.nickname,
-                    "mytardis-{}".format(req.id))
+        message = (
+            "Your recent push-to request was completed successfully!\n"
+            "Log in to %s to access the requested data in %s folder."
+            % (req.host.nickname, "mytardis-{}".format(req.id))
+        )
     else:
         files = Progress.objects.filter(request=req, status=0, retry__lt=10).count()
         if files != 0:
@@ -185,29 +202,32 @@ def complete_request(request_id):
         else:
             send_email = True
             subject = "Data push failed"
-            message = "Your recent push-to request %s to %s encountered an error and " \
-                      "could not be completed.\n" \
-                      "We have completed transfer for %s out of %s files.\n" \
-                      "Contact support for more information." % (
-                        req.id,
-                        req.host.nickname,
-                        completed_files, total_files)
+            message = (
+                "Your recent push-to request %s to %s encountered an error and "
+                "could not be completed.\n"
+                "We have completed transfer for %s out of %s files.\n"
+                "Contact support for more information."
+                % (req.id, req.host.nickname, completed_files, total_files)
+            )
 
     if send_email:
-        req.user.email_user(subject, message,
-                            from_email=getattr(settings, "PUSH_TO_FROM_EMAIL", None),
-                            fail_silently=True)
+        req.user.email_user(
+            subject,
+            message,
+            from_email=getattr(settings, "PUSH_TO_FROM_EMAIL", None),
+            fail_silently=True,
+        )
 
 
 def make_dirs(sftp_client, dir_list):
-    full_path = ''
+    full_path = ""
     for directory in dir_list:
         if full_path:
-            full_path += directory.rstrip('/') + '/'
+            full_path += directory.rstrip("/") + "/"
         elif directory:
-            full_path = directory.rstrip('/') + '/'
+            full_path = directory.rstrip("/") + "/"
         else:
-            full_path = '/'
+            full_path = "/"
 
         try:
             sftp_client.stat(full_path)

@@ -7,13 +7,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('tardis_portal', '0011_auto_20160505_1643'),
+        ("tardis_portal", "0011_auto_20160505_1643"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='userauthentication',
-            name='approved',
+            model_name="userauthentication",
+            name="approved",
             field=models.BooleanField(default=True),
         ),
     ]

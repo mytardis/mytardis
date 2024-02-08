@@ -1,37 +1,37 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-'''
+"""
 The function `rfc3339` formats dates according to the :RFC:`3339`. `rfc3339`
 tries to have as much as possible sensible defaults.
-'''
+"""
 import datetime
 import time
 
-__author__ = 'Henry Precheur <henry@precheur.org>'
-__license__ = 'Public Domain'
-__all__ = ('rfc3339', )
+__author__ = "Henry Precheur <henry@precheur.org>"
+__license__ = "Public Domain"
+__all__ = ("rfc3339",)
 
 
 def _timezone(utcoffset):
-    '''
+    """
     Return a string reprenseting the timezone offset.
 
     >>> _timezone(3600)
     '+01:00'
     >>> _timezone(-28800)
     '-08:00'
-    '''
+    """
 
     hours = abs(utcoffset) // 3600
     minutes = abs(utcoffset) % 3600
     if utcoffset >= 0:
-        return '+%02d:%02d' % (hours, minutes)
-    return '-%02d:%02d' % (hours, minutes)
+        return "+%02d:%02d" % (hours, minutes)
+    return "-%02d:%02d" % (hours, minutes)
 
 
 def _utc_offset(date, use_system_timezone):
-    '''
+    """
     Return the UTC offset of `date`. If `date` does not have any `tzinfo`, use
     the timezone informations stored locally on the system.
 
@@ -43,7 +43,7 @@ def _utc_offset(date, use_system_timezone):
     True
     >>> _utc_offset(datetime.datetime.now(), False)
     0
-    '''
+    """
 
     if date.utcoffset() is not None:
         return date.utcoffset()
@@ -57,11 +57,11 @@ def _utc_offset(date, use_system_timezone):
 
 
 def _utc_string(d):
-    return d.strftime('%Y-%m-%dT%H:%M:%SZ')
+    return d.strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
 def rfc3339(date, utc=False, use_system_timezone=True):
-    '''
+    """
     Return a string formatted according to the :RFC:`3339`. If called with
     `utc=True`, it normalizes `date` to the UTC date. If `date` does not have
     any timezone information, uses the local timezone::
@@ -89,7 +89,7 @@ def rfc3339(date, utc=False, use_system_timezone=True):
         Traceback (most recent call last):
         ...
         TypeError: excepted datetime, got str instead
-    '''
+    """
 
     # Check if `date` is a timestamp.
 
@@ -107,16 +107,16 @@ def rfc3339(date, utc=False, use_system_timezone=True):
             date = datetime.datetime(*date.timetuple()[:3])
         utcoffset = _utc_offset(date, use_system_timezone)
         if utc:
-            return _utc_string(date
-                               + datetime.timedelta(seconds=utcoffset))
-        return date.strftime('%Y-%m-%dT%H:%M:%S') \
-            + _timezone(utcoffset)
+            return _utc_string(date + datetime.timedelta(seconds=utcoffset))
+        return date.strftime("%Y-%m-%dT%H:%M:%S") + _timezone(utcoffset)
 
-    raise TypeError('excepted %s, got %s instead'
-                    % (datetime.datetime.__name__,
-                    date.__class__.__name__))
+    raise TypeError(
+        "excepted %s, got %s instead"
+        % (datetime.datetime.__name__, date.__class__.__name__)
+    )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import doctest  # pylint: disable=C0413
+
     doctest.testmod()

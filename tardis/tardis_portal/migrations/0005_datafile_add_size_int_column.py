@@ -15,20 +15,23 @@ def cast_string_to_integer(apps, schema_editor):
         df.save()
         current_object += 1
         if current_object % 10000 == 0:
-            print("{0} of {1} datafile objects converted".format(
-                    current_object, total_objects))
+            print(
+                "{0} of {1} datafile objects converted".format(
+                    current_object, total_objects
+                )
+            )
 
 
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('tardis_portal', '0004_storageboxoption_value_type'),
+        ("tardis_portal", "0004_storageboxoption_value_type"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='datafile',
-            name='_size',
+            model_name="datafile",
+            name="_size",
             field=models.BigIntegerField(null=True, blank=True),
         ),
         migrations.RunPython(cast_string_to_integer),

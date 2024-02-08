@@ -18,11 +18,13 @@ def check_if_user_not_approved(request):
             # This should only happen in unit tests
             return False
         # get authenticated user backend
-        backend = request.session['_auth_user_backend']
+        backend = request.session["_auth_user_backend"]
         # get key from backend class name
         auth_method = get_matching_authmethod(backend)
         try:
-            user_auth = UserAuthentication.objects.get(username=user.username, authenticationMethod=auth_method)
+            user_auth = UserAuthentication.objects.get(
+                username=user.username, authenticationMethod=auth_method
+            )
             if not user_auth.approved:
                 return True
         except UserAuthentication.DoesNotExist:
@@ -35,6 +37,6 @@ def get_matching_authmethod(backend):
     for authKey, _, authBackend in settings.AUTH_PROVIDERS:
         if backend == authBackend:
             return authKey
-    if backend == 'django.contrib.auth.backends.ModelBackend':
+    if backend == "django.contrib.auth.backends.ModelBackend":
         return settings.DEFAULT_AUTH  # 'localdb'
     return None

@@ -7,21 +7,21 @@
 # to your MIDDLEWARE setting
 
 CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
-        'LOCATION': 'default_cache',
+    "default": {
+        "BACKEND": "django.core.cache.backends.db.DatabaseCache",
+        "LOCATION": "default_cache",
     },
     # # or use memcached
     # 'default': {
     #     'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
     #     'LOCATION': '127.0.0.1:11211',
     # },
-    'celery-locks': {
-        'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
-        'LOCATION': 'celery_lock_cache',
-    }
+    "celery-locks": {
+        "BACKEND": "django.core.cache.backends.db.DatabaseCache",
+        "LOCATION": "celery_lock_cache",
+    },
 }
-'''
+"""
 change the CACHES setting to memcached if you prefer. Requires additional
 dependencies.
-'''
+"""

@@ -35,7 +35,9 @@ def rollback_migration(user_migration_obj):
     for group in groups:
         old_user.groups.add(group)
     # roll back permission changes
-    migrate_user_permissions(new_user, old_user)  # pylint: disable=arguments-out-of-order
+    migrate_user_permissions(
+        new_user, old_user
+    )  # pylint: disable=arguments-out-of-order
     # roll back api key
     migrate_api_key(new_user, old_user)  # pylint: disable=arguments-out-of-order
     # delete new account

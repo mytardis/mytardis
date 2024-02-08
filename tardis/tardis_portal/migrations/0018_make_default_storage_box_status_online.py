@@ -8,13 +8,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('tardis_portal', '0017_add_cc_licenses'),
+        ("tardis_portal", "0017_add_cc_licenses"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='storagebox',
-            name='status',
-            field=models.CharField(default='online', max_length=100),
+            model_name="storagebox",
+            name="status",
+            field=models.CharField(default="online", max_length=100),
         ),
     ]

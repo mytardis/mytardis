@@ -7,4 +7,4 @@ def get_item(dictionary, key):
 
 
 register = template.Library()
-register.filter('get_item', get_item)
+register.filter("get_item", get_item)

@@ -54,8 +54,9 @@ class FrozenTime:
         self.hour = args[3]
 
     def __lt__(self, b):
-        return old_datetime(self.year, self.month, self.day, self.hour) < \
-            old_datetime(b.year, b.month, b.day, b.hour)
+        return old_datetime(self.year, self.month, self.day, self.hour) < old_datetime(
+            b.year, b.month, b.day, b.hour
+        )
 
     @classmethod
     def freeze_time(cls, time):
@@ -71,38 +72,40 @@ class FrozenTime:
 
 def _raise_integrity_error():
     from django.db import IntegrityError
+
     raise IntegrityError()
 
 
 class TokenTestCase(TestCase):
 
-    urls = 'tardis.tardis_portal.tests.urls'
+    urls = "tardis.tardis_portal.tests.urls"
 
     def setUp(self):
-        user = 'tardis_user1'
-        pwd = 'secret'
-        email = ''
+        user = "tardis_user1"
+        pwd = "secret"
+        email = ""
         self.user = User.objects.create_user(user, email, pwd)
         self.experiment = Experiment(created_by=self.user)
         self.experiment.save()
 
-        sys.modules['datetime'].datetime = FrozenTime
+        sys.modules["datetime"].datetime = FrozenTime
 
     def tearDown(self):
-        sys.modules['datetime'].datetime = old_datetime
+        sys.modules["datetime"].datetime = old_datetime
 
-# expiry should default to today plus TOKEN_EXPIRY_DAYS
+    # expiry should default to today plus TOKEN_EXPIRY_DAYS
     def test_default_expiry(self):
         the_time = old_datetime(2011, 9, 20, 1, 52, 31, 570376)
         FrozenTime.freeze_time(the_time)
-        expected_expiry = the_time.date() + \
-            datetime.timedelta(settings.TOKEN_EXPIRY_DAYS)
+        expected_expiry = the_time.date() + datetime.timedelta(
+            settings.TOKEN_EXPIRY_DAYS
+        )
 
         t = Token()
 
         self.assertEqual(expected_expiry, t.expiry_date)
 
-# token is valid up to and including day of expiry
+    # token is valid up to and including day of expiry
     def test_is_expired(self):
         now = old_datetime(2011, 8, 20, 0, 0, 0, 1)
 
@@ -140,7 +143,7 @@ class TokenTestCase(TestCase):
         self.assertEqual(expected_expiry.hour, t.get_session_expiry().hour)
 
     def test_get_session_expiry_near_expiry(self):
-        now = old_datetime(2011,8,20,3)
+        now = old_datetime(2011, 8, 20, 3)
         FrozenTime.freeze_time(now)
 
         t = Token()
@@ -169,56 +172,61 @@ class TokenTestCase(TestCase):
         self.assertEqual(now.day, t.get_session_expiry().day)
         self.assertEqual(now.hour, t.get_session_expiry().hour)
 
-
-# check that we don't loop indefinitely when success is impossible
-# check no token is assigned
+    # check that we don't loop indefinitely when success is impossible
+    # check no token is assigned
     def test_save_with_random_token_failures(self):
         from django.core.exceptions import ObjectDoesNotExist
 
         t = Token()
         self.assertRaises(ObjectDoesNotExist, t.save_with_random_token)
-        self.assertEqual('', t.token)
+        self.assertEqual("", t.token)
 
-
-# check that failure happens eventually
+    # check that failure happens eventually
     def test_save_with_random_token_gives_up(self):
         from django.db import IntegrityError
+
         t = Token(user=self.user)
         t.save()
-        acl = ExperimentACL(token=t,
-                            experiment=self.experiment,
-                            canRead=True,
-                            aclOwnershipType=ExperimentACL.OWNER_OWNED)
+        acl = ExperimentACL(
+            token=t,
+            experiment=self.experiment,
+            canRead=True,
+            aclOwnershipType=ExperimentACL.OWNER_OWNED,
+        )
         acl.save()
         t.save = _raise_integrity_error
         self.assertRaises(IntegrityError, t.save_with_random_token)
 
-# should have tried to assign at least one token
+        # should have tried to assign at least one token
         self.assertTrue(len(t.token) > 0)
 
     def test_save_with_random_token(self):
         t = Token(user=self.user)
         t.save()
-        acl = ExperimentACL(token=t,
-                            experiment=self.experiment,
-                            canRead=True,
-                            aclOwnershipType=ExperimentACL.OWNER_OWNED)
+        acl = ExperimentACL(
+            token=t,
+            experiment=self.experiment,
+            canRead=True,
+            aclOwnershipType=ExperimentACL.OWNER_OWNED,
+        )
         acl.save()
         t.save_with_random_token()
         self.assertTrue(len(t.token) > 0)
 
     def test_retrieve_access_list_tokens(self):
-        sys.modules['datetime'].datetime = old_datetime
-        experiment = Experiment(title='test exp1', created_by=self.user)
+        sys.modules["datetime"].datetime = old_datetime
+        experiment = Experiment(title="test exp1", created_by=self.user)
         experiment.save()
-        acl = ExperimentACL(user=self.user,
-                            experiment=experiment,
-                            canRead=True,
-                            canDownload=True,
-                            canWrite=True,
-                            canDelete=True,
-                            canSensitive=True,
-                            isOwner=True)
+        acl = ExperimentACL(
+            user=self.user,
+            experiment=experiment,
+            canRead=True,
+            canDownload=True,
+            canWrite=True,
+            canDelete=True,
+            canSensitive=True,
+            isOwner=True,
+        )
         acl.save()
 
         now = old_datetime.now()
@@ -228,50 +236,45 @@ class TokenTestCase(TestCase):
         token = Token(user=self.user)
         token.expiry_date = tomorrow
         token.save()
-        acl = ExperimentACL(token=token,
-                            experiment=experiment,
-                            canRead=True,
-                            aclOwnershipType=ExperimentACL.OWNER_OWNED)
+        acl = ExperimentACL(
+            token=token,
+            experiment=experiment,
+            canRead=True,
+            aclOwnershipType=ExperimentACL.OWNER_OWNED,
+        )
         acl.save()
         factory = RequestFactory()
         request = factory.get(
-            '/experiment/control_panel/%s/access_list/tokens/'
-            % experiment.id)
+            "/experiment/control_panel/%s/access_list/tokens/" % experiment.id
+        )
         request.user = self.user
-        response = retrieve_access_list_tokens(
-            request, experiment_id=experiment.id)
-        matches = re.findall(
-            'href="/token/delete/[0-9]+/"', response.content.decode())
+        response = retrieve_access_list_tokens(request, experiment_id=experiment.id)
+        matches = re.findall('href="/token/delete/[0-9]+/"', response.content.decode())
         self.assertEqual(len(matches), 1)
-        self.assertIn(
-            'href="/token/delete/%d/"' % token.id,
-            response.content.decode())
+        self.assertIn('href="/token/delete/%d/"' % token.id, response.content.decode())
 
-    @patch('webpack_loader.loader.WebpackLoader.get_bundle')
+    @patch("webpack_loader.loader.WebpackLoader.get_bundle")
     def test_create_token(self, mock_webpack_get_bundle):
         from ..views.authorisation import create_token
 
-        sys.modules['datetime'].datetime = old_datetime
+        sys.modules["datetime"].datetime = old_datetime
 
-        experiment = Experiment(title='test exp1', created_by=self.user)
+        experiment = Experiment(title="test exp1", created_by=self.user)
         experiment.save()
-        acl = ExperimentACL(user=self.user,
-                            experiment=experiment,
-                            isOwner=True)
+        acl = ExperimentACL(user=self.user, experiment=experiment, isOwner=True)
         acl.save()
 
         factory = RequestFactory()
         request = factory.post(
-            '/view/experiment/%s/create_token/'
-            % experiment.id,
+            "/view/experiment/%s/create_token/" % experiment.id,
             data={
-                'csrfmiddlewaretoken': 'bogus',
-            })
+                "csrfmiddlewaretoken": "bogus",
+            },
+        )
         request.user = self.user
-        response = create_token(
-            request, experiment_id=experiment.id)
+        response = create_token(request, experiment_id=experiment.id)
         response_dict = json.loads(response.content.decode())
-        self.assertEqual(response_dict['success'], True)
+        self.assertEqual(response_dict["success"], True)
 
         token = Token.objects.get(experimentacls__experiment=experiment)
         url = "/experiment/view/%s/?token=%s" % (experiment.id, token.token)
@@ -279,52 +282,52 @@ class TokenTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertNotEqual(mock_webpack_get_bundle.call_count, 0)
 
-    @patch('webpack_loader.loader.WebpackLoader.get_bundle')
+    @patch("webpack_loader.loader.WebpackLoader.get_bundle")
     def test_token_delete(self, mock_webpack_get_bundle):
         from ..views.authorisation import token_delete
 
-        sys.modules['datetime'].datetime = old_datetime
+        sys.modules["datetime"].datetime = old_datetime
 
-        experiment = Experiment(title='test exp1', created_by=self.user)
+        experiment = Experiment(title="test exp1", created_by=self.user)
         experiment.save()
-        acl = ExperimentACL(user=self.user,
-                            experiment=experiment,
-                            canRead=True,
-                            aclOwnershipType=ExperimentACL.OWNER_OWNED)
+        acl = ExperimentACL(
+            user=self.user,
+            experiment=experiment,
+            canRead=True,
+            aclOwnershipType=ExperimentACL.OWNER_OWNED,
+        )
         acl.save()
         # saving this way doesn't require isOwner to be true, only the views do
         token = Token(user=self.user)
         token.save()
-        acl = ExperimentACL(token=token,
-                            experiment=experiment,
-                            canRead=True,
-                            aclOwnershipType=ExperimentACL.OWNER_OWNED)
+        acl = ExperimentACL(
+            token=token,
+            experiment=experiment,
+            canRead=True,
+            aclOwnershipType=ExperimentACL.OWNER_OWNED,
+        )
         acl.save()
         # saving this way doesn't require isOwner to be true, only the views do
         factory = RequestFactory()
         request = factory.post(
-            '/token/delete/%s/'
-            % token.id,
+            "/token/delete/%s/" % token.id,
             data={
-                'csrfmiddlewaretoken': 'bogus',
-            })
+                "csrfmiddlewaretoken": "bogus",
+            },
+        )
         request.user = self.user
-        response = token_delete(
-            request, token_id=token.id)
+        response = token_delete(request, token_id=token.id)
         response_dict = json.loads(response.content.decode())
         # We haven't yet created an "isOwner" ExperimentACL to associate self.user
         # with the experiment, so request.user shouldn't be allowed
         # to delete the token:
-        self.assertEqual(response_dict['success'], False)
-        acl = ExperimentACL(user=self.user,
-                        experiment=experiment,
-                        isOwner=True)
+        self.assertEqual(response_dict["success"], False)
+        acl = ExperimentACL(user=self.user, experiment=experiment, isOwner=True)
         acl.save()
-        response = token_delete(
-            request, token_id=token.id)
+        response = token_delete(request, token_id=token.id)
         response_dict = json.loads(response.content.decode())
         # Now request.user should be authorised to delete the token:
-        self.assertEqual(response_dict['success'], True)
+        self.assertEqual(response_dict["success"], True)
         self.assertIsNone(Token.objects.filter(id=token.id).first())
 
         url = "/experiment/view/%s/?token=%s" % (experiment.id, token.token)

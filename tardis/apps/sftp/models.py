@@ -16,10 +16,11 @@ class SFTPPublicKey(models.Model):
     :param added: date the public key was added (Optional)
     :type added: date
     """
+
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    name = models.CharField('Device name', max_length=256)
+    name = models.CharField("Device name", max_length=256)
     key_type = models.CharField("Key Type", max_length=100)
-    public_key = models.TextField('Public Key')
+    public_key = models.TextField("Public Key")
     added = models.DateField("Added", auto_now_add=True)
 
     def __str__(self):

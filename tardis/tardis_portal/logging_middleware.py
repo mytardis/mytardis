@@ -35,72 +35,73 @@ import logging
 from django.conf import settings
 
 LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'formatters': {
-        'system': {
-            'format': '[%(asctime)s] %(levelname)-7s %(ip)-15s %(user)s %(method)s %(message)s %(status)s',
-            'datefmt': '%d/%b/%Y %H:%M:%S',
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "system": {
+            "format": "[%(asctime)s] %(levelname)-7s %(ip)-15s %(user)s %(method)s %(message)s %(status)s",
+            "datefmt": "%d/%b/%Y %H:%M:%S",
         },
-        'module': {
-            'format': '[%(asctime)s] %(levelname)-7s %(module)s %(funcName)s %(message)s',
-            'datefmt': '%d/%b/%Y %H:%M:%S',
-        },
-    },
-    'handlers': {
-        'null': {
-            'level': 'DEBUG',
-            'class': 'logging.NullHandler',
-        },
-        'console': {
-            'level': 'INFO',
-            'class': 'logging.StreamHandler',
-            'formatter': 'module',
-        },
-        'systemlog': {
-            'level': settings.SYSTEM_LOG_LEVEL,
-            'class': 'logging.handlers.RotatingFileHandler',
-            'formatter': 'system',
-            'filename': settings.SYSTEM_LOG_FILENAME,
-            'maxBytes': settings.SYSTEM_LOG_MAXBYTES,
-            'backupCount': 5,
-        },
-        'modulelog': {
-            'level': settings.MODULE_LOG_LEVEL,
-            'class': 'logging.handlers.RotatingFileHandler',
-            'formatter': 'module',
-            'filename': settings.MODULE_LOG_FILENAME,
-            'maxBytes': settings.MODULE_LOG_MAXBYTES,
-            'backupCount': 5,
+        "module": {
+            "format": "[%(asctime)s] %(levelname)-7s %(module)s %(funcName)s %(message)s",
+            "datefmt": "%d/%b/%Y %H:%M:%S",
         },
     },
-    'loggers': {
+    "handlers": {
+        "null": {
+            "level": "DEBUG",
+            "class": "logging.NullHandler",
+        },
+        "console": {
+            "level": "INFO",
+            "class": "logging.StreamHandler",
+            "formatter": "module",
+        },
+        "systemlog": {
+            "level": settings.SYSTEM_LOG_LEVEL,
+            "class": "logging.handlers.RotatingFileHandler",
+            "formatter": "system",
+            "filename": settings.SYSTEM_LOG_FILENAME,
+            "maxBytes": settings.SYSTEM_LOG_MAXBYTES,
+            "backupCount": 5,
+        },
+        "modulelog": {
+            "level": settings.MODULE_LOG_LEVEL,
+            "class": "logging.handlers.RotatingFileHandler",
+            "formatter": "module",
+            "filename": settings.MODULE_LOG_FILENAME,
+            "maxBytes": settings.MODULE_LOG_MAXBYTES,
+            "backupCount": 5,
+        },
+    },
+    "loggers": {
         __name__: {
-            'handlers': ['systemlog'],
-            'propagate': False,
-            'level': settings.SYSTEM_LOG_LEVEL,
+            "handlers": ["systemlog"],
+            "propagate": False,
+            "level": settings.SYSTEM_LOG_LEVEL,
         },
-        'tardis': {
-            'handlers': ['modulelog'],
-            'propagate': False,
-            'level': settings.MODULE_LOG_LEVEL,
+        "tardis": {
+            "handlers": ["modulelog"],
+            "propagate": False,
+            "level": settings.MODULE_LOG_LEVEL,
         },
-    }
+    },
 }
 
 
 def get_client_ip(request):
-    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    x_forwarded_for = request.META.get("HTTP_X_FORWARDED_FOR")
     if x_forwarded_for:
-        ip = x_forwarded_for.split(',')[0]
+        ip = x_forwarded_for.split(",")[0]
     else:
-        ip = request.META.get('REMOTE_ADDR')
+        ip = request.META.get("REMOTE_ADDR")
     return ip
 
 
 class LoggingMiddleware(object):
     def __init__(self, get_response):
         from logging.config import dictConfig
+
         dictConfig(LOGGING)
         self.logger = logging.getLogger(__name__)
         self.get_response = get_response
@@ -114,14 +115,14 @@ class LoggingMiddleware(object):
         try:
             user = request.user
         except:
-            user = ''
+            user = ""
         ip = get_client_ip(request)
         method = request.method
-        if hasattr(response, 'status_code'):
+        if hasattr(response, "status_code"):
             status = response.status_code
         else:
             status = 500
-        extra = {'ip': ip, 'user': user, 'method': method, 'status': status}
+        extra = {"ip": ip, "user": user, "method": method, "status": status}
 
         if status < 400:
             self.logger.info(request.path, extra=extra)
@@ -131,9 +132,10 @@ class LoggingMiddleware(object):
             self.logger.error(request.path, extra=extra)
 
         from django.db import connection
+
         sql = connection.queries
         if sql:
-            extra = {'ip': ip, 'user': user, 'method': 'SQL', 'status': status}
+            extra = {"ip": ip, "user": user, "method": "SQL", "status": status}
             self.logger.debug(sql, extra=extra)
 
         return response
@@ -142,10 +144,10 @@ class LoggingMiddleware(object):
         try:
             user = request.user
         except:
-            user = ''
+            user = ""
         ip = get_client_ip(request)
         method = request.method
         status = 500
 
-        extra = {'ip': ip, 'user': user, 'method': method, 'status': status}
-        self.logger.error('%s %s' % (request.path, exception), extra=extra)
+        extra = {"ip": ip, "user": user, "method": method, "status": status}
+        self.logger.error("%s %s" % (request.path, exception), extra=extra)

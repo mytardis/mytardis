@@ -16,21 +16,20 @@ def given_a_logged_in_facility_manager(context):
     :type context: behave.runner.Context
     """
     user = User.objects.create_user(  # nosec
-            username="facilitymanager",
-            password="facilitypass",
-            email="facilitymanager@example.com",
-            first_name="Facility",
-            last_name="Manager")
+        username="facilitymanager",
+        password="facilitypass",
+        email="facilitymanager@example.com",
+        first_name="Facility",
+        last_name="Manager",
+    )
     group = Group.objects.create(name="Test Facility Managers")
     user.groups.add(group)
-    facility = Facility.objects.create(
-        name="Test Facility", manager_group=group)
-    instrument = Instrument.objects.create(
-        facility=facility, name="Test Instrument")
-    dataset = Dataset.objects.create(
-        description="Test Dataset", instrument=instrument)
+    facility = Facility.objects.create(name="Test Facility", manager_group=group)
+    instrument = Instrument.objects.create(facility=facility, name="Test Instrument")
+    dataset = Dataset.objects.create(description="Test Dataset", instrument=instrument)
     datafile = DataFile.objects.create(
-        filename="testfile.txt", size=12345, md5sum="bogus", dataset=dataset)
+        filename="testfile.txt", size=12345, md5sum="bogus", dataset=dataset
+    )
     context.browser.get(context.base_url + "/login/")
     username_field = context.browser.find_element_by_id("id_username")
     username_field.send_keys(user.username)
@@ -58,7 +57,7 @@ def they_see_the_facility_overview_page(context):
     progress_bar = context.browser.find_element_by_css_selector("div.progress")
     while progress_bar.is_displayed() and retries < max_retries:
         time.sleep(0.1)
-        retries +=1
+        retries += 1
 
     # We can't use the jQuery.active method to determine if the AJAX has
     # finished loading, because this is an AngularJS page.  The progress bar
@@ -72,7 +71,6 @@ def they_see_the_facility_overview_page(context):
 
     console_errors = []
     for entry in context.browser.get_log("browser"):
-        if entry['level'] != 'WARNING':
+        if entry["level"] != "WARNING":
             console_errors.append(entry)
-    context.test.assertEqual(
-        len(console_errors), 0, str(console_errors))
+    context.test.assertEqual(len(console_errors), 0, str(console_errors))

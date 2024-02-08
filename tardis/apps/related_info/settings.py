@@ -1,1 +1,1 @@
-NAME = 'Related Info'
+NAME = "Related Info"

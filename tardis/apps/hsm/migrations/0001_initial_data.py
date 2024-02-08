@@ -15,32 +15,30 @@ def forward_func(apps, schema_editor):
     SCHEMA = apps.get_model("tardis_portal", "Schema")
     PARAMETERNAME = apps.get_model("tardis_portal", "ParameterName")
 
-    ds_schema = SCHEMA.objects\
-        .using(db_alias)\
-        .create(namespace=HSM_DATASET_NAMESPACE,
-                name="Online Status",
-                type=2, #DATASET = 2, or someone really changed up Schema!
-                immutable=True)
+    ds_schema = SCHEMA.objects.using(db_alias).create(
+        namespace=HSM_DATASET_NAMESPACE,
+        name="Online Status",
+        type=2,  # DATASET = 2, or someone really changed up Schema!
+        immutable=True,
+    )
 
-    param_name = PARAMETERNAME.objects\
-        .using(db_alias)\
-        .create(
-            name="online_files",
-            full_name="Online Files",
-            data_type=2, #STRING = 2, or someone really changed up ParameterName!
-            immutable=True,
-            order=1,
-            schema=ds_schema)
+    param_name = PARAMETERNAME.objects.using(db_alias).create(
+        name="online_files",
+        full_name="Online Files",
+        data_type=2,  # STRING = 2, or someone really changed up ParameterName!
+        immutable=True,
+        order=1,
+        schema=ds_schema,
+    )
 
-    param_name = PARAMETERNAME.objects\
-        .using(db_alias)\
-        .create(
-            name="updated",
-            full_name="Last Updated",
-            data_type=6, #DATETIME = 6, or someone really changed up ParameterName!
-            immutable=True,
-            order=2,
-            schema=ds_schema)
+    param_name = PARAMETERNAME.objects.using(db_alias).create(
+        name="updated",
+        full_name="Last Updated",
+        data_type=6,  # DATETIME = 6, or someone really changed up ParameterName!
+        immutable=True,
+        order=2,
+        schema=ds_schema,
+    )
 
 
 def reverse_func(apps, schema_editor):
@@ -53,22 +51,16 @@ def reverse_func(apps, schema_editor):
     DATASETPARAMETERSET = apps.get_model("tardis_portal", "DatasetParameterSet")
 
     try:
-        ds_schema = SCHEMA.objects.using(db_alias)\
-            .get(namespace=HSM_DATASET_NAMESPACE)
+        ds_schema = SCHEMA.objects.using(db_alias).get(namespace=HSM_DATASET_NAMESPACE)
     except SCHEMA.DoesNotExist:
         return
 
-    DATASETPARAMETERSET.objects\
-        .using(db_alias)\
-        .filter(schema=ds_schema).delete()
+    DATASETPARAMETERSET.objects.using(db_alias).filter(schema=ds_schema).delete()
 
-    param_names = PARAMETERNAME.objects.using(db_alias)\
-        .filter(schema=ds_schema)
+    param_names = PARAMETERNAME.objects.using(db_alias).filter(schema=ds_schema)
 
     for pn in param_names:
-        DATASETPARAMETER.objects\
-            .using(db_alias)\
-            .filter(name=pn).delete()
+        DATASETPARAMETER.objects.using(db_alias).filter(name=pn).delete()
         pn.delete()
 
     ds_schema.delete()
@@ -76,6 +68,7 @@ def reverse_func(apps, schema_editor):
 
 class Migration(migrations.Migration):
     """HSM Schema migrations"""
+
     dependencies = [
         ("tardis_portal", "0016_add_timestamps"),
     ]

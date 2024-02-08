@@ -7,7 +7,7 @@ register = Library()
 class DynUrlNode(Node):
     def __init__(self, *args):
         self.name_var = Variable(args[0])
-        self.args = [Variable(a) for a in args[1].split(',')]
+        self.args = [Variable(a) for a in args[1].split(",")]
 
     def render(self, context):
         name = self.name_var.resolve(context)

@@ -14,8 +14,7 @@ from ..models import DataFile, DatafileACL, Dataset
 logger = logging.getLogger(__name__)
 
 
-def upload_complete(request,
-                    template_name='tardis_portal/upload_complete.html'):
+def upload_complete(request, template_name="tardis_portal/upload_complete.html"):
     """
     The ajax-loaded result of a file being uploaded
 
@@ -28,11 +27,11 @@ def upload_complete(request,
     """
 
     c = {
-        'numberOfFiles': request.POST['filesUploaded'],
-        'bytes': request.POST['allBytesLoaded'],
-        'speed': request.POST['speed'],
-        'errorCount': request.POST['errorCount'],
-        }
+        "numberOfFiles": request.POST["filesUploaded"],
+        "bytes": request.POST["allBytesLoaded"],
+        "speed": request.POST["speed"],
+        "errorCount": request.POST["errorCount"],
+    }
     return render(request, template_name, c)
 
 
@@ -52,32 +51,36 @@ def upload(request, dataset_id):
 
     dataset = Dataset.objects.get(id=dataset_id)
 
-    logger.debug('called upload')
-    if request.method == 'POST':
-        logger.debug('got POST')
+    logger.debug("called upload")
+    if request.method == "POST":
+        logger.debug("got POST")
         if request.FILES:
 
-            uploaded_file_post = request.FILES['Filedata']
-            logger.debug('done upload')
-            datafile = DataFile(dataset=dataset,
-                                filename=uploaded_file_post.name,
-                                size=uploaded_file_post.size)
+            uploaded_file_post = request.FILES["Filedata"]
+            logger.debug("done upload")
+            datafile = DataFile(
+                dataset=dataset,
+                filename=uploaded_file_post.name,
+                size=uploaded_file_post.size,
+            )
             datafile.save(require_checksums=False)
-            logger.debug('created file')
+            logger.debug("created file")
             datafile.file_object = uploaded_file_post
-            logger.debug('saved datafile')
+            logger.debug("saved datafile")
 
             if not settings.ONLY_EXPERIMENT_ACLS:
                 # add default ACL
-                acl = DatafileACL(datafile=datafile,
-                                  user=request.user,
-                                  canRead=True,
-                                  canDownload=True,
-                                  canWrite=True,
-                                  canDelete=True,
-                                  canSensitive=True,
-                                  isOwner=True,
-                                  aclOwnershipType=DatafileACL.OWNER_OWNED)
+                acl = DatafileACL(
+                    datafile=datafile,
+                    user=request.user,
+                    canRead=True,
+                    canDownload=True,
+                    canWrite=True,
+                    canDelete=True,
+                    canSensitive=True,
+                    isOwner=True,
+                    aclOwnershipType=DatafileACL.OWNER_OWNED,
+                )
                 acl.save()
 
-    return HttpResponse('True')
+    return HttpResponse("True")

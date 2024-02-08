@@ -8,18 +8,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('tardis_portal', '0013_auto_20181002_1136'),
+        ("tardis_portal", "0013_auto_20181002_1136"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='storagebox',
-            name='max_size',
+            model_name="storagebox",
+            name="max_size",
             field=models.BigIntegerField(blank=True, null=True),
         ),
         migrations.AlterField(
-            model_name='storagebox',
-            name='status',
-            field=models.CharField(default=b'online', max_length=100),
+            model_name="storagebox",
+            name="status",
+            field=models.CharField(default=b"online", max_length=100),
         ),
     ]

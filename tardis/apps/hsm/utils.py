@@ -27,6 +27,7 @@ def _stat_os(path):
         tuple of size and block number i.e., (size, blocks)
     """
     import os
+
     stats = os.stat(path)
     return stats.st_size, stats.st_blocks
 
@@ -48,14 +49,16 @@ def _stat_subprocess(path):
     import subprocess  # nosec - Bandit B404: import_subprocess
     import sys
 
-    format_option = '-f' if sys.platform == 'darwin' else '-c'
-    format_string = '%z,%b' if sys.platform == 'darwin' else '%s,%b'
+    format_option = "-f" if sys.platform == "darwin" else "-c"
+    format_string = "%z,%b" if sys.platform == "darwin" else "%s,%b"
     with subprocess.Popen(  # nosec - Bandit B603: subprocess_without_shell_equals_true
-        ['/usr/bin/stat', format_option, format_string, path],
-        stdout=subprocess.PIPE, stderr=subprocess.STDOUT) as proc:
+        ["/usr/bin/stat", format_option, format_string, path],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+    ) as proc:
         stdout, _ = proc.communicate()
 
-    return tuple(int(stat) for stat in stdout.split(b','))
+    return tuple(int(stat) for stat in stdout.split(b","))
 
 
 def file_is_online(path):  # pylint: disable=R1710
@@ -79,4 +82,4 @@ def file_is_online(path):  # pylint: disable=R1710
         return True
     except OSError as e:
         if e.errno not in (errno.EPERM, errno.ENOTSUP, errno.ENODATA):
-            logger.error('cannot get status for file: %s' % (path,))
+            logger.error("cannot get status for file: %s" % (path,))

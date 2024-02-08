@@ -8,19 +8,19 @@ from ...provider.base import BaseProvider
 
 
 class BaseProviderTestCase(TestCase):
-
     def setUp(self):
-        class FakeRequest():
+        class FakeRequest:
             def get_host(self):
-                return 'example.test'
+                return "example.test"
+
         self.provider = BaseProvider(RequestSite(FakeRequest()))
 
     def testGetRecord(self):
-        '''
+        """
         Default behaviour should be to not handle the identifier.
-        '''
+        """
         with self.assertRaises(oaipmh.error.IdDoesNotExistError):
-            self.provider.getRecord('rif', 'experiment/1')()
+            self.provider.getRecord("rif", "experiment/1")()
 
     def testIdentify(self):
         """
@@ -34,7 +34,7 @@ class BaseProviderTestCase(TestCase):
         By default a provider cannot handle the given metadata prefix.
         """
         with self.assertRaises(oaipmh.error.CannotDisseminateFormatError):
-            self.provider.listIdentifiers('oai_dc')()
+            self.provider.listIdentifiers("oai_dc")()
 
     def testListMetadataFormats(self):
         """
@@ -47,7 +47,7 @@ class BaseProviderTestCase(TestCase):
         By default a provider cannot handle the given metadata prefix.
         """
         with self.assertRaises(oaipmh.error.CannotDisseminateFormatError):
-            self.provider.listRecords('oai_dc')()
+            self.provider.listRecords("oai_dc")()
 
     def testListSets(self):
         """
