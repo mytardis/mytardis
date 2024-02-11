@@ -6,12 +6,10 @@ Resource   ../../Resources/InputData.robot
 Resource   ../../Resources/LocalSetUp.robot
 Resource   ../../Resources/ReusableKeywords.robot
 
-Documentation    This file is to test experiement creation, adding datasets to experiment, adding files to the dataset
+Documentation    This file is to test publication creation, adding datasets to publication. Prereqisite an experiment/dataset is created and added to input file variables {SelectExperimentValue}, {SelectDatasetValue}
 
 Suite Setup         Open Home page
-#Suite Teardown      close all browsers
-
-
+Suite Teardown      close all browsers
 
 *** Test Cases ***
 
@@ -48,6 +46,7 @@ TEST CASE 12.6: Verify DOI
 
 TEST CASE 12.7: Validate publication mandatory fields
 
+    Sleep    6
     Create Publication
     Validate mandatory fields on Publication
 

@@ -3,11 +3,10 @@
 Library    SeleniumLibrary
 
 Resource   ../../Resources/InputData.robot
-Resource   ../../Resources/SetUp.robot
+Resource   ../../Resources/LocalSetUp.robot
 Resource   ../../Resources/Actions.robot
 Resource   ../../Resources/ReusableKeywords.robot
 
-Documentation    This file is to test user capabilities to manage files
 
 Suite Setup         Open Home page
 Suite Teardown      close all browsers
@@ -16,7 +15,7 @@ Suite Teardown      close all browsers
 
 TEST CASE 3.1: Login as user
 
-    Login       joe     12345
+    Login       nouran.khattab@monash.edu     test1234
 
 TEST CASE 3.2: Open Dataset page
 

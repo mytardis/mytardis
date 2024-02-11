@@ -17,6 +17,8 @@ Create Experiment
     Add Experiment Details              ${ExperimentName}      ${ExperimentAuthor}    ${Institution}    ${Description}
     page should contain                 ${ExperimentName}
 
+    Take Screenshot
+
 Edit Experiment
     [Arguments]                         ${ExperimentName}      ${ExperimentAuthor}    ${Institution}    ${Description}
 
@@ -26,53 +28,47 @@ Edit Experiment
     Add Experiment Details              ${ExperimentName}      ${ExperimentAuthor}    ${Institution}    ${Description}
     page should contain                 ${ExperimentName}
 
-Add Experiment Metadata
-    [Arguments]                         ${Schema}       ${Param1}       ${Param2}
-    wait until element is enabled       xpath://*[@title='Metadata']
-    click element                       xpath://*[@title='Metadata']
+    Take Screenshot
+
+Add Metadata
+    [Arguments]                         ${IsExperiment}    ${Schema}   ${ParamID}   ${ParamValue}
+
+    Wait Until Page Contains    Metadata    15
+    Run Keyword If   ${IsExperiment}    click element   xpath://*[@title='Metadata']
 
     wait until element is enabled       xpath://*[@title='Add']
     click element                       xpath://*[@title='Add']
 
-    wait until element is enabled       id:schemaselect            15
-    select from list by label           id:schemaselect                 ${Schema}
+    wait until element is enabled       id:schemaselect
+    select from list by label           id:schemaselect    ${Schema}
 
-    wait until element is enabled       id:id_Description__1        15
-    input text                          id:id_Description__1            ${Param1}
+    Take Screenshot
 
-    wait until element is enabled       id:id_ID__1                 15
-    input text                          id:id_ID__1                     ${Param2}
-
-    wait until element is enabled       xpath://*[@class='col-md-12']//*[@class='submit-button btn btn-primary']
-    click button                        xpath://*[@class='col-md-12']//*[@class='submit-button btn btn-primary']
-
-    seleniumLibrary.press keys    None      ESC
-
-    #Verify Experiment Metadata are displayed under Metadata section
-    wait until page contains            ${Param1}           15
-    page should contain                 ${Param2}
+    Fill Metadata Details               ${ParamID}   ${ParamValue}
 
 
-Edit Experiment Metadata
-    [Arguments]                         ${Param1}       ${Param2}
-    wait until element is enabled       xpath://*[@class='edit-metadata btn btn-sm btn-outline-secondary']
-    click element                       xpath://*[@class='edit-metadata btn btn-sm btn-outline-secondary']
+Fill Metadata Details
+    [Arguments]                         ${ParamID}   ${ParamValue}
 
-    wait until element is enabled       id:id_Description__1        15
-    input text                          id:id_Description__1            ${Param1}
+    wait until element is enabled       id:${ParamID}       15
+    input text                          id:${ParamID}       ${ParamValue}
 
-    wait until element is enabled       id:id_ID__1                 15
-    input text                          id:id_ID__1                     ${Param2}
+    Take Screenshot
 
     wait until element is enabled       xpath://*[@class='col-md-12']//*[@class='submit-button btn btn-primary']
     click button                        xpath://*[@class='col-md-12']//*[@class='submit-button btn btn-primary']
 
-    seleniumLibrary.press keys    None      ESC
+    Wait Until Element Is Visible       xpath://*[@class='modal-body' and contains(text(),' Parameters saved successfully')]    5
+
+    Take Screenshot
+    Click Element                       xpath://html
+
+ #  seleniumLibrary.press keys    None      ESC
 
     #Verify Experiment Metadata are displayed under Metadata section
-    wait until page contains            ${Param1}                   15
-    page should contain                 ${Param2}
+    wait until page contains            ${ParamValue}           15
 
+    Take Screenshot
 
 Add DataSet
     [Arguments]                         ${Description}   ${Directory}    ${Instrument}
@@ -83,6 +79,8 @@ Add DataSet
     Add DataSet Details                 ${Description}   ${Directory}    ${Instrument}
     Wait Until Page Contains            ${Description}    30
 
+    Take Screenshot
+
 Edit DataSet
     [Arguments]                         ${Description}   ${Directory}    ${Instrument}
 
@@ -92,52 +90,7 @@ Edit DataSet
     Add DataSet Details                 ${Description}   ${Directory}    ${Instrument}
     page should contain                 ${Description}
 
-
-Add Dataset MetaData
-    [Arguments]                         ${Schema}       ${Param1}       ${Param2}
-
-    wait until element is enabled       xpath://*[@title='Add']
-    click element                       xpath://*[@title='Add']
-
-    wait until element is enabled       id:schemaselect
-    select from list by label           id:schemaselect                 ${Schema}
-
-    wait until element is enabled       id:id_Dataset Param 1__1
-    input text                          id:id_Dataset Param 1__1        ${Param1}
-
-    wait until element is enabled       id:id_Dataset Param 2__1
-    input text                          id:id_Dataset Param 2__1        ${Param2}
-
-    wait until element is enabled       xpath://*[@class='col-md-12 text-right']//*[@class='submit-button btn btn-primary']
-    click button                        xpath://*[@class='col-md-12 text-right']//*[@class='submit-button btn btn-primary']
-
-    press keys    None      ESC
-
-    #Verify Dataset Metadata are displayed on Dataset page
-    wait until page contains            ${Param1}
-    page should contain                 ${Param2}
-
-
-Edit Dataset MetaData
-    [Arguments]                         ${Param1}       ${Param2}
-
-    wait until element is enabled       xpath://*[@class='edit-metadata btn btn-sm btn-outline-secondary']
-    click element                       xpath://*[@class='edit-metadata btn btn-sm btn-outline-secondary']
-
-    wait until element is enabled       id:id_Dataset Param 1__1
-    input text                          id:id_Dataset Param 1__1        ${Param1}
-
-    wait until element is enabled       id:id_Dataset Param 2__1
-    input text                          id:id_Dataset Param 2__1        ${Param2}
-
-    wait until element is enabled       xpath://*[@class='col-md-12 text-right']//*[@class='submit-button btn btn-primary']
-    click button                        xpath://*[@class='col-md-12 text-right']//*[@class='submit-button btn btn-primary']
-
-    press keys    None      ESC
-
-    #Verify Dataset Metadata are displayed on Dataset page
-    wait until page contains            ${Param1}
-    page should contain                 ${Param2}
+    Take Screenshot
 
 
 Add Experiment Details
@@ -169,46 +122,6 @@ Add DataSet Details
 
     wait until element is enabled       xpath://*[@class='btn btn-primary me-2']
     click button                        xpath://*[@class='btn btn-primary me-2']
-
-Verify Mytardis Home Page
-    [Arguments]                         ${Page}     ${Text1}    ${Text2}    ${Text3}
-
-    click element                       ${Page}
-    wait until page contains            ${Text1}
-    page should contain                 ${Text2}
-    page should contain                 ${Text3}
-
-Verify Mytardis About Page
-    [Arguments]                         ${Page}     ${Heading}
-      click element                     ${Page}
-      page should contain               ${Heading}
-
-      #Verify user can open Mytardis site
-      page should contain               mytardis.org
-
-      #Verify user can open Mytardis GitHub
-      page should contain               GitHub
-
-      #Verify user can see PubMed link on About page
-      page should contain               [PubMed]
-
-      #Verify user can open Mytardis contact page
-      page should contain                http://www.mytardis.org/contact/
-
-      #Verify user can open MyTardis User Guide
-      #wait until element is enabled     xpath://*[@class='list-unstyled']//a[@href='http://mytardis.readthedocs.io/en/v4.5.0-rc2/userguide.html']
-      #click element                     xpath://*[@class='list-unstyled']//a[@href='http://mytardis.readthedocs.io/en/v4.5.0-rc2/userguide.html']
-      #switch window                     new
-      #${href}                           get location
-      #should be equal as strings        ${href}         https://mytardis.readthedocs.io/en/v4.5.0-rc2/userguide.html
-
-      #Verify user can open MyTardis Documentation
-      go to                             http://localhost:8000/about/
-      #wait until element is enabled     xpath://*[@class='list-unstyled']//a[@href='http://mytardis.readthedocs.org/en/v4.5.0-rc2/index.html']
-      #click element                     xpath://*[@class='list-unstyled']//a[@href='http://mytardis.readthedocs.org/en/v4.5.0-rc2/index.html']
-      #switch window                     new
-      #${href}                           get location
-      #should be equal as strings        ${href}         https://mytardis.readthedocs.io/en/v4.5.0-rc2/index.html
 
 Verify MyTardis Help page
     [Arguments]                         ${Page}

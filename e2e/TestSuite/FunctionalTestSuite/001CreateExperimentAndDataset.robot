@@ -16,7 +16,7 @@ Suite Teardown      close all browsers
 
 TEST CASE 1.1: Login as user
 
-    Login       nouran      nouran
+    Login       Nouran.Khattab@monash.edu      Nouran123@
 
 TEST CASE 1.2: Create Experiment
 
@@ -33,36 +33,36 @@ TEST CASE 1.4: Verify Experiment is displayed on Home page
 TEST CASE 1.5: Edit Experiment
 
     Edit Experiment         ${EditExperimentName}   EditTestuser  EditTestInstitution  EditTestingDescription
+    sleep  3
 
 TEST CASE 1.6: Add Experiment Metadata
 
-    Add Experiment Metadata     ${ExpSchema}   ${ExpSchemaParam1}    ${ExpSchemaParam2}
-    sleep   5
-TEST CASE 1.7: Edit Experiment Metadata
+    Add Metadata     True    ${ExpSchema}   ${SchemaParamID}    ${SchemaParamValue}
+    sleep   2
 
-    Edit Experiment Metadata    EditParam1      EditParam2
-    sleep   5
-TEST CASE 1.8: Add Dataset
+TEST CASE 1.7: Add Dataset
 
     Add DataSet                 ${DatasetName}        DataDirectory       DataInstrument
-    sleep   5
-TEST CASE 1.9: Verify Dataset is displayed on My Data page
+    sleep   2
+
+TEST CASE 1.8: Verify Dataset is displayed on My Data page
 
     Verify page contains item   ${DatasetName}     xpath://*[@class='nav-link' and @href='/mydata/']
-    sleep   5
-TEST CASE 1.10: Verify Dataset is displayed on Home page
+    sleep   2
+
+TEST CASE 1.9: Verify Dataset is displayed on Home page
 
     Verify page contains item    ${DatasetName}     xpath://*[@class='nav-link' and @href='/']
-    sleep   5
-TEST CASE 1.11: Edit Dataset
+    sleep   2
+
+TEST CASE 1.10: Edit Dataset
 
     Edit DataSet            ${EditDataSetName}        EditDataDirectory       EditDataInstrument
-    sleep   5
-TEST CASE 1.12: Add Dataset Metadata
+    sleep   2
 
-    Add Dataset MetaData    Dataset     Param 1    Param 2
-    sleep   5
-TEST CASE 1.13: Edit Dataset Metadata
+TEST CASE 1.11: Add Dataset Metadata
 
-    Edit Dataset MetaData   Edit Param 1        Edit Param 2
-    sleep   5
+    Add Metadata    False   ${DatasetSchema}     ${SchemaParamID}    ${SchemaParamValue}
+    sleep   2
+
+

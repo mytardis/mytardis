@@ -2,18 +2,19 @@
 
 *** Variables ***
 
-${ExperimentName}           Demo
-${EditExperimentName}       EditExperiment@#$%
+${ExperimentName}           Auto-Test7
+${EditExperimentName}       EditExperimentTest
 ${ExpSchema}                ROI
-${ExpSchemaParam1}          Param 1
-${ExpSchemaParam2}          Param 2
+${DatasetSchema}            Dataset
+${SchemaParamID}            id_Description__1
+${SchemaParamValue}         Test schema parameter
 ${DataSetName}              DemoDataset
-${EditDataSetName}          EditDataset~!@#
+${EditDataSetName}          EditDatasetTest
 ${AdminUser}                joe
 ${AdminPSWD}                12345
-${User1}                    john
+${User1}                    John
 ${User1PSWD}                12345
-${User2}                    ann
+${User2}                    Jane
 ${User2PSWD}                12345
 ${User3}                    mona
 ${User3PSWD}                12345

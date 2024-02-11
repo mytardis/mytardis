@@ -1,6 +1,7 @@
 *** Settings ***
-Library    SeleniumLibrary
-Library    RPA.Desktop
+Library        SeleniumLibrary
+Library        RPA.Desktop
+Resource       LocalSetUp.robot
 
 *** Keywords ***
 
@@ -21,14 +22,14 @@ Login
 
 Logout
 
-     wait until element is enabled      xpath://*[@href='#user-menu']
-     click element                      xpath://*[@href='#user-menu']
-     wait until element is enabled      xpath://*[@class='dropdown-item' and @href='/logout/']
+     wait until element is enabled      id:userMenu     15
+     click element                      id:userMenu
+     wait until element is enabled      xpath://*[@class='dropdown-item' and @href='/logout/']      15
      click element                      xpath://*[@class='dropdown-item' and @href='/logout/']
 
 Open page
     [Arguments]                         ${Page}
-     go to                              http://localhost:8000
+     go to                              ${Host}
      wait until element is enabled      ${Page}
      click element                      ${Page}
 
@@ -40,8 +41,8 @@ Verify page contains item
     click element                       link:${Item}
 
 Verify page contains text
-     [Arguments]                        ${Page}         ${Text}
-     go to                              http://localhost:8000
+     [Arguments]                        ${BaseURL}      ${Page}         ${Text}
+     go to                              ${BaseURL}
      wait until element is enabled      ${Page}
      click element                      ${Page}
      page should contain                ${Text}
@@ -51,16 +52,19 @@ Verify page does Not contain item
      Run keyword if                     '${item}'=='text'         page should not contain             ${Text}
      Run keyword if                     '${item}'=='button'       page should not contain button      ${Text}
      Run keyword if                     '${item}'=='element'      page should not contain element     ${Text}
+
 #--------------------------------------------------------------------------------------------------------------------------------------------------------
 #Change Experiment User Sharing settings
 #--------------------------------------------------------------------------------------------------------------------------------------------------------
 
 Add new user to Sharing
     [Arguments]                         ${Username}         ${Permissions}
-    wait until element is enabled       ${Sharing}
+
+    wait until element is enabled       ${Sharing}      15
     click element                       ${Sharing}
 
-    wait until element is enabled       ${ChngUserSharing}
+    Wait Until Element Is Enabled       ${ChngUserSharing}      15
+    Scroll Element Into View            ${ChngUserSharing}
     click element                       ${ChngUserSharing}
 
     wait until element is enabled       ${User}
@@ -72,7 +76,10 @@ Add new user to Sharing
     wait until element is enabled       ${AddUser}
     click element                       ${AddUser}
 
-    press keys    None      ESC
+    Take Screenshot
+
+    Set Focus To Element                ${User}
+    SeleniumLibrary.Press Keys    None      ESC
 
 Verify user permissions are displayed
     [Arguments]                         ${Username}             ${Permissions}
@@ -81,10 +88,11 @@ Verify user permissions are displayed
 
 Add new group to Sharing
     [Arguments]                         ${GroupName}         ${Permissions}
-    wait until element is enabled       ${Sharing}
+    wait until element is enabled       ${Sharing}      15
     click element                       ${Sharing}
 
-    wait until element is enabled       ${ChngGroupSharing}
+    sleep   5
+    wait until element is enabled       ${ChngGroupSharing}     15
     click element                       ${ChngGroupSharing}
 
     wait until element is enabled       ${Group}
@@ -96,7 +104,10 @@ Add new group to Sharing
     wait until element is enabled       ${AddGroupbtn}
     click button                        ${AddGroupbtn}
 
-    press keys    None      ESC
+    Take Screenshot
+
+    Set Focus To Element                ${User}
+    SeleniumLibrary.Press Keys    None      ESC
 
 #-------------------------------------------------------------------------------------------------------------------------------------
 #Change Experiment Public Access settings
@@ -109,28 +120,32 @@ Change Experiment Public Access
 
     wait until element is enabled       ${ChngPublicAccess}
     click button                        ${ChngPublicAccess}
-
+    
+    Sleep    5
     #The purpose of these 3 lines is to overcome a bug in the system that Public has to be selected to refresh the License list
     wait until element is enabled       ${PublicAccess}
     select from list by label           ${PublicAccess}           Public
     click button                        xpath://*[@class='use-button btn btn-info']
 
-
-    wait until element is enabled       ${PublicAccess}
-    select from list by label           ${PublicAccess}           ${AccessLevel}
-
-    click button                        xpath://*[@class='use-button btn btn-info']
+   # Sleep    5
+   # Run Keyword Unless    '${AccessLevel}'=='Public'        select from list by label   ${PublicAccess}           ${AccessLevel}
+   # Run Keyword Unless    '${AccessLevel}'=='Public'        click button     xpath://*[@class='use-button btn btn-info']
 
 
+    Sleep    5
     wait until element is enabled       id:publishing-consent
     click element                       id:publishing-consent
 
+    Sleep    5
+    wait until element is enabled       xpath://*[@class='submit-button btn btn-primary me-2' and @type='submit']
+    click button                        xpath://*[@class='submit-button btn btn-primary me-2' and @type='submit']
 
-    wait until element is enabled       xpath://*[@class='submit-button btn btn-primary' and @type='submit']
-    click button                        xpath://*[@class='submit-button btn btn-primary' and @type='submit']
+    Sleep    20
+    Take Screenshot
 
-    sleep   10
-    press keys    None      ESC
+    Set Focus To Element                ${PublicAccess}
+    SeleniumLibrary.Press Keys    None      ESC
+
 
 #-------------------------------------------------------------------------------------------------------------------------------------
 #File Handling
