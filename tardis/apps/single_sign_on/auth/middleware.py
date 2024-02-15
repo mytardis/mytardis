@@ -1,4 +1,4 @@
-"""Shibboleth Header Authentication Module
+"""Single Sign On Header Authentication Module
 
 .. moduleauthor:: Chris Seal <c.seal@auckland.ac.nz>
 
