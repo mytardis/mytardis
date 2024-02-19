@@ -1,3 +1,4 @@
+# pylint: disable=W1114
 from django.db import transaction
 
 from tardis.apps.openid_migration.migration import (
