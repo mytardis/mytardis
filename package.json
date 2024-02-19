@@ -31,7 +31,7 @@
     "font-awesome": "^4.7.0",
     "he": "^1.2.0",
     "glob": "^10.3.10",
-    "html-webpack-plugin": "^5.5.3",
+    "html-webpack-plugin": "^5.6.0",
     "imports-loader": "^4.0.1",
     "jquery": "^3.7.1",
     "jquery-ui": "^1.13.2",
