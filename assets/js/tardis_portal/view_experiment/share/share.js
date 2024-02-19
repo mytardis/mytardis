@@ -119,7 +119,7 @@ const userSharingModalLoaded = function() {
         }
 
         permissions = "/?authMethod=" + authMethod + "&canRead=" + canRead +
-                      "&canDownload=" + canDownload +"&canWrite=" + canWrite +
+                      "&canDownload=" + canDownload + "&canWrite=" + canWrite +
                       "&canDelete=" + canDelete + "&canSensitive=" + canSensitive +
                       "&isOwner=" + isOwner;
         var action = "/experiment/control_panel/" + $("#experiment-id").val() +

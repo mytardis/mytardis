@@ -1,5 +1,5 @@
 import React, { Fragment, useState } from 'react';
-import fileSize from 'filesize';
+import { filesize } from 'filesize';
 import Badge from 'react-bootstrap/Badge';
 import PropTypes from 'prop-types';
 
@@ -9,7 +9,7 @@ const DatasetSizeBadge = ({ datasetData }) => {
 
   React.useEffect(() => {
     let size = datasetData.dataset_size;
-    size = fileSize(size, { base: 2 });
+    size = filesize(size, { base: 2 });
     setDatasetSize(size);
     setTitle('Dataset size is');
   });
