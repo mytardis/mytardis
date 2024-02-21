@@ -8,7 +8,7 @@ readme = "README.rst"
 
 [tool.poetry.dependencies]
 python = "^3.10"
-django = "^4.2.2"
+django = "^4.2.10"
 wand = "^0.6.11"
 bleach = "^6.0.0"
 celery = "^5.3.1"
@@ -28,7 +28,7 @@ html5lib = "^1.1"
 isodate = "^0.6.1"
 pyjwt = "^2.7.0"
 lxml = "^4.9.2"
-pillow = "10.1.0"
+pillow = "10.2.0"
 pyoai = "^2.5.0"
 pystache = "^0.6.0"
 python-dateutil = "^2.8.2"
@@ -88,7 +88,7 @@ boto3 = "^1.26.155"
 optional=true
 
 [tool.poetry.group.sftp.dependencies]
-paramiko = "^3.2.0"
+paramiko = "^3.4.0"
 
 [tool.isort]
 profile = "black"
