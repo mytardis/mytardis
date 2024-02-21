@@ -732,6 +732,42 @@ class GroupResource(ModelResource):
 
 class UserResource(ModelResource):
     groups = fields.ManyToManyField(GroupResource, "groups", null=True, full=True)
+    identifiers = fields.ListField(null=True, blank=True)
+
+    def build_filters(self, filters=None, ignore_bad_filters=False):
+        if filters is None:
+            filters = {}
+        orm_filters = super().build_filters(filters)
+
+        if "tardis.apps.identifiers" in settings.INSTALLED_APPS and (
+            "user" in settings.OBJECTS_WITH_IDENTIFIERS and "identifier" in filters
+        ):
+            query = filters["identifier"]
+            qset = Q(identifiers__identifier__iexact=query)
+            orm_filters.update({"identifier": qset})
+        return orm_filters
+
+    def apply_filters(self, request, applicable_filters):
+        if "tardis.apps.identifiers" in settings.INSTALLED_APPS:
+            if (
+                "user" in settings.OBJECTS_WITH_IDENTIFIERS
+                and "identifier" in applicable_filters
+            ):
+                custom = applicable_filters.pop("identifier")
+            else:
+                custom = None
+        else:
+            custom = None
+
+        # End of custom filter code
+
+        # Custom filter for identifiers module based on code example from
+        # https://stackoverflow.com/questions/10021749/ \
+        # django-tastypie-advanced-filtering-how-to-do-complex-lookups-with-q-objects
+
+        semi_filtered = super().apply_filters(request, applicable_filters)
+
+        return semi_filtered.filter(custom) if custom else semi_filtered
 
     class Meta:
         object_class = User
@@ -1799,6 +1835,7 @@ class DataFileResource(MyTardisModelResource):
         null=True,
     )
     temp_url = None
+    identifiers = fields.ListField(null=True, blank=True)
     # tags = fields.ListField()
 
     # def dehydrate_tags(self, bundle):
