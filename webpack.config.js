@@ -13,24 +13,24 @@ module.exports = {
     context: __dirname,
     entry: {
         main: "./assets/js/index.js",
-        tardis_portal: glob.sync("./assets/js/tardis_portal/*.js"),
-        tardis_portal_add_or_edit_dataset: glob.sync("./assets/js/tardis_portal/add_or_edit_dataset/*.js"),
-        tardis_portal_create_experiment: glob.sync("./assets/js/tardis_portal/create_experiment/*.js"),
-        tardis_portal_push_to: glob.sync("./assets/js/tardis_portal/push-to.js"),
-        tardis_portal_view_experiment_init: glob.sync("./assets/js/tardis_portal/view_experiment/init/init.js"),
-        tardis_portal_view_experiment_share: glob.sync("./assets/js/tardis_portal/view_experiment/share/share.js"),
-        tardis_portal_view_experiment: glob.sync("./assets/js/tardis_portal/view_experiment/*.js"),
-        tardis_portal_view_dataset: glob.sync("./assets/js/tardis_portal/view_dataset/**/*.js"),
-        tardis_portal_manage_group_members: glob.sync("./assets/js/tardis_portal/manage_group_members/**/*.js"),
-        tardis_portal_index: glob.sync("./assets/js/tardis_portal/index/**/*.js"),
-        tardis_portal_my_data: glob.sync("./assets/js/tardis_portal/my_data/**/*.js"),
-        tardis_portal_shared: glob.sync("./assets/js/tardis_portal/shared/**/*.js"),
-        tardis_portal_public_data: glob.sync("./assets/js/tardis_portal/public_data/**/*.js"),
+        tardis_portal: glob.sync("./assets/js/tardis_portal/*.js",  {dotRelative: true}),
+        tardis_portal_add_or_edit_dataset: glob.sync("./assets/js/tardis_portal/add_or_edit_dataset/*.js",  {dotRelative: true}),
+        tardis_portal_create_experiment: glob.sync("./assets/js/tardis_portal/create_experiment/*.js",  {dotRelative: true}),
+        tardis_portal_push_to: glob.sync("./assets/js/tardis_portal/push-to.js", {dotRelative: true}),
+        tardis_portal_view_experiment_init: glob.sync("./assets/js/tardis_portal/view_experiment/init/init.js", {dotRelative: true}),
+        tardis_portal_view_experiment_share: glob.sync("./assets/js/tardis_portal/view_experiment/share/share.js", {dotRelative: true}),
+        tardis_portal_view_experiment: glob.sync("./assets/js/tardis_portal/view_experiment/*.js", {dotRelative: true}),
+        tardis_portal_view_dataset: glob.sync("./assets/js/tardis_portal/view_dataset/**/*.js", {dotRelative: true}),
+        tardis_portal_manage_group_members: glob.sync("./assets/js/tardis_portal/manage_group_members/**/*.js", {dotRelative: true}),
+        tardis_portal_index: glob.sync("./assets/js/tardis_portal/index/**/*.js", {dotRelative: true}),
+        tardis_portal_my_data: glob.sync("./assets/js/tardis_portal/my_data/**/*.js", {dotRelative: true}),
+        tardis_portal_shared: glob.sync("./assets/js/tardis_portal/shared/**/*.js", {dotRelative: true}),
+        tardis_portal_public_data: glob.sync("./assets/js/tardis_portal/public_data/**/*.js", {dotRelative: true}),
         tardis_portal_facility_view: "./assets/js/tardis_portal/facility_view/index.js",
         tardis_portal_auth_methods: "./assets/js/tardis_portal/auth_methods/auth_methods.js",
         related_info_index: "./assets/js/apps/related_info/index.js",
         related_info_index_ro: "./assets/js/apps/related_info/index_ro.js",
-        lib: glob.sync("./assets/js/lib/**/*.js"),
+        lib: glob.sync("./assets/js/lib/**/*.js", {dotRelative: true}),
         search_app : "./assets/js/apps/search/index.jsx",
         tree_view : "./assets/js/apps/tree_view/index.jsx",
         index_page_badges: "./assets/js/apps/badges/components/IndexPageBadges.jsx",
@@ -39,16 +39,16 @@ module.exports = {
         dataset_view_badges: "./assets/js/apps/badges/components/DatasetViewPageBadges.jsx",
         dataset_tiles: "./assets/js/apps/tiles/index.jsx",
         choose_rights: "./assets/js/apps/choose_rights/index.jsx",
-        tardis_portal_create_project: glob.sync("./assets/js/apps/projects/create_project/*.js"),
+        tardis_portal_create_project: glob.sync("./assets/js/apps/projects/create_project/*.js", {dotRelative: true}),
         view_project: "./assets/js/apps/projects/view/init.js",
         project_app : "./assets/js/apps/projects/view/index.jsx",
-        my_projects: glob.sync("./assets/js/apps/projects/my_projects/**/*.js"),
+        my_projects: glob.sync("./assets/js/apps/projects/my_projects/**/*.js", {dotRelative: true}),
         project_badges: "./assets/js/apps/badges/components/ProjectBadges.jsx",
 
     },
     output: {
         path: path.resolve("./assets/bundles/"),
-        filename: "[name]-[hash].js"
+        filename: "[name]-[contenthash].js"
     },
     devtool: 'source-map',
     optimization: {
@@ -64,7 +64,14 @@ module.exports = {
             maxAsyncRequests: 5,
             maxInitialRequests: 3,
             automaticNameDelimiter: "~",
-            name: true,
+            name(module, chunks, cacheGroupKey) {
+                const moduleFileName = module
+                  .identifier()
+                  .split('/')
+                  .reduceRight((item) => item);
+                const allChunksNames = chunks.map((item) => item.name).join('~');
+                return `${cacheGroupKey}-${allChunksNames}-${moduleFileName}`;
+              },
             cacheGroups: {
                 vendors: {
                     test: /[\\/]node_modules[\\/]/,
@@ -87,7 +94,7 @@ module.exports = {
             cleanOnceBeforeBuildPatterns: ["assets/bundles/*"]
         }),
         new MiniCssExtractPlugin({
-            filename: "[name]-[hash].styles.css",
+            filename: "[name]-[contenthash].styles.css",
         }),
         new webpack.ProvidePlugin({
             // Add polyfill for chunks that use the
@@ -111,8 +118,10 @@ module.exports = {
             },
             {
                 test: /\.(woff|woff2|)(\?v=[0-9]\.[0-9]\.[0-9])?$/,
-                loader: "url-loader?limit=10000&mimetype=application/font-woff",
+                loader: "url-loader",
                 options: {
+                    limit: 10000,
+                    mimetype:"application/font-woff",
                     name: "[name].[ext]",
                     outputPath: "static/bundles/",
                     publicPath: "../static/bundles/"
