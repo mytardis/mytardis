@@ -40,20 +40,27 @@ class SSOUserBackend(RemoteUserBackend, AuthProvider):
         request: HttpRequest,
         user: User,
     ) -> User:  # type: ignore
-        logger.debug(f"Configure user called with user: {user}")
         try:
             email = request.META[settings.REMOTE_AUTH_EMAIL_HEADER] or None
         except KeyError:
             email = None
         first_name = request.META[settings.REMOTE_AUTH_FIRST_NAME_HEADER]
         surname = request.META[settings.REMOTE_AUTH_SURNAME_HEADER]
-        user.first_name = first_name
-        user.last_name = surname
-        if email:
+        updated_flag = False
+        if user.first_name != first_name:
+            user.first_name = first_name
+            updated_flag = True
+        if user.last_name != surname:
+            user.last_name = surname
+            updated_flag = True
+        if email and user.email != email:
             user.email = email
-        user.save()
-        user.userprofile.isDjangoAccount = False  # type: ignore
-        user.userprofile.save()  # type: ignore
+            updated_flag = True
+        if updated_flag:
+            user.save()
+        if user.userprofile.isDjangoAccount: #type: ignore
+            user.userprofile.isDjangoAccount = False  # type: ignore
+            user.userprofile.save()  # type: ignore
         try:
             user_auth = UserAuthentication.objects.get(
                 userProfile_username=user,
@@ -62,9 +69,9 @@ class SSOUserBackend(RemoteUserBackend, AuthProvider):
             user_auth = UserAuthentication(
                 userProfile=user.userprofile,  # type: ignore
                 username=user.username,
-                authMethod=auth_key,
+                authenticationMethod=auth_key,
             )
-        if user_auth.authMethod != auth_key:
-            user_auth.authMethod = auth_key
-        user_auth.save()
+        if user_auth.authenticationMethod != auth_key:
+            user_auth.authenticationMethod = auth_key
+            user_auth.save()
         return super().configure_user(request, user)

@@ -3,4 +3,8 @@ OBJECTS_WITH_IDENTIFIERS = [
     "experiment",
     "facility",
     "instrument",
+    "datafile",
+    "project",
+    "user",
+    "institution",
 ]
