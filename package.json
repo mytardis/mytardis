@@ -97,7 +97,7 @@
     "identity-obj-proxy": "^3.0.0",
     "jest": "^26.4.2",
     "jest-fetch-mock": "^3.0.3",
-    "jquery-mockjax": "^2.6.0",
+    "jquery-mockjax": "^2.6.1",
     "js-yaml": "^4.1.0",
     "jscpd": "^3.5.10",
     "qunit": "^2.20.0",
