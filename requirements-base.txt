@@ -26,7 +26,7 @@ lxml==4.6.3
 paramiko==2.7.2
 pillow==8.3.2
 pyoai==2.5.0
-python-dateutil==2.8.2
+python-dateutil==2.9.0
 # python-magic
 git+https://github.com/mytardis/python-magic.git#egg=python-magic
 pytz==2021.1
