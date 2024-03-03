@@ -1872,7 +1872,7 @@ class DataFileResource(MyTardisModelResource):
             custom = applicable_filters.pop("identifier")
         semi_filtered = super().apply_filters(request, applicable_filters)
         return semi_filtered.filter(custom) if custom else semi_filtered
-    
+
     class Meta(MyTardisModelResource.Meta):
         object_class = DataFile
         queryset = DataFile.objects.all()
@@ -1998,7 +1998,7 @@ class DataFileResource(MyTardisModelResource):
         ):
             identifiers = bundle.data.pop("identifiers")
         return (bundle, identifiers)
-    
+
     def __create_identifiers(
         self,
         bundle: Bundle,

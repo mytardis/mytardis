@@ -46,7 +46,7 @@ class SSOUserBackend(RemoteUserBackend, AuthProvider):
         object with the given username is not found in the database.
         """
         if not remote_user:
-            return
+            return None
         user = None
         username = self.clean_username(remote_user)
 

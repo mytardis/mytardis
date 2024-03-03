@@ -32,7 +32,6 @@ from tastypie.utils import trailing_slash
 
 # Data classification app
 from tardis.apps.dataclassification.models import DATA_CLASSIFICATION_SENSITIVE
-from tardis.apps.identifiers.enumerators import IdentifierObjects
 
 # Identifiers app
 from tardis.apps.identifiers.models import InstitutionID, ProjectID
