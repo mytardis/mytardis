@@ -48,10 +48,12 @@ from uritemplate import URITemplate
 
 from tardis.analytics.tracker import IteratorTracker
 from tardis.apps.identifiers.models import (
+    DatafileID,
     DatasetID,
     ExperimentID,
     FacilityID,
     InstrumentID,
+    UserPID,
 )
 
 from . import tasks
@@ -782,6 +784,7 @@ class UserResource(ModelResource):
             "email": ("iexact",),
         }
 
+
     def dehydrate(self, bundle):
         """
         use cases::
@@ -814,6 +817,16 @@ class UserResource(ModelResource):
         # add the database id for convenience
         bundle.data["id"] = queried_user.id
 
+        if (
+            "tardis.apps.identifiers" in settings.INSTALLED_APPS
+            and "user" in settings.OBJECTS_WITH_IDENTIFIERS
+        ):
+            bundle.data["identifiers"] = list(
+                map(str, UserPID.objects.filter(user=bundle.obj))
+            )
+            if bundle.data["identifiers"] == []:
+                bundle.data.pop("identifiers")
+
         # allow the user to find out their username and email
         # allow facility managers to query other users' username and email
         if authenticated and (same_user or facilities_managed_by(authuser).count() > 0):
@@ -842,7 +855,6 @@ class FacilityResource(MyTardisModelResource):
     manager_group = fields.ForeignKey(
         GroupResource, "manager_group", null=True, full=True
     )
-    facilityid = None
     identifiers = fields.ListField(null=True, blank=True)
 
     # Custom filter for identifiers module based on code example from
@@ -895,11 +907,6 @@ class FacilityResource(MyTardisModelResource):
             "manager_group": ALL_WITH_RELATIONS,
             "name": ("exact",),
         }
-        if (
-            "tardis.apps.identifiers" in settings.INSTALLED_APPS
-            and "facility" in settings.OBJECTS_WITH_IDENTIFIERS
-        ):
-            filtering.update({"facilityid": ALL_WITH_RELATIONS})
         ordering = ["id", "name"]
         always_return_data = True
 
@@ -1212,7 +1219,6 @@ class ExperimentResource(MyTardisModelResource):
                     canDownload = entry.get("can_download", False)
                     canSensitive = entry.get("can_sensitive", False)
                     acl_user = get_or_create_user(username)
-                    username, isOwner, canDownload, canSensitive = entry
                     acl_user = User.objects.get(username=username)
                     if acl_user:
                         ExperimentACL.objects.create(
@@ -1845,7 +1851,29 @@ class DataFileResource(MyTardisModelResource):
     #    tags = bundle.data.get("tags", [])
     #    bundle.obj.tags.set(*tags)
     #    return super().save_m2m(bundle)
+    def build_filters(self, filters=None, ignore_bad_filters=False):
+        if filters is None:
+            filters = {}
+        orm_filters = super().build_filters(filters)
 
+        if "tardis.apps.identifiers" in settings.INSTALLED_APPS and (
+            "datafile" in settings.OBJECTS_WITH_IDENTIFIERS and "identifier" in filters
+        ):
+            query = filters["identifier"]
+            qset = Q(identifiers__identifier__iexact=query)
+            orm_filters.update({"identifier": qset})
+        return orm_filters
+
+    def apply_filters(self, request, applicable_filters):
+        custom = None
+        if "tardis.apps.identifiers" in settings.INSTALLED_APPS and (
+            "datafile" in settings.OBJECTS_WITH_IDENTIFIERS
+            and "identifier" in applicable_filters
+        ):
+            custom = applicable_filters.pop("identifier")
+        semi_filtered = super().apply_filters(request, applicable_filters)
+        return semi_filtered.filter(custom) if custom else semi_filtered
+    
     class Meta(MyTardisModelResource.Meta):
         object_class = DataFile
         queryset = DataFile.objects.all()
@@ -1949,6 +1977,47 @@ class DataFileResource(MyTardisModelResource):
             )
         return HttpResponse()
 
+    def __clean_bundle_of_identifiers(
+        self,
+        bundle: Bundle,
+    ) -> Tuple[Bundle, Optional[List[str]]]:
+        """If the bundle has identifiers in it, clean these out prior to
+        creating the datafile.
+
+        Args:
+            bundle (Bundle): The bundle to be cleaned.
+
+        Returns:
+            Bundle: The cleaned bundle
+            list(str): A list of the identifiers cleaned from the bundle
+        """
+        identifiers = None
+        if (
+            "tardis.apps.identifiers" in settings.INSTALLED_APPS
+            and "datafile" in settings.OBJECTS_WITH_IDENTIFIERS
+            and "identifiers" in bundle.data.keys()
+        ):
+            identifiers = bundle.data.pop("identifiers")
+        return (bundle, identifiers)
+    
+    def __create_identifiers(
+        self,
+        bundle: Bundle,
+        identifiers: List[str],
+    ) -> None:
+        """Create the datafile identifier model.
+
+        Args:
+            bundle (Bundle): The bundle created when the datafile is created
+            identifiers (List[str]): A list of identifiers to associate with the datafile
+        """
+        datafile = bundle.obj
+        for identifier in identifiers:
+            DatafileID.objects.create(
+                datafile=datafile,
+                identifier=str(identifier),
+            )
+
     def hydrate(self, bundle):
         if "attached_file" in bundle.data:
             # have POSTed file
@@ -2009,6 +2078,10 @@ class DataFileResource(MyTardisModelResource):
         If a duplicate key error occurs, responds with HTTP Error 409: CONFLICT
         """
         with transaction.atomic():
+            identifiers = None
+            bundle, identifiers = self.__clean_bundle_of_identifiers(bundle)
+            if identifiers:
+                self.__create_identifiers(bundle, identifiers)
             try:
                 retval = super().obj_create(bundle, **kwargs)
             except IntegrityError as err:

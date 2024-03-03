@@ -716,7 +716,7 @@ class ProjectResource(ModelResource):
                     canDownload=True,
                     canWrite=True,
                     canDelete=True,
-                    canSensitive=True,
+                    canSensitive=False,
                     isOwner=True,
                     aclOwnershipType=ProjectACL.OWNER_OWNED,
                 )
@@ -730,7 +730,7 @@ class ProjectResource(ModelResource):
                         canDownload=True,
                         canWrite=True,
                         canDelete=True,
-                        canSensitive=True,
+                        canSensitive=False,
                         isOwner=True,
                         aclOwnershipType=ProjectACL.OWNER_OWNED,
                     )

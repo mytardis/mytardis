@@ -8,6 +8,7 @@ from django.contrib.auth.backends import RemoteUserBackend
 from django.contrib.auth.models import User
 from django.http.request import HttpRequest
 
+from tardis.apps.identifiers.models import UserPID
 from tardis.tardis_portal.auth.interfaces import AuthProvider
 from tardis.tardis_portal.models.access_control import UserAuthentication
 
@@ -35,6 +36,35 @@ class SSOUserBackend(RemoteUserBackend, AuthProvider):
             user = None
         return user
 
+    def authenticate(self, request, remote_user):
+        """
+        The username passed as ``remote_user`` is considered trusted. Return
+        the ``User`` object with the given username. Create a new ``User``
+        object if ``create_unknown_user`` is ``True``.
+
+        Return None if ``create_unknown_user`` is ``False`` and a ``User``
+        object with the given username is not found in the database.
+        """
+        if not remote_user:
+            return
+        user = None
+        username = self.clean_username(remote_user)
+
+        # Note that this could be accomplished in one try-except clause, but
+        # instead we use get_or_create when creating unknown users since it has
+        # built-in safeguards for multiple threads.
+        if self.create_unknown_user:
+            user, _ = User.objects.get_or_create(
+                username=username
+            )
+        else:
+            try:
+                user = User.objects.get_by_natural_key(username)
+            except User.DoesNotExist:
+                return None
+        user = self.configure_user(request, user)
+        return user if self.user_can_authenticate(user) else None
+
     def configure_user(  # type:ignore
         self,
         request: HttpRequest,
@@ -46,6 +76,9 @@ class SSOUserBackend(RemoteUserBackend, AuthProvider):
             email = None
         first_name = request.META[settings.REMOTE_AUTH_FIRST_NAME_HEADER]
         surname = request.META[settings.REMOTE_AUTH_SURNAME_HEADER]
+        orcid = None
+        if "identifiers" in settings.ISTALLED_APPS and "users" in settings.OBJECTS_WITH_IDENTIFIERS:
+            orcid = request.META[settings.REMOTE_AUTH_ORCID_HEADER] or None
         updated_flag = False
         if user.first_name != first_name:
             user.first_name = first_name
@@ -56,6 +89,11 @@ class SSOUserBackend(RemoteUserBackend, AuthProvider):
         if email and user.email != email:
             user.email = email
             updated_flag = True
+        if orcid:
+            identifiers = [*UserPID.objects.all(user=user).values_list("identifier", flat=True)]
+            if orcid not in identifiers:
+                identifier = UserPID.objects.create(user=user, identifier=orcid)
+                identifier.save()
         if updated_flag:
             user.save()
         if user.userprofile.isDjangoAccount: #type: ignore
