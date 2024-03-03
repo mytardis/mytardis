@@ -1219,7 +1219,6 @@ class ExperimentResource(MyTardisModelResource):
                     canDownload = entry.get("can_download", False)
                     canSensitive = entry.get("can_sensitive", False)
                     acl_user = get_or_create_user(username)
-                    acl_user = User.objects.get(username=username)
                     if acl_user:
                         ExperimentACL.objects.create(
                             experiment=experiment,
