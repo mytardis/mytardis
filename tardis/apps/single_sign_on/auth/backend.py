@@ -77,7 +77,7 @@ class SSOUserBackend(RemoteUserBackend, AuthProvider):
         first_name = request.META[settings.REMOTE_AUTH_FIRST_NAME_HEADER]
         surname = request.META[settings.REMOTE_AUTH_SURNAME_HEADER]
         orcid = None
-        if "identifiers" in settings.ISTALLED_APPS and "users" in settings.OBJECTS_WITH_IDENTIFIERS:
+        if "identifiers" in settings.INSTALLED_APPS and "users" in settings.OBJECTS_WITH_IDENTIFIERS:
             orcid = request.META[settings.REMOTE_AUTH_ORCID_HEADER] or None
         updated_flag = False
         if user.first_name != first_name:
