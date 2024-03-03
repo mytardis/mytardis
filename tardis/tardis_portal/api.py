@@ -11,7 +11,7 @@ import json
 import logging
 import re
 from itertools import chain
-from typing import Optional
+from typing import Optional, Tuple
 from urllib.parse import quote
 from wsgiref.util import FileWrapper
 
@@ -119,7 +119,7 @@ def get_user_from_upi(upi):
     search_filter = "({}={})".format(settings.LDAP_USER_LOGIN_ATTR, upi)
     with ldap3.Connection(
         server,
-        auto_bind=True,
+        auto_bind='TLS_BEFORE_BIND',
         user=settings.LDAP_ADMIN_USER,
         password=settings.LDAP_ADMIN_PASSWORD,
     ) as connection:
