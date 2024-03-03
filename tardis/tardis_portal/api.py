@@ -11,7 +11,7 @@ import json
 import logging
 import re
 from itertools import chain
-from typing import Optional, Tuple
+from typing import List, Optional, Tuple
 from urllib.parse import quote
 from wsgiref.util import FileWrapper
 
