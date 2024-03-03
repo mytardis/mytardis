@@ -540,7 +540,7 @@ class ProjectResource(ModelResource):
             )
             if bundle.data["identifiers"] == []:
                 bundle.data.pop("identifiers")
-        if AppList.DATA_CLASSIFICATION.value in settings.INSTALLED_APPS:
+        if 'tardis.apps.dataclassification' in settings.INSTALLED_APPS:
             bundle.data[
                 "classification"
             ] = bundle.obj.data_classification.classification
@@ -603,7 +603,7 @@ class ProjectResource(ModelResource):
             int: An integer representing the data classification, defaults to Sensitive
         """
         classification = None
-        if AppList.DATA_CLASSIFICATION.value in settings.INSTALLED_APPS:
+        if 'tardis.apps.dataclassification' in settings.INSTALLED_APPS:
             classification = DATA_CLASSIFICATION_SENSITIVE
             if "classification" in bundle.data.keys():
                 classification = bundle.data.pop("classification")
