@@ -49,7 +49,6 @@ from tardis.tardis_portal.auth.decorators import (
     has_sensitive_access,
     has_write,
 )
-from tardis.tardis_portal.enumerators import AppList, CustomFilters
 from tardis.tardis_portal.models.access_control import UserAuthentication
 
 from .models import (
@@ -224,57 +223,6 @@ def get_or_create_user(username: str) -> User:
     else:
         user = User.objects.get(username=username)
     return user
-
-
-def build_identifier_aware_filter(
-    model_type: IdentifierObjects,
-    orm_filters: Dict[str, Any],
-    filters: Dict[str, Any],
-) -> Dict[str, Any]:
-    """Function to check if the identifier app is active and if the identifier key is present in
-    the query. If both are, update the orm_filters to query on these.
-
-    Args:
-        model_type (IdentifierObjects): The name of the model that has an identifier model added.
-        orm_filters (Dict[str,Any]): The partial ORM filter to be updated
-        filters (Dict[str,Any]): Any filters that have been passed
-
-    Returns:
-        Dict[str, Any]: The updated ORM filter
-    """
-    if (
-        AppList.IDENTIFIERS.value in settings.INSTALLED_APPS
-        and model_type.value in settings.OBJECTS_WITH_IDENTIFIERS
-        and CustomFilters.IDENTIFIERS.value in filters
-    ):
-        query = filters[CustomFilters.IDENTIFIERS.value]
-        qset = Q(identifiers__identifier__iexact=query)
-        orm_filters[CustomFilters.IDENTIFIERS.value] = qset
-    return orm_filters
-
-
-def apply_identifier_aware_filter(
-    model_type: IdentifierObjects,
-    applicable_filters: Dict[str, Any],
-) -> Tuple[Any, Dict[str, Any]]:
-    """Function to check if the identifier app is active. Clean the filter if it is and return
-    a custom filter value for semi-filtering.
-
-    Args:
-        model_type (IdentifierObjects): The name of the model that has an identifier model added.
-        applicable_filters (Dict[str,Any]): Filters to be applied
-
-    Returns:
-        Tuple[Any, Dict[str, Any]]: The custom filter and the cleaned filters.
-    """
-    custom = None
-    if (
-        AppList.IDENTIFIERS.value in settings.INSTALLED_APPS
-        and model_type.value in settings.OBJECTS_WITH_IDENTIFIERS
-    ):
-        custom = applicable_filters.pop(CustomFilters.IDENTIFIERS.value, None)
-    return (custom, applicable_filters)
-
 
 class ProjectACLAuthorization(Authorization):
     """A Project-specific Authorisation class for Tastypie, rather than bloating
