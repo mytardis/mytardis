@@ -101,7 +101,7 @@ class SSOUserBackend(RemoteUserBackend, AuthProvider):
             user.userprofile.save()  # type: ignore
         try:
             user_auth = UserAuthentication.objects.get(
-                userProfile_username=user,
+                username=user,
             )
         except UserAuthentication.DoesNotExist:
             user_auth = UserAuthentication(
