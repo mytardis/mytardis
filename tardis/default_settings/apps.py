@@ -23,7 +23,7 @@ INSTALLED_APPS = (
     "tardis.analytics",
     # these optional apps, may require extra settings
     #"tardis.apps.oaipmh",
-    #"tardis.apps.sftp",
+    "tardis.apps.sftp",
     # 'tardis.apps.push_to',
     # 'tardis.apps.social_auth',
     "taggit",
