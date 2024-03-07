@@ -40,6 +40,7 @@ django-graphql-jwt = "^0.3.4"
 django-taggit = "^4.0.0"
 pylint = "^2.17.5"
 urllib3 = "<=2.0"
+paramiko = "^3.4.0"
 
 [tool.poetry.group.docs.dependencies]
 sphinx = "^6"
