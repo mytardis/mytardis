@@ -108,24 +108,12 @@ module.exports = {
             {
                 test: /\.css$/,
                 use: [
-                    {
-                        loader: MiniCssExtractPlugin.loader,
-                        options: {
-                            publicPath: "../static/bundles/"
-                        }
-                    }, "css-loader"
+          		 "style-loader", "css-loader"
                 ]
             },
             {
                 test: /\.(woff|woff2|)(\?v=[0-9]\.[0-9]\.[0-9])?$/,
-                loader: "url-loader",
-                options: {
-                    limit: 10000,
-                    mimetype:"application/font-woff",
-                    name: "[name].[ext]",
-                    outputPath: "static/bundles/",
-                    publicPath: "../static/bundles/"
-                }
+                type: 'asset/resource',
             },
             {
                 test: /\.(ttf|eot|svg)(\?v=[0-9]\.[0-9]\.[0-9])?$/,
