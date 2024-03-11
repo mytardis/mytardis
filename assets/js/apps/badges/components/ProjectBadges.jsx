@@ -2,7 +2,7 @@ import React, { Fragment, useState } from 'react';
 import ReactDOM from 'react-dom';
 
 import PropTypes from 'prop-types';
-import { css } from '@emotion/core';
+import { css } from '@emotion/react';
 import PublicAccessBadge from './PublicAccessBadge';
 import ExperimentCountBadge from './ExperimentCountBadge';
 import DatasetCountBadge from './DatasetCountBadge';

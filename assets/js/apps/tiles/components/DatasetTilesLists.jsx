@@ -2,7 +2,7 @@ import React, { Fragment, useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
 import { DragDropContext, Droppable } from 'react-beautiful-dnd';
 import PropTypes from 'prop-types';
-import { css } from '@emotion/core';
+import { css } from '@emotion/react';
 import Cookies from 'js-cookie';
 import {
   fetchDatasetsForExperiment,
