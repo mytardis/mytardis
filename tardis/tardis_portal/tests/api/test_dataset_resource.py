@@ -269,6 +269,7 @@ class DatasetResourceTest(MyTardisResourceTestCase):
                 "verified": False,
                 "is_online": True,
                 "recall_url": None,
+                "can_download": True,
             },
             {
                 "name": "filename2",
@@ -276,6 +277,7 @@ class DatasetResourceTest(MyTardisResourceTestCase):
                 "verified": False,
                 "is_online": True,
                 "recall_url": None,
+                "can_download": True,
             },
         ]
         self.assertEqual(
@@ -786,6 +788,7 @@ class DatasetResourceAuthTest(MyTardisResourceTestCase):
                     "verified": False,
                     "is_online": True,
                     "recall_url": None,
+                    "can_dowload": False,
                 }
             ],
         )
@@ -807,6 +810,7 @@ class DatasetResourceAuthTest(MyTardisResourceTestCase):
                 "verified": False,
                 "is_online": True,
                 "recall_url": None,
+                "can_download": False,
             },
             {"name": "subdir#2", "path": "subdir#1/subdir#2", "children": []},
         ]
