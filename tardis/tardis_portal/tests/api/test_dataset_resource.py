@@ -721,6 +721,7 @@ class DatasetResourceAuthTest(MyTardisResourceTestCase):
                 "verified": False,
                 "is_online": True,
                 "recall_url": None,
+                "can_download": False,
             },
         ]
         self.assertEqual(
