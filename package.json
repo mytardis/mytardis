@@ -68,7 +68,7 @@
     "webpack": "^5.90.3",
     "webpack-bundle-tracker": "^3.0.1",
     "webpack-cli": "^5.1.4",
-    "whatwg-fetch": "^3.6.19"
+    "whatwg-fetch": "^3.6.20"
   },
   "devDependencies": {
     "@storybook/addon-actions": "^7.6.17",
@@ -83,13 +83,13 @@
     "core-js": "^3.36.0",
     "enzyme": "^3.10.0",
     "enzyme-adapter-react-16": "^1.15.8",
-    "eslint": "^8.56.0",
+    "eslint": "^8.57.0",
     "eslint-config-airbnb": "^19.0.4",
     "eslint-config-angular": "^0.5.0",
     "eslint-plugin-angular": "^4.0.1",
     "eslint-plugin-import": "^2.29.1",
     "eslint-plugin-jsx-a11y": "^6.8.0",
-    "eslint-plugin-react": "^7.33.2",
+    "eslint-plugin-react": "^7.34.0",
     "grunt": "^1.6.1",
     "grunt-cli": "^1.4.3",
     "grunt-contrib-qunit": "^8.0.1",
