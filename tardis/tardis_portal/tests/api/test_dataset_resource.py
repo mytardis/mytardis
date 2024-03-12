@@ -301,6 +301,7 @@ class DatasetResourceTest(MyTardisResourceTestCase):
                 "verified": False,
                 "is_online": True,
                 "recall_url": None,
+                "can_download": True,
             },
             {
                 "name": "filename2",
@@ -308,6 +309,7 @@ class DatasetResourceTest(MyTardisResourceTestCase):
                 "verified": False,
                 "is_online": True,
                 "recall_url": None,
+                "can_download": True,
             },
             {"name": "subdir3", "path": "subdir/subdir3", "children": []},
         ]
@@ -326,6 +328,7 @@ class DatasetResourceTest(MyTardisResourceTestCase):
                 "verified": False,
                 "is_online": True,
                 "recall_url": None,
+                "can_download": True,
             },
         ]
         self.assertEqual(
@@ -788,7 +791,7 @@ class DatasetResourceAuthTest(MyTardisResourceTestCase):
                     "verified": False,
                     "is_online": True,
                     "recall_url": None,
-                    "can_dowload": False,
+                    "can_download": False,
                 }
             ],
         )
