@@ -119,7 +119,7 @@ def get_user_from_upi(upi):
     search_filter = "({}={})".format(settings.LDAP_USER_LOGIN_ATTR, upi)
     with ldap3.Connection(
         server,
-        auto_bind='TLS_BEFORE_BIND',
+        auto_bind="TLS_BEFORE_BIND",
         user=settings.LDAP_ADMIN_USER,
         password=settings.LDAP_ADMIN_PASSWORD,
     ) as connection:
@@ -783,7 +783,6 @@ class UserResource(ModelResource):
             "username": ("exact",),
             "email": ("iexact",),
         }
-
 
     def dehydrate(self, bundle):
         """
@@ -1622,6 +1621,7 @@ class DatasetResource(MyTardisModelResource):
                     "verified": df.verified,
                     "is_online": df.is_online,
                     "recall_url": df.recall_url,
+                    "can_download": has_download_access(request, df.id, "datafile"),
                 }
                 child_list.append(child)
 
@@ -2279,12 +2279,21 @@ class DataFileResource(MyTardisModelResource):
 
 
 class SchemaResource(MyTardisModelResource):
+    parameter_names = fields.ToManyField(
+        "tardis.tardis_portal.api.ParameterNameResource",
+        "parametername_set",
+        related_name="schema",
+        full=True,
+        null=True,
+    )
+
     class Meta(MyTardisModelResource.Meta):
         object_class = Schema
         queryset = Schema.objects.all()
         filtering = {
             "id": ("exact",),
             "namespace": ("exact",),
+            "name": ("exact",),
         }
         ordering = ["id"]
 
