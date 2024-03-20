@@ -106,11 +106,12 @@ module.exports = {
         rules: [
             {test: /\.jsx?$/, exclude: /node_modules/, loader: "babel-loader"},
             {
-                test: /\.css$/,
+                test: /\.(sa|sc|c)ss$/i,
                 use: [
-          		 "style-loader", "css-loader"
-                ]
-            },
+                  MiniCssExtractPlugin.loader,
+                  "css-loader",
+                ],
+              },
             {
                 test: /\.(woff|woff2|)(\?v=[0-9]\.[0-9]\.[0-9])?$/,
                 type: 'asset/resource',

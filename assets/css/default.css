@@ -5,9 +5,9 @@ body {
   min-height: 100%;
 }
 
-img.uoa-logo {
+img.institution-logo {
     height: 60px;
-    margin: 1rem;
+    margin: 0.75rem 1.25rem;
 }
 
 /* Icons */

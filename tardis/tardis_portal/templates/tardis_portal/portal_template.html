@@ -28,12 +28,6 @@
     {% render_bundle 'lib' %}
     {% block script %}
     {% endblock script %}
-    <style>
-      body {
-        /* 60px to make the container go all the way to the bottom of the topbar */
-        padding-top: 60px;
-      }
-    </style>
     <script type="text/javascript">
     // Set active nav button
     $(function() {
@@ -82,9 +76,9 @@
     {% endblock %}
   </head>
   <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
       {% block site_brand %}
-      <img src="{{ STATIC_URL }}/logo.png" alt="Waipapa Taumata Rau University of Auckland logo" class="uoa-logo me-1">  
+      <img src="{{ STATIC_URL }}/logo.png" alt="Logo for institution" class="institution-logo">  
       <a class="navbar-brand" href="{% url 'tardis.tardis_portal.views.index' %}">
           {{ site_title|default:'MyTardis' }}
         </a>
@@ -199,7 +193,7 @@
       </div>
     </nav>
 
-    <div class="container-fluid">
+    <div class="container-fluid mt-2">
       {% if subtitle %}
       <!-- Subtitle: {{ subtitle }} -->
       {% endif %}
