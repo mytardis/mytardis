@@ -1,0 +1,16 @@
+/*
+University of Auckland-specific styling here. Replace with your own styling.
+*/
+
+
+@font-face{font-family:'NationalBold';src:url("../uoa//NationalWeb-Bold.eot");src:url("../uoa//NationalWeb-Bold.woff2") format("woff2"),url("../uoa//NationalWeb-Bold.woff") format("woff")}
+@font-face{font-family:'NationalBoldItalic';src:url("../uoa//NationalWeb-BoldItalic.eot");src:url("../uoa//NationalWeb-BoldItalic.woff2") format("woff2"),url("../uoa//NationalWeb-BoldItalic.woff") format("woff")}
+@font-face{font-family:'NationalBook';src:url("../uoa//NationalWeb-Book.eot");src:url("../uoa//NationalWeb-Book.woff2") format("woff2"),url("../uoa//NationalWeb-Book.woff") format("woff")}
+@font-face{font-family:'NationalBookItalic';src:url("../uoa//NationalWeb-BookItalic.eot");src:url("../uoa//NationalWeb-BookItalic.woff2") format("woff2"),url("../uoa//NationalWeb-BookItalic.woff") format("woff")}
+
+:root {
+    --bs-font-sans-serif: "NationalWeb-Book";
+    --bs-body-font-family: var(--bs-font-sans-serif);
+    --bs-body-font-size: 1rem;
+    --bs-body-font-weight: 400;
+}
