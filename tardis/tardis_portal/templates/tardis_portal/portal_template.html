@@ -148,13 +148,14 @@
             </form>
           {% endif %}
           {% if is_authenticated %}
-            <li id="user-menu" class="nav-item dropdown">
+            <li id="user-menu" class="ms-2 nav-item dropdown">
               <a class="nav-link dropdown-toggle" href="#user-menu" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                 {{ username }}
               </a>
-              <div class="dropdown-menu dropdown-menu-right" aria-labelledby="user-menu">
+              <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="user-menu">
                 {% for menu_item in user_menu %}
                   {% if not menu_item.divider %}
+                  <li>
                     <a class="dropdown-item" href="{{ menu_item.url }}">
                       <i class="{{menu_item.icon}}"
                          {% if menu_item.style %}
@@ -164,11 +165,12 @@
                       </i>
                       {{menu_item.label}}
                     </a>
+                  </li>
                   {% else %}
-                    <div class="dropdown-divider"></div>
+                    <li><hr class="dropdown-divider"></li>
                   {% endif %}
                 {% endfor %}
-              </div>
+              </ul>
             </li>
           {% else %}
             {% if registration_enabled %}
