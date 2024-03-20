@@ -5,6 +5,11 @@ body {
   min-height: 100%;
 }
 
+img.uoa-logo {
+    height: 60px;
+    margin: 1rem;
+}
+
 /* Icons */
 i.o-6 {
   opacity: 0.6;
