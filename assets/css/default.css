@@ -1,8 +1,18 @@
+:root {
+    /*Remove padding as the institution logo already has margin.*/
+    --bs-navbar-brand-padding-y: 0;
+}
+
 html{
   height: 100%;
 }
 body {
   min-height: 100%;
+}
+
+img.institution-logo {
+    height: 60px;
+    margin: 0.75rem 1.25rem;
 }
 
 /* Icons */

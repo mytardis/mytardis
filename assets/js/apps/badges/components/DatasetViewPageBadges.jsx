@@ -1,7 +1,7 @@
 import React, { Fragment, useState } from 'react';
 import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
-import { css } from '@emotion/core';
+import { css } from '@emotion/react';
 import { fetchDatasetData } from './utils/FetchData';
 import Spinner from './utils/Spinner';
 import DatasetSizeBadge from './DatasetSizeBadge';

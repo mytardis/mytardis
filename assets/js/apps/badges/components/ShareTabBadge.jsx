@@ -1,7 +1,7 @@
 import React, { Fragment, useState } from 'react';
 
 import PropTypes from 'prop-types';
-import { css } from '@emotion/core';
+import { css } from '@emotion/react';
 import PublicAccessBadge from './PublicAccessBadge';
 import { fetchExperimentData } from './utils/FetchData';
 import Spinner from './utils/Spinner';

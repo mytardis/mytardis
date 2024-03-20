@@ -1,5 +1,5 @@
 import React, { Fragment, useState } from 'react';
-import { css } from '@emotion/core';
+import { css } from '@emotion/react';
 import PropTypes from 'prop-types';
 import { fetchExperimentData } from '../badges/components/utils/FetchData';
 import Spinner from '../badges/components/utils/Spinner';

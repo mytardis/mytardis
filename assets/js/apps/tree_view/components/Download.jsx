@@ -2,7 +2,7 @@ import { Fragment, useState } from 'react';
 import PropTypes from 'prop-types';
 import { Button, OverlayTrigger, Tooltip } from 'react-bootstrap';
 /** @jsx jsx */
-import { jsx } from '@emotion/core';
+import { jsx } from '@emotion/react';
 import Spinner from '../../badges/components/utils/Spinner';
 
 const FileDownloadButton = ({ isDisabled, onClick, isDownloading }) => {
