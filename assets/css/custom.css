@@ -9,8 +9,13 @@ University of Auckland-specific styling here. Replace with your own styling.
 @font-face{font-family:'NationalBookItalic';src:url("../uoa//NationalWeb-BookItalic.eot");src:url("../uoa//NationalWeb-BookItalic.woff2") format("woff2"),url("../uoa//NationalWeb-BookItalic.woff") format("woff")}
 
 :root {
-    --bs-font-sans-serif: "NationalWeb-Book";
+    --bs-font-sans-serif: "NationalBook";
     --bs-body-font-family: var(--bs-font-sans-serif);
-    --bs-body-font-size: 1rem;
+    --bs-body-font-size: 18px;
     --bs-body-font-weight: 400;
+}
+
+/*Headings use bold text.*/
+h1, h2, h3, h4, h5, .navbar-brand {
+    font-family: "NationalBold"
 }

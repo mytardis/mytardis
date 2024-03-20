@@ -78,7 +78,7 @@
   <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
       {% block site_brand %}
-      <img src="{{ STATIC_URL }}/logo.png" alt="Logo for institution" class="institution-logo">  
+      <a href="{% url 'tardis.tardis_portal.views.index' %}"><img src="{{ STATIC_URL }}/logo.png" alt="Logo for institution" class="institution-logo"></a>
       <a class="navbar-brand" href="{% url 'tardis.tardis_portal.views.index' %}">
           {{ site_title|default:'MyTardis' }}
         </a>
