@@ -18,7 +18,7 @@ const ExperimentLastUpdatedBadge = ({ experimentData }) => {
   return (
     <Fragment>
       {loading
-        ? <span className=" float-right spinner-grow spinner-grow-sm" role="status" aria-hidden="true" />
+        ? <span className=" float-end spinner-grow spinner-grow-sm" role="status" aria-hidden="true" />
         : (
           <Badge variant="info" title={title}>
             <i className="fa fa-clock-o" />

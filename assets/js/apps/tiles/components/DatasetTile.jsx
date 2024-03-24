@@ -27,7 +27,7 @@ const DatasetTile = ({
         >
           <li className="dataset card mb-2">
             <div className="card-body">
-              <div className="float-left" style={{ marginRight: '10px' }}>
+              <div className="float-start" style={{ marginRight: '10px' }}>
                 <div style={{ display: 'flex', textAlign: 'center', fontSize: '32px' }}>
                   <i className="fa fa-folder-open o-6" />
                 </div>
@@ -52,8 +52,8 @@ const DatasetTile = ({
                     </label>
                   ) : ''}
               </div>
-              <div className="float-left" style={{ marginRight: '10px' }} />
-              <div className="float-right" style={{ textAlign: 'right' }}>
+              <div className="float-start" style={{ marginRight: '10px' }} />
+              <div className="float-end" style={{ textAlign: 'right' }}>
                 <p>
                   {hsmEnabled ? <HSMDataFileCountBadge datasetId={data.id} />
                     : <DatafileCountBadge experimentData={experimentData} />}
@@ -62,10 +62,10 @@ const DatasetTile = ({
                   <DatasetSizeBadge datasetData={datasetData} />
                 </p>
               </div>
-              <div className="float-left ds-thumb" style={{ marginRight: '10px' }}>
+              <div className="float-start ds-thumb" style={{ marginRight: '10px' }}>
                 <canvas style={{ width: '100px' }} />
               </div>
-              <div className="float-left">
+              <div className="float-start">
                 <p className="mb-2">
                   <a className="dataset-link" href={data.url}>
                     {data.description}
