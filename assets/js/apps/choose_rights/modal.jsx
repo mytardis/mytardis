@@ -92,7 +92,7 @@ const LicenseModal = ({ experimentId, container, onLicenseUpdate }) => {
         <Fragment>
           <button
             className="public_access_button btn btn-outline-secondary btn-sm"
-            data-toggle="modal"
+            data-bs-toggle="modal"
             data-target="#modal-public-access"
             title="Change"
             type="submit"
