@@ -205,7 +205,7 @@
                 $('#message-container').html(
                     '<div class="alert ' +
                         this.type +
-                        '"><a class="close" data-bs-dismiss="alert">×</a><span>' +
+                        '"><a class="btn-close" data-bs-dismiss="alert"></a><span>' +
                         he.encode(text) +
                         '</span></div>');
             },
@@ -243,7 +243,7 @@
         <div id="django-message-container" >
           {% for message in messages %}
             <p{% if message.level_tag %} class="alert alert-block alert-{{ message.level_tag }} alert-dismissible"{% endif %}>
-              <a class="close" data-bs-dismiss="alert">&times;</a>
+              <a class="btn-close" data-bs-dismiss="alert"></a>
               {% if 'safe' in message.tags %}
                 {{ message|safe }}
               {% else %}
@@ -257,7 +257,7 @@
       <div id="status-alert"
            class="alert alert-block {% if error %}alert-danger{% else %}alert-info{% endif %} alert-dismissible"
            style="display: none">
-        <a class="close" data-bs-dismiss="alert">&times;</a>
+        <a class="btn-close" data-bs-dismiss="alert"></a>
         <span class="message">{{status}}</span>
         <script type="text/javascript">
         $(function() {

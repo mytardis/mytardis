@@ -105,8 +105,7 @@ const LicenseModal = ({ experimentId, container, onLicenseUpdate }) => {
               <div className="modal-content">
                 <div className="modal-header">
                   <h1 className="title">Public Access</h1>
-                  <button type="button" className="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
+                  <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close">
                   </button>
                 </div>
                 <div className="loading-placeholder" style={{ display: 'none' }}>
@@ -121,7 +120,7 @@ const LicenseModal = ({ experimentId, container, onLicenseUpdate }) => {
                         {isrightsUpdated ? (
                           <div className="alert alert-success">
                             {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
-                            <a className="close" data-dismiss="alert">×</a>
+                            <a className="btn-close" data-bs-dismiss="alert"></a>
                             <strong>Success!</strong>
                             <span> Licensing Changed.</span>
                           </div>
@@ -129,7 +128,7 @@ const LicenseModal = ({ experimentId, container, onLicenseUpdate }) => {
                           : (
                             <div className="alert alert-danger">
                               {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
-                              <a className="close" data-dismiss="alert">×</a>
+                              <a className="btn-close" data-bs-dismiss="alert"></a>
                               <strong>Error! Something went wrong</strong>
                             </div>
                           )
@@ -192,7 +191,7 @@ const LicenseModal = ({ experimentId, container, onLicenseUpdate }) => {
                       <button
                         type="button"
                         className="cancel-button btn btn-outline-secondary mr-1"
-                        data-dismiss="modal"
+                        data-bs-dismiss="modal"
                       >
                         <i className="fa fa-close" />
                         Cancel

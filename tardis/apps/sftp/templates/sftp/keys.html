@@ -40,7 +40,7 @@
     <form id="keyAddForm" class="modal-content">
       <div class="modal-header">
         <h3 class="modal-title">Add SSH Keys</h3>
-        <button type="button" class="close" data-bs-dismiss="modal" onclick="sftp.clearKeyAddForm()">×</button>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" onclick="sftp.clearKeyAddForm()"></button>
       </div>
       <div class="modal-body">
         <div>
@@ -80,7 +80,7 @@
     <div class="modal-content">
       <div class="modal-header">
         <h3>Generate an SSH key pair</h3>
-        <button type="button" class="close" data-bs-dismiss="modal" onclick="sftp.clearKeyGenerateForm()">×</button>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" onclick="sftp.clearKeyGenerateForm()"></button>
       </div>
       <div class="modal-body">
         <p>{{site_title|default:'MyTardis'}} can generate an SSH key pair for you. Only the public part of the key pair will be stored by {{site_title|default:'MyTardis'}} and you will be provided with a one time opportunity to download the private part of the key pair.</p>
@@ -91,8 +91,7 @@
             <div class="alert alert-danger alert-dismissible fade show" role="alert">
               The SSH key generation feature has been disabled because your connection is insecure.
               Please contact your MyTardis service administrator about securing your connection.
-	      <button type="button" class="close" data-bs-dismiss="alert" aria-label="Close">
-		<span aria-hidden="true">&times;</span>
+	      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close">
 	      </button>
             </div>
           {% endif %}
