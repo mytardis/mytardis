@@ -14,7 +14,7 @@ var sftp = (function() {
                 <span style='word-break: break-all;'>Fingerprint: " + rowData.fingerprint + "</span><br>\
                 <span>Date added: " + rowData.added + "</span>\
               </div>\
-            <div class='text-right pull-right'>\
+            <div class='text-end pull-right'>\
               <button id='delete-btn' class='btn btn-danger' \
                       onclick='sftp.handleKeyDelete(" + rowData.id + ")'>\
                 <i class='fa fa-trash'></i>\

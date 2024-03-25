@@ -187,7 +187,7 @@ const LicenseModal = ({ experimentId, container, onLicenseUpdate }) => {
                         </label>
                       </div>
                     </div>
-                    <div id="confirm-license-btn-group" className="form-group text-right" style={{ display: showButtons ? 'block' : 'None' }}>
+                    <div id="confirm-license-btn-group" className="form-group text-end" style={{ display: showButtons ? 'block' : 'None' }}>
                       <button
                         type="button"
                         className="cancel-button btn btn-outline-secondary mr-1"
