@@ -22,7 +22,7 @@ gevent==21.8.0
 html2text==2020.1.16
 html5lib==1.1
 isodate==0.6.0
-lxml==4.6.3
+lxml==5.1.1
 paramiko==2.7.2
 pillow==8.3.2
 pyoai==2.5.0
