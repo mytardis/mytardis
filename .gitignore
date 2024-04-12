@@ -28,6 +28,7 @@ node_modules/
 assets/bundles/
 parts/
 tardis/settings.py
+**/settings.yaml
 tardis/tardis_portal/tests/rifcs/MyTARDIS-1.xml
 var/
 versions.cfg
