@@ -22,12 +22,14 @@ from tardis.apps.projects.models import (
     ProjectParameterSet,
 )
 
+import logging
+
 # from tardis.tardis_portal.api.serializers.experiment import ExperimentSerializer
-from tardis.tardis_portal.api.serializers.user import UserSerializer
+from tardis.tardis_portal.api_v2.serializers.user import UserSerializer
 from tardis.tardis_portal.auth.decorators import has_sensitive_access
 
 # from tardis.tardis_portal.models.experiment import Experiment
-
+logger = logging.getLogger('__name__')
 
 class InstitutionIDSerializer(serializers.ModelSerializer):
     class Meta:
@@ -71,20 +73,20 @@ class ProjectParameterSerializer(serializers.ModelSerializer):
 
 
 class ProjectParameterSetSerializer(serializers.ModelSerializer):
-    # parameters = ProjectParameterSerializer(many=True)
+    #parameters = ProjectParameterSerializer(many=True)
     parameters = serializers.SerializerMethodField("get_safe_parameters")
-
     class Meta:
         model = ProjectParameterSet
-        fields = ["paramters"]
+        fields = ["parameters"]
 
     def get_safe_parameters(self, parameterset_obj):
+        logger.debug(self.context)
         project = parameterset_obj.project
         queryset = ProjectParameter.objects.filter(parameterset=parameterset_obj)
         parameters = ProjectParameterSerializer(
             queryset, many=True, context=self.context
         ).data
-        if has_sensitive_access(self.context.request, project.pk, "project"):
+        if has_sensitive_access(self.context['request'], project.pk, "project"):
             return parameters
         return [item for item in parameters if item.name.sensitive is not True]
 
@@ -94,12 +96,15 @@ class ProjectIDSerializer(serializers.ModelSerializer):
         model = ProjectID
         fields = ["identifier"]
 
+class ProjectDataclassificationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Proje
 
 class ProjectSerializer(serializers.HyperlinkedModelSerializer):
-    paramtersets = ProjectParameterSetSerializer(many=True)
+    projectparameterset_set = ProjectParameterSetSerializer(many=True)
     principal_investigator = UserSerializer(many=False)
     institution = InstitutionSerializer(many=True)
-    created_by = UserSerializer(many=True)
+    created_by = UserSerializer(many=False)
 
     # experiments = serializers.SerializerMethodField("get_experiments")
 
@@ -123,6 +128,7 @@ class ProjectSerializer(serializers.HyperlinkedModelSerializer):
             "end_time",
             "created_by",
             "url",
+            "projectparameterset_set",
         ]
         if (
             "tardis.apps.identifers" in settings.INSTALLED_APPS
