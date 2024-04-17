@@ -25,7 +25,7 @@ class UserIDSerializer(serializers.ModelSerializer):
 
 class UserSerializer(serializers.ModelSerializer):
     if (
-        "tardis.apps.identifiers" in settings.INSTALLED_APS
+        "tardis.apps.identifiers" in settings.INSTALLED_APPS
         and "user" in settings.OBJECTS_WITH_IDENTIFIERS
     ):
         identifiers = UserIDSerializer(many=True)
@@ -39,7 +39,7 @@ class UserSerializer(serializers.ModelSerializer):
             "email",
         ]
         if (
-            "tardis.apps.identifiers" in settings.INSTALLED_APS
+            "tardis.apps.identifiers" in settings.INSTALLED_APPS
             and "user" in settings.OBJECTS_WITH_IDENTIFIERS
         ):
             fields.append("identifiers")
