@@ -31,7 +31,6 @@ class SSOUserMiddleware(RemoteUserMiddleware):
     def process_request(self, request):
         if not settings.REMOTE_AUTH_ENABLED:
             return
-
         # Flush expired sessions
         SessionStore.clear_expired()
         super().process_request(request)
