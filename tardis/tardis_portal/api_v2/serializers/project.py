@@ -10,10 +10,13 @@ Contributors:
 """
 
 
+import logging
+
 from django.conf import settings
 
 from rest_framework import serializers
 
+from tardis.apps.dataclassification.models import ProjectDataClassification
 from tardis.apps.identifiers.models import InstitutionID, ProjectID
 from tardis.apps.projects.models import (
     Institution,
@@ -21,15 +24,18 @@ from tardis.apps.projects.models import (
     ProjectParameter,
     ProjectParameterSet,
 )
-
-import logging
+from tardis.tardis_portal.api_v2.serializers.schema import (
+    ParameterNameSerializer,
+    SchemaSerializer,
+)
 
 # from tardis.tardis_portal.api.serializers.experiment import ExperimentSerializer
 from tardis.tardis_portal.api_v2.serializers.user import UserSerializer
 from tardis.tardis_portal.auth.decorators import has_sensitive_access
 
 # from tardis.tardis_portal.models.experiment import Experiment
-logger = logging.getLogger('__name__')
+logger = logging.getLogger("__name__")
+
 
 class InstitutionIDSerializer(serializers.ModelSerializer):
     class Meta:
@@ -62,6 +68,8 @@ class InstitutionSerializer(serializers.ModelSerializer):
 
 
 class ProjectParameterSerializer(serializers.ModelSerializer):
+    name = ParameterNameSerializer()
+
     class Meta:
         model = ProjectParameter
         fields = [
@@ -73,11 +81,13 @@ class ProjectParameterSerializer(serializers.ModelSerializer):
 
 
 class ProjectParameterSetSerializer(serializers.ModelSerializer):
-    #parameters = ProjectParameterSerializer(many=True)
+    # parameters = ProjectParameterSerializer(many=True)
     parameters = serializers.SerializerMethodField("get_safe_parameters")
+    schema = SchemaSerializer()
+
     class Meta:
         model = ProjectParameterSet
-        fields = ["parameters"]
+        fields = ["schema", "parameters"]
 
     def get_safe_parameters(self, parameterset_obj):
         logger.debug(self.context)
@@ -86,7 +96,7 @@ class ProjectParameterSetSerializer(serializers.ModelSerializer):
         parameters = ProjectParameterSerializer(
             queryset, many=True, context=self.context
         ).data
-        if has_sensitive_access(self.context['request'], project.pk, "project"):
+        if has_sensitive_access(self.context["request"], project.pk, "project"):
             return parameters
         return [item for item in parameters if item.name.sensitive is not True]
 
@@ -96,9 +106,12 @@ class ProjectIDSerializer(serializers.ModelSerializer):
         model = ProjectID
         fields = ["identifier"]
 
+
 class ProjectDataclassificationSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Proje
+        model = ProjectDataClassification
+        fields = ["classification"]
+
 
 class ProjectSerializer(serializers.HyperlinkedModelSerializer):
     projectparameterset_set = ProjectParameterSetSerializer(many=True)
@@ -109,10 +122,12 @@ class ProjectSerializer(serializers.HyperlinkedModelSerializer):
     # experiments = serializers.SerializerMethodField("get_experiments")
 
     if (
-        "tardis.apps.identifers" in settings.INSTALLED_APPS
+        "tardis.apps.identifiers" in settings.INSTALLED_APPS
         and "project" in settings.OBJECTS_WITH_IDENTIFIERS
     ):
         identifiers = ProjectIDSerializer(many=True)
+    if "tardis.apps.dataclassification" in settings.INSTALLED_APPS:
+        classification = ProjectDataclassificationSerializer()
 
     class Meta:
         model = Project
@@ -131,10 +146,12 @@ class ProjectSerializer(serializers.HyperlinkedModelSerializer):
             "projectparameterset_set",
         ]
         if (
-            "tardis.apps.identifers" in settings.INSTALLED_APPS
+            "tardis.apps.identifiers" in settings.INSTALLED_APPS
             and "project" in settings.OBJECTS_WITH_IDENTIFIERS
         ):
             fields.append("identifiers")
+        if "tardis.apps.dataclassification" in settings.INSTALED_APPS:
+            fields.append("classification")
 
     # def get_experiments(self):
     #    if request := self.context.get("request", None):
