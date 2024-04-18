@@ -127,7 +127,7 @@ class ProjectSerializer(serializers.HyperlinkedModelSerializer):
     ):
         identifiers = ProjectIDSerializer(many=True)
     if "tardis.apps.dataclassification" in settings.INSTALLED_APPS:
-        classification = ProjectDataclassificationSerializer()
+        data_classification = ProjectDataclassificationSerializer()
 
     class Meta:
         model = Project
@@ -151,7 +151,7 @@ class ProjectSerializer(serializers.HyperlinkedModelSerializer):
         ):
             fields.append("identifiers")
         if "tardis.apps.dataclassification" in settings.INSTALLED_APPS:
-            fields.append("classification")
+            fields.append("data_classification")
 
     # def get_experiments(self):
     #    if request := self.context.get("request", None):
