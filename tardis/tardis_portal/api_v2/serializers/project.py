@@ -150,7 +150,7 @@ class ProjectSerializer(serializers.HyperlinkedModelSerializer):
             and "project" in settings.OBJECTS_WITH_IDENTIFIERS
         ):
             fields.append("identifiers")
-        if "tardis.apps.dataclassification" in settings.INSTALED_APPS:
+        if "tardis.apps.dataclassification" in settings.INSTALLED_APPS:
             fields.append("classification")
 
     # def get_experiments(self):
