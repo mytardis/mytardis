@@ -57,6 +57,8 @@ tardis/apps/*
 !tardis/apps/dataclassification
 tardis/apps/autoarchive
 !tardis/apps/single_sign_on
+!tardis/apps/yaml_dump
+!tardis/apps/idw_download
 
 .DS_Store
 
