@@ -11,7 +11,7 @@ from tardis.apps.yaml_dump.models.datastatus import DataStatus
 from tardis.apps.yaml_dump.models.project import Project
 from tardis.apps.yaml_dump.models.username import Username
 
-INGESTED = DataStatus.INGESTED
+INGESTED = 5
 
 
 def wrangle_project_into_IDW_YAML(project: Dict[str, Any]) -> Project:

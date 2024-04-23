@@ -6,13 +6,12 @@ from yaml import SafeLoader
 
 from tardis.apps.yaml_dump.models.access_control import IAccessControl
 from tardis.apps.yaml_dump.models.dataclassification import IDataClassification
-from tardis.apps.yaml_dump.models.datastatus import IDataStatus
 from tardis.apps.yaml_dump.models.identifiers import IIdentifiers
 from tardis.apps.yaml_dump.models.yaml_dataclass import YAMLDataclass
 
 
 @dataclass
-class Experiment(YAMLDataclass, IAccessControl, IDataClassification, IDataStatus):
+class Experiment(YAMLDataclass, IAccessControl, IDataClassification):
     """
     A class representing MyTardis Experiment objects.
     """
@@ -20,6 +19,7 @@ class Experiment(YAMLDataclass, IAccessControl, IDataClassification, IDataStatus
     yaml_tag = "!Experiment"
     yaml_loader = SafeLoader
     title: str = ""
+    data_status: int = 5
     projects: List[str] = field(default_factory=list)
     description: str = ""
     identifiers: list[str] = field(default_factory=list)
