@@ -153,6 +153,9 @@ class ProjectSerializer(serializers.HyperlinkedModelSerializer):
         if "tardis.apps.dataclassification" in settings.INSTALLED_APPS:
             fields.append("data_classification")
 
+    def get_user_acls(self):
+        
+
     # def get_experiments(self):
     #    if request := self.context.get("request", None):
     #        queryset = Experiment.safe.all(user=request.user)

@@ -6,7 +6,7 @@ from dataclasses import dataclass, asdict
 from typing import Any, Dict, Optional, List
 
 from django.conf import settings
-from tardis.apps.yaml_dump.utils.common_models import UsernameYAMLDataclass
+
 
 INGESTED = 5
 
@@ -57,9 +57,7 @@ def wrangle_project_into_IDW_YAML(project: Dict[str, Any]) -> ProjectYAMLDatacla
         "tardis.apps.identifiers" in settings.INSTALLED_APPS
         and "project" in settings.OBJECTS_WITH_IDENTIFIERS
     ):
-        identifiers = []
-        for value in project["identifiers"]:
-            identifiers.append(value["identifier"])
+        identifiers = [value["identifier"] for value in project["identifiers"]]
         return_dc.identifiers = identifiers
     return return_dc
         
