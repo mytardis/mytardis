@@ -7,13 +7,12 @@ from yaml import SafeLoader
 
 from tardis.apps.yaml_dump.models.access_control import IAccessControl
 from tardis.apps.yaml_dump.models.dataclassification import IDataClassification
-from tardis.apps.yaml_dump.models.datastatus import IDataStatus
 from tardis.apps.yaml_dump.models.identifiers import IIdentifiers
 from tardis.apps.yaml_dump.models.yaml_dataclass import YAMLDataclass
 
 
 @dataclass
-class Dataset(YAMLDataclass, IAccessControl, IDataClassification, IDataStatus):
+class Dataset(YAMLDataclass, IAccessControl, IDataClassification):
     """
     A class representing MyTardis Dataset objects.
     """
@@ -21,6 +20,7 @@ class Dataset(YAMLDataclass, IAccessControl, IDataClassification, IDataStatus):
     yaml_tag = "!Dataset"
     yaml_loader = SafeLoader
     description: str = ""
+    data_status: int = 5
     experiments: List[str] = field(default_factory=list)
     instrument: str = ""
     identifiers: list[str] = field(default_factory=list)
