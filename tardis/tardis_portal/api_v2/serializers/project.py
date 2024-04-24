@@ -166,7 +166,7 @@ class ProjectSerializer(serializers.HyperlinkedModelSerializer):
             for acl in acls
         ]
     
-    def get_group_acls(self, obj) # TODO wrap in tests for micro/macro ACLS
+    def get_group_acls(self, obj): # TODO wrap in tests for micro/macro ACLS
         return obj.projectacl_set.select_related("group").filter(group__isnull=False)
 
     # def get_experiments(self):
