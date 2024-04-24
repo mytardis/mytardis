@@ -14,8 +14,8 @@ from django.conf import settings
 from rest_framework import serializers
 
 from tardis.apps.identifiers.models import ExperimentID
-from tardis.tardis_portal.api.serializers.dataset import DatasetSerializer
-from tardis.tardis_portal.api.serializers.user import UserSerializer
+from tardis.tardis_portal.api_v2.serializers.dataset import DatasetSerializer
+from tardis.tardis_portal.api_v2.serializers.user import UserSerializer
 from tardis.tardis_portal.models.experiment import Experiment
 from tardis.tardis_portal.models.parameters import (
     ExperimentParameter,

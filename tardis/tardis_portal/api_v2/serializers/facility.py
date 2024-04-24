@@ -14,7 +14,7 @@ from django.conf import settings
 from rest_framework import serializers
 
 from tardis.apps.identifiers.models import FacilityID
-from tardis.tardis_portal.api.serializers.groups import GroupSerializer
+from tardis.tardis_portal.api_v2.serializers.groups import GroupSerializer
 from tardis.tardis_portal.models.facility import Facility
 
 

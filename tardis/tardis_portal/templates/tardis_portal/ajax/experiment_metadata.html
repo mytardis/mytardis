@@ -1,7 +1,7 @@
 {% load capture %}
 
 <div class="container-fluid">
-  <div class="float-right">
+  <div class="float-end">
     {% if has_write_permissions and not experiment.locked and not experiment.is_publication %}
         <a title="Add" class="add-metadata btn btn-outline-secondary btn-sm"
            href="{% url 'tardis.tardis_portal.views.add_experiment_par' experiment.id %}">

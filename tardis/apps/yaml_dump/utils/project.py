@@ -7,21 +7,20 @@ from typing import Any, Dict
 
 from django.conf import settings
 
-from tardis.apps.yaml_dump.models.datastatus import DataStatus
 from tardis.apps.yaml_dump.models.project import Project
 from tardis.apps.yaml_dump.models.username import Username
 
-INGESTED = DataStatus.INGESTED
+INGESTED = 5
 
 
 def wrangle_project_into_IDW_YAML(project: Dict[str, Any]) -> Project:
-    """Flatten the structure data into the format suited to dump in a YAML
+    """Flatten the structure of a project into the format suited to dump in a YAML
 
     Args:
         project (Dict[str,Any]): A project dictionary produced by the serializer
 
     Returns:
-        ProjectYAMLDataclass: The flattened dictionary
+        Project: The YAML object representing the project
     """
     return_dc = Project(
         data_status=INGESTED,  # INGESTED flag is set since we can get the data from MyTardis
@@ -54,5 +53,3 @@ def wrangle_project_into_IDW_YAML(project: Dict[str, Any]) -> Project:
         identifiers = [value["identifier"] for value in project["identifiers"]]
         return_dc.identifiers = identifiers
     return return_dc
-
-

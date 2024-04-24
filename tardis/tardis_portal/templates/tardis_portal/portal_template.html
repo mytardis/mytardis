@@ -82,7 +82,7 @@
       <a class="navbar-brand" href="{% url 'tardis.tardis_portal.views.index' %}">
           {{ site_title|default:'MyTardis' }}
         </a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target=".navbar-collapse"
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse"
                 aria-controls="navbar-collapse" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
         </button>
@@ -205,7 +205,7 @@
                 $('#message-container').html(
                     '<div class="alert ' +
                         this.type +
-                        '"><a class="close" data-dismiss="alert">×</a><span>' +
+                        '"><a class="btn-close" data-bs-dismiss="alert"></a><span>' +
                         he.encode(text) +
                         '</span></div>');
             },
@@ -243,7 +243,7 @@
         <div id="django-message-container" >
           {% for message in messages %}
             <p{% if message.level_tag %} class="alert alert-block alert-{{ message.level_tag }} alert-dismissible"{% endif %}>
-              <a class="close" data-dismiss="alert">&times;</a>
+              <a class="btn-close" data-bs-dismiss="alert"></a>
               {% if 'safe' in message.tags %}
                 {{ message|safe }}
               {% else %}
@@ -257,7 +257,7 @@
       <div id="status-alert"
            class="alert alert-block {% if error %}alert-danger{% else %}alert-info{% endif %} alert-dismissible"
            style="display: none">
-        <a class="close" data-dismiss="alert">&times;</a>
+        <a class="btn-close" data-bs-dismiss="alert"></a>
         <span class="message">{{status}}</span>
         <script type="text/javascript">
         $(function() {

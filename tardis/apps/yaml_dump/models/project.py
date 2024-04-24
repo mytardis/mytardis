@@ -6,14 +6,13 @@ from yaml import SafeLoader
 
 from tardis.apps.yaml_dump.models.access_control import IAccessControl
 from tardis.apps.yaml_dump.models.dataclassification import IDataClassification
-from tardis.apps.yaml_dump.models.datastatus import IDataStatus
 from tardis.apps.yaml_dump.models.identifiers import IIdentifiers
 from tardis.apps.yaml_dump.models.username import Username
 from tardis.apps.yaml_dump.models.yaml_dataclass import YAMLDataclass
 
 
 @dataclass
-class Project(YAMLDataclass, IAccessControl, IDataClassification, IDataStatus):
+class Project(YAMLDataclass, IAccessControl, IDataClassification):
     """
     A class representing MyTardis Project objects.
 
@@ -29,6 +28,7 @@ class Project(YAMLDataclass, IAccessControl, IDataClassification, IDataStatus):
     yaml_loader = SafeLoader
     description: str = ""
     name: str = ""
+    data_status: int = 5
     principal_investigator: Username = field(
         default=Username(), metadata={"label": "Username"}
     )

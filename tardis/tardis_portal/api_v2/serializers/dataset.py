@@ -14,7 +14,7 @@ from django.conf import settings
 from rest_framework import serializers
 
 from tardis.apps.identifiers.models import DatasetID
-from tardis.tardis_portal.api.serializers.instrument import InstrumentSerializer
+from tardis.tardis_portal.api_v2.serializers.instrument import InstrumentSerializer
 from tardis.tardis_portal.models.dataset import Dataset
 from tardis.tardis_portal.models.parameters import DatasetParameter, DatasetParameterSet
 
