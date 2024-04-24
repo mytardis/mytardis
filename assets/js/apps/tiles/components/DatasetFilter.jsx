@@ -33,11 +33,11 @@ const DatasetFilter = ({ onFilter, onSort }) => {
           </div>
           <div className="form-horizontal col-md-4">
             <div className="btn-group">
-              <button type="button" className="btn btn-outline-secondary float-right">Sort by</button>
+              <button type="button" className="btn btn-outline-secondary float-end">Sort by</button>
               <button
                 type="button"
                 className="btn btn-outline-secondary dropdown-toggle dropdown-toggle-split"
-                data-toggle="dropdown"
+                data-bs-toggle="dropdown"
                 aria-haspopup="true"
                 aria-expanded="false"
               >

@@ -38,7 +38,7 @@
             <div class="card mb-2">
               <div id="private-toggle-{{proj.id}}"
                    class="card-header accordion-toggle private-project py-2"
-                   data-toggle="collapse" data-parent="#private-projects">
+                   data-bs-toggle="collapse" data-parent="#private-projects">
                   <div class="row">
                     <div class="col-md-8 px-1 pb-1">
                       <input type="hidden" class="proj-index" value="{{ forloop.counter }}">
@@ -51,7 +51,7 @@
                   </div>
                   <div class="row">
                     <div class="col">
-                      <span class="float-right">
+                      <span class="float-end">
                        {% for dltype, dlurl in proj.get_download_urls.items %}
                         {% if forloop.first %}
                           <a class="dllink" href="{{dlurl}}"
@@ -88,7 +88,7 @@
             <div class="card mb-2">
               <div id="private-toggle-{{exp.id}}"
                    class="card-header accordion-toggle private-experiment py-2"
-                   data-toggle="collapse" data-parent="#private-experiments">
+                   data-bs-toggle="collapse" data-parent="#private-experiments">
                   <div class="row">
                     <div class="col-md-8 px-1 pb-1">
                       <input type="hidden" class="exp-index" value="{{ forloop.counter }}">
@@ -106,7 +106,7 @@
                       {% endfor %}&nbsp;
                     </div>
                     <div class="col">
-                      <span class="float-right">
+                      <span class="float-end">
                        {% for dltype, dlurl in exp.get_download_urls.items %}
                         {% if forloop.first %}
                           <a class="dllink" href="{{dlurl}}"
@@ -146,7 +146,7 @@
             <div class="card mb-2">
               <div id="public-toggle-{{proj.id}}"
                    class="card-header accordion-toggle public-project py-2"
-                   data-toggle="collapse" data-parent="#public-projects">
+                   data-bs-toggle="collapse" data-parent="#public-projects">
                 <div class="row">
                   <div class="col-md-8 px-1 pb-1">
                     <input type="hidden" class="proj-index" value="{{ forloop.counter }}">
@@ -159,7 +159,7 @@
                 </div>
                 <div class="row">
                   <div class="col">
-                    <span class="float-right">
+                    <span class="float-end">
                     {% if proj.public_download_allowed %}
                       {% for dltype, dlurl in proj.get_download_urls.items %}
                         {% if forloop.first %}
@@ -203,7 +203,7 @@
           <div class="card mb-2">
             <div id="public-toggle-{{exp.id}}"
                  class="card-header accordion-toggle public-experiment py-2"
-                 data-toggle="collapse" data-parent="#public-experiments">
+                 data-bs-toggle="collapse" data-parent="#public-experiments">
               <div class="row">
                 <div class="col-md-8 px-1 pb-1">
                   <input type="hidden" class="exp-index" value="{{ forloop.counter }}">
@@ -222,7 +222,7 @@
                   &nbsp;
                 </div>
                 <div class="col">
-                  <span class="float-right">
+                  <span class="float-end">
                   {% if exp.public_download_allowed %}
                     {% for dltype, dlurl in exp.get_download_urls.items %}
                       {% if forloop.first %}

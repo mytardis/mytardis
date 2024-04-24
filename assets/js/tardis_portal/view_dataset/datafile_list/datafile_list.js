@@ -94,7 +94,7 @@ $(document).ready(function() {
             "class=\"btn btn-default btn-sm recall-datafile\" " +
             "type=\"button\" title=\"Recall\" ";
         if (datafile.recall_url) {
-            recallButtonHtml += "data-toggle=\"tooltip\" " +
+            recallButtonHtml += "data-bs-toggle=\"tooltip\" " +
                 "data-recall-url=\"" + datafile.recall_url + "\"" +
                 "style=\"pointer-events: auto;\"";
         }

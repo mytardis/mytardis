@@ -18,12 +18,12 @@
   {% verbatim %}
   <div class="row">
     <div class="col-md-6">
-      <h2 class="float-left" style="color:#999999" ng-cloak>{{facilityCtrl.selectedFacilityName}}</h2>
+      <h2 class="float-start" style="color:#999999" ng-cloak>{{facilityCtrl.selectedFacilityName}}</h2>
     </div>
     <div class="col-md-6">
-      <div class="dropdown show float-right" ng-show="facilityCtrl.showFacilitySelector()" ng-cloak>
+      <div class="dropdown show float-end" ng-show="facilityCtrl.showFacilitySelector()" ng-cloak>
         <button class="btn btn-outline-secondary dropdown-toggle"
-           data-toggle="dropdown">Facility: {{facilityCtrl.selectedFacilityName}}
+           data-bs-toggle="dropdown">Facility: {{facilityCtrl.selectedFacilityName}}
           <span class="caret"></span>
         </button>
         <div class="dropdown-menu dropdown-menu-right">
@@ -81,7 +81,7 @@
                       Refresh
                     </button>
                     <button type="button" class="btn btn-outline-secondary btn-sm dropdown-toggle"
-                            data-toggle="dropdown">
+                            data-bs-toggle="dropdown">
                       Auto refresh
                       <span ng-show="facilityCtrl.refreshInterval === 0">(never)</span>
                       <span ng-hide="facilityCtrl.refreshInterval === 0">({{facilityCtrl.refreshCountdownFmt()}})</span>

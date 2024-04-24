@@ -26,8 +26,7 @@
     <div class="modal-content">
       <div class="modal-header">
         <h1 class="modal-title">Add Parameters</h1>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
         </button>
       </div>
       <div class="loading-placeholder" style="display: none">
@@ -43,7 +42,7 @@
 <div class="page-header">
   <h4>Experiment</h4>
   {% if not experiment.public %}
-  <div class="float-right">
+  <div class="float-end">
     {% if push_to_enabled and is_authenticated %}
     <a class="btn btn-sm btn-outline-secondary push-to" title="Push to..."
        href="{{ push_to_url }}" target="_blank" rel="noreferrer noopener">
@@ -109,7 +108,7 @@
     <!-- Tab buttons -->
     <ul id="experiment-tabs" class="nav nav-tabs" style="padding-top: 1.25rem">
       {% for appurl, appname in apps %}
-      <li class="nav-item"><a class="nav-link" data-toggle="tab" title="{{appname}}" data-url="{{ appurl }}">{{ appname }}</a></li>
+      <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" title="{{appname}}" data-url="{{ appurl }}">{{ appname }}</a></li>
       {% endfor %}
     </ul>
     <div class="tab-content">

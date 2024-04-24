@@ -26,8 +26,8 @@ QUnit.skip("Test clicking on Public Access button", function(assert) {
         <input type="hidden" id="experiment-id" value="1">
         
         <button class="public_access_button btn btn-outline-secondary btn-sm" 
-                data-toggle="modal" 
-                data-target="#modal-public-access" 
+                data-bs-toggle="modal" 
+                data-bs-target="#modal-public-access" 
                 title="Change" 
                 type="submit">
               <i class="fa fa-cog mr-1"></i>
@@ -42,7 +42,7 @@ QUnit.skip("Test clicking on Public Access button", function(assert) {
    
         <div class="modal hide fade" id="modal-metadata">
           <div class="modal-header">
-            <a class="close" data-dismiss="modal">&times;</a>
+            <a class="btn-close" data-bs-dismiss="modal"></a>
             <h1 class="title">Add Parameters</h1>
           </div>
 
