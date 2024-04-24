@@ -14,7 +14,7 @@ from django.conf import settings
 from rest_framework import serializers
 
 from tardis.apps.identifiers.models import InstrumentID
-from tardis.tardis_portal.api.serializers.facility import FacilitySerializer
+from tardis.tardis_portal.api_v2.serializers.facility import FacilitySerializer
 from tardis.tardis_portal.models.instrument import Instrument
 from tardis.tardis_portal.models.parameters import (
     InstrumentParameter,
