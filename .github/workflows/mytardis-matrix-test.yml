@@ -69,6 +69,11 @@ jobs:
         path: .venv
         key: pydeps-${{ matrix.python-version }}-${{ hashFiles('**/poetry.lock') }}
 
+    # Add a step to rebuild the poetry.lock file. If the lock file gets out of date this will bring 
+    # it back in line with the pyproject.toml file.
+
+    - run: poetry lock
+
     # Install dependencies. `--no-root` means "install all dependencies but not the project
     # itself", which is what you want to avoid caching _your_ code. The `if` statement
     # ensures this only runs on a cache miss.
