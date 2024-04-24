@@ -119,6 +119,7 @@ class ProjectSerializer(serializers.HyperlinkedModelSerializer):
     institution = InstitutionSerializer(many=True)
     created_by = UserSerializer(many=False)
     user_acls = serializers.SerializerMethodField("get_user_acls")
+    group_acls = serializers.SerializerMethodField("get_group_acls")
 
     # experiments = serializers.SerializerMethodField("get_experiments")
 
@@ -146,6 +147,7 @@ class ProjectSerializer(serializers.HyperlinkedModelSerializer):
             "url",
             "projectparameterset_set",
             "user_acls",
+            "group_acls",
         ]
         if (
             "tardis.apps.identifiers" in settings.INSTALLED_APPS

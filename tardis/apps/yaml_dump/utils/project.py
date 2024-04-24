@@ -62,7 +62,7 @@ def wrangle_project_into_IDW_YAML(project: Dict[str, Any]) -> Project:
             can_download=acl["can_download"],
             see_sensitive=acl["see_sensitive"],
         )
-        for acl in project["user_acls"]
+        for acl in project["group_acls"]
     ]
     return_dc.groups = group_acls
 
