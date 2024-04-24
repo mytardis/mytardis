@@ -168,7 +168,16 @@ class ProjectSerializer(serializers.HyperlinkedModelSerializer):
         ]
 
     def get_group_acls(self, obj):  # TODO wrap in tests for micro/macro ACLS
-        return obj.projectacl_set.select_related("group").filter(group__isnull=False)
+        acls = obj.projectacl_set.select_related("group").filter(group__isnull=False)
+        return [
+            {
+                "group": acl.get_related_object().name,
+                "can_download": acl.canDownload,
+                "see_sensitive": acl.canSensitive,
+                "is_owner": acl.isOwner,
+            }
+            for acl in acls
+        ]
 
     # def get_experiments(self):
     #    if request := self.context.get("request", None):
