@@ -7,7 +7,7 @@ from typing import Any, Dict
 
 from django.conf import settings
 
-from tardis.apps.yaml_dump.models.access_control import UserACL
+from tardis.apps.yaml_dump.models.access_control import GroupACL, UserACL
 from tardis.apps.yaml_dump.models.project import Project
 from tardis.apps.yaml_dump.models.username import Username
 
@@ -54,6 +54,17 @@ def wrangle_project_into_IDW_YAML(project: Dict[str, Any]) -> Project:
         for acl in project["user_acls"]
     ]
     return_dc.users = user_acls
+
+    group_acls = [
+        GroupACL(
+            group=acl["group"],
+            is_owner=acl["is_owner"],
+            can_download=acl["can_download"],
+            see_sensitive=acl["see_sensitive"],
+        )
+        for acl in project["user_acls"]
+    ]
+    return_dc.groups = group_acls
 
     if "tardis.apps.dataclassification" in settings.INSTALLED_APPS:
         return_dc.data_classification = project["data_classification"]["classification"]
