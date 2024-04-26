@@ -44,7 +44,7 @@ def wrangle_experiment_into_IDW_YAML(experiment: Dict[str, Any]) -> Experiment:
     experiment_dc = add_data_classification_to_dataclass(experiment_dc, experiment)
 
     if "tardis.apps.projects" in settings.INSTALLED_APPS:
-        experiment_dc.projects = experiment["project_identifiers"]
+        experiment_dc.projects = experiment["projects"]
 
     if (
         "tardis.apps.identifiers" in settings.INSTALLED_APPS

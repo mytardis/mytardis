@@ -16,6 +16,7 @@ from rest_framework import serializers
 from tardis.apps.dataclassification.models import ExperimentDataClassification
 from tardis.apps.identifiers.models import ExperimentID
 from tardis.apps.projects.models import Project
+from tardis.tardis_portal.api_v2.serializers.project import ProjectSerializer
 from tardis.tardis_portal.api_v2.serializers.schema import (
     ParameterNameSerializer,
     SchemaSerializer,
@@ -78,7 +79,7 @@ class ExperimentSerializer(serializers.HyperlinkedModelSerializer):
     created_by = UserSerializer(many=False)
     user_acls = serializers.SerializerMethodField("get_user_acls")
     group_acls = serializers.SerializerMethodField("get_group_acls")
-    project_identifiers = serializers.SerializerMethodField("get_project_identifiers")
+    projects = ProjectSerializer(many=True)
 
     # datasets = serializers.SerializerMethodField("get_datasets")
 
@@ -114,7 +115,7 @@ class ExperimentSerializer(serializers.HyperlinkedModelSerializer):
         if "tardis.apps.dataclassification" in settings.INSTALLED_APPS:
             fields.append("data_classification")
         if "tardis.apps.projects" in settings.INSTALLED_APPS:
-            fields.append("project_identifiers")
+            fields.append("projects")
 
     def get_user_acls(self, obj):  # TODO wrap in tests for micro/macro ACLS
         acls = obj.experimentacl_set.select_related("user").filter(user__isnull=False)
@@ -139,17 +140,3 @@ class ExperimentSerializer(serializers.HyperlinkedModelSerializer):
             }
             for acl in acls
         ]
-
-    def get_project_identifiers(self, obj):
-        projects = obj.projects.all()
-        identifiers_list = []
-        for project in projects:
-            if (
-                "tardis.apps.identifiers" in settings.INSTALLED_APPS
-                and "projects" in settings.OBJECTS_WITH_IDENTIFIERS
-            ):
-                identifiers = project.identifiers.all()
-                identifiers_list.extend(iter(identifiers))
-            else:
-                identifiers_list.append(project.name)
-        return identifiers_list
