@@ -34,16 +34,17 @@ def add_metadata_to_dataclass(
         raise ValueError(
             "Dataclass should be a Projet, Experiment or Dataset as defined in the YAML app"
         )
-    with contextlib.suppress(KeyError):
-        for parameter in obj[parameterset_key][0]["parameters"]:
-            value = None
-            if parameter["numerical_value"]:
-                value = parameter["numerical_value"]
-            if parameter["string_value"]:
-                value = parameter["string_value"]
-            if parameter["datetime_value"]:
-                value = parameter["datetime_value"]
-            metadata[parameter["name"]["name"]] = value
+    with contextlib.suppress(IndexError):
+        with contextlib.suppress(KeyError):
+            for parameter in obj[parameterset_key][0]["parameters"]:
+                value = None
+                if parameter["numerical_value"]:
+                    value = parameter["numerical_value"]
+                if parameter["string_value"]:
+                    value = parameter["string_value"]
+                if parameter["datetime_value"]:
+                    value = parameter["datetime_value"]
+                metadata[parameter["name"]["name"]] = value
     dataclass.metadata = metadata
     return dataclass
 
