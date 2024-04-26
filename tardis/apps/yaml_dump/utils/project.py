@@ -39,7 +39,7 @@ def wrangle_project_into_IDW_YAML(project: Dict[str, Any]) -> Project:
     )
     with contextlib.suppress(IndexError, KeyError):
         project_dc.object_schema = (
-            project["experimentparameterset_set"][0]["schema"]["namespace"] or ""
+            project["projecttparameterset_set"][0]["schema"]["namespace"] or ""
         )
     # TODO: https://aucklanduni.atlassian.net/browse/IDS-685
     project_dc = add_metadata_to_dataclass(project_dc, project)
