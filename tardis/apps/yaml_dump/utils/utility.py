@@ -32,7 +32,7 @@ def add_metadata_to_dataclass(
         parameterset_key = "datasetparameterset_set"
     else:
         raise ValueError(
-            "Dataclass should be a Projet, Experiment or Dataset as defined in the YAML app"
+            "Dataclass should be a Project, Experiment or Dataset as defined in the YAML app"
         )
     with contextlib.suppress(IndexError):
         with contextlib.suppress(KeyError):
