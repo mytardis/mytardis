@@ -74,7 +74,7 @@ class ExperimentDataclassificationSerializer(serializers.ModelSerializer):
 
 class ExperimentSerializer(serializers.HyperlinkedModelSerializer):
     experimentparameterset_set = ExperimentParameterSetSerializer(many=True)
-    created_by = UserSerializer(many=True)
+    created_by = UserSerializer(many=False)
     user_acls = serializers.SerializerMethodField("get_user_acls")
     group_acls = serializers.SerializerMethodField("get_group_acls")
 
