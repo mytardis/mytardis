@@ -77,6 +77,7 @@ class ExperimentSerializer(serializers.HyperlinkedModelSerializer):
     created_by = UserSerializer(many=False)
     user_acls = serializers.SerializerMethodField("get_user_acls")
     group_acls = serializers.SerializerMethodField("get_group_acls")
+    projects = serializers.SerializerMethodField("get_projects")
 
     # datasets = serializers.SerializerMethodField("get_datasets")
 
@@ -111,6 +112,8 @@ class ExperimentSerializer(serializers.HyperlinkedModelSerializer):
             fields.append("identifiers")
         if "tardis.apps.dataclassification" in settings.INSTALLED_APPS:
             fields.append("data_classification")
+        if "tardis.apps.projects" in settings.INSTALLED_APPS:
+            fields.append("projects")
 
     def get_user_acls(self, obj):  # TODO wrap in tests for micro/macro ACLS
         acls = obj.experimentacl_set.select_related("user").filter(user__isnull=False)
@@ -134,4 +137,16 @@ class ExperimentSerializer(serializers.HyperlinkedModelSerializer):
                 "is_owner": acl.isOwner,
             }
             for acl in acls
+        ]
+
+    def get_projects(self, obj):
+        projects = obj.projects
+        return [
+            project.identifiers[0]
+            if (
+                "tardis.apps.identifiers" in settings.INSTALLED_APPS
+                and "project" in settings.OBJECTS_WITH_IDENTIFIERS
+            )
+            else project.name
+            for project in projects
         ]
