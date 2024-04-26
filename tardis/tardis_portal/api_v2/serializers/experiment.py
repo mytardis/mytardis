@@ -142,11 +142,13 @@ class ExperimentSerializer(serializers.HyperlinkedModelSerializer):
     def get_projects(self, obj):
         projects = obj.projects
         identifiers_list = []
-        if (
-            "tardis.apps.identifiers" in settings.INSTALLED_APPS
-            and "projects" in settings.OBJECTS_WITH_IDENTIFIERS
-        ):
-            for project in projects:
+        for project in projects:
+            if (
+                "tardis.apps.identifiers" in settings.INSTALLED_APPS
+                and "projects" in settings.OBJECTS_WITH_IDENTIFIERS
+            ):
                 identifiers = project.identifiers
                 identifiers_list.extend(iter(identifiers))
-        return [identifiers_list[0]] if identifiers_list else [project.name]
+            else:
+                identifiers_list.append(project.name)
+        return identifiers_list
