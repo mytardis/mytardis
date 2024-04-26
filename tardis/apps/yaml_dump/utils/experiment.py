@@ -50,6 +50,6 @@ def wrangle_experiment_into_IDW_YAML(experiment: Dict[str, Any]) -> Experiment:
         "tardis.apps.identifiers" in settings.INSTALLED_APPS
         and "experiment" in settings.OBJECTS_WITH_IDENTIFIERS
     ):
-        identifiers = [value["identifier"] for value in experiment["identifiers"]]
-        experiment_dc.identifiers = identifiers
+        identifiers = experiment["project_identifiers"]
+        experiment_dc.projects = identifiers
     return experiment_dc
