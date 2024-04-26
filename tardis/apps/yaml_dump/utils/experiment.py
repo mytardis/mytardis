@@ -32,10 +32,13 @@ def wrangle_experiment_into_IDW_YAML(experiment: Dict[str, Any]) -> Experiment:
         data_status=INGESTED,
         description=experiment["description"],
         title=experiment["title"],
-        object_schema=experiment["experimentparameterset_set"][0]["schema"][
-            "namespace"
-        ],
     )
+    try:
+        experiment_dc.object_schema=experiment["experimentparameterset_set"][0]["schema"][
+            "namespace"
+        ]
+    except (KeyError, IndexError):
+        experiment_dc.object_schema = None
     # TODO: https://aucklanduni.atlassian.net/browse/IDS-685
     experiment_dc = add_metadata_to_dataclass(experiment_dc, experiment)
     experiment_dc = add_acls_to_dataclass(experiment_dc, experiment)

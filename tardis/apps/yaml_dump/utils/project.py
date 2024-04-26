@@ -32,11 +32,16 @@ def wrangle_project_into_IDW_YAML(project: Dict[str, Any]) -> Project:
         data_status=INGESTED,  # INGESTED flag is set since we can get the data from MyTardis
         description=project["description"],
         name=project["name"],
-        object_schema=project["projectparameterset_set"][0]["schema"]["namespace"],
         principal_investigator=Username(
             f'{project["principal_investigator"]["username"]}',
         ),
     )
+    try:
+        project_dc.object_schema = project["experimentparameterset_set"][0]["schema"][
+            "namespace"
+        ]
+    except (KeyError, IndexError):
+        project_dc.object_schema = None
     # TODO: https://aucklanduni.atlassian.net/browse/IDS-685
     project_dc = add_metadata_to_dataclass(project_dc, project)
     project_dc = add_acls_to_dataclass(project_dc, project)
