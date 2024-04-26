@@ -140,7 +140,7 @@ class ExperimentSerializer(serializers.HyperlinkedModelSerializer):
         ]
 
     def get_projects(self, obj):
-        projects = obj.projects
+        projects = obj.projects_set
         identifiers_list = []
         for project in projects:
             if (
