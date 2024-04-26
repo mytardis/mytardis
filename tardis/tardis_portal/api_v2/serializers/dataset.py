@@ -48,7 +48,7 @@ class DatasetParameterSetSerializer(serializers.ModelSerializer):
 
 class DatasetSerializer(serializers.ModelSerializer):
     if (
-        "tardis.apps.identifiers" in settings.INSTALLED_APS
+        "tardis.apps.identifiers" in settings.INSTALLED_APPS
         and "dataset" in settings.OBJECTS_WITH_IDENTIFIERS
     ):
         identifiers = DatasetIDSerializer(many=True)
@@ -66,7 +66,7 @@ class DatasetSerializer(serializers.ModelSerializer):
             "paramtersets",
         ]
         if (
-            "tardis.apps.identifiers" in settings.INSTALLED_APS
+            "tardis.apps.identifiers" in settings.INSTALLED_APPS
             and "dataset" in settings.OBJECTS_WITH_IDENTIFIERS
         ):
             fields.append("identifiers")

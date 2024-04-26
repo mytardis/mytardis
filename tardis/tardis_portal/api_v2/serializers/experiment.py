@@ -81,7 +81,7 @@ class ExperimentSerializer(serializers.HyperlinkedModelSerializer):
     # datasets = serializers.SerializerMethodField("get_datasets")
 
     if (
-        "tardis.apps.identifiers" in settings.INSTALLED_APS
+        "tardis.apps.identifiers" in settings.INSTALLED_APPS
         and "experiment" in settings.OBJECTS_WITH_IDENTIFIERS
     ):
         identifiers = ExperimentIDSerializer(many=True)
@@ -105,7 +105,7 @@ class ExperimentSerializer(serializers.HyperlinkedModelSerializer):
             "group_acls",
         ]
         if (
-            "tardis.apps.identifiers" in settings.INSTALLED_APS
+            "tardis.apps.identifiers" in settings.INSTALLED_APPS
             and "experiment" in settings.OBJECTS_WITH_IDENTIFIERS
         ):
             fields.append("identifiers")
