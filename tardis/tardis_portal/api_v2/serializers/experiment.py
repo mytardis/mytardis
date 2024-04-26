@@ -15,6 +15,7 @@ from rest_framework import serializers
 
 from tardis.apps.dataclassification.models import ExperimentDataClassification
 from tardis.apps.identifiers.models import ExperimentID
+from tardis.apps.projects.models import Project
 from tardis.tardis_portal.api_v2.serializers.schema import (
     ParameterNameSerializer,
     SchemaSerializer,
@@ -140,7 +141,7 @@ class ExperimentSerializer(serializers.HyperlinkedModelSerializer):
         ]
 
     def get_projects(self, obj):
-        projects = obj.projects_set
+        projects = obj.projects
         identifiers_list = []
         for project in projects:
             if (
