@@ -1,15 +1,13 @@
+from enum import Enum
+
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
+from tardis.apps.dataclassification.enumerators import DataClassificationEnum
 from tardis.apps.projects.models import Project
 from tardis.tardis_portal.models.dataset import Dataset
 from tardis.tardis_portal.models.experiment import Experiment
-
-DATA_CLASSIFICATION_RESTRICTED = 1
-DATA_CLASSIFICATION_SENSITIVE = 25
-DATA_CLASSIFICATION_INTERNAL = 50
-DATA_CLASSIFICATION_PUBLIC = 100
 
 
 class DataClassification(models.Model):
@@ -19,16 +17,16 @@ class DataClassification(models.Model):
     enumerated data classification"""
 
     DATA_CLASSIFICATION_CHOICES = (
-        (DATA_CLASSIFICATION_RESTRICTED, "Restricted"),
-        (DATA_CLASSIFICATION_SENSITIVE, "Sensitive"),
-        (DATA_CLASSIFICATION_INTERNAL, "Internal"),
-        (DATA_CLASSIFICATION_PUBLIC, "Public"),
+        (DataClassificationEnum.RESTRICTED, "Restricted"),
+        (DataClassificationEnum.SENSITIVE, "Sensitive"),
+        (DataClassificationEnum.INTERNAL, "Internal"),
+        (DataClassificationEnum.PUBLIC, "Public"),
     )
 
     classification = models.PositiveSmallIntegerField(
         choices=DATA_CLASSIFICATION_CHOICES,
         null=False,
-        default=DATA_CLASSIFICATION_SENSITIVE,
+        default=DataClassificationEnum.SENSITIVE,
     )
 
     class Meta:
@@ -126,17 +124,17 @@ def classification_to_string(classification: int) -> str:
     Note: Relies on the order of operations in order to distinguish between
     PUBLIC and INTERNAL. Any PUBLIC data should have been filtered out prior to
     testing the INTERNAL classification, which simplifies the function."""
-    if classification < DATA_CLASSIFICATION_SENSITIVE:
+    if classification < DataClassificationEnum.SENSITIVE.value:
         return "Restricted"
-    if classification >= DATA_CLASSIFICATION_PUBLIC:
+    if classification >= DataClassificationEnum.PUBLIC.value:
         return "Public"
-    if classification >= DATA_CLASSIFICATION_INTERNAL:
+    if classification >= DataClassificationEnum.INTERNAL.value:
         return "Internal"
     return "Sensitive"
 
 
-def get_classification_from_parents(obj: Experiment | Dataset) -> int:
-    """Helper funtion to get data classification from the parent object if it is not defined
+def get_classification_from_parents(obj: Experiment | Dataset) -> Enum:
+    """Helper function to get data classification from the parent object if it is not defined
 
     Args:
         obj (Experiment | Dataset): an instance of either an experiment or a dataset to check the parent of
@@ -152,4 +150,4 @@ def get_classification_from_parents(obj: Experiment | Dataset) -> int:
             parent.data_classification.classification for parent in parents
         ]:
             return min(classifications)
-    return DATA_CLASSIFICATION_SENSITIVE
+    return DataClassificationEnum.SENSITIVE
