@@ -7,13 +7,18 @@ from typing import Any, Dict
 
 from django.conf import settings
 
-from tardis.apps.yaml_dump.models.access_control import GroupACL, UserACL
 from tardis.apps.yaml_dump.models.project import Project
 from tardis.apps.yaml_dump.models.username import Username
+from tardis.apps.yaml_dump.utils.utility import (
+    add_acls_to_dataclass,
+    add_data_classification_to_dataclass,
+    add_metadata_to_dataclass,
+)
 
 INGESTED = 5
 
 
+# TODO: https://aucklanduni.atlassian.net/browse/IDS-686
 def wrangle_project_into_IDW_YAML(project: Dict[str, Any]) -> Project:
     """Flatten the structure of a project into the format suited to dump in a YAML
 
@@ -23,7 +28,7 @@ def wrangle_project_into_IDW_YAML(project: Dict[str, Any]) -> Project:
     Returns:
         Project: The YAML object representing the project
     """
-    return_dc = Project(
+    project_dc = Project(
         data_status=INGESTED,  # INGESTED flag is set since we can get the data from MyTardis
         description=project["description"],
         name=project["name"],
@@ -32,46 +37,15 @@ def wrangle_project_into_IDW_YAML(project: Dict[str, Any]) -> Project:
             f'{project["principal_investigator"]["username"]}',
         ),
     )
-    if project["projectparameterset_set"][0]["parameters"]:
-        metadata = {}
-        for parameter in project["projectparameterset_set"][0]["parameters"]:
-            value = None
-            if parameter["numerical_value"]:
-                value = parameter["numerical_value"]
-            if parameter["string_value"]:
-                value = parameter["string_value"]
-            if parameter["datetime_value"]:
-                value = parameter["datetime_value"]
-            metadata[parameter["name"]["name"]] = value
-        return_dc.metadata = metadata
-    user_acls = [
-        UserACL(
-            user=Username(acl["user"]),
-            is_owner=acl["is_owner"],
-            can_download=acl["can_download"],
-            see_sensitive=acl["see_sensitive"],
-        )
-        for acl in project["user_acls"]
-    ]
-    return_dc.users = user_acls
+    # TODO: https://aucklanduni.atlassian.net/browse/IDS-685
+    project_dc = add_metadata_to_dataclass(project_dc, project)
+    project_dc = add_acls_to_dataclass(project_dc, project)
+    project_dc = add_data_classification_to_dataclass(project_dc, project)
 
-    group_acls = [
-        GroupACL(
-            group=acl["group"],
-            is_owner=acl["is_owner"],
-            can_download=acl["can_download"],
-            see_sensitive=acl["see_sensitive"],
-        )
-        for acl in project["group_acls"]
-    ]
-    return_dc.groups = group_acls
-
-    if "tardis.apps.dataclassification" in settings.INSTALLED_APPS:
-        return_dc.data_classification = project["data_classification"]["classification"]
     if (
         "tardis.apps.identifiers" in settings.INSTALLED_APPS
         and "project" in settings.OBJECTS_WITH_IDENTIFIERS
     ):
         identifiers = [value["identifier"] for value in project["identifiers"]]
-        return_dc.identifiers = identifiers
-    return return_dc
+        project_dc.identifiers = identifiers
+    return project_dc
