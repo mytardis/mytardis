@@ -17,16 +17,16 @@ class DataClassification(models.Model):
     enumerated data classification"""
 
     DATA_CLASSIFICATION_CHOICES = (
-        (DataClassificationEnum.RESTRICTED, "Restricted"),
-        (DataClassificationEnum.SENSITIVE, "Sensitive"),
-        (DataClassificationEnum.INTERNAL, "Internal"),
-        (DataClassificationEnum.PUBLIC, "Public"),
+        (DataClassificationEnum.RESTRICTED.value, "Restricted"),
+        (DataClassificationEnum.SENSITIVE.value, "Sensitive"),
+        (DataClassificationEnum.INTERNAL.value, "Internal"),
+        (DataClassificationEnum.PUBLIC.value, "Public"),
     )
 
     classification = models.PositiveSmallIntegerField(
         choices=DATA_CLASSIFICATION_CHOICES,
         null=False,
-        default=DataClassificationEnum.SENSITIVE,
+        default=DataClassificationEnum.SENSITIVE.value,
     )
 
     class Meta:
