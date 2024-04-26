@@ -3,6 +3,7 @@
 A set of functions to wrangle the data into an appropriate format for export via YAML
 """
 
+import contextlib
 from typing import Any, Dict
 
 from django.conf import settings
@@ -36,9 +37,10 @@ def wrangle_project_into_IDW_YAML(project: Dict[str, Any]) -> Project:
             f'{project["principal_investigator"]["username"]}',
         ),
     )
-    project_dc.object_schema = (
-        project["experimentparameterset_set"][0]["schema"]["namespace"] or ""
-    )
+    with contextlib.suppress(IndexError, KeyError):
+        project_dc.object_schema = (
+            project["experimentparameterset_set"][0]["schema"]["namespace"] or ""
+        )
     # TODO: https://aucklanduni.atlassian.net/browse/IDS-685
     project_dc = add_metadata_to_dataclass(project_dc, project)
     project_dc = add_acls_to_dataclass(project_dc, project)
