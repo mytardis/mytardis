@@ -16,7 +16,7 @@ from rest_framework import serializers
 from tardis.apps.dataclassification.models import ExperimentDataClassification
 from tardis.apps.identifiers.models import ExperimentID
 from tardis.apps.projects.models import Project
-from tardis.tardis_portal.api_v2.serializers.project import ProjectSerializer
+from tardis.tardis_portal.api_v2.serializers.project import ProjectIDSerializer
 from tardis.tardis_portal.api_v2.serializers.schema import (
     ParameterNameSerializer,
     SchemaSerializer,
@@ -75,6 +75,28 @@ class ExperimentDataclassificationSerializer(serializers.ModelSerializer):
     class Meta:
         model = ExperimentDataClassification
         fields = ["classification"]
+
+
+class ExperimentProjectSerializer(serializers.ModelSerializer):
+    """A subset Project serializer to prevent infinite recursion"""
+
+    if (
+        "tardis.apps.identifiers" in settings.INSTALLED_APPS
+        and "project" in settings.OBJECTS_WITH_IDENTIFIERS
+    ):
+        identifiers = ProjectIDSerializer(many=True)
+
+    class Meta:
+        model = Project
+        fields = [
+            "id",
+            "name",
+        ]
+        if (
+            "tardis.apps.identifiers" in settings.INSTALLED_APPS
+            and "projects" in settings.OBJECTS_WITH_IDENTIFIERS
+        ):
+            fields.append("identifiers")
 
 
 class ExperimentSerializer(serializers.HyperlinkedModelSerializer):
@@ -152,5 +174,6 @@ class ExperimentSerializer(serializers.HyperlinkedModelSerializer):
         queryset = get_accessible_projects_for_experiment(
             self.context["request"], obj.id
         )
-        blah
-        return ProjectSerializer(queryset, many=True, context=self.context).data
+        return ExperimentProjectSerializer(
+            queryset, many=True, context=self.context
+        ).data
