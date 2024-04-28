@@ -22,7 +22,10 @@ from tardis.tardis_portal.api_v2.serializers.schema import (
     SchemaSerializer,
 )
 from tardis.tardis_portal.api_v2.serializers.user import UserSerializer
-from tardis.tardis_portal.auth.decorators import has_sensitive_access
+from tardis.tardis_portal.auth.decorators import (
+    get_accessible_projects_for_experiment,
+    has_sensitive_access,
+)
 from tardis.tardis_portal.models.experiment import Experiment
 from tardis.tardis_portal.models.parameters import (
     ExperimentParameter,
@@ -142,7 +145,8 @@ class ExperimentSerializer(serializers.HyperlinkedModelSerializer):
         ]
 
     def get_projects(self, obj):
-        queryset = Project.safe.all(user=self.context["request"].user)
-        q2 = queryset.filter(experiments__id=obj.id)
+        queryset = get_accessible_projects_for_experiment(
+            self.context["request"], obj.id
+        )
         blah
         return ProjectSerializer(queryset, many=True, context=self.context).data
