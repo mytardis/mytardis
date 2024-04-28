@@ -94,7 +94,7 @@ class ExperimentProjectSerializer(serializers.ModelSerializer):
         ]
         if (
             "tardis.apps.identifiers" in settings.INSTALLED_APPS
-            and "projects" in settings.OBJECTS_WITH_IDENTIFIERS
+            and "project" in settings.OBJECTS_WITH_IDENTIFIERS
         ):
             fields.append("identifiers")
 
