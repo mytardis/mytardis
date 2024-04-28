@@ -116,7 +116,6 @@ class ExperimentSerializer(serializers.HyperlinkedModelSerializer):
             fields.append("data_classification")
         if "tardis.apps.projects" in settings.INSTALLED_APPS:
             fields.append("projects")
-        depth = 2
 
     def get_user_acls(self, obj):  # TODO wrap in tests for micro/macro ACLS
         acls = obj.experimentacl_set.select_related("user").filter(user__isnull=False)
