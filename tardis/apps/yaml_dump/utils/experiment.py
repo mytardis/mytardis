@@ -46,13 +46,13 @@ def wrangle_experiment_into_IDW_YAML(experiment: Dict[str, Any]) -> Experiment:
     if "tardis.apps.projects" in settings.INSTALLED_APPS:
         projects = experiment["projects"]
         experiment_dc.projects = [
-            project.identifier[0]
+            project["identifiers"][0]
             if (
                 "tardis.apps.identifiers" in settings.INSTALLED_APPS
                 and "projects" in settings.OBJECTS_WITH_IDENTIFIERS
-                and project.identifier
+                and project["identifiers"]
             )
-            else project.name
+            else project["name"]
             for project in projects
         ]
 
