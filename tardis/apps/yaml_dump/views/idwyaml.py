@@ -56,9 +56,7 @@ class IDWYAMLView(generics.ListAPIView):
             wrangle_experiment_into_IDW_YAML(experiment)
             for experiment in response_results["experiments"]
         ]
-        # response = Response(response_results)
-        blah
-        # Convert response data to YAML
+        # response = Response(response_results)        # Convert response data to YAML
         data = ingestion_metadata._to_yaml()
 
         # Create a YAML file

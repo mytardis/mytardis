@@ -142,8 +142,7 @@ class ExperimentSerializer(serializers.HyperlinkedModelSerializer):
         ]
 
     def get_projects(self, obj):
-        user = self.context["request"].user
-        experiment_id = obj.pk
         queryset = Project.safe.all(user=self.context["request"].user)
+        queryset = queryset.filter(experiments__id=obj.pk)
         blah
         return ProjectSerializer(queryset, many=True, context=self.context).data
