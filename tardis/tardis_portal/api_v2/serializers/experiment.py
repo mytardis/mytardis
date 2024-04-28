@@ -79,7 +79,7 @@ class ExperimentSerializer(serializers.HyperlinkedModelSerializer):
     created_by = UserSerializer(many=False)
     user_acls = serializers.SerializerMethodField("get_user_acls")
     group_acls = serializers.SerializerMethodField("get_group_acls")
-    projects = ProjectSerializer(many=True)
+    projects = serializers.SerializerMethodField("get_projects")
 
     # datasets = serializers.SerializerMethodField("get_datasets")
 
@@ -141,3 +141,9 @@ class ExperimentSerializer(serializers.HyperlinkedModelSerializer):
             }
             for acl in acls
         ]
+
+    def get_projects(self, obj):
+        queryset = Project.safe.all(user=self.context["request"].user).filter(
+            experiments=obj
+        )
+        return ProjectSerializer(queryset, many=True, context=self.context).data
