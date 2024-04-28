@@ -113,7 +113,7 @@ class ProjectDataclassificationSerializer(serializers.ModelSerializer):
         fields = ["classification"]
 
 
-class ProjectSerializer(serializers.HyperlinkedModelSerializer):
+class ProjectSerializer(serializers.ModelSerializer):
     projectparameterset_set = ProjectParameterSetSerializer(many=True)
     principal_investigator = UserSerializer(many=False)
     institution = InstitutionSerializer(many=True)

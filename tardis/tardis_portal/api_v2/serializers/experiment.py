@@ -99,7 +99,7 @@ class ExperimentProjectSerializer(serializers.ModelSerializer):
             fields.append("identifiers")
 
 
-class ExperimentSerializer(serializers.HyperlinkedModelSerializer):
+class ExperimentSerializer(serializers.ModelSerializer):
     experimentparameterset_set = ExperimentParameterSetSerializer(many=True)
     created_by = UserSerializer(many=False)
     user_acls = serializers.SerializerMethodField("get_user_acls")
