@@ -47,6 +47,7 @@ class IDWYAMLView(generics.ListAPIView):
             "projects": project_serialiser.data,
             "experiments": experiment_serialiser.data,
         }
+        logger.debug(response_results)
         ingestion_metadata.projects = [
             wrangle_project_into_IDW_YAML(project)
             for project in response_results["projects"]
@@ -56,7 +57,7 @@ class IDWYAMLView(generics.ListAPIView):
             for experiment in response_results["experiments"]
         ]
         # response = Response(response_results)
-
+        blah
         # Convert response data to YAML
         data = ingestion_metadata._to_yaml()
 
