@@ -3,12 +3,10 @@
 
 from enum import Enum
 
-
-class DataClassificationEnum(Enum):
-    RESTRICTED = 0
-    SENSITIVE = 25
-    INTERNAL = 50
-    PUBLIC = 100
+RESTRICTED = 0
+SENSITIVE = 25
+INTERNAL = 50
+PUBLIC = 100
 
 
 class DataClassificationAppEnum(Enum):
