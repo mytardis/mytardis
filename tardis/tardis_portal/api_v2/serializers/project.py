@@ -113,6 +113,9 @@ class ProjectDataclassificationSerializer(serializers.ModelSerializer):
         fields = ["classification"]
 
 
+# TODO: Add a ProjectExperimentSerializer to provide more useful data than just the id
+
+
 class ProjectSerializer(serializers.ModelSerializer):
     projectparameterset_set = ProjectParameterSetSerializer(many=True)
     principal_investigator = UserSerializer(many=False)
@@ -180,9 +183,3 @@ class ProjectSerializer(serializers.ModelSerializer):
             }
             for acl in acls
         ]
-
-    # def get_experiments(self):
-    #    if request := self.context.get("request", None):
-    #        queryset = Experiment.safe.all(user=request.user)
-    #        return ExperimentSerializer(queryset, many=True, context=self.context).data
-    #    return None

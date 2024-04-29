@@ -99,6 +99,9 @@ class ExperimentProjectSerializer(serializers.ModelSerializer):
             fields.append("identifiers")
 
 
+# TODO: Add an ExperimentDatasetSerializer to provide more useful data than just the id
+
+
 class ExperimentSerializer(serializers.ModelSerializer):
     experimentparameterset_set = ExperimentParameterSetSerializer(many=True)
     created_by = UserSerializer(many=False)
@@ -167,10 +170,6 @@ class ExperimentSerializer(serializers.ModelSerializer):
         ]
 
     def get_projects(self, obj):
-        user = self.context["request"].user
-        exp_id = obj.id
-        q1 = Project.safe.all(user=user)
-        q2 = Project.objects.filter(experiments__id=obj.id)
         queryset = get_accessible_projects_for_experiment(
             self.context["request"], obj.id
         )
