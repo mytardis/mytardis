@@ -4,7 +4,12 @@ from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
-from tardis.apps.dataclassification.enumerators import DataClassificationEnum
+from tardis.apps.dataclassification.enumerators import (
+    INTERNAL,
+    PUBLIC,
+    RESTRICTED,
+    SENSITIVE,
+)
 from tardis.apps.projects.models import Project
 from tardis.tardis_portal.models.dataset import Dataset
 from tardis.tardis_portal.models.experiment import Experiment
@@ -17,16 +22,16 @@ class DataClassification(models.Model):
     enumerated data classification"""
 
     DATA_CLASSIFICATION_CHOICES = (
-        (DataClassificationEnum.RESTRICTED.value, "Restricted"),
-        (DataClassificationEnum.SENSITIVE.value, "Sensitive"),
-        (DataClassificationEnum.INTERNAL.value, "Internal"),
-        (DataClassificationEnum.PUBLIC.value, "Public"),
+        (RESTRICTED, "Restricted"),
+        (SENSITIVE, "Sensitive"),
+        (INTERNAL, "Internal"),
+        (PUBLIC, "Public"),
     )
 
     classification = models.PositiveSmallIntegerField(
         choices=DATA_CLASSIFICATION_CHOICES,
         null=False,
-        default=DataClassificationEnum.SENSITIVE.value,
+        default=SENSITIVE,
     )
 
     class Meta:
@@ -124,11 +129,11 @@ def classification_to_string(classification: int) -> str:
     Note: Relies on the order of operations in order to distinguish between
     PUBLIC and INTERNAL. Any PUBLIC data should have been filtered out prior to
     testing the INTERNAL classification, which simplifies the function."""
-    if classification < DataClassificationEnum.SENSITIVE.value:
+    if classification < SENSITIVE:
         return "Restricted"
-    if classification >= DataClassificationEnum.PUBLIC.value:
+    if classification >= PUBLIC:
         return "Public"
-    if classification >= DataClassificationEnum.INTERNAL.value:
+    if classification >= INTERNAL:
         return "Internal"
     return "Sensitive"
 
@@ -150,4 +155,4 @@ def get_classification_from_parents(obj: Experiment | Dataset) -> Enum:
             parent.data_classification.classification for parent in parents
         ]:
             return min(classifications)
-    return DataClassificationEnum.SENSITIVE
+    return SENSITIVE
