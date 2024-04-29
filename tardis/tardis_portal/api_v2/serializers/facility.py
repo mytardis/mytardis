@@ -30,7 +30,7 @@ class FacilitySerializer(serializers.ModelSerializer):
         and "facility" in settings.OBJECTS_WITH_IDENTIFIERS
     ):
         identifiers = FacilityIDSerializer(many=True)
-    manager_group = GroupSerializer(many=True)
+    manager_group = GroupSerializer(many=False)
 
     class Meta:
         model = Facility
