@@ -99,6 +99,7 @@ class DatasetExperimentSerializer(serializers.ModelSerializer):
 class DatasetSerializer(serializers.ModelSerializer):
 
     datasetparameterset_set = DatasetParameterSetSerializer(many=True)
+    # instrument = serializers.SerializerMethodField("get_instrument")
     instrument = InstrumentSerializer(many=False)
     user_acls = serializers.SerializerMethodField("get_user_acls")
     group_acls = serializers.SerializerMethodField("get_group_acls")
@@ -132,6 +133,9 @@ class DatasetSerializer(serializers.ModelSerializer):
             fields.append("identifiers")
         if "tardis.apps.dataclassification" in settings.INSTALLED_APPS:
             fields.append("data_classification")
+
+    # def get_instrument(self, obj):
+    #    instrument = obj.instrument
 
     def get_user_acls(self, obj):  # TODO wrap in tests for micro/macro ACLS
         acls = obj.datasetacl_set.select_related("user").filter(user__isnull=False)
