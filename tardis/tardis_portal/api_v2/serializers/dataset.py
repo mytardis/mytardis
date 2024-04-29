@@ -120,7 +120,7 @@ class DatasetSerializer(serializers.ModelSerializer):
             "created_time",
             "modified_time",
             "instrument",
-            "datasetparamterset_set",
+            "datasetparameterset_set",
             "experiments",
             "user_acls",
             "group_acls",
