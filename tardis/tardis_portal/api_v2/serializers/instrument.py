@@ -49,7 +49,7 @@ class InstrumentParameterSetSerializer(serializers.ModelSerializer):
 
 class InstrumentSerializer(serializers.ModelSerializer):
     if (
-        "tardis.apps.identifiers" in settings.INSTALLED_APS
+        "tardis.apps.identifiers" in settings.INSTALLED_APPS
         and "instrument" in settings.OBJECTS_WITH_IDENTIFIERS
     ):
         identifiers = InstrumentIDSerializer(many=True)
@@ -60,7 +60,7 @@ class InstrumentSerializer(serializers.ModelSerializer):
         model = Instrument
         fields = ["name", "created_time", "modified_time", "facility", "parametersets"]
         if (
-            "tardis.apps.identifiers" in settings.INSTALLED_APS
+            "tardis.apps.identifiers" in settings.INSTALLED_APPS
             and "instrument" in settings.OBJECTS_WITH_IDENTIFIERS
         ):
             fields.append("identifiers")
