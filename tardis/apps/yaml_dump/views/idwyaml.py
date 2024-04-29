@@ -68,7 +68,6 @@ class IDWYAMLView(generics.ListAPIView):
             wrangle_dataset_into_IDW_YAML(dataset)
             for dataset in response_results["datasets"]
         ]
-        blah
         # response = Response(response_results)        # Convert response data to YAML
         data = ingestion_metadata._to_yaml()
 

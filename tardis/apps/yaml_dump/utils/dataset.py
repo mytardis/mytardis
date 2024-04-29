@@ -38,6 +38,16 @@ def wrangle_dataset_into_IDW_YAML(dataset: Dict[str, Any]) -> Dataset:
     dataset_dc = add_acls_to_dataclass(dataset_dc, dataset)
     dataset_dc = add_data_classification_to_dataclass(dataset_dc, dataset)
 
+    dataset_dc.instrument = (
+        dataset["instrument"]["identifiers"][0]
+        if (
+            "tardis.apps.identifiers" in settings.INSTALLED_APPS
+            and "instrument" in settings.OBJECTS_WITH_IDENTIFIERS
+            and dataset["instrument"]["identifiers"]
+        )
+        else dataset["instrument"]["name"]
+    )
+
     experiments = dataset["experiments"]
     dataset_dc.experiments = [
         experiment["identifiers"][0]["identifier"]
