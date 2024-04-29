@@ -26,7 +26,7 @@ class FacilityIDSerializer(serializers.ModelSerializer):
 
 class FacilitySerializer(serializers.ModelSerializer):
     if (
-        "tardis.apps.identifiers" in settings.INSTALLED_APS
+        "tardis.apps.identifiers" in settings.INSTALLED_APPS
         and "facility" in settings.OBJECTS_WITH_IDENTIFIERS
     ):
         identifiers = FacilityIDSerializer(many=True)
@@ -41,7 +41,7 @@ class FacilitySerializer(serializers.ModelSerializer):
             "manager_group",
         ]
         if (
-            "tardis.apps.identifiers" in settings.INSTALLED_APS
+            "tardis.apps.identifiers" in settings.INSTALLED_APPS
             and "facility" in settings.OBJECTS_WITH_IDENTIFIERS
         ):
             fields.append("identifiers")
