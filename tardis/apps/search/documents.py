@@ -19,7 +19,7 @@ elasticsearch_index_settings = getattr(settings, 'ELASTICSEARCH_DSL_INDEX_SETTIN
 })
 elasticsearch_parallel_index_settings = getattr(settings, 'ELASTICSEARCH_PARALLEL_INDEX_SETTINGS', {})
 
-trigram = analysis.tokenizer('trigram', 'nGram', min_gram=3, max_gram=3)
+trigram = analysis.tokenizer('trigram', 'ngram', min_gram=3, max_gram=3)
 
 analyzer = analyzer(
     "analyzer",
