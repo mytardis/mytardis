@@ -58,12 +58,61 @@
         {% endfor %}
       </div>
     </div>
+
     <div class="col-md-4">
-      <h2>Recent Public Experiments</h2>
+      {% if is_authenticated %}
+        <h3>
+          My Most Recent Experiments
+          <small>(<a href="{% url 'tardis.tardis_portal.views.my_data' %}">view all</a>)</small>
+        </h3>
+
+        <div id="private-experiments" class="panel-group experiments mb-4">
+          {% for exp in private_experiments %}
+            <div class="card mb-2 shadow-sm">
+              <div id="private-toggle-{{exp.id}}"
+                  class="card-header accordion-toggle private-experiment py-2"
+                  data-bs-toggle="collapse"
+                  data-bs-parent="#private-experiments">
+                <div class="row">
+                  <div class="col px-1 pb-1">
+                    <input type="hidden" class="exp-index" value="{{ forloop.counter }}">
+                    <a class="card-title explink"
+                        href="{% url 'tardis_portal.view_experiment' exp.id %}">{{ exp.title }}</a>
+
+                    <div class="card-subtitle text-muted small">
+                      {% for author in exp.experimentauthor_set.all %}
+                        <span property="dc:author">{{ author.author }}{% if not forloop.last %}, {% endif %}</span>
+                      {% endfor %}
+                      &nbsp;
+                    </div>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col" style="margin-bottom: -15px;">
+                    <div class="badges" id="badge-{{exp.id}}"></div>
+                  </div>
+                </div>
+              </div>
+              <div id="collapse-{{exp.id}}" class="card-body py-2 collapse" data-parent="#private-experiments">
+                <div class="row">
+                  <div class="col px-1">
+                    <div class="accordion-inner">
+                      <p class="card-text small mb-1">{{exp.description|default:"<em>No description</em>"|bleach}}</p>
+                      <div id="private-recent-datasets-{{exp.id}}"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      <h3>Recent Public Experiments</h3>
 
       <div id="public-experiments" class="experiments">
         {% for exp in public_experiments %}
-          <div class="card mb-3 shadow-sm">
+          <div class="card mb-2 shadow-sm">
             <div id="public-toggle-{{exp.id}}"
                 class="card-header accordion-toggle public-experiment py-2"
                 data-bs-toggle="collapse" data-bs-parent="#public-experiments">
@@ -89,11 +138,11 @@
             </div>
             <div id="collapsepub-{{exp.id}}" class="card-body py-2 collapse" data-parent="#public-experiments">
               <div class="row">
-                <div class="col-md-9 px-1">
+                <div class="col px-1">
                   <div class="accordion-inner">
                     <p class="card-text small mb-1">{{exp.description|default:"<em>No description</em>"|bleach}}</p>
                     <div id="public-recent-datasets-{{exp.id}}"></div>
-                  </div> {% comment %}class="accordion-inner"{% endcomment %}
+                  </div>
                 </div>
               </div>
             </div>
