@@ -8,6 +8,8 @@ from os import path
 import inspect
 import types
 
+from django.template.loader import get_template
+from django.template import TemplateDoesNotExist
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required, permission_required
@@ -167,6 +169,14 @@ class IndexView(TemplateView):
 
         c['facility_stats'] = facility_stats
         c['stats'] = Snapshot.get_latest_snapshot()
+
+        # Check if 'index_intro.html' template is present
+        # If it is, set the flag to render it
+        try:
+            get_template('tardis_portal/index_intro.html')
+            c['show_intro_text'] = True
+        except TemplateDoesNotExist:
+            c['show_intro_text'] = False
 
         return c
 
