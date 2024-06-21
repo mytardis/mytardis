@@ -21,6 +21,7 @@ from django.http import (HttpResponse,
                          JsonResponse)
 from django.views.decorators.cache import cache_page
 from django.views.generic.base import TemplateView, View
+from tardis.apps.usage_stats.models import Snapshot
 
 from ..auth import decorators as authz
 from ..auth.decorators import (
@@ -29,7 +30,7 @@ from ..auth.decorators import (
 )
 from ..auth.localdb_auth import django_user
 from ..forms import ExperimentForm, DatasetForm
-from ..models import Experiment, Dataset, DataFile, ObjectACL
+from ..models import Facility, Experiment, Dataset, DataFile, ObjectACL
 from ..shortcuts import render_response_index, \
     return_response_error, return_response_not_found, get_experiment_referer
 from ..views.utils import (
@@ -153,6 +154,19 @@ class IndexView(TemplateView):
                 '-update_time')[:limit]
         c['public_experiments'] = public_experiments
         c['exps_expand_accordion'] = 1
+
+        facilities = Facility.objects.order_by('name')
+        facility_stats = []
+
+        for facility in facilities:
+            facility_stats.append({
+                'id': facility.id,
+                'name': facility.name,
+                'stats': Snapshot.get_latest_snapshot(facility.id),
+            })
+
+        c['facility_stats'] = facility_stats
+        c['stats'] = Snapshot.get_latest_snapshot()
 
         return c
 
