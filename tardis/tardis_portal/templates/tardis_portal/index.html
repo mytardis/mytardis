@@ -27,21 +27,21 @@
       <div class="row mb-4">
         <div class="col">
           <h5 class="text-uppercase text-muted mb-0">Storage</h5>
-          <span class="h2 font-weight-bold mb-0 stat-counter" data-current="0"
-            data-target="{{ stats.storage|intdivideby:1000 }}">-</span>PB
+          <span class="h2 font-weight-bold mb-0 stat-counter" data-counter-current="0"
+            data-counter-target="{{ stats.storage|floatdivideby:stats_scale }}">-</span>{{ stats_units }}
         </div>
         <div class="col">
           <h5 class="text-uppercase text-muted mb-0">Files</h5>
-          <span class="h2 font-weight-bold mb-0 stat-counter" data-current="0"
-            data-target="{{ stats.files }}">-</span>
+          <span class="h2 font-weight-bold mb-0 stat-counter" data-counter-current="0" data-counter-is-int
+            data-counter-target="{{ stats.files }}">-</span>
         </div>
         <div class="col">
           <h5 class="text-uppercase text-muted mb-0">Datasets</h5>
-          <span class="h2 font-weight-bold mb-0 stat-counter" data-current="0" data-target="{{ stats.datasets }}">-</span>
+          <span class="h2 font-weight-bold mb-0 stat-counter" data-counter-current="0" data-counter-target="{{ stats.datasets }}" data-counter-is-int>-</span>
         </div>
         <div class="col">
           <h5 class="text-uppercase text-muted mb-0">Experiments</h5>
-          <span class="h2 font-weight-bold mb-0 stat-counter" data-current="0" data-target="{{ stats.experiments }}">-</span>
+          <span class="h2 font-weight-bold mb-0 stat-counter" data-counter-current="0" data-counter-target="{{ stats.experiments }}" data-counter-is-int>-</span>
         </div>
       </div>
 
@@ -52,7 +52,7 @@
           <div class="rounded border shadow-sm facility"
               style="width: 200px; height: 200px; margin: 5px; background: url('{% static 'images/facilities' %}/{{ facility.id }}.png')">
               <div style="color: white; text-align: center; background-color: #34568c; " class="rounded-top">
-                  <strong>{{ facility.name }}</strong>&nbsp;{{ facility.stats.storage|default:0|intdivideby:1000|intcomma }}<br />
+                  <strong>{{ facility.name }}</strong>&nbsp;{{ facility.stats.storage|default:0|floatdivideby:stats_scale|floatformat:2 }}{{ stats_units }}<br />
               </div>
             </div>
         </div>
