@@ -5,7 +5,7 @@ from django import template
 register = template.Library()
 
 
-def _get_display_unit(bytes: int) -> dict:
+def _get_display_unit(num_bytes: int) -> dict:
     """
     Given a number representing bytes, returns the unit and exponent when the
     number is scaled to one of KB, MB, GB, etc.
@@ -15,14 +15,14 @@ def _get_display_unit(bytes: int) -> dict:
         10000   -> { 'unit': 'KB', 'exp': 3 }
         5000000 -> { 'unit': 'MB', 'exp': 6 }
     """
-    bytes = int(bytes)
+    num_bytes = int(num_bytes)
     units = ['KB', 'MB', 'GB', 'TB', 'PB']
 
-    actual_exp = math.floor(math.log10(bytes))
-    display_unit = units[0]
+    actual_exp = math.floor(math.log10(num_bytes))
+    display_unit = None
 
     for idx, unit in enumerate(units):
-        if ((idx + 1) * 3 > actual_exp) and idx != 0:
+        if ((idx + 1) * 3 > actual_exp) and display_unit is not None:
             break
 
         display_unit = {
@@ -33,7 +33,7 @@ def _get_display_unit(bytes: int) -> dict:
     return display_unit
 
 
-def prettify_bytes(bytes):
+def prettify_bytes(num_bytes):
     """
     Given a number representing bytes, returns an appropriately scaled number.
     To be used in conjuction with prettify_byte_units
@@ -45,15 +45,15 @@ def prettify_bytes(bytes):
         1000000     -> 1 (MB)
         10000000    -> 10 (MB)
     """
-    if bytes is None or bytes == 0:
+    if num_bytes is None or num_bytes == 0:
         return 0
 
-    display_unit = _get_display_unit(bytes)
+    display_unit = _get_display_unit(num_bytes)
 
-    return bytes / (10 ** display_unit['exp'])
+    return num_bytes / (10 ** display_unit['exp'])
 
 
-def prettify_byte_units(bytes):
+def prettify_byte_units(num_bytes):
     """
     Given a number representing bytes, returns the unit of the appropriately
     scaled number. To be used in conjuction with prettify_bytes
@@ -65,10 +65,10 @@ def prettify_byte_units(bytes):
         1000000     -> MB
         10000000    -> MB
     """
-    if bytes is None or bytes == 0:
+    if num_bytes is None or num_bytes == 0:
         return ''
 
-    display_unit = _get_display_unit(bytes)
+    display_unit = _get_display_unit(num_bytes)
 
     return display_unit['unit']
 
