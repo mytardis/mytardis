@@ -4,7 +4,7 @@ from django.db.models import Count, Sum
 
 from tardis.apps.usage_stats.models import Snapshot
 from tardis.tardis_portal.models import (DataFile, Dataset, Experiment,
-                                         Facility, ObjectACL)
+                                         Facility)
 
 
 class Command(BaseCommand):
@@ -31,7 +31,6 @@ class Command(BaseCommand):
 
         self._create_snapshot(c['datafile_size'], c['datafile_count'],
                               c['dataset_count'], c['experiment_count'])
-        
 
         # now do it for facilities
         facilities = Facility.objects.annotate(
@@ -41,17 +40,21 @@ class Command(BaseCommand):
         ).all()
 
         for facility in facilities:
-            self._create_snapshot(facility.datafile_size_sum, facility.datafile_count,
+            self._create_snapshot(facility.datafile_size_sum,
+                                  facility.datafile_count,
                                   facility.dataset_count, None, facility)
-    
+
     def _create_snapshot(self, storage=None, files=None, datasets=None,
                          experiments=None, facility=None):
-        self.stdout.write(  
+        self.stdout.write(
             self.style.SUCCESS('Creating snapshot')
         )
 
         self.stdout.write(
-             self.style.SUCCESS(f'Storage: {storage}, Files: {files}, Datasets: {datasets}, Experiments: {experiments}, Facility: {facility}')
+             self.style.SUCCESS((f'Storage: {storage}, Files: {files}'
+                                 f'Datasets: {datasets}, '
+                                 f'Experiments: {experiments}'
+                                 f'Facility: {facility}'))
         )
 
         Snapshot.objects.create(
@@ -61,7 +64,5 @@ class Command(BaseCommand):
             datasets=datasets,
             experiments=experiments
         )
-            
-        self.stdout.write(
-            self.style.SUCCESS('SUCCESS')
-        )
+
+        self.stdout.write(self.style.SUCCESS("SUCCESS\n"))
