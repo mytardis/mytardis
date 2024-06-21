@@ -28,7 +28,7 @@
         <div class="col">
           <h5 class="text-uppercase text-muted mb-0">Storage</h5>
           <span class="h2 font-weight-bold mb-0 stat-counter" data-counter-current="0"
-            data-counter-target="{{ stats.storage|default:0|floatdivideby:stats_scale|floatformat:2 }}">-</span>{{ stats_units }}
+            data-counter-target="{{ stats.storage|default:0|prettify_bytes|floatformat:2 }}">-</span>{{ stats.storage|default:0|prettify_byte_units }}
         </div>
         <div class="col">
           <h5 class="text-uppercase text-muted mb-0">Files</h5>
@@ -52,7 +52,7 @@
           <div class="card shadow-sm">
             <div class="card-body rounded-top" style="background: url('{% static 'images/facilities' %}/{{ facility.id }}.png')"></div>
             <div class="card-footer">
-              <strong>{{ facility.name }}</strong>&nbsp;{{ facility.stats.storage|default:0|floatdivideby:stats_scale|floatformat:2 }}{{ stats_units }}
+              <strong>{{ facility.name }}</strong>&nbsp;{{ facility.stats.storage|default:0|prettify_bytes|floatformat:2 }}{{ facility.stats.storage|default:0|prettify_byte_units }}
             </div>
           </div>
         {% endfor %}
