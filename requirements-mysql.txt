@@ -1,2 +1,2 @@
-mysqlclient==2.0.3
+mysqlclient==2.2.5
 django-mysql==3.12.0
