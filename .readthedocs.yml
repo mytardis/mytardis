@@ -8,6 +8,9 @@ version: 2
 # Set the OS, Python version and other tools you might need
 build:
   os: ubuntu-22.04
+  apt_packages:
+    - libmagic-dev
+    - libmagic1
   tools:
     python: "3.8"
 
