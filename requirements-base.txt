@@ -29,7 +29,8 @@ pyoai==2.5.0
 # pystache==0.5.4
 python-dateutil==2.8.1
 # python-magic
-git+https://github.com/mytardis/python-magic.git#egg=python-magic
+# git+https://github.com/mytardis/python-magic.git#egg=python-magic
+python-magic==0.4.27
 pytz==2021.1
 requests==2.25.1
 uritemplate==3.0.1
