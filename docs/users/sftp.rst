@@ -51,9 +51,7 @@ To register a public key in MyTardis:
 
 3. Fill in the `Add SSH Keys` form by entering a name for the key and the
    public key text. The public key text should be in OpenSSH format e.g., `ssh-rsa
-   AAAAB3NzaC1yc2EAAAADAQABAAABAQDYZYnXpTP6e/BsQw+...`.
-
-.. image:: ../images/userguide/add_key_form.png
+   AAAAB3NzaC1yc2EAAAADAQABAAABAQDYZYnXpTP6e/BsQw+...`. Do not include the `ssh-rsa` part of they key.
 
 4. Click the `Add Key` button.
 
