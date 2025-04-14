@@ -1,5 +1,5 @@
 ===========
-SFTP Access new
+SFTP Access
 ===========
 
 SFTP is a secure and convenient way to access, browse and download large
