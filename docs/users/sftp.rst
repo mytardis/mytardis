@@ -109,6 +109,8 @@ Connecting to MyTardis via SFTP
   value, please contact your system admin should be able to provide these to
   you.
 
+.. image:: ../images/userguide/filezilla_new_conn.png
+
 2. Click **Connect**
 3. Upon successful connection you will be presented with a file browser showing
    all your data on MyTardis.
