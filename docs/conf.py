@@ -88,6 +88,13 @@ pygments_style = 'sphinx'
 # Sphinx theme
 html_theme = "sphinx_rtd_theme"
 
+html_context = {
+    "display_github": True, # Integrate GitHub 
+    "github_repo": "mytardis/mytardis", # Repo name
+    "github_version": "stable", # Version
+    "conf_py_path": "/docs/", # Path in the checkout to the docs root
+}
+
 # API doc generation
 # ------------------
 
