@@ -54,7 +54,7 @@ Generating an SSH key on Windows 10/11
 
 .. _add-ssh-key:
 
-Adding an public SSH key to MyTardis
+Adding a public SSH key to MyTardis
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 To register a public key in MyTardis:
 
