@@ -17,8 +17,8 @@ instructions here will focus on `FileZilla (All platforms) <https://filezilla-pr
 
 .. _register-ssh-key:
 
-Registering and managing SSH keys in MyTardis
----------------------------------------------
+Managing SSH keys in MyTardis
+-----------------------------
 
 MyTardis uses SSH key pairs to authenticate you when connecting via SFTP. Using
 SSH keys to authenticate is more secure and private than password-based
@@ -27,15 +27,35 @@ public part. Key-based authentication typically requires you to share your
 public key with the service, again which you use your private key to
 authenticate. Never share your private key!
 
+Generating an SSH key on Windows 10/11
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+1. Press ``Windows Key`` and type ``cmd`` and ``Enter`` to open **Command Prompt**
+
+.. image:: ../images/userguide/win_cmd.png
+   :width: 500px
+   :align: center
+
+2. Run the following command: ``ssh-keygen``
+
+.. image:: ../images/userguide/win_ssh_key_cmd.png
+   :width: 500px
+   :align: center
+
+3. Follow the prompts:
+
+   * Specify where to save the key or press ``Enter`` to accept the default location (e.g. ``C:\Users\username\.ssh\id_rsa``).
+   * For extra security, a passphrase can be entered. This is optional and can be skipped by pressing ``Enter``.
+
+4. The following two files will be generated in location specified above:
+
+   * ``id_rsa`` (This is the **private** key and it must **never** be shared)
+   * ``is_rsa.pub`` (This is the **public** key that can be shared with servers you want to connect to)
+
 .. _add-ssh-key:
 
-Adding an existing public SSH key to MyTardis
+Adding a public SSH key to MyTardis
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-If you have an existing SSH keypair, you can register the public key in
-MyTardis. For instructions on how to create an SSH key pair, Gitlab provide
-some nice documentation on how to do so `here
-<https://gitlab.com/help/ssh/README.md#generating-a-new-ssh-key-pair>`_.
-
 To register a public key in MyTardis:
 
 1. Navigate to the SSH key management page using the `Manage SSH Keys` link in
@@ -52,6 +72,8 @@ To register a public key in MyTardis:
 3. Fill in the `Add SSH Keys` form by entering a name for the key and the
    public key text. The public key text should be in OpenSSH format e.g., `ssh-rsa
    AAAAB3NzaC1yc2EAAAADAQABAAABAQDYZYnXpTP6e/BsQw+...`. Do not include the `ssh-rsa` part of the key.
+
+.. image:: ../images/userguide/add_ssh_key.png
 
 4. Click the `Add Key` button.
 
