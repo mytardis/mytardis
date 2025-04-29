@@ -30,13 +30,13 @@ authenticate. Never share your private key!
 Generating an SSH key on Windows 10/11
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-1. Press ``Windows Key`` and type ``cmd`` and ``Enter`` to open **Command Prompt**
+1. Press ``Windows Key``, type ``cmd`` and press ``Enter`` to open **Command Prompt**
 
 .. image:: ../images/userguide/win_cmd.png
    :width: 500px
    :align: center
 
-2. Run the following command: ``ssh-keygen``
+2. Run the following command: ``ssh-keygen -t rsa``
 
 .. image:: ../images/userguide/win_ssh_key_cmd.png
    :width: 500px
