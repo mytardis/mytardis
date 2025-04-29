@@ -12,15 +12,13 @@ Prerequisites for accessing data via SFTP
 
 In order to access data on MyTardis via SFTP, you will first need to install an
 SFTP client. There are many free and commercial SFTP clients for you to choose
-from; however, we recommend `Cyberduck (Win & Mac) <https://cyberduck.io>`_,
-`FileZilla (All platforms) <https://filezilla-project.org/>`_ or `WinSCP (Win
-only) <https://winscp.net/eng/index.php>`_ for the majority of users. The
-instructions here will focus on `Cyberduck (Win & Mac) <https://cyberduck.io>`_.
+from; however, we recommend `FileZilla (All platforms) <https://filezilla-project.org/>`_ for the majority of users. The
+instructions here will focus on `FileZilla (All platforms) <https://filezilla-project.org/>`_.
 
 .. _register-ssh-key:
 
-Registering and managing SSH keys in MyTardis
----------------------------------------------
+Managing SSH keys in MyTardis
+-----------------------------
 
 MyTardis uses SSH key pairs to authenticate you when connecting via SFTP. Using
 SSH keys to authenticate is more secure and private than password-based
@@ -29,20 +27,35 @@ public part. Key-based authentication typically requires you to share your
 public key with the service, again which you use your private key to
 authenticate. Never share your private key!
 
-MyTardis provide to mechanism for registering a public key:
+Generating an SSH key on Windows 10/11
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-1. :ref:`add-ssh-key`
-2. :ref:`generate-ssh-key`
+1. Press ``Windows Key`` and type ``cmd`` and ``Enter`` to open **Command Prompt**
+
+.. image:: ../images/userguide/win_cmd.png
+   :width: 500px
+   :align: center
+
+2. Run the following command: ``ssh-keygen``
+
+.. image:: ../images/userguide/win_ssh_key_cmd.png
+   :width: 500px
+   :align: center
+
+3. Follow the prompts:
+
+   * Specify where to save the key or press ``Enter`` to accept the default location (e.g. ``C:\Users\username\.ssh\id_rsa``).
+   * For extra security, a passphrase can be entered. This is optional and can be skipped by pressing ``Enter``.
+
+4. The following two files will be generated in location specified above:
+
+   * ``id_rsa`` (This is the **private** key and it must **never** be shared)
+   * ``is_rsa.pub`` (This is the **public** key that can be shared with servers you want to connect to)
 
 .. _add-ssh-key:
 
-Adding an existing public SSH key to MyTardis
+Adding a public SSH key to MyTardis
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-If you have an existing SSH keypair, you can register the public key in
-MyTardis. For instructions on how to create an SSH key pair, Gitlab provide
-some nice documentation on how to do so `here
-<https://gitlab.com/help/ssh/README.md#generating-a-new-ssh-key-pair>`_.
-
 To register a public key in MyTardis:
 
 1. Navigate to the SSH key management page using the `Manage SSH Keys` link in
@@ -58,55 +71,15 @@ To register a public key in MyTardis:
 
 3. Fill in the `Add SSH Keys` form by entering a name for the key and the
    public key text. The public key text should be in OpenSSH format e.g., `ssh-rsa
-   AAAAB3NzaC1yc2EAAAADAQABAAABAQDYZYnXpTP6e/BsQw+...`.
+   AAAAB3NzaC1yc2EAAAADAQABAAABAQDYZYnXpTP6e/BsQw+...`. Do not include the `ssh-rsa` part of the key.
 
-.. image:: ../images/userguide/add_key_form.png
+.. image:: ../images/userguide/add_ssh_key.png
 
 4. Click the `Add Key` button.
 
 If successful you should get a new entry in the SSH keys table.
 
 .. image:: ../images/userguide/ssh_keys.png
-
-.. _generate-ssh-key:
-
-Have MyTardis to generate an SSH key pair
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Creating SSH key pairs can be a bit of a challenge, particularly on Windows
-systems. For this reason, MyTardis provides another you another option for
-registering a public keys. In this case, MyTardis will generate the key pair
-for you, store the public part of the key and provide you with a one time
-opportunity to download the private part of the key.
-
-It is important to note that MyTardis never stores your private key. If you
-lose/delete it, MyTardis cannot recover it for you. This isn't really a
-problem, since MyTardis can always generate another key pair for you; however,
-you should revoke the public key associated to the lost private key in your
-account to ensure that no one who gains access to your private key can access
-your data. See :ref:`delete-ssh-key`.
-
-1. Navigate to the SSH key management page using the `Manage SSH Keys` link in
-   the user menu.
-
-.. image:: ../images/userguide/manage_ssh_keys_menu.png
-    :width: 250px
-    :align: center
-
-2. Click the `+ Generate key` button:
-
-.. image:: ../images/userguide/generate_key_button.png
-
-3. Give the key a name and click the `Generate & Download` button. The server
-   will generate an SSH key pair, register the public key and trigger your
-   browser to download the private key.
-
-.. image:: ../images/userguide/generate_key_form.png
-
-4. The SSH keys table will be updated with your newly registered public key.
-
-.. image:: ../images/userguide/ssh_keys_generate.png
-
 
 .. _delete-ssh-key:
 
@@ -133,7 +106,7 @@ deleted key will no longer work.
 Connecting to MyTardis via SFTP
 -------------------------------
 1. Open your SFTP client and create a new connection with the following
-   configuration:
+   configuration (in FileZilla this is under File > Site Manager):
 
   +-------------+-----------------------------------------+
   | Parameter   | Value                                   |
@@ -156,7 +129,7 @@ Connecting to MyTardis via SFTP
   value, please contact your system admin should be able to provide these to
   you.
 
-.. image:: ../images/userguide/cyberd_open_conn.png
+.. image:: ../images/userguide/filezilla_new_conn.png
 
 2. Click **Connect**
 3. Upon successful connection you will be presented with a file browser showing
