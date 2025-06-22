@@ -39,7 +39,7 @@
     "html-webpack-plugin": "^5.3.2",
     "imports-loader": "^0.8.0",
     "jquery": "^3.6.0",
-    "jquery-ui": "^1.12.1",
+    "jquery-ui": "^1.13.2",
     "jquery-ui-dist": "^1.12.1",
     "js-cookie": "^3.0.0",
     "less": "^4.1.1",
