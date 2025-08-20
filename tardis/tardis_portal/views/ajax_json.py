@@ -128,7 +128,7 @@ def retrieve_licenses(request):
 
 
 @never_cache
-@login_required
+@authz.approved_user_login_required
 def get_experiment_list(request):
     experiments = Experiment.safe.owned(request.user)
     objects = [{'id': experiment[0], 'title': experiment[1]} for experiment in experiments.values_list('id', 'title')]

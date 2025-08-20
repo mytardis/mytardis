@@ -245,7 +245,7 @@ def retrieve_group_list_by_user(request):
 
 @never_cache
 @permission_required('auth.change_group')
-@login_required()
+@authz.approved_user_login_required
 def manage_groups(request):
 
     c = {}
@@ -457,6 +457,7 @@ def remove_experiment_access_user(request, experiment_id, username):
 
 @transaction.atomic  # too complex # noqa
 @never_cache
+@authz.approved_user_login_required
 def create_group(request):
 
     if 'group' not in request.GET:

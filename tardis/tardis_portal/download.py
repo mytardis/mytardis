@@ -39,7 +39,7 @@ from .models import Dataset
 from .models import DataFile
 from .models import DataFileObject
 from .models import Experiment
-from .auth.decorators import has_datafile_download_access
+from .auth.decorators import has_datafile_download_access, approved_user_login_required
 from .auth.decorators import experiment_download_required
 from .auth.decorators import dataset_download_required
 from .shortcuts import render_error_message
@@ -567,7 +567,7 @@ def streaming_download_datafiles(request):  # too complex # noqa
                                  comptype, organization)
 
 
-@login_required
+@approved_user_login_required
 def download_api_key(request):
     user = request.user
     api_key_file = io.StringIO()
