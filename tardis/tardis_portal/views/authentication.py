@@ -156,6 +156,7 @@ def logout(request):
 
 
 @never_cache
+@approved_user_login_required
 def create_user(request):
 
     if 'user' not in request.POST:
