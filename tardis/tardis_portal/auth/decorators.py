@@ -36,7 +36,7 @@ from django.http import HttpResponseRedirect
 from django.db.models import Q
 from django.conf import settings
 
-from ..models import Experiment, Dataset, DataFile, GroupAdmin
+from ..models import Experiment, Dataset, DataFile, GroupAdmin, UserAuthentication
 from ..shortcuts import return_response_error
 
 
@@ -403,6 +403,23 @@ def upload_auth(f):
             except:
                 if request.is_ajax():
                     return HttpResponse("")
+                return return_response_error(request)
+        return f(request, *args, **kwargs)
+
+    wrap.__doc__ = f.__doc__
+    wrap.__name__ = f.__name__
+    return wrap
+
+def approved_user_login_required(f):
+    def wrap(request, *args, **kwargs):
+        user = request.user
+        if not user.is_authenticated:
+            return HttpResponseRedirect('/login?next=%s' % request.path)
+        user_auths = UserAuthentication.objects.filter(userProfile__user=request.user, approved=False)
+        for user_auth in user_auths:
+            if not user_auth.approved:
+                if request.is_ajax():
+                    return HttpResponse("not approved")
                 return return_response_error(request)
         return f(request, *args, **kwargs)
 
