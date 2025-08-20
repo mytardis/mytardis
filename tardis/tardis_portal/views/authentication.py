@@ -23,6 +23,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.debug import sensitive_post_parameters
 
 from ..auth import auth_service
+from ..auth.decorators import approved_user_login_required
 from ..auth.localdb_auth import auth_key as localdb_auth_key
 from ..forms import ManageAccountForm, CreateUserPermissionsForm
 from ..models import JTI, UserProfile, UserAuthentication
@@ -121,7 +122,7 @@ def rcauth(request):
     raise PermissionDenied
 
 
-@login_required
+@approved_user_login_required
 def manage_user_account(request):
     user = request.user
 
@@ -155,6 +156,7 @@ def logout(request):
 
 
 @never_cache
+@approved_user_login_required
 def create_user(request):
 
     if 'user' not in request.POST:

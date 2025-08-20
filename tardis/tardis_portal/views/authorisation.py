@@ -9,11 +9,11 @@ from operator import itemgetter
 from urllib.parse import urlencode, urlparse, parse_qs
 
 from django.conf import settings
-from django.contrib.auth.decorators import login_required, permission_required
+from django.contrib.auth.decorators import permission_required
 from django.contrib.auth.models import User, Group
 from django.contrib.sites.models import Site
-from django.db import transaction
 from django.db import IntegrityError
+from django.db import transaction
 from django.db.models import Q
 from django.http import HttpResponse, JsonResponse
 from django.views.decorators.cache import never_cache
@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 
 
 @never_cache
-@login_required()
+@authz.approved_user_login_required
 def retrieve_user_list(request):
     # TODO: Hook this up to authservice.searchUsers() to actually get
     # autocompletion data directly from auth backends.
@@ -89,7 +89,7 @@ def retrieve_user_list(request):
 
 
 @never_cache
-@login_required()
+@authz.approved_user_login_required
 def retrieve_group_list(request):
 
     grouplist = ' ~ '.join(map(str, Group.objects.all().order_by('name')))
@@ -245,7 +245,7 @@ def retrieve_group_list_by_user(request):
 
 @never_cache
 @permission_required('auth.change_group')
-@login_required()
+@authz.approved_user_login_required
 def manage_groups(request):
 
     c = {}
@@ -457,6 +457,7 @@ def remove_experiment_access_user(request, experiment_id, username):
 
 @transaction.atomic  # too complex # noqa
 @never_cache
+@authz.approved_user_login_required
 def create_group(request):
 
     if 'group' not in request.GET:

@@ -7,7 +7,6 @@ import json
 import logging
 
 from django.conf import settings
-from django.contrib.auth.decorators import login_required
 from django.core.serializers.json import DjangoJSONEncoder
 from django.forms import model_to_dict
 from django.http import HttpResponseNotFound, HttpResponseForbidden, \
@@ -128,7 +127,7 @@ def retrieve_licenses(request):
 
 
 @never_cache
-@login_required
+@authz.approved_user_login_required
 def get_experiment_list(request):
     experiments = Experiment.safe.owned(request.user)
     objects = [{'id': experiment[0], 'title': experiment[1]} for experiment in experiments.values_list('id', 'title')]

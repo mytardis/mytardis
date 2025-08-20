@@ -1,19 +1,18 @@
 """
 views that return HTML that is injected into pages
 """
-import logging
 import json
-
+import logging
 from urllib.parse import urlencode
 
 from django.conf import settings
 from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator, EmptyPage, InvalidPage
 from django.forms import model_to_dict
-from django.urls import reverse
 from django.http import JsonResponse
+from django.urls import reverse
 from django.views.decorators.cache import never_cache
-from django.contrib.auth.decorators import login_required
+
 from ..auth import decorators as authz
 from ..forms import RightsForm
 from ..models import Experiment, DataFile, Dataset, Schema, \
@@ -363,7 +362,7 @@ def choose_rights(request, experiment_id):
 
 
 @never_cache
-@login_required
+@authz.approved_user_login_required
 def retrieve_owned_exps_list(
         request, template_name='tardis_portal/ajax/exps_list.html'):
 
@@ -389,7 +388,7 @@ def retrieve_owned_exps_list(
 
 
 @never_cache
-@login_required
+@authz.approved_user_login_required
 def retrieve_shared_exps_list(
         request, template_name='tardis_portal/ajax/exps_list.html'):
 
