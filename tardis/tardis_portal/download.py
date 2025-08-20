@@ -32,7 +32,6 @@ from django.http import StreamingHttpResponse
 from django.conf import settings
 from django.utils.dateformat import format as dateformatter
 from django.core.exceptions import ImproperlyConfigured
-from django.contrib.auth.decorators import login_required
 
 from tardis.analytics.tracker import IteratorTracker
 from .models import Dataset
