@@ -235,6 +235,7 @@ def retrieve_group_userlist_readonly(request, group_id):
 
 
 @never_cache
+@authz.approved_user_login_required
 def retrieve_group_list_by_user(request):
 
     groups = Group.objects.filter(groupadmin__user=request.user).order_by('name')
