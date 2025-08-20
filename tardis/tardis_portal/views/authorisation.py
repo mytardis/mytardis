@@ -20,7 +20,6 @@ from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_POST
 
 from ..auth import decorators as authz
-from ..auth.decorators import approved_user_login_required
 from ..auth.localdb_auth import django_user
 from ..models import UserAuthentication, UserProfile, Experiment, \
     Token, GroupAdmin, ObjectACL
@@ -30,7 +29,7 @@ logger = logging.getLogger(__name__)
 
 
 @never_cache
-@approved_user_login_required()
+@authz.approved_user_login_required
 def retrieve_user_list(request):
     # TODO: Hook this up to authservice.searchUsers() to actually get
     # autocompletion data directly from auth backends.
@@ -90,7 +89,7 @@ def retrieve_user_list(request):
 
 
 @never_cache
-@approved_user_login_required()
+@authz.approved_user_login_required
 def retrieve_group_list(request):
 
     grouplist = ' ~ '.join(map(str, Group.objects.all().order_by('name')))

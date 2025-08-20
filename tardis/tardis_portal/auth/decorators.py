@@ -31,7 +31,7 @@
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib.sessions.models import Session
-from django.http import HttpResponse, HttpRequest
+from django.http import HttpResponse, HttpRequest, HttpResponseForbidden
 from django.http import HttpResponseRedirect
 from django.db.models import Q
 from django.conf import settings
@@ -419,7 +419,7 @@ def approved_user_login_required(f):
         for user_auth in user_auths:
             if not user_auth.approved:
                 if request.is_ajax():
-                    return HttpResponse("not approved")
+                    return HttpResponseForbidden("permission denied", status=403)
                 return return_response_error(request)
         return f(request, *args, **kwargs)
 
