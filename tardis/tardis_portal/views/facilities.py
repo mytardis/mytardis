@@ -17,7 +17,6 @@ from django.db.models import Case
 from django.db.models import When
 from django.db.models import IntegerField
 
-from ..auth.decorators import approved_user_login_required
 from ..models import Dataset, Experiment, DataFile
 from ..models.facility import facilities_managed_by
 
@@ -36,7 +35,7 @@ def datetime_to_us(dt):
 
 
 @never_cache
-@approved_user_login_required
+@login_required
 def facility_overview_data_count(request, facility_id):
     '''
     returns the total number of datasets for pagination in json format
@@ -52,7 +51,7 @@ def facility_overview_data_count(request, facility_id):
 
 
 @never_cache
-@approved_user_login_required
+@login_required
 def facility_overview_facilities_list(request):
     '''
     json list of facilities managed by the current user
@@ -129,7 +128,7 @@ def facility_overview_datafile_list(dataset):
 
 
 @never_cache
-@approved_user_login_required
+@login_required
 def facility_overview_dataset_detail(request, dataset_id):
     return HttpResponse(
         json.dumps(
@@ -143,7 +142,7 @@ def facility_overview_dataset_detail(request, dataset_id):
 
 
 @never_cache
-@approved_user_login_required
+@login_required
 def facility_overview_experiments(request, facility_id, start_index,
                                   end_index):
     '''

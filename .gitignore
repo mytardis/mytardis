@@ -8,11 +8,14 @@ __pycache__/
 *.sqlite
 *.wsgi
 .idea/
+**/.DS_Store
+**/.idea
 .installed.cfg
 .noseids
 .project
 .pydevproject
 .settings/
+**/settings.yaml
 /static/
 bin/
 celerybeat-schedule

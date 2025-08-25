@@ -32,13 +32,14 @@ from django.http import StreamingHttpResponse
 from django.conf import settings
 from django.utils.dateformat import format as dateformatter
 from django.core.exceptions import ImproperlyConfigured
+from django.contrib.auth.decorators import login_required
 
 from tardis.analytics.tracker import IteratorTracker
 from .models import Dataset
 from .models import DataFile
 from .models import DataFileObject
 from .models import Experiment
-from .auth.decorators import has_datafile_download_access, approved_user_login_required
+from .auth.decorators import has_datafile_download_access
 from .auth.decorators import experiment_download_required
 from .auth.decorators import dataset_download_required
 from .shortcuts import render_error_message
@@ -566,7 +567,7 @@ def streaming_download_datafiles(request):  # too complex # noqa
                                  comptype, organization)
 
 
-@approved_user_login_required
+@login_required
 def download_api_key(request):
     user = request.user
     api_key_file = io.StringIO()
