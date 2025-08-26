@@ -2,39 +2,39 @@
 views that render full pages
 """
 
+import inspect
 import logging
 import re
-from os import path
-import inspect
 import types
+from os import path
 
 from django.conf import settings
+from django.contrib.auth.decorators import permission_required
 from django.contrib.auth.models import User
-from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.exceptions import PermissionDenied, ImproperlyConfigured
 from django.core.paginator import Paginator, EmptyPage, InvalidPage
-from django.urls import reverse
 from django.db import connection
 from django.http import (HttpResponse,
                          HttpResponseForbidden,
                          JsonResponse)
+from django.urls import reverse
 from django.views.decorators.cache import cache_page
 from django.views.generic.base import TemplateView, View
 
 from ..auth import decorators as authz
 from ..auth.decorators import (
     has_experiment_write,
-    has_dataset_write
+    has_dataset_write, approved_user_login_required
 )
 from ..auth.localdb_auth import django_user
 from ..forms import ExperimentForm, DatasetForm
 from ..models import Experiment, Dataset, DataFile, ObjectACL
 from ..shortcuts import render_response_index, \
     return_response_error, return_response_not_found, get_experiment_referer
+from ..util import get_filesystem_safe_dataset_name
 from ..views.utils import (
     _redirect_303, _add_protocols_and_organizations, HttpResponseSeeAlso)
-from ..util import get_filesystem_safe_dataset_name
 
 logger = logging.getLogger(__name__)
 
@@ -374,7 +374,7 @@ def healthz(request):
     return HttpResponse("OK")
 
 
-@login_required
+@approved_user_login_required
 def my_data(request):
     '''
     show owned data with credential-based access
@@ -391,7 +391,7 @@ def my_data(request):
     return render_response_index(request, 'tardis_portal/my_data.html', c)
 
 
-@login_required
+@approved_user_login_required
 def shared(request):
     '''
     show shared data with credential-based access
@@ -602,7 +602,7 @@ class ExperimentView(TemplateView):
 
 
 @cache_page(60 * 30)
-@login_required
+@approved_user_login_required
 @permission_required('is_superuser')
 def stats(request):
     # using count() is more efficient than using len() on a query set
@@ -632,7 +632,7 @@ def user_guide(request):
     return render_response_index(request, 'tardis_portal/user_guide.html', c)
 
 
-@login_required
+@approved_user_login_required
 def facility_overview(request):
     '''
     summary of experiments in a facility
@@ -651,7 +651,7 @@ def public_data(request):
 
 
 @permission_required('tardis_portal.add_experiment')
-@login_required
+@approved_user_login_required
 def create_experiment(request,
                       template_name='tardis_portal/create_experiment.html'):
 
@@ -707,7 +707,7 @@ def create_experiment(request,
     return render_response_index(request, template_name, c)
 
 
-@login_required
+@approved_user_login_required
 @permission_required('tardis_portal.change_experiment')
 @authz.write_permissions_required
 def edit_experiment(request, experiment_id,
@@ -752,7 +752,7 @@ def edit_experiment(request, experiment_id,
     return render_response_index(request, template, c)
 
 
-@login_required
+@approved_user_login_required
 def add_dataset(request, experiment_id):
     if not has_experiment_write(request, experiment_id):
         return HttpResponseForbidden()
@@ -779,7 +779,7 @@ def add_dataset(request, experiment_id):
         request, 'tardis_portal/add_or_edit_dataset.html', c)
 
 
-@login_required
+@approved_user_login_required
 def edit_dataset(request, dataset_id):
     if not has_dataset_write(request, dataset_id):
         return HttpResponseForbidden()

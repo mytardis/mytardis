@@ -51,7 +51,7 @@ from .auth.decorators import (
     has_experiment_access,
     has_write_permissions)
 from .auth.localdb_auth import django_user
-from .models.access_control import ObjectACL
+from .models.access_control import ObjectACL, UserAuthentication
 from .models.datafile import DataFile, DataFileObject, compute_checksums
 from .models.dataset import Dataset
 from .models.experiment import Experiment, ExperimentAuthor
@@ -96,6 +96,13 @@ class MyTardisAuthentication(object):
         credentials are given but wrong and return Anonymous User when
         credentials are not given or the session has expired (web use).
         '''
+
+        # Check if user is approved or not, if not approved, then authentication is false.
+        user_auths = UserAuthentication.objects.filter(userProfile__user=request.user, approved=False)
+        for user_auth in user_auths:
+            if not user_auth.approved:
+                return False
+
         auth_info = request.META.get('HTTP_AUTHORIZATION')
 
         if 'HTTP_AUTHORIZATION' not in request.META:

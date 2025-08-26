@@ -1,12 +1,11 @@
 # pylint: disable=http-response-with-json-dumps,http-response-with-content-type-json
 import json
-import requests
 
+import requests
 from django.conf import settings
-from django.contrib.auth.decorators import login_required
-from django.urls import reverse
 from django.http import HttpResponse, HttpResponseForbidden, HttpResponseNotFound
 from django.shortcuts import redirect, render
+from django.urls import reverse
 
 from tardis.apps.push_to.utils import list_subdirectories, can_copy, get_default_push_location
 from tardis.tardis_portal.auth import decorators as authz
@@ -60,7 +59,7 @@ def get_push_url_for_host(remote_host, obj_type, push_obj_id):
     return None
 
 
-@login_required
+@authz.approved_user_login_required
 def get_accessible_hosts(request, obj_type=None, push_obj_id=None):
     """
     Retrieves all accessible hosts (i.e. hosts for which the user already has
@@ -91,7 +90,7 @@ def get_accessible_hosts(request, obj_type=None, push_obj_id=None):
     return HttpResponse(json.dumps(response), content_type='application/json')
 
 
-@login_required
+@authz.approved_user_login_required
 def get_signing_services(request, obj_type=None, push_obj_id=None):
     """
     Retrieves all certificate signing services and associated hosts including
@@ -130,7 +129,7 @@ def get_signing_services(request, obj_type=None, push_obj_id=None):
     return HttpResponse(json.dumps(response), content_type='application/json')
 
 
-@login_required
+@authz.approved_user_login_required
 def validate_remote_path(request, remote_host_id):
     response = {}
     path = request.GET.get("path", None)
@@ -182,7 +181,7 @@ def validate_remote_path(request, remote_host_id):
     return HttpResponse(json.dumps(response), content_type="application/json")
 
 
-@login_required
+@authz.approved_user_login_required
 @authz.experiment_download_required
 def initiate_push_experiment(request, experiment_id, remote_host_id=None):
     """
@@ -197,7 +196,7 @@ def initiate_push_experiment(request, experiment_id, remote_host_id=None):
                           "experiment", experiment_id)
 
 
-@login_required
+@authz.approved_user_login_required
 @authz.dataset_download_required
 def initiate_push_dataset(request, dataset_id, remote_host_id=None):
     """
@@ -212,7 +211,7 @@ def initiate_push_dataset(request, dataset_id, remote_host_id=None):
                           "dataset", dataset_id)
 
 
-@login_required
+@authz.approved_user_login_required
 @authz.datafile_access_required
 def initiate_push_datafile(request, datafile_id, remote_host_id=None):
     """
@@ -382,7 +381,7 @@ def verify_redirect(request, redirect_url):
     return redirect_url
 
 
-@login_required
+@authz.approved_user_login_required
 def authorize_remote_access(request, remote_host_id, service_id=None):
     """
     Generates an SSH certificate using an OAuth2 SSH signing service
@@ -456,7 +455,7 @@ def authorize_remote_access(request, remote_host_id, service_id=None):
         status=500)
 
 
-@login_required
+@authz.approved_user_login_required
 def oauth_callback(request):
     """
     OAuth2 callback endpoint to continue the SSH certificate signing process

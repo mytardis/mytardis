@@ -5,8 +5,8 @@ import json
 from os import path
 from wsgiref.util import FileWrapper
 
+from PIL import Image, ImageFont, ImageDraw
 from django.conf import settings
-from django.contrib.auth.decorators import login_required
 from django.contrib.contenttypes.models import ContentType
 from django.forms.forms import NON_FIELD_ERRORS
 from django.http import (
@@ -17,14 +17,13 @@ from django.http import (
 from django.shortcuts import render
 from paramiko import RSAKey
 from paramiko.ssh_exception import SSHException
-from PIL import Image, ImageFont, ImageDraw
 
-from tardis.tardis_portal.auth.decorators import has_experiment_download_access
+from tardis.tardis_portal.auth.decorators import has_experiment_download_access, approved_user_login_required
 from .forms import KeyGenerateForm
 from .models import SFTPPublicKey
 
 
-@login_required
+@approved_user_login_required
 def sftp_access(request):
     """
     Show dynamically generated instructions on how to connect to SFTP
@@ -88,7 +87,7 @@ def sftp_access(request):
     return render(request, template_name='sftp/index.html', context=c)
 
 
-@login_required
+@approved_user_login_required
 def cybderduck_connection_window(request):
     base_image = ("tardis/apps/sftp/images/cyberduck_connection_blank.png")
     font_file = "tardis/apps/sftp/fonts/roboto.ttf"
@@ -137,7 +136,7 @@ def cybderduck_connection_window(request):
     return response
 
 
-@login_required
+@approved_user_login_required
 def sftp_keys(request):
     """Generate an RSA key pair for a user.
 

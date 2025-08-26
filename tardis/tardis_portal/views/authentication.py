@@ -2,15 +2,13 @@
 views that have to do with authentication
 """
 import logging
-
 from urllib.parse import urlparse
 
 import jwt
-
 from django.conf import settings
 from django.contrib import auth as djauth
 from django.contrib.auth import logout as django_logout
-from django.contrib.auth.decorators import login_required, permission_required
+from django.contrib.auth.decorators import permission_required
 from django.contrib.auth.models import User
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.core.validators import validate_email
@@ -261,7 +259,7 @@ def login(request):
 
 @sensitive_post_parameters('password')
 @permission_required('tardis_portal.change_userauthentication')
-@login_required()
+@approved_user_login_required
 def manage_auth_methods(request):
     '''Manage the user's authentication methods using AJAX.'''
     from ..auth.authentication import add_auth_method, \

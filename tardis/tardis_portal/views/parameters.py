@@ -4,8 +4,6 @@ views to do with metadata, parameters etc. Mostly ajax page inclusions
 
 import logging
 
-from django.contrib.auth.decorators import login_required
-
 from ..auth import decorators as authz
 from ..forms import create_parameterset_edit_form, \
     save_parameter_edit_form, create_parameter_add_form, save_parameter_add_form
@@ -17,7 +15,7 @@ from ..views.utils import remove_csrf_token
 logger = logging.getLogger(__name__)
 
 
-@login_required
+@authz.approved_user_login_required
 def edit_experiment_par(request, parameterset_id):
     parameterset = ExperimentParameterSet.objects.get(id=parameterset_id)
     if authz.has_write_permissions(request, parameterset.experiment.id):
@@ -25,7 +23,7 @@ def edit_experiment_par(request, parameterset_id):
     return return_response_error(request)
 
 
-@login_required
+@authz.approved_user_login_required
 def edit_dataset_par(request, parameterset_id):
     parameterset = DatasetParameterSet.objects.get(id=parameterset_id)
     if authz.has_dataset_write(request, parameterset.dataset.id):
@@ -33,7 +31,7 @@ def edit_dataset_par(request, parameterset_id):
     return return_response_error(request)
 
 
-@login_required
+@authz.approved_user_login_required
 def edit_datafile_par(request, parameterset_id):
     parameterset = DatafileParameterSet.objects.get(id=parameterset_id)
     if authz.has_dataset_write(request, parameterset.datafile.dataset.id):
@@ -86,7 +84,7 @@ def edit_parameters(request, parameterset, otype):
         request, 'tardis_portal/ajax/parameteredit.html', c)
 
 
-@login_required
+@authz.approved_user_login_required
 def add_datafile_par(request, datafile_id):
     parentObject = DataFile.objects.get(id=datafile_id)
     if authz.has_dataset_write(request, parentObject.dataset.id):
@@ -95,7 +93,7 @@ def add_datafile_par(request, datafile_id):
     return return_response_error(request)
 
 
-@login_required
+@authz.approved_user_login_required
 def add_dataset_par(request, dataset_id):
     parentObject = Dataset.objects.get(id=dataset_id)
     if authz.has_dataset_write(request, parentObject.id):
@@ -104,7 +102,7 @@ def add_dataset_par(request, dataset_id):
     return return_response_error(request)
 
 
-@login_required
+@authz.approved_user_login_required
 def add_experiment_par(request, experiment_id):
     parentObject = Experiment.objects.get(id=experiment_id)
     if authz.has_write_permissions(request, parentObject.id):
