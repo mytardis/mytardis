@@ -98,10 +98,11 @@ class MyTardisAuthentication(object):
         '''
 
         # Check if user is approved or not, if not approved, then authentication is false.
-        user_auths = UserAuthentication.objects.filter(userProfile__user=request.user, approved=False)
-        for user_auth in user_auths:
-            if not user_auth.approved:
-                return False
+        if not request.user.is_anonymous:
+            user_auths = UserAuthentication.objects.filter(userProfile__user=request.user, approved=False)
+            for user_auth in user_auths:
+                if not user_auth.approved:
+                    return False
 
         auth_info = request.META.get('HTTP_AUTHORIZATION')
 
